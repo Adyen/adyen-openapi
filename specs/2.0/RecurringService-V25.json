@@ -3,7 +3,7 @@
    "info" : {
       "version" : "25",
       "title" : "Adyen Recurring Service",
-      "description" : "recurring service operations"
+      "description" : "Additional methods that allow you to manage payment details stored for recurring payments. For more information, refer to [Recurring payments](https://docs.adyen.com/developers/features/recurring-payments)."
    },
    "host" : "pal-test.adyen.com",
    "basePath" : "/pal/servlet/Recurring/v25",
@@ -23,7 +23,7 @@
       "/disable" : {
          "post" : {
             "summary" : "Disables stored payment details.",
-            "description" : "Disables stored payment details to stop charging a shopper with this particular recurring detail ID.",
+            "description" : "Disables stored payment details to stop charging a shopper with this particular recurring detail ID.\n\nFor more information, refer to [Disable stored details](https://docs.adyen.com/developers/features/recurring-payments/disable-stored-details).",
             "x-groupName" : "General",
             "x-sortIndex" : 2,
             "parameters" : [
@@ -63,7 +63,7 @@
       "/listRecurringDetails" : {
          "post" : {
             "summary" : "Retrieves stored payment details for a shopper.",
-            "description" : "Lists the stored payment details for a shopper, if available. The recurring detail ID can be used with a regular authorisation request to charge the shopper. A summary of the payment detail is returned for presentation to the shopper.",
+            "description" : "Lists the stored payment details for a shopper, if there are any available. The recurring detail ID can be used with a regular authorisation request to charge the shopper. A summary of the payment detail is returned for presentation to the shopper.\n\nFor more information, refer to [Retrieve stored details](https://docs.adyen.com/developers/features/recurring-payments/retrieve-stored-details).",
             "x-groupName" : "General",
             "x-sortIndex" : 1,
             "parameters" : [
@@ -237,19 +237,19 @@
       "DisableRequest" : {
          "properties" : {
             "contract" : {
-               "description" : "specify the contract if you only want to disable a specific use",
+               "description" : "Specify the contract if you only want to disable a specific use.\n\nThis field can be set to one of the following values, or to their combination (comma-separated):\n* ONECLICK\n* RECURRING\n* PAYOUT",
                "type" : "string"
             },
             "merchantAccount" : {
-               "description" : "the merchant account which will be used for processing this request",
+               "description" : "Your merchant account.",
                "type" : "string"
             },
             "recurringDetailReference" : {
-               "description" : "the recurring detail you wish to disable",
+               "description" : "The ID that uniquely identifies the recurring detail reference.\n\nIf it is not provided, the whole recurring contract of the `shopperReference` will be disabled, which includes all recurring details.",
                "type" : "string"
             },
             "shopperReference" : {
-               "description" : "a reference you use to uniquely identify the shopper (e.g. user ID or account ID)",
+               "description" : "The ID that uniquely identifies the shopper.\n\nThis `shopperReference` must be the same as the `shopperReference` used in the initial payment.",
                "type" : "string"
             }
          },
@@ -261,14 +261,14 @@
       "DisableResult" : {
          "properties" : {
             "details" : {
-               "description" : "a list of one or more recurring payment details that were disabled",
+               "description" : "A list of one or more recurring payment details that were disabled.",
                "items" : {
                   "$ref" : "#/definitions/RecurringDetail"
                },
                "type" : "array"
             },
             "response" : {
-               "description" : "Depending on whether a specific recurring detail was in the request, result is either [detail-successfully-disabled] or [all-details-successfully-disabled]",
+               "description" : "Depending on whether a specific recurring detail was in the request, result is either [detail-successfully-disabled] or [all-details-successfully-disabled].",
                "type" : "string"
             }
          }
@@ -421,42 +421,43 @@
       "RecurringDetailsRequest" : {
          "properties" : {
             "merchantAccount" : {
-               "description" : "the merchant account which will be used for processing this request",
+               "description" : "The merchant account identifier you want to process the (transaction) request with.",
                "type" : "string"
             },
             "recurring" : {
-               "description" : "the type of recurring contract to be used.",
+               "description" : "A container for the type of a recurring contract to be retrieved.\n\nThe contract value needs to match the contract value submitted in the payment transaction used to create a recurring contract.\nHowever, if `ONECLICK,RECURRING` is the original contract definition in the initial payment, then `contract` should take either `ONECLICK` or `RECURRING`, depending on whether or not you want the shopper to enter their card's security code when they finalize their purchase.",
                "$ref" : "#/definitions/Recurring"
             },
             "shopperReference" : {
-               "description" : "a reference you use to uniquely identify the shopper (e.g. user ID or account ID)",
+               "description" : "The reference you use to uniquely identify the shopper (e.g. user ID or account ID).",
                "type" : "string"
             }
-         }
+         },
+         "required" : [
+            "merchantAccount",
+            "shopperReference"
+         ]
       },
       "RecurringDetailsResult" : {
          "properties" : {
             "creationDate" : {
-               "description" : "the creation date when the shopper record was created",
+               "description" : "The date when the recurring details were created.",
                "format" : "date-time",
                "type" : "string"
             },
             "details" : {
-               "description" : "a list of one or more recurring payment details",
+               "description" : "A list of one or more recurring payment details.",
                "items" : {
                   "$ref" : "#/definitions/RecurringDetail"
                },
                "type" : "array"
             },
-            "invalidOneclickContracts" : {
-               "type" : "boolean"
-            },
             "lastKnownShopperEmail" : {
-               "description" : "the most recent email for this shopper (if available)",
+               "description" : "The most recent email for this shopper (if available).",
                "type" : "string"
             },
             "shopperReference" : {
-               "description" : "the reference you use to uniquely identify the shopper (e.g. user ID or account ID)",
+               "description" : "The reference you use to uniquely identify the shopper (e.g. user ID or account ID).",
                "type" : "string"
             }
          }
