@@ -6,7 +6,7 @@
       "description" : "A web service to initiate and authorise payments with Adyen Checkout. You can use the same integration for payments made with cards (including One-Click and 3D Secure), mobile wallets, and local payment methods (e.g. iDEAL and Sofort). For more information, refer to [Checkout documentation](https://docs.adyen.com/developers/checkout)."
    },
    "host" : "checkout-test.adyen.com",
-   "basePath" : "/v30",
+   "basePath" : "/services/PaymentSetupAndVerification/v30",
    "schemes" : [
       "https"
    ],
@@ -23,7 +23,7 @@
       "/setup" : {
          "post" : {
             "summary" : "Creates a payment setup",
-            "description" : "Creates a payment with a unique reference (pspReference) and attempts to obtain an authorisation hold, which can be \"captured\" or \"cancelled\" later. While for cards an authorised payment can be captured later, non-card methods typically don't support this and will automatically capture as part of the authorisation.",
+            "description" : "Provides the data object that can be used to start the Checkout SDK. For the initial payment setup, pass the payment amount, currency, and other information that can be used by Adyen to optimize the payment flow and perform better risk assessment of the transaction.\n\nFor more information, refer to [Set up a payment](https://docs.adyen.com/developers/checkout/implement-your-server-checkout/set-up-a-payment-checkout).",
             "x-groupName" : "General",
             "x-sortIndex" : 1,
             "parameters" : [
@@ -62,8 +62,8 @@
       },
       "/verify" : {
          "post" : {
-            "summary" : "Creates a payment authorisation",
-            "description" : "Creates a payment with a unique reference (pspReference) and attempts to obtain an authorisation hold, which can be \"captured\" or \"cancelled\" later. While for cards an authorised payment can be captured later, non-card methods typically don't support this and will automatically capture as part of the authorisation.",
+            "summary" : "Verifies payment result",
+            "description" : "Verifies the payment result using the payload returned from the SDK.\n\nFor more information, refer to [Verify a payment](https://docs.adyen.com/developers/checkout/implement-your-server-checkout/verify-a-payment-checkout).",
             "x-groupName" : "General",
             "x-sortIndex" : 2,
             "parameters" : [
@@ -139,7 +139,7 @@
       "Amount" : {
          "properties" : {
             "currency" : {
-               "description" : "The three-character [ISO currency code](https://en.wikipedia.org/wiki/ISO_4217).",
+               "description" : "The three-character [ISO currency code](https://docs.adyen.com/developers/currency-codes).",
                "maxLength" : 3,
                "minLength" : 3,
                "type" : "string"
@@ -289,36 +289,15 @@
       "Configuration" : {
          "properties" : {
             "avs" : {
+               "description" : "Describes the configuration for AVS ([Address Verification System](https://en.wikipedia.org/wiki/Address_Verification_System)).",
                "$ref" : "#/definitions/Avs"
             },
             "cardHolderNameRequired" : {
                "type" : "boolean"
             },
             "installments" : {
+               "description" : "Describes the configuration for [installment payments](https://docs.adyen.com/developers/payment-methods/installment-payments).",
                "$ref" : "#/definitions/Installments"
-            }
-         }
-      },
-      "Detail" : {
-         "properties" : {
-            "items" : {
-               "description" : "in case of a select, the items to choose from",
-               "items" : {
-                  "$ref" : "#/definitions/Item"
-               },
-               "type" : "array"
-            },
-            "key" : {
-               "description" : "value to provide in the result",
-               "type" : "string"
-            },
-            "optional" : {
-               "description" : "true iff this input is optional to provide",
-               "type" : "boolean"
-            },
-            "type" : {
-               "description" : "the type of the required input",
-               "type" : "string"
             }
          }
       },
@@ -389,7 +368,7 @@
             },
             "results" : {
                "description" : "The result of the individual risk checks.",
-               "$ref" : "#/definitions/Collection"
+               "type" : "object"
             }
          },
          "required" : [
@@ -402,41 +381,41 @@
                "additionalProperties" : {
                   "type" : "string"
                },
-               "description" : "configuration parameters for the required input",
+               "description" : "Configuration parameters for the required input.",
                "type" : "object"
             },
             "inputDetails" : {
-               "description" : "in case of address data, inputdetails can be set recursively",
+               "description" : "In case of address data, inputDetails can be set recursively.",
                "items" : {
                   "$ref" : "#/definitions/SubInputDetail"
                },
                "type" : "array"
             },
             "itemSearchUrl" : {
-               "description" : "in case of a select, the URL where to query the items from",
+               "description" : "In case of a select, the URL from which to query the items.",
                "type" : "string"
             },
             "items" : {
-               "description" : "in case of a select, the items to choose from",
+               "description" : "In case of a select, the items to choose from.",
                "items" : {
                   "$ref" : "#/definitions/Item"
                },
                "type" : "array"
             },
             "key" : {
-               "description" : "value to provide in the result",
+               "description" : "The value to provide in the result.",
                "type" : "string"
             },
             "optional" : {
-               "description" : "true iff this input is optional to provide",
+               "description" : "True if this input is optional to provide.",
                "type" : "boolean"
             },
             "type" : {
-               "description" : "the type of the required input",
+               "description" : "The type of the required input.",
                "type" : "string"
             },
             "value" : {
-               "description" : "value can be pre-filled, if available",
+               "description" : "The value can be pre-filled, if available.",
                "type" : "string"
             }
          }
@@ -504,31 +483,31 @@
       "PaymentDetails" : {
          "properties" : {
             "additionalAmount" : {
-               "description" : "the portion of the \"amount\" which is additional/surcharged. Required to be in the same currency as the amount.",
+               "description" : "The portion of the `amount`, which is additional/surcharged. Required to be in the same currency as the amount.",
                "$ref" : "#/definitions/Amount"
             },
             "amount" : {
-               "description" : "the amount to charge",
+               "description" : "The amount to charge.",
                "$ref" : "#/definitions/Amount"
             },
             "countryCode" : {
-               "description" : "the shopper's country code",
+               "description" : "The shopper's country code.",
                "type" : "string"
             },
             "reference" : {
-               "description" : "the reference assigned to the payment",
+               "description" : "The reference assigned to the payment.",
                "type" : "string"
             },
             "sessionValidity" : {
-               "description" : "the maximum validatiy of the session",
+               "description" : "The maximum validity of the session.",
                "type" : "string"
             },
             "shopperLocale" : {
-               "description" : "the shopper's locale",
+               "description" : "The shopper's locale.",
                "type" : "string"
             },
             "shopperReference" : {
-               "description" : "a reference used to uniquely identify the shopper (e.g. user ID or account ID)",
+               "description" : "The reference used to uniquely identify the shopper (e.g. user ID or account ID).",
                "type" : "string"
             }
          }
@@ -539,37 +518,30 @@
                "additionalProperties" : {
                   "type" : "string"
                },
-               "description" : "the configuration",
+               "description" : "The configuration.",
                "type" : "object"
             },
-            "details" : {
-               "description" : "all input to be provided to complete the payment with this payment method",
-               "items" : {
-                  "$ref" : "#/definitions/Detail"
-               },
-               "type" : "array"
-            },
             "group" : {
-               "description" : "the group where this payment method belongs to",
+               "description" : "The group where this payment method belongs to.",
                "$ref" : "#/definitions/PaymentMethodGroup"
             },
             "inputDetails" : {
-               "description" : "all input to be provided to complete the payment with this payment method",
+               "description" : "All input details to be provided to complete the payment with this payment method.",
                "items" : {
                   "$ref" : "#/definitions/InputDetail"
                },
                "type" : "array"
             },
             "name" : {
-               "description" : "the displayable name of this payment method",
+               "description" : "The displayable name of this payment method.",
                "type" : "string"
             },
             "paymentMethodData" : {
-               "description" : "echo data required to send in next calls",
+               "description" : "echo data required to send in next calls.",
                "type" : "string"
             },
             "type" : {
-               "description" : "the unique payment method code",
+               "description" : "The unique payment method code.",
                "type" : "string"
             }
          }
@@ -577,25 +549,21 @@
       "PaymentMethodGroup" : {
          "properties" : {
             "name" : {
-               "description" : "the name of the group",
+               "description" : "The name of the group.",
                "type" : "string"
             },
             "paymentMethodData" : {
-               "description" : "echo data to be used if the payment method is displayed as part of this group",
+               "description" : "Echo data to be used if the payment method is displayed as part of this group.",
                "type" : "string"
             },
             "type" : {
-               "description" : "the unique code of the group",
+               "description" : "The unique code of the group.",
                "type" : "string"
             }
          }
       },
       "PaymentSetupRequest" : {
          "properties" : {
-            "additionalAmount" : {
-               "description" : "If you want a [BIN or card verification](https://docs.adyen.com/developers/ecommerce-integration/cards/bin-data-and-card-verification) request to use a non-zero value, assign this value to `additionalAmount` (while the amount must be still set to 0 to trigger BIN or card verification).\nRequired to be in the same currency as the `amount`. ",
-               "$ref" : "#/definitions/Amount"
-            },
             "additionalData" : {
                "additionalProperties" : {
                   "type" : "string"
@@ -607,29 +575,17 @@
                "description" : "The amount information for the transaction. For [BIN or card verification](https://docs.adyen.com/developers/ecommerce-integration/cards/bin-data-and-card-verification) requests, set amount to 0 (zero).",
                "$ref" : "#/definitions/Amount"
             },
-            "bankAccount" : {
-               "description" : "The details of the bank account, from which the payment should be made from.\nEither `bankAccount` or `card` field must be provided in a payment request.",
-               "$ref" : "#/definitions/BankAccount"
-            },
             "billingAddress" : {
                "description" : "The address where to send the invoice.",
                "$ref" : "#/definitions/Address"
-            },
-            "browserInfo" : {
-               "description" : "The shopper's browser information.",
-               "$ref" : "#/definitions/BrowserInfo"
             },
             "captureDelayHours" : {
                "description" : "The delay between the authorisation and scheduled auto-capture, specified in hours.",
                "format" : "int32",
                "type" : "integer"
             },
-            "card" : {
-               "description" : "A container for card data.\n> Either `bankAccount` or `card` field must be provided in a payment request.",
-               "$ref" : "#/definitions/Card"
-            },
             "channel" : {
-               "description" : "the SDK that will be used, either iOS, Android or Web",
+               "description" : "The platform where a payment transaction takes place. This field is required for filtering out payment methods that are only available on specific platforms.",
                "enum" : [
                   "iOS",
                   "Android",
@@ -638,15 +594,15 @@
                "type" : "string"
             },
             "configuration" : {
-               "description" : "configuration for specific use cases",
+               "description" : "Specify configurations to enable additional features.",
                "$ref" : "#/definitions/Configuration"
             },
             "countryCode" : {
-               "description" : "the shopper's country code",
+               "description" : "The shopper country.\n\nFormat: [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)\nExample: NL or DE",
                "type" : "string"
             },
             "dateOfBirth" : {
-               "description" : "The shopper's date of birth.\n\nFormat: [ISO-8601](https://www.w3.org/TR/NOTE-datetime); example: YYYY-MM-DD",
+               "description" : "The shopper's date of birth.\n\nFormat [ISO-8601](https://www.w3.org/TR/NOTE-datetime): YYYY-MM-DD",
                "format" : "date-time",
                "type" : "string"
             },
@@ -655,16 +611,12 @@
                "$ref" : "#/definitions/ForexQuote"
             },
             "deliveryAddress" : {
-               "description" : "The address where the purchased goods should be delivered to.",
+               "description" : "The address where the purchased goods should be delivered.",
                "$ref" : "#/definitions/Address"
             },
             "deliveryDate" : {
-               "description" : "The date and time the purchased goods should be delivered.\n\nFormat: [ISO 8601](https://www.w3.org/TR/NOTE-datetime); YYYY-MM-DDThh:mm:ss.sssTZD\nExample: 2017-07-17T13:42:40.428+01:00",
+               "description" : "The date and time the purchased goods should be delivered.\n\nFormat [ISO 8601](https://www.w3.org/TR/NOTE-datetime): YYYY-MM-DDThh:mm:ss.sssTZD\n\nExample: 2017-07-17T13:42:40.428+01:00",
                "format" : "date-time",
-               "type" : "string"
-            },
-            "deviceFingerprint" : {
-               "description" : "A string containing the shopper's device fingerprint. For more information, refer to [Device fingerprinting](https://docs.adyen.com/developers/risk-management/device-fingerprinting).",
                "type" : "string"
             },
             "entityType" : {
@@ -681,7 +633,7 @@
                "type" : "integer"
             },
             "html" : {
-               "description" : "true iff html should be provided as part of the response",
+               "description" : "Required for the Web integration.\n\nSet this parameter to true to use the default Checkout UI from the SDK.",
                "type" : "boolean"
             },
             "installments" : {
@@ -689,7 +641,7 @@
                "$ref" : "#/definitions/Installments"
             },
             "mcc" : {
-               "description" : "The [merchant category code](https://en.wikipedia.org/wiki/Merchant_category_code) (MCC) is a four-digit number which relates to a particular market segment. This code reflects the predominant activity that is conducted by the merchant.",
+               "description" : "The [merchant category code](https://en.wikipedia.org/wiki/Merchant_category_code) (MCC) is a four-digit number, which relates to a particular market segment. This code reflects the predominant activity that is conducted by the merchant.",
                "type" : "string"
             },
             "merchantAccount" : {
@@ -707,17 +659,8 @@
                "description" : "Metadata consists of entries, each of which includes a key and a value.\nLimitations: Error \"177\", \"Metadata size exceeds limit\"",
                "type" : "object"
             },
-            "mpiData" : {
-               "description" : "Authentication data produced by an MPI (Mastercard SecureCode or Verified By Visa).",
-               "$ref" : "#/definitions/ThreeDSecureData"
-            },
-            "nationality" : {
-               "description" : "The two-character country code of the shopper's nationality.",
-               "maxLength" : 2,
-               "type" : "string"
-            },
             "oneClick" : {
-               "description" : "true iff one click functionality should be offered",
+               "description" : "True if one click functionality should be offered.",
                "type" : "boolean"
             },
             "orderReference" : {
@@ -725,18 +668,7 @@
                "type" : "string"
             },
             "origin" : {
-               "type" : "string"
-            },
-            "recurring" : {
-               "description" : "The recurring settings for the payment. Use this property when you want to enable [recurring payments](https://docs.adyen.com/developers/features/recurring-payments).",
-               "$ref" : "#/definitions/Recurring"
-            },
-            "recurringProcessingModel" : {
-               "description" : "Defines a recurring payment type.\nAllowed values:\n* `Subscription` – A transaction for a fixed or variable amount, which follows a fixed schedule.\n* `CardOnFile` – Card details are stored to enable one-click or omnichannel journeys, or simply to streamline the checkout process. Any subscription not following a fixed schedule is also considered a card-on-file transaction.",
-               "enum" : [
-                  "CardOnFile",
-                  "Subscription"
-               ],
+               "description" : "Required for the Web integration.\n\nSet this parameter to the page URL, on which you are loading the SDK.",
                "type" : "string"
             },
             "reference" : {
@@ -744,23 +676,11 @@
                "type" : "string"
             },
             "returnUrl" : {
-               "description" : "the url to return back to",
-               "type" : "string"
-            },
-            "selectedBrand" : {
-               "description" : "Some payment methods require defining a value for this field to specify how to process the transaction.\n\nFor the MisterCash payment method, it can be set to:\n* `maestro` (default), to be processed like a Maestro card, or\n* `bcmc`, to be processed like a MisterCash card.",
-               "type" : "string"
-            },
-            "selectedRecurringDetailReference" : {
-               "description" : "The `recurringDetailReference` you want to use for this payment. The value `LATEST` can be used to select the most recently stored recurring detail.",
-               "type" : "string"
-            },
-            "sessionId" : {
-               "description" : "A session ID used to identify a payment session.",
+               "description" : "The URL to return to.",
                "type" : "string"
             },
             "sessionValidity" : {
-               "description" : "the maximum validatiy of the session",
+               "description" : "The maximum validity of the session.",
                "type" : "string"
             },
             "shopperEmail" : {
@@ -772,7 +692,7 @@
                "type" : "string"
             },
             "shopperInteraction" : {
-               "description" : "Specifies the sales channel, through which the shopper gives their card details, and whether the shopper is a returning customer.\nFor the web service API, Adyen assumes Ecommerce shopper interaction by default.\n\nThis field has the following possible values:\n* `Ecommerce` - Online transactions where the cardholder is present (online). For better authorisation rates, we recommend sending the card security code (CSC) along with the request.\n* `ContAuth` - Card on file and/or subscription transactions, where the card holder is known to the merchant (returning customer). If the shopper is present (online), you can supply also the CSC to improve authorisation (one-click payment).\n* `Moto` - Mail-order and telephone-order transactions where the shopper is in contact with the merchant via email or telephone.\n* `POS` - Point-of-sale transactions where the shopper is physically present to make a payment using a secure payment terminal.",
+               "description" : "Specifies the sales channel, through which the shopper gives their card details, and whether the shopper is a returning customer.\nFor the web service API, Adyen assumes Ecommerce shopper interaction by default.\n\nThis field has the following possible values:\n* `Ecommerce` - Online transactions where the cardholder is present (online). For better authorisation rates, we recommend sending the card security code (CSC) along with the request.\n* `ContAuth` - Card on file and/or subscription transactions, where the cardholder is known to the merchant (returning customer). If the shopper is present (online), you can supply also the CSC to improve authorisation (one-click payment).\n* `Moto` - Mail-order and telephone-order transactions where the shopper is in contact with the merchant via email or telephone.\n* `POS` - Point-of-sale transactions where the shopper is physically present to make a payment using a secure payment terminal.",
                "enum" : [
                   "Ecommerce",
                   "ContAuth",
@@ -801,47 +721,30 @@
                "description" : "The shopper's social security number.",
                "type" : "string"
             },
-            "store" : {
-               "description" : "The physical store, for which this payment is processed.",
-               "maxLength" : 16,
-               "minLength" : 1,
-               "type" : "string"
-            },
             "telephoneNumber" : {
                "description" : "The shopper's telephone number.",
                "type" : "string"
             },
             "token" : {
-               "description" : "the token generated by the SDK",
+               "description" : "The token obtained when initializing the SDK.\n\n> This parameter is required for iOS and Android; not required for Web.",
                "type" : "string"
-            },
-            "totalsGroup" : {
-               "description" : "The reference value to aggregate sales totals in reporting. When not specified, the store field is used (if available).",
-               "maxLength" : 16,
-               "minLength" : 1,
-               "type" : "string"
-            },
-            "ui" : {
-               "additionalProperties" : {
-                  "type" : "string"
-               },
-               "description" : "the configuration for UI rendering",
-               "type" : "object"
             }
-         }
+         },
+         "required" : [
+            "merchantAccount",
+            "reference",
+            "amount",
+            "channel"
+         ]
       },
       "PaymentSetupResponse" : {
          "properties" : {
-            "authoriseFromSDK" : {
-               "description" : "True if the authorisation needs to happen from the SDK.",
-               "type" : "boolean"
-            },
             "disableRecurringDetailUrl" : {
                "description" : "The URL to disable recurring details.",
                "type" : "string"
             },
             "generationtime" : {
-               "description" : "The generationtime of this request, required for CSE.",
+               "description" : "The generationtime of this request, required for encryption.",
                "type" : "string"
             },
             "html" : {
@@ -884,7 +787,7 @@
                "type" : "string"
             },
             "publicKeyToken" : {
-               "description" : "The CSE public key token.",
+               "description" : "The public key token.",
                "type" : "string"
             },
             "recurringDetails" : {
@@ -893,18 +796,19 @@
                   "$ref" : "#/definitions/RecurringDetail"
                },
                "type" : "array"
-            },
-            "token" : {
-               "type" : "string"
             }
          }
       },
       "PaymentVerificationRequest" : {
          "properties" : {
             "payload" : {
+               "description" : "Encrypted and signed payment result data. You should receive this value from the Checkout SDK after the shopper completes the payment.",
                "type" : "string"
             }
-         }
+         },
+         "required" : [
+            "payload"
+         ]
       },
       "PaymentVerificationResponse" : {
          "properties" : {
@@ -912,13 +816,15 @@
                "additionalProperties" : {
                   "type" : "string"
                },
-               "description" : "This field contains additional data, which may be required to return in a particular payment response. To choose data fields to be returned, go to Customer Area -> Settings -> API and Response.",
+               "description" : "This field contains additional data, which may be required to return in a particular payment response. To choose data fields to be returned, go to **Customer Area** > **Settings** > **API and Response**.",
                "type" : "object"
             },
             "authResponse" : {
+               "description" : "The authorisation code representing the authentication result.\n\nPossible values:\n* Received\n* Authorised\n* Error\n* Refused\n* Cancelled\n* Unknown",
                "type" : "string"
             },
             "errorMessage" : {
+               "description" : "The error message.",
                "type" : "string"
             },
             "fraudResult" : {
@@ -926,6 +832,7 @@
                "$ref" : "#/definitions/FraudResult"
             },
             "merchantReference" : {
+               "description" : "A unique value that you provided in the initial /setup request as a `reference` field.",
                "type" : "string"
             },
             "pspReference" : {
@@ -933,7 +840,7 @@
                "type" : "string"
             },
             "refusalReason" : {
-               "description" : "If the payment's authorisation is refused or an error occurrs during authorisation, this field holds Adyen's mapped reason for the refusal or a description of the error.\n\nWhen a transaction fails, the authorisation response includes `resultCode` and `refusalReason` values.",
+               "description" : "If the payment's authorisation is refused or an error occurs during authorisation, this field holds Adyen's mapped reason for the refusal or a description of the error.\n\nWhen a transaction fails, the authorisation response includes `resultCode` and `refusalReason` values.",
                "type" : "string"
             },
             "resultCode" : {
@@ -949,7 +856,11 @@
                ],
                "type" : "string"
             }
-         }
+         },
+         "required" : [
+            "authResponse",
+            "merchantReference"
+         ]
       },
       "Recurring" : {
          "properties" : {
@@ -987,40 +898,33 @@
                "additionalProperties" : {
                   "type" : "string"
                },
-               "description" : "the configuration",
+               "description" : "The configuration.",
                "type" : "object"
-            },
-            "details" : {
-               "description" : "all input to be provided to complete the payment with this payment method",
-               "items" : {
-                  "$ref" : "#/definitions/Detail"
-               },
-               "type" : "array"
             },
             "emailAddress" : {
                "type" : "string"
             },
             "group" : {
-               "description" : "the group where this payment method belongs to",
+               "description" : "The group where this payment method belongs to.",
                "$ref" : "#/definitions/PaymentMethodGroup"
             },
             "inputDetails" : {
-               "description" : "all input to be provided to complete the payment with this payment method",
+               "description" : "All input details to be provided to complete the payment with this payment method.",
                "items" : {
                   "$ref" : "#/definitions/InputDetail"
                },
                "type" : "array"
             },
             "name" : {
-               "description" : "the displayable name of this payment method",
+               "description" : "The displayable name of this payment method.",
                "type" : "string"
             },
             "paymentMethodData" : {
-               "description" : "echo data required to send in next calls",
+               "description" : "echo data required to send in next calls.",
                "type" : "string"
             },
             "type" : {
-               "description" : "the unique payment method code",
+               "description" : "The unique payment method code.",
                "type" : "string"
             }
          }
@@ -1028,19 +932,19 @@
       "SubInputDetail" : {
          "properties" : {
             "key" : {
-               "description" : "value to provide in the result",
+               "description" : "The value to provide in the result.",
                "type" : "string"
             },
             "optional" : {
-               "description" : "true iff this input is optional to provide",
+               "description" : "True if this input is optional to provide.",
                "type" : "boolean"
             },
             "type" : {
-               "description" : "the type of the required input",
+               "description" : "The type of the required input.",
                "type" : "string"
             },
             "value" : {
-               "description" : "value can be pre-filled, if available",
+               "description" : "The value can be pre-filled, if available.",
                "type" : "string"
             }
          }
