@@ -25,21 +25,35 @@ There are multiple ways you can use the OpenAPI specification to explore the Ady
 
 ## Vendor extensions
 
-Adyen's specifications contain some custom extensions, as [allowed by the OpenAPI standard](https://swagger.io/docs/specification/openapi-extensions/). These are annotations that provide metadata, such as the grouping and sort order of API objects, when they are displayed in the [Adyen API Explorer](https://docs.adyen.com/api-explorer/).
+Adyen's specifications contain some custom extensions, as [allowed by the OpenAPI standard](https://swagger.io/docs/specification/openapi-extensions/). These are extensions that provide metadata, such as the grouping and sort order of API objects, when they are displayed in the [Adyen API Explorer](https://docs.adyen.com/api-explorer/).
+
+### x-groups
+
+This extension provides a list of all endpoint groups for the selected API.
 
 For example:
 
 ```
-"x-groups" : [
-   "General",
-   "Modifications"
-],
-
-   "post" : {
-       "x-groupName" : "Modifications",
-       "x-sortIndex" : 5,
+x-groups:
+  - General
+  - Modifications
 ```
 
+### x-groupName and x-sortIndex
+
+These extensions specify how to group endpoints and sort them within a group.
+
+For example:
+
+```
+paths:
+    ...
+    post:
+      ...
+      x-groupName: Modifications
+      x-sortIndex: 5
+   ...
+```
   
 ## Support
   
