@@ -57,7 +57,7 @@ paths:
   
 ## Support
   
-If you have any questions or suggestions, please feel free to create an issue here or contact [Adyen Support](https://support.adyen.com).
+If you have any questions or suggestions, please feel free to [create an issue here](https://github.com/Adyen/adyen-openapi/issues/new) or contact [Adyen Support](https://support.adyen.com).
   
 ## License 
 
