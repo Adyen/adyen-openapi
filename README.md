@@ -1,12 +1,12 @@
 # Adyen OpenAPI / Swagger specifications
 
-Adyen provides you with [plenty of different APIs](https://docs.adyen.com/developers) that help you accept payments on your website or mobile application, implement subscription billing, make payouts, and much more.
+Adyen provides [various APIs](https://docs.adyen.com/developers) to help you accept payments on your website or mobile application, implement subscription billing, make payouts, and much more.
 
-This repository contains Adyen API specifications, represented in the [OpenAPI standard](https://www.openapis.org/) (former Swagger specification).
+This repository contains Adyen API specifications, represented in the [OpenAPI standard](https://www.openapis.org/) (formerly known as Swagger Specification).
 
 ## Folder structure
 
-All specifications in this repository are organized into two subfolders:
+Specifications in this repository are organized into two subfolders:
 
 ```
 /specs
@@ -14,7 +14,7 @@ All specifications in this repository are organized into two subfolders:
    /3.0 – Spec files in the OpenAPI 3.0.0 format.
 ```
 
-We provide specifications in both `.json` and `.yaml` formats, with an API version number (e.g. `v30`) in a file name.
+We provide specifications in both `.json` and `.yaml` formats, with the API version number (e.g. `v30`) in the file name.
 
 ## Usage
   
@@ -23,9 +23,9 @@ There are multiple ways you can use the OpenAPI specification to explore the Ady
 -	If you prefer to use the classic Swagger toolset, upload these specifications to the [Swagger Editor](http://editor.swagger.io/) or [SwaggerHub](https://swaggerhub.com/).
 -	Also we recommend you use [Postman](https://www.getpostman.com/postman) to import the OpenAPI specification and create your personal collection of requests.
 
-## Custom extensions
+## Vendor extensions
 
-Adyen specifications contain a few custom extensions, which are [allowed by the OpenAPI standard](https://swagger.io/docs/specification/openapi-extensions/). These extensions are used to provide metadata about API objects, for instance, to set grouping and sort order when displaying them in the [Adyen API Explorer](https://docs.adyen.com/api-explorer/).
+Adyen's specifications contain some custom extensions, as [allowed by the OpenAPI standard](https://swagger.io/docs/specification/openapi-extensions/). These are annotations that provide metadata, such as the grouping and sort order of API objects, when they are displayed in the [Adyen API Explorer](https://docs.adyen.com/api-explorer/).
 
 For example:
 
