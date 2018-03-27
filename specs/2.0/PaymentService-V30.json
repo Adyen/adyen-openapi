@@ -3,7 +3,7 @@
    "info" : {
       "version" : "30",
       "title" : "Adyen Payment Service",
-      "description" : "A set of API endpoints that allow you to initiate, settle, and modify payments on the Adyen payments platform. You can use the API to accept card payments (including One-Click and 3D Secure), bank transfers, ewallets, and many other payment methods. For more information, refer to [Ecommerce integration](https://docs.adyen.com/developers/ecommerce-integration)."
+      "description" : "A set of API endpoints that allow you to initiate, settle, and modify payments on the Adyen payments platform. You can use the API to accept card payments (including One-Click and 3D Secure), bank transfers, ewallets, and many other payment methods.\n\nTo learn more about the API, visit [Ecommerce integration](https://docs.adyen.com/developers/ecommerce-integration).\n\n## Authentication\nTo connect to the Payments API, you must use your basic authentication credentials. For this, create your web service user, as described in [How to get the WS user password](https://docs.adyen.com/developers/user-management/how-to-get-the-web-service-ws-user-password). Then use its credentials to authenticate your request, for example:\n\n```\ncurl\n-U \"ws@Company.YourCompany\":\"YourWsPassword\" \\\n-H \"Content-Type: application/json\" \\\n...\n```\nNote that when going live, you need to generate a new API Key to access the [live endpoints](https://docs.adyen.com/developers/api-reference/live-endpoints).\n\n## Versioning\nPayments API supports versioning of its endpoints through a version suffix in the endpoint URL. This suffix has the following format: \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://pal-test.adyen.com/pal/servlet/Payment/v30/authorise\n```"
    },
    "host" : "pal-test.adyen.com",
    "basePath" : "/pal/servlet/Payment/v30",
@@ -23,10 +23,10 @@
    "paths" : {
       "/adjustAuthorisation" : {
          "post" : {
-            "summary" : "Adjust the authorised amount",
+            "summary" : "Increases or decreases the authorised amount.",
             "description" : "Allows you to increase or decrease the authorised amount after the initial authorisation has taken place. This functionality enables tipping, improving the chances your authorisation will be valid, charging the shopper when they have already left the merchant premises, etc.\n\nFor more information, refer to [Adjust Authorisation](https://docs.adyen.com/developers/payment-modifications#adjustauthorisation).",
             "x-groupName" : "Modifications",
-            "x-sortIndex" : 5,
+            "x-sortIndex" : 6,
             "parameters" : [
                {
                   "name" : "modificationRequest",
@@ -63,7 +63,7 @@
       },
       "/authorise" : {
          "post" : {
-            "summary" : "Create a payment authorisation",
+            "summary" : "Creates a payment authorisation.",
             "description" : "Creates a payment with a unique reference (`pspReference`) and attempts to obtain an authorisation hold. For cards, this amount can be captured or cancelled later. Non-card payment methods typically don't support this and will automatically capture as part of the authorisation.\n\nFor more information, refer to [Ecommerce quick integration](https://docs.adyen.com/developers/ecommerce-integration).",
             "x-groupName" : "General",
             "x-sortIndex" : 1,
@@ -103,7 +103,7 @@
       },
       "/authorise3d" : {
          "post" : {
-            "summary" : "Complete a 3D Secure payment authorisation",
+            "summary" : "Completes a 3D Secure payment authorisation.",
             "description" : "For an authenticated 3D Secure session, completes the payment authorisation. This endpoint must receive the `md` and `paResponse` parameters that you get from the card issuer after a shopper pays via 3D Secure.\n\nFor more information, refer to [3D Secure](https://docs.adyen.com/developers/risk-management/3d-secure).",
             "x-groupName" : "General",
             "x-sortIndex" : 2,
@@ -143,7 +143,7 @@
       },
       "/cancel" : {
          "post" : {
-            "summary" : "Cancel a payment authorisation",
+            "summary" : "Cancels an authorised payment.",
             "description" : "Cancels the authorisation hold on a payment, returning a unique reference for this request. You can cancel payments after authorisation only for payment methods that support distinct authorisations and captures.\n\nFor more information, refer to [Cancel](https://docs.adyen.com/developers/payment-modifications#cancel).",
             "x-groupName" : "Modifications",
             "x-sortIndex" : 2,
@@ -183,7 +183,7 @@
       },
       "/cancelOrRefund" : {
          "post" : {
-            "summary" : "Cancel or refund a payment",
+            "summary" : "Cancels or refunds a payment.",
             "description" : "Cancels a payment if it has not yet been captured yet, or refunds it if it has already been captured. This is useful when it is not certain if the payment has been captured or not (for example, when using auto-capture).\n\nFor more information, refer to [Cancel or refund](https://docs.adyen.com/developers/payment-modifications#cancelorrefund).",
             "x-groupName" : "Modifications",
             "x-sortIndex" : 4,
@@ -220,7 +220,7 @@
       },
       "/capture" : {
          "post" : {
-            "summary" : "Capture a payment authorisation",
+            "summary" : "Captures an authorised payment.",
             "description" : "Captures the authorisation hold on a payment, returning a unique reference for this request. Usually the full authorisation amount is captured, however it's also possible to capture a smaller amount, which results in cancelling the remaining authorisation balance.\n\nPayment methods, which automatically capture as part of authorisation, don't need to be captured, but submitting a capture request on these transactions will not result in double charges. If immediate or delayed auto-capture is enabled, calling the capture method is not neccessary.\n\nFor more information, refer to [Capture](https://docs.adyen.com/developers/payment-modifications#capture).",
             "x-groupName" : "Modifications",
             "x-sortIndex" : 1,
@@ -260,7 +260,7 @@
       },
       "/refund" : {
          "post" : {
-            "summary" : "Refund a payment",
+            "summary" : "Refunds a captured payment.",
             "description" : "Refunds a payment that has previously been captured, returning a unique reference for this request. Refunding can be done on the full captured amount or a partial amount. Multiple (partial) refunds will be accepted as long as their sum doesn't exceed the captured amount. Payments which have been authorised, but not captured, cannot be refunded, use the /cancel method instead.\n\n> Some payment methods/gateways do not support partial/multiple refunds.\n> A margin above the captured limit can be configured to cover shipping/handling costs.\n\nFor more information, refer to [Refund](https://docs.adyen.com/developers/payment-modifications#refund).",
             "x-groupName" : "Modifications",
             "x-sortIndex" : 3,
@@ -294,40 +294,77 @@
                }
             }
          }
+      },
+      "/technicalCancel" : {
+         "post" : {
+            "summary" : "Cancels an authorised payment using a custom reference.",
+            "description" : "Cancels a previously authorised payment using a custom reference value, that you submitted as a `reference` parameter in the original `/authorise` request.\n\nFor more information, refer to [Technical Cancel](https://docs.adyen.com/developers/payment-modifications#technicalcancel).",
+            "x-groupName" : "Modifications",
+            "x-sortIndex" : 5,
+            "parameters" : [
+               {
+                  "name" : "modificationRequest",
+                  "in" : "body",
+                  "schema" : {
+                     "$ref" : "#/definitions/ModificationRequest"
+                  }
+               }
+            ],
+            "responses" : {
+               "200" : {
+                  "description" : "OK - the request has succeeded.",
+                  "schema" : {
+                     "$ref" : "#/definitions/ModificationResult"
+                  }
+               },
+               "400" : {
+                  "description" : "Bad Request - a problem reading or understanding the request."
+               },
+               "422" : {
+                  "description" : "Unprocessable Entity - a request validation error."
+               },
+               "401" : {
+                  "description" : "Unauthorized - authentication required."
+               },
+               "500" : {
+                  "description" : "Internal Server Error - the server could not process the request."
+               },
+               "403" : {
+                  "description" : "Forbidden - insufficient permissions to process the request."
+               }
+            }
+         }
       }
    },
    "definitions" : {
       "Address" : {
          "properties" : {
             "city" : {
-               "description" : "The city name.",
+               "description" : "The name of the city.\n>Required if either houseNumberOrName, street, postalCode, or stateOrProvince are provided.",
                "type" : "string"
             },
             "country" : {
-               "description" : "A valid value is an ISO two-character country code (e.g. 'NL').",
+               "description" : "The two-character country code of the address\n>The permitted country codes are defined in ISO-3166-1 alpha-2 (e.g. 'NL').",
                "type" : "string"
             },
             "houseNumberOrName" : {
-               "description" : "The house number or name.",
+               "description" : "The number or name of the house.",
                "type" : "string"
             },
             "postalCode" : {
-               "description" : "The postal code with a maximum of 5 characters for USA and maximum of 10 characters for any other country.",
+               "description" : "The postal code.\n>A maximum of five (5) digits for an address in the USA, or a maximum of ten (10) characters for an address in all other countries.\n>Required if either houseNumberOrName, street, city, or stateOrProvince are provided.",
                "type" : "string"
             },
             "stateOrProvince" : {
-               "description" : "For USA or Canada, a valid 2-character abbreviation for the state or province respectively. For other countries any abbreviation with maximum 3 characters for the state or province.",
+               "description" : "The abbreviation of the state or province.\n>Two (2) characters for an address in the USA or Canada, or a maximum of three (3) characters for an address in all other countries.\n>Required for an address in the USA or Canada if either houseNumberOrName, street, city, or postalCode are provided.",
                "type" : "string"
             },
             "street" : {
-               "description" : "The street name.\n> Don't append the house number to this field. Instead, pass the house number separately as `houseNumberOrName`.\n",
+               "description" : "The name of the street.\n>The house number should not be included in this field; it should be separately provided via `houseNumberOrName`.\n>Required if either houseNumberOrName, city, postalCode, or stateOrProvince are provided.",
                "type" : "string"
             }
          },
          "required" : [
-            "street",
-            "houseNumberOrName",
-            "city",
             "country"
          ]
       },
@@ -468,9 +505,6 @@
             "holderName"
          ]
       },
-      "Collection" : {
-         
-      },
       "ForexQuote" : {
          "properties" : {
             "account" : {
@@ -529,6 +563,29 @@
             "basePoints"
          ]
       },
+      "FraudCheckResult" : {
+         "properties" : {
+            "accountScore" : {
+               "description" : "The fraud score generated by the risk check.",
+               "format" : "int32",
+               "type" : "integer"
+            },
+            "checkId" : {
+               "description" : "The ID of the risk check.",
+               "format" : "int32",
+               "type" : "integer"
+            },
+            "name" : {
+               "description" : "The name of the risk check.",
+               "type" : "string"
+            }
+         },
+         "required" : [
+            "checkId",
+            "name",
+            "accountScore"
+         ]
+      },
       "FraudResult" : {
          "properties" : {
             "accountScore" : {
@@ -538,7 +595,10 @@
             },
             "results" : {
                "description" : "The result of the individual risk checks.",
-               "type" : "object"
+               "items" : {
+                  "$ref" : "#/definitions/FraudCheckResult"
+               },
+               "type" : "array"
             }
          },
          "required" : [
@@ -563,7 +623,7 @@
                "additionalProperties" : {
                   "type" : "string"
                },
-               "description" : "This field contains additional data, which may be required for a particular payment request.",
+               "description" : "This field contains additional data, which may be required for a particular modification request.\n\nThe additionalData object consists of entries, each of which includes the key and value. For more information on possible key-value pairs, refer to the [ModificationRequest.additionalData](https://docs.adyen.com/developers/api-reference/payments-api/modificationrequest/modificationrequest-additionaldata) section.",
                "type" : "object"
             },
             "merchantAccount" : {
@@ -628,11 +688,11 @@
       "Name" : {
          "properties" : {
             "firstName" : {
-               "description" : "A person's first name.",
+               "description" : "The first name.",
                "type" : "string"
             },
             "gender" : {
-               "description" : "A person's gender (can be unknown).",
+               "description" : "The gender.\n>The following values are permitted: `MALE`, `FEMALE`, `UNKNOWN`.",
                "enum" : [
                   "MALE",
                   "FEMALE",
@@ -643,11 +703,11 @@
                "type" : "string"
             },
             "infix" : {
-               "description" : "A person name's infix, if applicable. Maximum length: 20 characters.",
+               "description" : "The name's infix, if applicable.\n>A maximum length of twenty (20) characters is imposed.",
                "type" : "string"
             },
             "lastName" : {
-               "description" : "A person's last name.",
+               "description" : "The last name.",
                "type" : "string"
             }
          },
@@ -799,7 +859,7 @@
                "type" : "string"
             },
             "shopperIP" : {
-               "description" : "The shopper's IP address. We recommend that you provide this data, as it is used in a number of risk checks (for instance, number of payment attempts or location-based checks).\n> This field is mandatory for some merchants depending on your business model. Contact Adyen Support for more information.",
+               "description" : "The shopper's IP address. We recommend that you provide this data, as it is used in a number of risk checks (for instance, number of payment attempts or location-based checks).\n> This field is mandatory for some merchants depending on your business model. For more information, [contact Support](https://support.adyen.com/hc/en-us/requests/new).",
                "type" : "string"
             },
             "shopperInteraction" : {
@@ -980,7 +1040,7 @@
                "type" : "string"
             },
             "shopperIP" : {
-               "description" : "The shopper's IP address. We recommend that you provide this data, as it is used in a number of risk checks (for instance, number of payment attempts or location-based checks).\n> This field is mandatory for some merchants depending on your business model. Contact Adyen Support for more information.",
+               "description" : "The shopper's IP address. We recommend that you provide this data, as it is used in a number of risk checks (for instance, number of payment attempts or location-based checks).\n> This field is mandatory for some merchants depending on your business model. For more information, [contact Support](https://support.adyen.com/hc/en-us/requests/new).",
                "type" : "string"
             },
             "shopperInteraction" : {
@@ -1052,11 +1112,11 @@
                "type" : "string"
             },
             "dccAmount" : {
-               "description" : "Includes the currency of the conversion and the value of the transaction.\n> This value only applies if you have implemented Dynamic Currency Conversion. For more information, contact Support.",
+               "description" : "Includes the currency of the conversion and the value of the transaction.\n> This value only applies if you have implemented Dynamic Currency Conversion. For more information, [contact Support](https://support.adyen.com/hc/en-us/requests/new).",
                "$ref" : "#/definitions/Amount"
             },
             "dccSignature" : {
-               "description" : "Cryptographic signature used to verify `dccQuote`.\n> This value only applies if you have implemented Dynamic Currency Conversion. For more information, contact Support.",
+               "description" : "Cryptographic signature used to verify `dccQuote`.\n> This value only applies if you have implemented Dynamic Currency Conversion. For more information, [contact Support](https://support.adyen.com/hc/en-us/requests/new).",
                "type" : "string"
             },
             "fraudResult" : {
@@ -1101,7 +1161,7 @@
       "Recurring" : {
          "properties" : {
             "contract" : {
-               "description" : "The type of recurring contract to be used.\nPossible values:\n* `ONECLICK` – The shopper opts to store their card details for future use. The shopper is present for the subsequent transaction, for cards the security code (CVC/CVV) is required.\n* `RECURRING` – Payment details are stored for future use. For cards, the security code (CVC/CVV) is not required for subsequent payments. This is used for shopper not present transactions.\n* `ONECLICK,RECURRING` – Payment details are stored for future use. This allows the use of the stored payment details regardless of whether the shopper is on your site or not.",
+               "description" : "The type of recurring contract to be used.\nPossible values:\n* `ONECLICK` – Payment details can be used to initiate a one-click payment, where the shopper enters the [card security code (CVC/CVV)](https://docs.adyen.com/developers/payment-glossary#cardsecuritycodecvccvvcid).\n* `RECURRING` – Payment details can be used without the card security code to initiate [card-not-present transactions](https://docs.adyen.com/developers/payment-glossary#cardnotpresentcnp).\n* `ONECLICK,RECURRING` – Payment details can be used regardless of whether the shopper is on your site or not.\n* `PAYOUT` – Payment details can be used to [make a payout](https://docs.adyen.com/developers/features/third-party-payouts).",
                "enum" : [
                   "ONECLICK",
                   "RECURRING",
@@ -1116,7 +1176,8 @@
             "tokenService" : {
                "description" : "The name of the token service.",
                "enum" : [
-                  "VISATOKENSERVICE"
+                  "VISATOKENSERVICE",
+                  "MCTOKENSERVICE"
                ],
                "type" : "string"
             }
