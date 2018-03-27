@@ -105,34 +105,31 @@
       "Address" : {
          "properties" : {
             "city" : {
-               "description" : "The city name.",
+               "description" : "The name of the city.\n>Required if either houseNumberOrName, street, postalCode, or stateOrProvince are provided.",
                "type" : "string"
             },
             "country" : {
-               "description" : "A valid value is an ISO two-character country code (e.g. 'NL').",
+               "description" : "The two-character country code of the address\n>The permitted country codes are defined in ISO-3166-1 alpha-2 (e.g. 'NL').",
                "type" : "string"
             },
             "houseNumberOrName" : {
-               "description" : "The house number or name.",
+               "description" : "The number or name of the house.",
                "type" : "string"
             },
             "postalCode" : {
-               "description" : "The postal code with a maximum of 5 characters for USA and maximum of 10 characters for any other country.",
+               "description" : "The postal code.\n>A maximum of five (5) digits for an address in the USA, or a maximum of ten (10) characters for an address in all other countries.\n>Required if either houseNumberOrName, street, city, or stateOrProvince are provided.",
                "type" : "string"
             },
             "stateOrProvince" : {
-               "description" : "For USA or Canada, a valid 2-character abbreviation for the state or province respectively. For other countries any abbreviation with maximum 3 characters for the state or province.",
+               "description" : "The abbreviation of the state or province.\n>Two (2) characters for an address in the USA or Canada, or a maximum of three (3) characters for an address in all other countries.\n>Required for an address in the USA or Canada if either houseNumberOrName, street, city, or postalCode are provided.",
                "type" : "string"
             },
             "street" : {
-               "description" : "The street name.\n> Don't append the house number to this field. Instead, pass the house number separately as `houseNumberOrName`.\n",
+               "description" : "The name of the street.\n>The house number should not be included in this field; it should be separately provided via `houseNumberOrName`.\n>Required if either houseNumberOrName, city, postalCode, or stateOrProvince are provided.",
                "type" : "string"
             }
          },
          "required" : [
-            "street",
-            "houseNumberOrName",
-            "city",
             "country"
          ]
       },
@@ -260,34 +257,8 @@
       },
       "DisableResult" : {
          "properties" : {
-            "details" : {
-               "description" : "A list of one or more recurring payment details that were disabled.",
-               "items" : {
-                  "$ref" : "#/definitions/RecurringDetail"
-               },
-               "type" : "array"
-            },
             "response" : {
                "description" : "Depending on whether a specific recurring detail was in the request, result is either [detail-successfully-disabled] or [all-details-successfully-disabled].",
-               "type" : "string"
-            }
-         }
-      },
-      "ELV" : {
-         "properties" : {
-            "accountHolderName" : {
-               "type" : "string"
-            },
-            "bankAccountNumber" : {
-               "type" : "string"
-            },
-            "bankLocation" : {
-               "type" : "string"
-            },
-            "bankLocationId" : {
-               "type" : "string"
-            },
-            "bankName" : {
                "type" : "string"
             }
          }
@@ -295,11 +266,11 @@
       "Name" : {
          "properties" : {
             "firstName" : {
-               "description" : "A person's first name.",
+               "description" : "The first name.",
                "type" : "string"
             },
             "gender" : {
-               "description" : "A person's gender (can be unknown).",
+               "description" : "The gender.\n>The following values are permitted: `MALE`, `FEMALE`, `UNKNOWN`.",
                "enum" : [
                   "MALE",
                   "FEMALE",
@@ -310,11 +281,11 @@
                "type" : "string"
             },
             "infix" : {
-               "description" : "A person name's infix, if applicable. Maximum length: 20 characters.",
+               "description" : "The name's infix, if applicable.\n>A maximum length of twenty (20) characters is imposed.",
                "type" : "string"
             },
             "lastName" : {
-               "description" : "A person's last name.",
+               "description" : "The last name.",
                "type" : "string"
             }
          },
@@ -327,7 +298,7 @@
       "Recurring" : {
          "properties" : {
             "contract" : {
-               "description" : "The type of recurring contract to be used.\nPossible values:\n* `ONECLICK` – The shopper opts to store their card details for future use. The shopper is present for the subsequent transaction, for cards the security code (CVC/CVV) is required.\n* `RECURRING` – Payment details are stored for future use. For cards, the security code (CVC/CVV) is not required for subsequent payments. This is used for shopper not present transactions.\n* `ONECLICK,RECURRING` – Payment details are stored for future use. This allows the use of the stored payment details regardless of whether the shopper is on your site or not.",
+               "description" : "The type of recurring contract to be used.\nPossible values:\n* `ONECLICK` – Payment details can be used to initiate a one-click payment, where the shopper enters the [card security code (CVC/CVV)](https://docs.adyen.com/developers/payment-glossary#cardsecuritycodecvccvvcid).\n* `RECURRING` – Payment details can be used without the card security code to initiate [card-not-present transactions](https://docs.adyen.com/developers/payment-glossary#cardnotpresentcnp).\n* `ONECLICK,RECURRING` – Payment details can be used regardless of whether the shopper is on your site or not.\n* `PAYOUT` – Payment details can be used to [make a payout](https://docs.adyen.com/developers/features/third-party-payouts).",
                "enum" : [
                   "ONECLICK",
                   "RECURRING",
@@ -342,7 +313,8 @@
             "tokenService" : {
                "description" : "The name of the token service.",
                "enum" : [
-                  "VISATOKENSERVICE"
+                  "VISATOKENSERVICE",
+                  "MCTOKENSERVICE"
                ],
                "type" : "string"
             }
@@ -350,73 +322,78 @@
       },
       "RecurringDetail" : {
          "properties" : {
-            "acquirer" : {
-               "type" : "string"
-            },
-            "acquirerAccount" : {
-               "type" : "string"
-            },
             "additionalData" : {
                "additionalProperties" : {
                   "type" : "string"
                },
+               "description" : "This field contains additional data, which may be returned in a particular response.\n\nThe additionalData object consists of entries, each of which includes the key and value. For more information on possible key-value pairs, refer to [RecurringDetail.additionalData](https://docs.adyen.com/developers/api-reference/recurring-api#recurringdetailadditionaldata).",
                "type" : "object"
             },
             "alias" : {
+               "description" : "The alias of the credit card number.\n\nApplies only to recurring contracts storing credit card details",
                "type" : "string"
             },
             "aliasType" : {
+               "description" : "The alias type of the credit card number.\n\nApplies only to recurring contracts storing credit card details.",
                "type" : "string"
             },
             "bank" : {
+               "description" : "A container for bank account data.",
                "$ref" : "#/definitions/BankAccount"
             },
             "billingAddress" : {
+               "description" : "The billing address.",
                "$ref" : "#/definitions/Address"
             },
             "card" : {
+               "description" : "A container for card data.",
                "$ref" : "#/definitions/Card"
             },
             "contractTypes" : {
+               "description" : "Types of recurring contracts.",
                "items" : {
                   "type" : "string"
                },
                "type" : "array"
             },
             "creationDate" : {
+               "description" : "The date when the recurring details were created.",
                "format" : "date-time",
                "type" : "string"
             },
-            "elv" : {
-               "$ref" : "#/definitions/ELV"
-            },
             "firstPspReference" : {
+               "description" : "The `pspReference` of the first recurring payment that created the recurring detail.",
                "type" : "string"
             },
             "name" : {
-               "description" : "An optional descriptive name for this recurring detail",
+               "description" : "An optional descriptive name for this recurring detail.",
                "type" : "string"
             },
             "paymentMethodVariant" : {
+               "description" : "The  type or sub-brand of a payment method used, e.g. Visa Debit, Visa Corporate, etc. For more information, refer to [PaymentMethodVariant](https://docs.adyen.com/developers/api-reference/common-api/paymentmethodvariant).",
                "type" : "string"
             },
             "recurringDetailReference" : {
-               "description" : "The reference that uniquely identifies the recurring detail",
+               "description" : "The reference that uniquely identifies the recurring detail.",
                "type" : "string"
             },
             "shopperName" : {
+               "description" : "The name of the shopper.",
                "$ref" : "#/definitions/Name"
             },
             "socialSecurityNumber" : {
+               "description" : "A shopper's social security number (only in countries where it is legal to collect).",
                "type" : "string"
-            },
-            "tokenDetails" : {
-               "$ref" : "#/definitions/TokenDetails"
             },
             "variant" : {
+               "description" : "The payment method, such as “mc\", \"visa\", \"ideal\", \"paypal\".",
                "type" : "string"
             }
-         }
+         },
+         "required" : [
+            "recurringDetailReference",
+            "variant"
+         ]
       },
       "RecurringDetailsRequest" : {
          "properties" : {
@@ -446,7 +423,7 @@
                "type" : "string"
             },
             "details" : {
-               "description" : "A list of one or more recurring payment details.",
+               "description" : "Payment details stored for recurring payments.",
                "items" : {
                   "$ref" : "#/definitions/RecurringDetail"
                },
@@ -458,19 +435,6 @@
             },
             "shopperReference" : {
                "description" : "The reference you use to uniquely identify the shopper (e.g. user ID or account ID).",
-               "type" : "string"
-            }
-         }
-      },
-      "TokenDetails" : {
-         "properties" : {
-            "tokenData" : {
-               "additionalProperties" : {
-                  "type" : "string"
-               },
-               "type" : "object"
-            },
-            "tokenDataType" : {
                "type" : "string"
             }
          }
