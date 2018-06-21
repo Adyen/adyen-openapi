@@ -1,6 +1,6 @@
 openapi: 3.0.0
 servers:
-  - url: 'https://checkout-test.adyen.com/services/PaymentSetupAndVerification/v32'
+  - url: 'https://checkout-test.adyen.com/v32'
 info:
   version: '32'
   title: Adyen Checkout Service
@@ -25,8 +25,13 @@ info:
 
     For example:
     ```
-    https://checkout-test.adyen.com/services/PaymentSetupAndVerification/v32/setup
+    https://checkout-test.adyen.com/v32/payments
     ```
+  termsOfService: 'https://docs.adyen.com/legal/terms-conditions'
+  contact:
+    name: Adyen Support
+    url: 'https://support.adyen.com/'
+    email: support@adyen.com
 x-groups:
   - SDK Integration
   - API Integration
@@ -51,6 +56,37 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PaymentMethodsResponse'
+          description: OK - the request has succeeded.
+        '400':
+          description: Bad Request - a problem reading or understanding the request.
+        '401':
+          description: Unauthorized - authentication required.
+        '403':
+          description: Forbidden - insufficient permissions to process the request.
+        '422':
+          description: Unprocessable Entity - a request validation error.
+        '500':
+          description: Internal Server Error - the server could not process the request.
+  /paymentSession:
+    post:
+      summary: Creates a payment session.
+      description: |-
+        Provides the data object that can be used to start the Checkout SDK. To set up the payment, pass its amount, currency, and other required parameters. We use this to optimise the payment flow and perform better risk assessment of the transaction.
+
+        For more information, refer to [How it works](https://docs.adyen.com/developers/checkout/integrations-overview#howitworks).
+      x-groupName: SDK Integration
+      x-sortIndex: 1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentSetupRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentSetupResponse'
           description: OK - the request has succeeded.
         '400':
           description: Bad Request - a problem reading or understanding the request.
@@ -126,42 +162,11 @@ paths:
           description: Unprocessable Entity - a request validation error.
         '500':
           description: Internal Server Error - the server could not process the request.
-  /setup:
-    post:
-      summary: Creates a payment setup.
-      description: |-
-        Provides the data object that can be used to start the Checkout SDK. To set up the payment, pass its amount, currency, and other required parameters. We use this to optimise the payment flow and perform better risk assessment of the transaction.
-
-        For more information, refer to [How it works](https://docs.adyen.com/developers/checkout/integrations-overview#howitworks).
-      x-groupName: SDK Integration
-      x-sortIndex: 1
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PaymentSetupRequest'
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaymentSetupResponse'
-          description: OK - the request has succeeded.
-        '400':
-          description: Bad Request - a problem reading or understanding the request.
-        '401':
-          description: Unauthorized - authentication required.
-        '403':
-          description: Forbidden - insufficient permissions to process the request.
-        '422':
-          description: Unprocessable Entity - a request validation error.
-        '500':
-          description: Internal Server Error - the server could not process the request.
-  /verify:
+  /payments/result:
     post:
       summary: Verifies payment result.
       description: |-
-        Verifies the payment result using the payload returned from the SDK.
+        Verifies the payment result using the payload returned from the Checkout SDK.
 
         For more information, refer to [How it works](https://docs.adyen.com/developers/checkout/integrations-overview#howitworks).
       x-groupName: SDK Integration
@@ -735,7 +740,7 @@ components:
           type: integer
         channel:
           description: |-
-            The platform where a payment transaction takes place. This field is optional for filtering out payment methods that are only available on specific platforms. If this value is not set, then we will try to infer it from the sdkVersion or token.
+            The platform where a payment transaction takes place. This field is optional for filtering out payment methods that are only available on specific platforms. If this value is not set, then we will try to infer it from the `sdkVersion` or token.
 
             Possible values:
             * iOS
@@ -932,7 +937,7 @@ components:
 
             * **Authorised** – Indicates the payment authorisation was successfully completed. This state serves as an indicator to proceed with the delivery of goods and services. This is a final state.
             * **Refused** – Indicates the payment was refused. The reason is given in the `refusalReason` field. This is a final state.
-            * **RedirectShopper** – Indicates the shopper should be redirected to an external web page or app to complete the authorisation. For more information on handling a redirect, refer to [Handling a redirect](https://docs.adyen.com/developers/checkout/api-integration/make-a-payment#idealpayments).
+            * **RedirectShopper** – Indicates the shopper should be redirected to an external web page or app to complete the authorisation. For more information on handling a redirect, refer to [Handling a redirect](https://docs.adyen.com/developers/checkout/api-integration/payments#handlingaredirect).
             * **Received** – Indicates the payment has successfully been received by Adyen, and will be processed. This is the initial state for all payments.
             * **Cancelled** – Indicates the payment has been cancelled (either by the shopper or the merchant) before processing was completed. This is a final state.
             * **Pending** – Indicates that it is not possible to obtain the final status of the payment. This can happen if the systems providing final status information for the payment are unavailable, or if the shopper needs to take further action to complete the payment. For more information on handling a pending payment, refer to [Payments with pending status](https://docs.adyen.com/developers/development-resources/payments-with-pending-status).
@@ -968,7 +973,7 @@ components:
           type: integer
         channel:
           description: |-
-            The platform where a payment transaction takes place. This field is optional for filtering out payment methods that are only available on specific platforms. If this value is not set, then we will try to infer it from the sdkVersion or token.
+            The platform where a payment transaction takes place. This field is optional for filtering out payment methods that are only available on specific platforms. If this value is not set, then we will try to infer it from the `sdkVersion` or token.
 
             Possible values:
             * iOS
@@ -1083,6 +1088,9 @@ components:
         returnUrl:
           description: The URL to return to.
           type: string
+        sdkVersion:
+          description: The version of the Web SDK you are using (for web integrations only).
+          type: string
         sessionValidity:
           description: The maximum validity of the session.
           type: string
@@ -1189,11 +1197,17 @@ components:
           items:
             $ref: '#/components/schemas/PaymentMethod'
           type: array
+        paymentSession:
+          description: Base64-encoded version of this response.
+          type: string
         publicKey:
           description: The public key required to encrypt sensitive data.
           type: string
         publicKeyToken:
           description: The public key token.
+          type: string
+        sdkVersion:
+          description: SDK version for the Web SDK. The value will be used for validation on Web SDK.
           type: string
     PaymentVerificationRequest:
       properties:
@@ -1248,7 +1262,7 @@ components:
 
             * **Authorised** – Indicates the payment authorisation was successfully completed. This state serves as an indicator to proceed with the delivery of goods and services. This is a final state.
             * **Refused** – Indicates the payment was refused. The reason is given in the `refusalReason` field. This is a final state.
-            * **RedirectShopper** – Indicates the shopper should be redirected to an external web page or app to complete the authorisation. For more information on handling a redirect, refer to [Handling a redirect](https://docs.adyen.com/developers/checkout/api-integration/make-a-payment#idealpayments).
+            * **RedirectShopper** – Indicates the shopper should be redirected to an external web page or app to complete the authorisation. For more information on handling a redirect, refer to [Handling a redirect](https://docs.adyen.com/developers/checkout/api-integration/payments#handlingaredirect).
             * **Received** – Indicates the payment has successfully been received by Adyen, and will be processed. This is the initial state for all payments.
             * **Cancelled** – Indicates the payment has been cancelled (either by the shopper or the merchant) before processing was completed. This is a final state.
             * **Pending** – Indicates that it is not possible to obtain the final status of the payment. This can happen if the systems providing final status information for the payment are unavailable, or if the shopper needs to take further action to complete the payment. For more information on handling a pending payment, refer to [Payments with pending status](https://docs.adyen.com/developers/development-resources/payments-with-pending-status).
