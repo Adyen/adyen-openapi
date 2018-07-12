@@ -16,7 +16,7 @@ info:
     -H "Content-Type: application/json" \
     ...
     ```
-    Note that when going live, you need to generate a new API Key to access the [live endpoints](https://docs.adyen.com/developers/api-reference/live-endpoints).
+    Note that when going live, you need to generate new web service user credentials to access the [live endpoints](https://docs.adyen.com/developers/api-reference/live-endpoints).
 
     ## Versioning
     Payments API supports versioning of its endpoints through a version suffix in the endpoint URL. This suffix has the following format: "vXX", where XX is the version number.
@@ -25,6 +25,11 @@ info:
     ```
     https://pal-test.adyen.com/pal/servlet/Payment/v30/authorise
     ```
+  termsOfService: 'https://docs.adyen.com/legal/terms-conditions'
+  contact:
+    name: Adyen Support
+    url: 'https://support.adyen.com/'
+    email: support@adyen.com
 host: pal-test.adyen.com
 basePath: /pal/servlet/Payment/v30
 schemes:
@@ -1028,7 +1033,10 @@ definitions:
           If the value is **CUPSecurePlus-CollectSMSVerificationCode**, collect an SMS code from the shopper and pass it in the `/authorise3D` request. For more information, see [3D Secure](https://docs.adyen.com/developers/risk-management/3d-secure).
         type: string
       pspReference:
-        description: Adyen's 16-digit unique reference associated with the transaction/the request. This value is globally unique; quote it when communicating with us about this request.
+        description: |-
+          Adyen's 16-digit unique reference associated with the transaction/the request. This value is globally unique; quote it when communicating with us about this request.
+
+          > `pspReference` is returned only for non-redirect payment methods.
         type: string
       refusalReason:
         description: |-
@@ -1037,7 +1045,16 @@ definitions:
           When a transaction fails, the authorisation response includes `resultCode` and `refusalReason` values.
         type: string
       resultCode:
-        description: The result of the payment.
+        description: |-
+          The result of the payment. Possible values:
+
+          * **Authorised** – Indicates the payment authorisation was successfully completed. This state serves as an indicator to proceed with the delivery of goods and services. This is a final state.
+          * **Refused** – Indicates the payment was refused. The reason is given in the `refusalReason` field. This is a final state.
+          * **RedirectShopper** – Indicates the shopper should be redirected to an external web page or app to complete the authorisation. For more information on handling a redirect, refer to [Handling a redirect](https://docs.adyen.com/developers/checkout/api-integration/payments#handlingaredirect).
+          * **Received** – Indicates the payment has successfully been received by Adyen, and will be processed. This is the initial state for all payments.
+          * **Cancelled** – Indicates the payment has been cancelled (either by the shopper or the merchant) before processing was completed. This is a final state.
+          * **Pending** – Indicates that it is not possible to obtain the final status of the payment. This can happen if the systems providing final status information for the payment are unavailable, or if the shopper needs to take further action to complete the payment. For more information on handling a pending payment, refer to [Payments with pending status](https://docs.adyen.com/developers/development-resources/payments-with-pending-status).
+          * **Error** – Indicates an error occurred during processing of the payment. The reason is given in the `refusalReason` field. This is a final state.
         enum:
           - Authorised
           - PartiallyAuthorised
