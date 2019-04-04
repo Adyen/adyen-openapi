@@ -1,8 +1,8 @@
 openapi: 3.0.0
 servers:
-  - url: 'https://cal-test.adyen.com/cal/services/Account/v4'
+  - url: 'https://cal-test.adyen.com/cal/services/Account/v5'
 info:
-  version: '4'
+  version: '5'
   title: Adyen MarketPay Account Service
   description: |-
     The MarketPay Account API provides endpoints for managing MarketPay account-related entities. These related entities include account holders, accounts, bank accounts, shareholders, and KYC-related documents. The management operations include actions such as creation, retrieval, updating, and deletion of them.
@@ -24,7 +24,7 @@ info:
 
     For example:
     ```
-    https://cal-test.adyen.com/cal/services/Account/v4/createAccountHolder
+    https://cal-test.adyen.com/cal/services/Account/v5/createAccountHolder
     ```
   termsOfService: 'https://www.adyen.com/legal/terms-and-conditions'
   contact:
@@ -159,6 +159,34 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/DeleteBankAccountRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+          description: OK - the request has succeeded.
+        '400':
+          description: Bad Request - a problem reading or understanding the request.
+        '401':
+          description: Unauthorized - authentication required.
+        '403':
+          description: Forbidden - insufficient permissions to process the request.
+        '422':
+          description: Unprocessable Entity - a request validation error.
+        '500':
+          description: Internal Server Error - the server could not process the request.
+  /deletePayoutInstrumentTokens:
+    post:
+      summary: Delete payout instrument tokens of an existing account holder.
+      description: 'This endpoint is used to delete existing payout instrument tokens from an account holder. For this, pass the `accountHolderCode` you got on the account holder creation, and one or more `payoutInstrumentTokenCodes` specifying payout instrument tokens to delete.'
+      x-groupName: Verification
+      x-sortIndex: 3
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeletePayoutInstrumentTokenRequest'
       responses:
         '200':
           content:
@@ -449,6 +477,34 @@ paths:
           description: Unprocessable Entity - a request validation error.
         '500':
           description: Internal Server Error - the server could not process the request.
+  /verification:
+    post:
+      summary: Request to perform verification for an account holder.
+      description: This endpoint allows to trigger the verification of the account holder earlier than it's required by the currently processed volume.
+      x-groupName: Verification
+      x-sortIndex: 5
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PerformVerificationRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+          description: OK - the request has succeeded.
+        '400':
+          description: Bad Request - a problem reading or understanding the request.
+        '401':
+          description: Unauthorized - authentication required.
+        '403':
+          description: Forbidden - insufficient permissions to process the request.
+        '422':
+          description: Unprocessable Entity - a request validation error.
+        '500':
+          description: Internal Server Error - the server could not process the request.
 components:
   schemas:
     Account:
@@ -465,6 +521,12 @@ components:
         description:
           description: A description of the account.
           type: string
+        metadata:
+          description: |-
+            A set of key and value pairs for general use by the merchant.
+            The keys do not have specific names and may be used for storing miscellaneous data as desired.
+            > Note that during an update of metadata, the omission of existing key-value pairs will result in the deletion of those key-value pairs.
+          type: object
         payoutSchedule:
           description: The account's payout schedule.
           $ref: '#/components/schemas/PayoutScheduleResponse'
@@ -538,6 +600,14 @@ components:
             > The values being stored have a maximum length of eighty (80) characters and will be truncated if necessary.
             > Note that during an update of metadata, the omission of existing key-value pairs will result in the deletion of those key-value pairs.
           type: object
+        payoutInstrumentTokens:
+          description: |-
+            Each of the card tokens associated with the account holder.
+            > Each array entry should represent one card token.
+            > For comprehensive detail regarding the required `CardToken` fields, please refer to the [KYC Verification documentation](https://docs.adyen.com/developers/marketpay/onboarding-and-verification/verification-checks).
+          items:
+            $ref: '#/components/schemas/PayoutInstrumentToken'
+          type: array
         webAddress:
           description: The URL of the website of the account holder.
           type: string
@@ -587,6 +657,9 @@ components:
         disabled:
           description: 'Indicates whether payouts have been disabled (by the platform) for all of the account holder''s accounts. A platform may enable and disable this field at their discretion. If this field is true, `allowPayout` will be false and no payouts will be permitted for any of the account holder''s accounts. If this field is false, `allowPayout` may or may not be enabled, depending on other factors.'
           type: boolean
+        notAllowedReason:
+          description: 'The reason why payouts (to all of the account holder''s accounts) have been disabled (by Adyen). If payouts have been disabled by Adyen, this field will explain why. If this field is blank, payouts have not been disabled by Adyen.'
+          type: string
         payoutLimit:
           description: The maximum amount that payouts are limited to. Only applies if payouts are allowed but limited.
           $ref: '#/components/schemas/Amount'
@@ -600,6 +673,7 @@ components:
         - tierNumber
         - disableReason
         - payoutLimit
+        - notAllowedReason
     AccountProcessingState:
       properties:
         disableReason:
@@ -658,6 +732,9 @@ components:
           type: string
         bankAccountName:
           description: The name of the bank account.
+          type: string
+        bankAccountReference:
+          description: Merchant reference to the bank account.
           type: string
         bankAccountUUID:
           description: |
@@ -825,22 +902,19 @@ components:
         accountHolderStatus:
           description: The new status of the Account Holder.
           $ref: '#/components/schemas/AccountHolderStatus'
+        invalidFields:
+          description: Contains field validation errors that would prevent requests from being processed.
+          items:
+            $ref: '#/components/schemas/ErrorFieldType'
+          type: array
         pspReference:
           description: The reference of a request.  Can be used to uniquely identify the request.
           type: string
         resultCode:
           description: The result code.
           type: string
-        submittedAsync:
-          description: |-
-            Indicates whether the request is processed synchronously or asynchronously.  Depending on the request's platform settings, the following scenarios may be applied:
-            * **sync:** The processing of the request is immediately attempted; it may result in an error if the providing service is unavailable.
-            * **async:** The request is queued and will be executed when the providing service is available in the order in which the requests are received.
-            * **asyncOnError:** The processing of the request is immediately attempted, but if the providing service is unavailable, the request is scheduled in a queue.
-          type: boolean
       required:
         - pspReference
-        - submittedAsync
         - accountHolderStatus
     CloseAccountRequest:
       properties:
@@ -851,6 +925,11 @@ components:
         - accountCode
     CloseAccountResponse:
       properties:
+        invalidFields:
+          description: Contains field validation errors that would prevent requests from being processed.
+          items:
+            $ref: '#/components/schemas/ErrorFieldType'
+          type: array
         pspReference:
           description: The reference of a request.  Can be used to uniquely identify the request.
           type: string
@@ -867,16 +946,8 @@ components:
             - Inactive
             - Suspended
           type: string
-        submittedAsync:
-          description: |-
-            Indicates whether the request is processed synchronously or asynchronously.  Depending on the request's platform settings, the following scenarios may be applied:
-            * **sync:** The processing of the request is immediately attempted; it may result in an error if the providing service is unavailable.
-            * **async:** The request is queued and will be executed when the providing service is available in the order in which the requests are received.
-            * **asyncOnError:** The processing of the request is immediately attempted, but if the providing service is unavailable, the request is scheduled in a queue.
-          type: boolean
       required:
         - pspReference
-        - submittedAsync
         - status
     CreateAccountHolderRequest:
       properties:
@@ -951,25 +1022,20 @@ components:
             - NonProfit
             - PublicCompany
           type: string
+        primaryCurrency:
+          description: 'The three-character [ISO currency code](https://docs.adyen.com/developers/development-resources/currency-codes), with which the prospective account holder primarily deals.'
+          type: string
         pspReference:
           description: The reference of a request.  Can be used to uniquely identify the request.
           type: string
         resultCode:
           description: The result code.
           type: string
-        submittedAsync:
-          description: |-
-            Indicates whether the request is processed synchronously or asynchronously.  Depending on the request's platform settings, the following scenarios may be applied:
-            * **sync:** The processing of the request is immediately attempted; it may result in an error if the providing service is unavailable.
-            * **async:** The request is queued and will be executed when the providing service is available in the order in which the requests are received.
-            * **asyncOnError:** The processing of the request is immediately attempted, but if the providing service is unavailable, the request is scheduled in a queue.
-          type: boolean
         verification:
           description: The details of KYC Verification of the account holder.
           $ref: '#/components/schemas/KYCVerificationResult'
       required:
         - pspReference
-        - submittedAsync
         - accountHolderCode
         - accountHolderStatus
         - accountHolderDetails
@@ -983,6 +1049,12 @@ components:
         description:
           description: A description of the account.
           type: string
+        metadata:
+          description: |-
+            A set of key and value pairs for general use by the merchant.
+            The keys do not have specific names and may be used for storing miscellaneous data as desired.
+            > Note that during an update of metadata, the omission of existing key-value pairs will result in the deletion of those key-value pairs.
+          type: object
         payoutSchedule:
           description: |-
             The payout schedule of the prospective account.
@@ -1021,6 +1093,15 @@ components:
         description:
           description: The description of the account.
           type: string
+        invalidFields:
+          description: A list of fields that caused the `/createAccount` request to fail.
+          items:
+            $ref: '#/components/schemas/ErrorFieldType'
+          type: array
+        metadata:
+          additionalProperties:
+            type: string
+          type: object
         payoutSchedule:
           description: The payout schedule of the account.
           $ref: '#/components/schemas/PayoutScheduleResponse'
@@ -1040,16 +1121,8 @@ components:
             - Inactive
             - Suspended
           type: string
-        submittedAsync:
-          description: |-
-            Indicates whether the request is processed synchronously or asynchronously.  Depending on the request's platform settings, the following scenarios may be applied:
-            * **sync:** The processing of the request is immediately attempted; it may result in an error if the providing service is unavailable.
-            * **async:** The request is queued and will be executed when the providing service is available in the order in which the requests are received.
-            * **asyncOnError:** The processing of the request is immediately attempted, but if the providing service is unavailable, the request is scheduled in a queue.
-          type: boolean
       required:
         - pspReference
-        - submittedAsync
         - accountHolderCode
         - accountCode
         - status
@@ -1066,6 +1139,19 @@ components:
       required:
         - accountHolderCode
         - bankAccountUUIDs
+    DeletePayoutInstrumentTokenRequest:
+      properties:
+        accountHolderCode:
+          description: 'The code of the account holder, from which to delete the payout instrument tokens.'
+          type: string
+        payoutInstrumentTokenCodes:
+          description: The codes of the payout instrument tokens to be deleted.
+          items:
+            type: string
+          type: array
+      required:
+        - accountHolderCode
+        - payoutInstrumentTokenCodes
     DeleteShareholderRequest:
       properties:
         accountHolderCode:
@@ -1250,22 +1336,19 @@ components:
           type: string
     GenericResponse:
       properties:
+        invalidFields:
+          description: Contains field validation errors that would prevent requests from being processed.
+          items:
+            $ref: '#/components/schemas/ErrorFieldType'
+          type: array
         pspReference:
           description: The reference of a request.  Can be used to uniquely identify the request.
           type: string
         resultCode:
           description: The result code.
           type: string
-        submittedAsync:
-          description: |-
-            Indicates whether the request is processed synchronously or asynchronously.  Depending on the request's platform settings, the following scenarios may be applied:
-            * **sync:** The processing of the request is immediately attempted; it may result in an error if the providing service is unavailable.
-            * **async:** The request is queued and will be executed when the providing service is available in the order in which the requests are received.
-            * **asyncOnError:** The processing of the request is immediately attempted, but if the providing service is unavailable, the request is scheduled in a queue.
-          type: boolean
       required:
         - pspReference
-        - submittedAsync
     GetAccountHolderRequest:
       properties:
         accountCode:
@@ -1300,6 +1383,11 @@ components:
         description:
           description: The description of the account holder.
           type: string
+        invalidFields:
+          description: Contains field validation errors that would prevent requests from being processed.
+          items:
+            $ref: '#/components/schemas/ErrorFieldType'
+          type: array
         legalEntity:
           description: The legal entity of the account holder.
           enum:
@@ -1317,19 +1405,11 @@ components:
         resultCode:
           description: The result code.
           type: string
-        submittedAsync:
-          description: |-
-            Indicates whether the request is processed synchronously or asynchronously.  Depending on the request's platform settings, the following scenarios may be applied:
-            * **sync:** The processing of the request is immediately attempted; it may result in an error if the providing service is unavailable.
-            * **async:** The request is queued and will be executed when the providing service is available in the order in which the requests are received.
-            * **asyncOnError:** The processing of the request is immediately attempted, but if the providing service is unavailable, the request is scheduled in a queue.
-          type: boolean
         verification:
           description: The details of KYC Verification of the account holder.
           $ref: '#/components/schemas/KYCVerificationResult'
       required:
         - pspReference
-        - submittedAsync
         - accountHolderCode
         - legalEntity
         - accountHolderStatus
@@ -1343,22 +1423,19 @@ components:
         accountHolderStatus:
           description: The status of the Account Holder.
           $ref: '#/components/schemas/AccountHolderStatus'
+        invalidFields:
+          description: Contains field validation errors that would prevent requests from being processed.
+          items:
+            $ref: '#/components/schemas/ErrorFieldType'
+          type: array
         pspReference:
           description: The reference of a request.  Can be used to uniquely identify the request.
           type: string
         resultCode:
           description: The result code.
           type: string
-        submittedAsync:
-          description: |-
-            Indicates whether the request is processed synchronously or asynchronously.  Depending on the request's platform settings, the following scenarios may be applied:
-            * **sync:** The processing of the request is immediately attempted; it may result in an error if the providing service is unavailable.
-            * **async:** The request is queued and will be executed when the providing service is available in the order in which the requests are received.
-            * **asyncOnError:** The processing of the request is immediately attempted, but if the providing service is unavailable, the request is scheduled in a queue.
-          type: boolean
       required:
         - pspReference
-        - submittedAsync
         - accountHolderCode
         - accountHolderStatus
     GetUploadedDocumentsRequest:
@@ -1381,22 +1458,19 @@ components:
           items:
             $ref: '#/components/schemas/DocumentDetail'
           type: array
+        invalidFields:
+          description: Contains field validation errors that would prevent requests from being processed.
+          items:
+            $ref: '#/components/schemas/ErrorFieldType'
+          type: array
         pspReference:
           description: The reference of a request.  Can be used to uniquely identify the request.
           type: string
         resultCode:
           description: The result code.
           type: string
-        submittedAsync:
-          description: |-
-            Indicates whether the request is processed synchronously or asynchronously.  Depending on the request's platform settings, the following scenarios may be applied:
-            * **sync:** The processing of the request is immediately attempted; it may result in an error if the providing service is unavailable.
-            * **async:** The request is queued and will be executed when the providing service is available in the order in which the requests are received.
-            * **asyncOnError:** The processing of the request is immediately attempted, but if the providing service is unavailable, the request is scheduled in a queue.
-          type: boolean
       required:
         - pspReference
-        - submittedAsync
     IndividualDetails:
       properties:
         name:
@@ -1472,15 +1546,13 @@ components:
         - requiredFields
     KYCCheckSummary:
       properties:
-        code:
+        kycCheckCode:
           description: The code of the check.
           format: int32
           type: integer
-        description:
+        kycCheckDescription:
           description: A description of the check.
           type: string
-      required:
-        - code
     KYCShareholderCheckResult:
       properties:
         checks:
@@ -1513,6 +1585,24 @@ components:
         - accountHolder
         - shareholders
         - bankAccounts
+    PayoutInstrumentToken:
+      properties:
+        merchantAccount:
+          type: string
+        payoutInstrumentTokenCode:
+          type: string
+        payoutInstrumentTokenType:
+          enum:
+            - CardToken
+          type: string
+        recurringDetailReference:
+          type: string
+        shopperReference:
+          type: string
+      required:
+        - merchantAccount
+        - shopperReference
+        - recurringDetailReference
     PayoutScheduleResponse:
       properties:
         nextScheduledPayout:
@@ -1539,6 +1629,31 @@ components:
       required:
         - schedule
         - nextScheduledPayout
+    PerformVerificationRequest:
+      properties:
+        accountHolderCode:
+          description: The code of the account holder to verify.
+          type: string
+        accountStateType:
+          description: |-
+            The state required for the account holder.
+            > Permitted values: `Processing`, `Payout`.
+          enum:
+            - LimitedPayout
+            - LimitedProcessing
+            - LimitlessPayout
+            - LimitlessProcessing
+            - Payout
+            - Processing
+          type: string
+        tier:
+          description: The tier required for the account holder.
+          format: int32
+          type: integer
+      required:
+        - accountHolderCode
+        - accountStateType
+        - tier
     PersonalDocumentData:
       properties:
         expirationDate:
@@ -1606,6 +1721,8 @@ components:
 
             >**If, during an Account Holder update request, a UUID that is correlated with an existing Shareholder is provided, the existing Bank Account will be updated.**
           type: string
+        shareholderReference:
+          type: string
         webAddress:
           description: The URL of the website of the contact.
           type: string
@@ -1621,22 +1738,19 @@ components:
         accountHolderStatus:
           description: The new status of the Account Holder.
           $ref: '#/components/schemas/AccountHolderStatus'
+        invalidFields:
+          description: Contains field validation errors that would prevent requests from being processed.
+          items:
+            $ref: '#/components/schemas/ErrorFieldType'
+          type: array
         pspReference:
           description: The reference of a request.  Can be used to uniquely identify the request.
           type: string
         resultCode:
           description: The result code.
           type: string
-        submittedAsync:
-          description: |-
-            Indicates whether the request is processed synchronously or asynchronously.  Depending on the request's platform settings, the following scenarios may be applied:
-            * **sync:** The processing of the request is immediately attempted; it may result in an error if the providing service is unavailable.
-            * **async:** The request is queued and will be executed when the providing service is available in the order in which the requests are received.
-            * **asyncOnError:** The processing of the request is immediately attempted, but if the providing service is unavailable, the request is scheduled in a queue.
-          type: boolean
       required:
         - pspReference
-        - submittedAsync
         - accountHolderStatus
     UnSuspendAccountHolderRequest:
       properties:
@@ -1650,22 +1764,19 @@ components:
         accountHolderStatus:
           description: The new status of the Account Holder.
           $ref: '#/components/schemas/AccountHolderStatus'
+        invalidFields:
+          description: Contains field validation errors that would prevent requests from being processed.
+          items:
+            $ref: '#/components/schemas/ErrorFieldType'
+          type: array
         pspReference:
           description: The reference of a request.  Can be used to uniquely identify the request.
           type: string
         resultCode:
           description: The result code.
           type: string
-        submittedAsync:
-          description: |-
-            Indicates whether the request is processed synchronously or asynchronously.  Depending on the request's platform settings, the following scenarios may be applied:
-            * **sync:** The processing of the request is immediately attempted; it may result in an error if the providing service is unavailable.
-            * **async:** The request is queued and will be executed when the providing service is available in the order in which the requests are received.
-            * **asyncOnError:** The processing of the request is immediately attempted, but if the providing service is unavailable, the request is scheduled in a queue.
-          type: boolean
       required:
         - pspReference
-        - submittedAsync
         - accountHolderStatus
     UpdateAccountHolderRequest:
       properties:
@@ -1680,6 +1791,20 @@ components:
           $ref: '#/components/schemas/AccountHolderDetails'
         description:
           description: The description to which the Account Holder should be updated.
+          type: string
+        legalEntity:
+          description: |-
+            The entity type.
+            Permitted values: `Business`, `Individual`
+
+            If an account holder is 'Business', then `accountHolderDetails.businessDetails` must be provided, as well as at least one entry in the `accountHolderDetails.businessDetails.shareholders` list.
+
+            If an account holder is 'Individual', then `accountHolderDetails.individualDetails` must be provided.
+          enum:
+            - Business
+            - Individual
+            - NonProfit
+            - PublicCompany
           type: string
         primaryCurrency:
           description: 'The primary three-character [ISO currency code](https://docs.adyen.com/developers/development-resources/currency-codes), to which the account holder should be updated.'
@@ -1721,30 +1846,20 @@ components:
             - NonProfit
             - PublicCompany
           type: string
+        primaryCurrency:
+          description: 'The three-character [ISO currency code](https://docs.adyen.com/developers/development-resources/currency-codes), with which the prospective account holder primarily deals.'
+          type: string
         pspReference:
           description: The reference of a request.  Can be used to uniquely identify the request.
           type: string
         resultCode:
           description: The result code.
           type: string
-        submittedAsync:
-          description: |-
-            Indicates whether the request is processed synchronously or asynchronously.  Depending on the request's platform settings, the following scenarios may be applied:
-            * **sync:** The processing of the request is immediately attempted; it may result in an error if the providing service is unavailable.
-            * **async:** The request is queued and will be executed when the providing service is available in the order in which the requests are received.
-            * **asyncOnError:** The processing of the request is immediately attempted, but if the providing service is unavailable, the request is scheduled in a queue.
-          type: boolean
-        updatedFields:
-          description: A list of the fields updated through the request.
-          items:
-            $ref: '#/components/schemas/FieldType'
-          type: array
         verification:
           description: The details of KYC Verification of the account holder.
           $ref: '#/components/schemas/KYCVerificationResult'
       required:
         - pspReference
-        - submittedAsync
         - accountHolderStatus
         - verification
         - legalEntity
@@ -1785,6 +1900,12 @@ components:
         description:
           description: A description of the account.
           type: string
+        metadata:
+          description: |-
+            A set of key and value pairs for general use by the merchant.
+            The keys do not have specific names and may be used for storing miscellaneous data as desired.
+            > Note that during an update of metadata, the omission of existing key-value pairs will result in the deletion of those key-value pairs.
+          type: object
         payoutSchedule:
           description: 'The details of the payout schedule, to which the account should be updated.'
           $ref: '#/components/schemas/UpdatePayoutScheduleRequest'
@@ -1798,6 +1919,15 @@ components:
         description:
           description: The description of the account.
           type: string
+        invalidFields:
+          description: A list of fields that caused the `/updateAccount` request to fail.
+          items:
+            $ref: '#/components/schemas/ErrorFieldType'
+          type: array
+        metadata:
+          additionalProperties:
+            type: string
+          type: object
         payoutSchedule:
           description: The payout schedule of the account.
           $ref: '#/components/schemas/PayoutScheduleResponse'
@@ -1807,16 +1937,8 @@ components:
         resultCode:
           description: The result code.
           type: string
-        submittedAsync:
-          description: |-
-            Indicates whether the request is processed synchronously or asynchronously.  Depending on the request's platform settings, the following scenarios may be applied:
-            * **sync:** The processing of the request is immediately attempted; it may result in an error if the providing service is unavailable.
-            * **async:** The request is queued and will be executed when the providing service is available in the order in which the requests are received.
-            * **asyncOnError:** The processing of the request is immediately attempted, but if the providing service is unavailable, the request is scheduled in a queue.
-          type: boolean
       required:
         - pspReference
-        - submittedAsync
         - accountCode
         - payoutSchedule
     UpdatePayoutScheduleRequest:

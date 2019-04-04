@@ -1,8 +1,8 @@
 openapi: 3.0.0
 servers:
-  - url: 'https://cal-test.adyen.com/cal/services/Fund/v3'
+  - url: 'https://cal-test.adyen.com/cal/services/Fund/v5'
 info:
-  version: '3'
+  version: '5'
   title: Adyen MarketPay Fund Service
   description: |-
     The MarketPay Funding API provides endpoints for managing the funds in MarketPay accounts. These management operations include actions such as the transfer of funds from one account to another, the payout of funds to an account holder, and the retrieval of balances in an account.
@@ -24,7 +24,7 @@ info:
 
     For example:
     ```
-    https://cal-test.adyen.com/cal/services/Fund/v3/accountHolderBalance
+    https://cal-test.adyen.com/cal/services/Fund/v5/accountHolderBalance
     ```
   termsOfService: 'https://www.adyen.com/legal/terms-and-conditions'
   contact:
@@ -177,7 +177,7 @@ paths:
   /transferFunds:
     post:
       summary: Transfer funds from one platform account to another.
-      description: 'This endpoint is used to transfer funds from one account to another account. Both accounts must be in the same platform, but can have different account holders. The transfer must include a transfer code, which should be determined by the platform, in compliance with local regulations.'
+      description: 'This endpoint is used to transfer funds from one account to another account. Both accounts must be in the same marketplace, but can have different account holders. The transfer must include a transfer code, which should be determined by the marketplace, in compliance with local regulations.'
       x-groupName: General
       x-sortIndex: 4
       requestBody:
@@ -226,25 +226,22 @@ components:
           items:
             $ref: '#/components/schemas/AccountDetailBalance'
           type: array
+        invalidFields:
+          description: Contains field validation errors that would prevent requests from being processed.
+          items:
+            $ref: '#/components/schemas/ErrorFieldType'
+          type: array
         pspReference:
           description: The reference of a request.  Can be used to uniquely identify the request.
           type: string
         resultCode:
           description: The result code.
           type: string
-        submittedAsync:
-          description: |-
-            Indicates whether the request is processed synchronously or asynchronously.  Depending on the request's platform settings, the following scenarios may be applied:
-            * **sync:** The processing of the request is immediately attempted; it may result in an error if the providing service is unavailable.
-            * **async:** The request is queued and will be executed when the providing service is available in the order in which the requests are received.
-            * **asyncOnError:** The processing of the request is immediately attempted, but if the providing service is unavailable, the request is scheduled in a queue.
-          type: boolean
         totalBalance:
           description: The total balance of the account holder.
           $ref: '#/components/schemas/DetailBalance'
       required:
         - pspReference
-        - submittedAsync
     AccountHolderTransactionListRequest:
       properties:
         accountHolderCode:
@@ -310,22 +307,19 @@ components:
           items:
             $ref: '#/components/schemas/AccountTransactionList'
           type: array
+        invalidFields:
+          description: Contains field validation errors that would prevent requests from being processed.
+          items:
+            $ref: '#/components/schemas/ErrorFieldType'
+          type: array
         pspReference:
           description: The reference of a request.  Can be used to uniquely identify the request.
           type: string
         resultCode:
           description: The result code.
           type: string
-        submittedAsync:
-          description: |-
-            Indicates whether the request is processed synchronously or asynchronously.  Depending on the request's platform settings, the following scenarios may be applied:
-            * **sync:** The processing of the request is immediately attempted; it may result in an error if the providing service is unavailable.
-            * **async:** The request is queued and will be executed when the providing service is available in the order in which the requests are received.
-            * **asyncOnError:** The processing of the request is immediately attempted, but if the providing service is unavailable, the request is scheduled in a queue.
-          type: boolean
       required:
         - pspReference
-        - submittedAsync
     AccountTransactionList:
       properties:
         accountCode:
@@ -373,6 +367,9 @@ components:
           type: string
         bankAccountName:
           description: The name of the bank account.
+          type: string
+        bankAccountReference:
+          description: Merchant reference to the bank account.
           type: string
         bankAccountUUID:
           description: |
@@ -514,11 +511,131 @@ components:
           items:
             $ref: '#/components/schemas/Amount'
           type: array
+        onHoldBalance:
+          description: The list of on hold balances held by the account.
+          items:
+            $ref: '#/components/schemas/Amount'
+          type: array
         pendingBalance:
           description: The list of pending balances held by the account.
           items:
             $ref: '#/components/schemas/Amount'
           type: array
+    ErrorFieldType:
+      properties:
+        errorCode:
+          description: The validation error code.
+          format: int32
+          type: integer
+        errorDescription:
+          description: A description of the validation error.
+          type: string
+        fieldType:
+          description: The type of error field.
+          $ref: '#/components/schemas/FieldType'
+    FieldType:
+      properties:
+        field:
+          description: The full name of the property.
+          type: string
+        fieldName:
+          description: The type of the field.
+          enum:
+            - accountCode
+            - accountHolderCode
+            - accountHolderDetails
+            - accountNumber
+            - accountStateType
+            - accountStatus
+            - accountType
+            - address
+            - bankAccount
+            - bankAccountCode
+            - bankAccountName
+            - bankBicSwift
+            - bankCity
+            - bankCode
+            - bankName
+            - bankStatement
+            - branchCode
+            - businessContact
+            - cardToken
+            - checkCode
+            - city
+            - country
+            - countryCode
+            - currency
+            - currencyCode
+            - dateOfBirth
+            - description
+            - destinationAccountCode
+            - document
+            - documentExpirationDate
+            - documentIssuerCountry
+            - documentIssuerState
+            - documentName
+            - documentNumber
+            - documentType
+            - doingBusinessAs
+            - drivingLicence
+            - drivingLicenceBack
+            - drivingLicense
+            - email
+            - firstName
+            - fullPhoneNumber
+            - gender
+            - houseNumberOrName
+            - iban
+            - idCard
+            - idCardBack
+            - idCardFront
+            - idNumber
+            - identityDocument
+            - individualDetails
+            - lastName
+            - legalBusinessName
+            - legalEntity
+            - legalEntityType
+            - merchantCategoryCode
+            - merchantReference
+            - microDeposit
+            - name
+            - nationality
+            - ownerCity
+            - ownerCountryCode
+            - ownerHouseNumberOrName
+            - ownerName
+            - ownerPostalCode
+            - ownerState
+            - ownerStreet
+            - passport
+            - passportNumber
+            - personalData
+            - phoneCountryCode
+            - phoneNumber
+            - postalCode
+            - primaryCurrency
+            - reason
+            - registrationNumber
+            - schedule
+            - shareholder
+            - shareholderCode
+            - socialSecurityNumber
+            - sourceAccountCode
+            - stateOrProvince
+            - street
+            - taxId
+            - tierNumber
+            - transferCode
+            - unknown
+            - value
+            - virtualAccount
+            - visaNumber
+            - webAddress
+          type: string
+        shareholderCode:
+          description: 'The code of the shareholder that the field belongs to. If empty, the field belongs to an account holder.'
+          type: string
     PayoutAccountHolderRequest:
       properties:
         accountCode:
@@ -543,6 +660,11 @@ components:
         merchantReference:
           description: A value that can be supplied at the discretion of the executing user in order to link multiple transactions to one another.
           type: string
+        payoutInstrumentTokenCode:
+          description: |-
+            The unique ID of the payout instrument token held by the Account Holder to which the payout is to be made.
+            If left blank, a payout instrument is automatically selected.
+          type: string
       required:
         - accountHolderCode
         - accountCode
@@ -552,6 +674,11 @@ components:
         bankAccountUUID:
           description: The unique ID of the Bank Account to which the payout was made.
           type: string
+        invalidFields:
+          description: Contains field validation errors that would prevent requests from being processed.
+          items:
+            $ref: '#/components/schemas/ErrorFieldType'
+          type: array
         merchantReference:
           description: The value supplied by the executing user when initiating the transfer; may be used to link multiple transactions.
           type: string
@@ -561,16 +688,8 @@ components:
         resultCode:
           description: The result code.
           type: string
-        submittedAsync:
-          description: |-
-            Indicates whether the request is processed synchronously or asynchronously.  Depending on the request's platform settings, the following scenarios may be applied:
-            * **sync:** The processing of the request is immediately attempted; it may result in an error if the providing service is unavailable.
-            * **async:** The request is queued and will be executed when the providing service is available in the order in which the requests are received.
-            * **asyncOnError:** The processing of the request is immediately attempted, but if the providing service is unavailable, the request is scheduled in a queue.
-          type: boolean
       required:
         - pspReference
-        - submittedAsync
         - bankAccountUUID
     RefundNotPaidOutTransfersRequest:
       properties:
@@ -585,22 +704,19 @@ components:
         - accountCode
     RefundNotPaidOutTransfersResponse:
       properties:
+        invalidFields:
+          description: Contains field validation errors that would prevent requests from being processed.
+          items:
+            $ref: '#/components/schemas/ErrorFieldType'
+          type: array
         pspReference:
           description: The reference of a request.  Can be used to uniquely identify the request.
           type: string
         resultCode:
           description: The result code.
           type: string
-        submittedAsync:
-          description: |-
-            Indicates whether the request is processed synchronously or asynchronously.  Depending on the request's platform settings, the following scenarios may be applied:
-            * **sync:** The processing of the request is immediately attempted; it may result in an error if the providing service is unavailable.
-            * **async:** The request is queued and will be executed when the providing service is available in the order in which the requests are received.
-            * **asyncOnError:** The processing of the request is immediately attempted, but if the providing service is unavailable, the request is scheduled in a queue.
-          type: boolean
       required:
         - pspReference
-        - submittedAsync
     SetupBeneficiaryRequest:
       properties:
         destinationAccountCode:
@@ -618,22 +734,19 @@ components:
         - merchantReference
     SetupBeneficiaryResponse:
       properties:
+        invalidFields:
+          description: Contains field validation errors that would prevent requests from being processed.
+          items:
+            $ref: '#/components/schemas/ErrorFieldType'
+          type: array
         pspReference:
           description: The reference of a request.  Can be used to uniquely identify the request.
           type: string
         resultCode:
           description: The result code.
           type: string
-        submittedAsync:
-          description: |-
-            Indicates whether the request is processed synchronously or asynchronously.  Depending on the request's platform settings, the following scenarios may be applied:
-            * **sync:** The processing of the request is immediately attempted; it may result in an error if the providing service is unavailable.
-            * **async:** The request is queued and will be executed when the providing service is available in the order in which the requests are received.
-            * **asyncOnError:** The processing of the request is immediately attempted, but if the providing service is unavailable, the request is scheduled in a queue.
-          type: boolean
       required:
         - pspReference
-        - submittedAsync
     Transaction:
       properties:
         amount:
@@ -743,7 +856,7 @@ components:
         transferCode:
           description: |-
             The code related to the type of transfer being performed.
-            >The permitted codes differ for each platform and are defined in their service level agreement.
+            >The permitted codes differ for each platform account and are defined in their service level agreement.
           type: string
       required:
         - sourceAccountCode
@@ -752,6 +865,11 @@ components:
         - amount
     TransferFundsResponse:
       properties:
+        invalidFields:
+          description: Contains field validation errors that would prevent requests from being processed.
+          items:
+            $ref: '#/components/schemas/ErrorFieldType'
+          type: array
         merchantReference:
           description: The value supplied by the executing user when initiating the transfer; may be used to link multiple transactions.
           type: string
@@ -761,13 +879,5 @@ components:
         resultCode:
           description: The result code.
           type: string
-        submittedAsync:
-          description: |-
-            Indicates whether the request is processed synchronously or asynchronously.  Depending on the request's platform settings, the following scenarios may be applied:
-            * **sync:** The processing of the request is immediately attempted; it may result in an error if the providing service is unavailable.
-            * **async:** The request is queued and will be executed when the providing service is available in the order in which the requests are received.
-            * **asyncOnError:** The processing of the request is immediately attempted, but if the providing service is unavailable, the request is scheduled in a queue.
-          type: boolean
       required:
         - pspReference
-        - submittedAsync
