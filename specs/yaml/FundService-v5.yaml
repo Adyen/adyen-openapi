@@ -3,11 +3,11 @@ servers:
   - url: 'https://cal-test.adyen.com/cal/services/Fund/v5'
 info:
   version: '5'
-  title: Adyen MarketPay Fund Service
+  title: Adyen MarketPay Fund API
   description: |-
     The MarketPay Funding API provides endpoints for managing the funds in MarketPay accounts. These management operations include actions such as the transfer of funds from one account to another, the payout of funds to an account holder, and the retrieval of balances in an account.
 
-    For further information on MarketPay fund management, please visit the [MarketPay documentation](https://docs.adyen.com/developers/marketpay).
+    For further information on MarketPay fund management, please visit the [MarketPay documentation](https://docs.adyen.com/marketpay).
     ## Authentication
     To connect to the MarketPay API, you must use basic authentication credentials of your web service user. If you don't have one, please contact the [Adyen Support Team](https://support.adyen.com/hc/en-us/requests/new). Then use its credentials to authenticate your request, for example:
 
@@ -17,7 +17,7 @@ info:
     -H "Content-Type: application/json" \
     ...
     ```
-    Note that when going live, you need to generate new web service user credentials to access the [live endpoints](https://docs.adyen.com/developers/development-resources/live-endpoints).
+    Note that when going live, you need to generate new web service user credentials to access the [live endpoints](https://docs.adyen.com/development-resources/live-endpoints).
 
     ## Versioning
     MarketPay API supports versioning of its endpoints through a version suffix in the endpoint URL. This suffix has the following format: "vXX", where XX is the version number.
@@ -107,6 +107,34 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PayoutAccountHolderResponse'
+          description: OK - the request has succeeded.
+        '400':
+          description: Bad Request - a problem reading or understanding the request.
+        '401':
+          description: Unauthorized - authentication required.
+        '403':
+          description: Forbidden - insufficient permissions to process the request.
+        '422':
+          description: Unprocessable Entity - a request validation error.
+        '500':
+          description: Internal Server Error - the server could not process the request.
+  /refundFundsTransfer:
+    post:
+      summary: Make a refund of the existing transfer funds transfer.
+      description: 'This endpoint is used to refund funds from one account to another account. Both accounts must be in the same marketplace, but can have different account holders. '
+      x-groupName: General
+      x-sortIndex: 4
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefundFundsTransferRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefundFundsTransferResponse'
           description: OK - the request has succeeded.
         '400':
           description: Bad Request - a problem reading or understanding the request.
@@ -277,6 +305,8 @@ components:
           items:
             enum:
               - Chargeback
+              - ChargebackCorrection
+              - ChargebackCorrectionReceived
               - ChargebackReceived
               - ChargebackReversed
               - ChargebackReversedReceived
@@ -288,6 +318,7 @@ components:
               - Debited
               - DebitedReversed
               - FundTransfer
+              - FundTransferReversed
               - ManualCorrected
               - Payout
               - PayoutReversed
@@ -336,7 +367,7 @@ components:
     Amount:
       properties:
         currency:
-          description: 'The three-character [ISO currency code](https://docs.adyen.com/developers/development-resources/currency-codes).'
+          description: 'The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).'
           maxLength: 3
           minLength: 3
           type: string
@@ -344,7 +375,7 @@ components:
           description: |-
             The payable amount that can be charged for the transaction.
 
-            The transaction amount needs to be represented in minor units according to the [following table](https://docs.adyen.com/developers/development-resources/currency-codes).
+            The transaction amount needs to be represented in minor units according to the [following table](https://docs.adyen.com/development-resources/currency-codes).
           format: int64
           type: integer
       required:
@@ -355,7 +386,7 @@ components:
         accountNumber:
           description: |-
             The bank account number (without separators).
-            >Refer to the [Onboarding and verification](https://docs.adyen.com/developers/marketpay/onboarding-and-verification) section for details on field requirements.
+            >Refer to the [Onboarding and verification](https://docs.adyen.com/marketpay/onboarding-and-verification) section for details on field requirements.
           type: string
         accountType:
           description: |-
@@ -363,7 +394,7 @@ components:
             Only applicable to bank accounts held in the USA.
             The permitted values are: `checking`, `savings`.
 
-            >Refer to the [Onboarding and verification](https://docs.adyen.com/developers/marketpay/onboarding-and-verification) section for details on field requirements.
+            >Refer to the [Onboarding and verification](https://docs.adyen.com/marketpay/onboarding-and-verification) section for details on field requirements.
           type: string
         bankAccountName:
           description: The name of the bank account.
@@ -385,25 +416,25 @@ components:
         bankBicSwift:
           description: |-
             The bank identifier code.
-            >Refer to the [Onboarding and verification](https://docs.adyen.com/developers/marketpay/onboarding-and-verification) section for details on field requirements.
+            >Refer to the [Onboarding and verification](https://docs.adyen.com/marketpay/onboarding-and-verification) section for details on field requirements.
           type: string
         bankCity:
           description: |-
             The city in which the bank branch is located.
 
-            >Refer to the [Onboarding and verification](https://docs.adyen.com/developers/marketpay/onboarding-and-verification) section for details on field requirements.
+            >Refer to the [Onboarding and verification](https://docs.adyen.com/marketpay/onboarding-and-verification) section for details on field requirements.
           type: string
         bankCode:
           description: |-
             The bank code of the banking institution with which the bank account is registered.
 
-            >Refer to the [Onboarding and verification](https://docs.adyen.com/developers/marketpay/onboarding-and-verification) section for details on field requirements.
+            >Refer to the [Onboarding and verification](https://docs.adyen.com/marketpay/onboarding-and-verification) section for details on field requirements.
           type: string
         bankName:
           description: |-
             The name of the banking institution with which the bank account is held.
 
-            >Refer to the [Onboarding and verification](https://docs.adyen.com/developers/marketpay/onboarding-and-verification) section for details on field requirements.
+            >Refer to the [Onboarding and verification](https://docs.adyen.com/marketpay/onboarding-and-verification) section for details on field requirements.
           type: string
         branchCode:
           description: |-
@@ -411,46 +442,46 @@ components:
             * United States - Routing number
             * United Kingdom - Sort code
             * Germany - Bankleitzahl
-            >Refer to the [Onboarding and verification](https://docs.adyen.com/developers/marketpay/onboarding-and-verification) section for details on field requirements.
+            >Refer to the [Onboarding and verification](https://docs.adyen.com/marketpay/onboarding-and-verification) section for details on field requirements.
           type: string
         checkCode:
           description: |-
             The check code of the bank account.
 
-            >Refer to the [Onboarding and verification](https://docs.adyen.com/developers/marketpay/onboarding-and-verification) section for details on field requirements.
+            >Refer to the [Onboarding and verification](https://docs.adyen.com/marketpay/onboarding-and-verification) section for details on field requirements.
           type: string
         countryCode:
           description: |-
             The two-letter country code in which the bank account is registered.
             >The permitted country codes are defined in ISO-3166-1 alpha-2 (e.g. 'NL').
 
-            >Refer to the [Onboarding and verification](https://docs.adyen.com/developers/marketpay/onboarding-and-verification) section for details on field requirements.
+            >Refer to the [Onboarding and verification](https://docs.adyen.com/marketpay/onboarding-and-verification) section for details on field requirements.
           type: string
         currencyCode:
           description: |-
             The currency in which the bank account deals.
             >The permitted currency codes are defined in ISO-4217 (e.g. 'EUR').
 
-            >Refer to the [Onboarding and verification](https://docs.adyen.com/developers/marketpay/onboarding-and-verification) section for details on field requirements.
+            >Refer to the [Onboarding and verification](https://docs.adyen.com/marketpay/onboarding-and-verification) section for details on field requirements.
           type: string
         iban:
           description: |-
             The international bank account number.
             >The IBAN standard is defined in ISO-13616.
 
-            >Refer to the [Onboarding and verification](https://docs.adyen.com/developers/marketpay/onboarding-and-verification) section for details on field requirements.
+            >Refer to the [Onboarding and verification](https://docs.adyen.com/marketpay/onboarding-and-verification) section for details on field requirements.
           type: string
         ownerCity:
           description: |-
             The city of residence of the bank account owner.
-            >Refer to the [Onboarding and verification](https://docs.adyen.com/developers/marketpay/onboarding-and-verification) section for details on field requirements.
+            >Refer to the [Onboarding and verification](https://docs.adyen.com/marketpay/onboarding-and-verification) section for details on field requirements.
           type: string
         ownerCountryCode:
           description: |-
             The country code of the country of residence of the bank account owner.
             >The permitted country codes are defined in ISO-3166-1 alpha-2 (e.g. 'NL').
 
-            >Refer to the [Onboarding and verification](https://docs.adyen.com/developers/marketpay/onboarding-and-verification) section for details on field requirements.
+            >Refer to the [Onboarding and verification](https://docs.adyen.com/marketpay/onboarding-and-verification) section for details on field requirements.
           type: string
         ownerDateOfBirth:
           description: |
@@ -459,34 +490,34 @@ components:
         ownerHouseNumberOrName:
           description: |-
             The house name or number of the residence of the bank account owner.
-            >Refer to the [Onboarding and verification](https://docs.adyen.com/developers/marketpay/onboarding-and-verification) section for details on field requirements.
+            >Refer to the [Onboarding and verification](https://docs.adyen.com/marketpay/onboarding-and-verification) section for details on field requirements.
           type: string
         ownerName:
           description: |-
             The name of the bank account owner.
-            >Refer to the [Onboarding and verification](https://docs.adyen.com/developers/marketpay/onboarding-and-verification) section for details on field requirements.
+            >Refer to the [Onboarding and verification](https://docs.adyen.com/marketpay/onboarding-and-verification) section for details on field requirements.
           type: string
         ownerNationality:
           description: |-
             The country code of the country of nationality of the bank account owner.
             >The permitted country codes are defined in ISO-3166-1 alpha-2 (e.g. 'NL').
 
-            >Refer to the [Onboarding and verification](https://docs.adyen.com/developers/marketpay/onboarding-and-verification) section for details on field requirements.
+            >Refer to the [Onboarding and verification](https://docs.adyen.com/marketpay/onboarding-and-verification) section for details on field requirements.
           type: string
         ownerPostalCode:
           description: |-
             The postal code of the residence of the bank account owner.
-            >Refer to the [Onboarding and verification](https://docs.adyen.com/developers/marketpay/onboarding-and-verification) section for details on field requirements.
+            >Refer to the [Onboarding and verification](https://docs.adyen.com/marketpay/onboarding-and-verification) section for details on field requirements.
           type: string
         ownerState:
           description: |-
             The state of residence of the bank account owner.
-            >Refer to the [Onboarding and verification](https://docs.adyen.com/developers/marketpay/onboarding-and-verification) section for details on field requirements.
+            >Refer to the [Onboarding and verification](https://docs.adyen.com/marketpay/onboarding-and-verification) section for details on field requirements.
           type: string
         ownerStreet:
           description: |-
             The street name of the residence of the bank account owner.
-            >Refer to the [Onboarding and verification](https://docs.adyen.com/developers/marketpay/onboarding-and-verification) section for details on field requirements.
+            >Refer to the [Onboarding and verification](https://docs.adyen.com/marketpay/onboarding-and-verification) section for details on field requirements.
           type: string
         primaryAccount:
           description: 'If set to true, the bank account is a primary account.'
@@ -495,14 +526,14 @@ components:
           description: |-
             The tax ID number.
 
-            >Refer to the [Onboarding and verification](https://docs.adyen.com/developers/marketpay/onboarding-and-verification) section for details on field requirements.
+            >Refer to the [Onboarding and verification](https://docs.adyen.com/marketpay/onboarding-and-verification) section for details on field requirements.
           type: string
         urlForVerification:
           description: |-
             The URL to be used for bank account verification.
             This may be generated on bank account creation.
 
-            >Refer to the [Onboarding and verification](https://docs.adyen.com/developers/marketpay/onboarding-and-verification) section for details on field requirements.
+            >Refer to the [Onboarding and verification](https://docs.adyen.com/marketpay/onboarding-and-verification) section for details on field requirements.
           type: string
     DetailBalance:
       properties:
@@ -552,6 +583,7 @@ components:
             - bankAccount
             - bankAccountCode
             - bankAccountName
+            - bankAccountUUID
             - bankBicSwift
             - bankCity
             - bankCode
@@ -584,6 +616,7 @@ components:
             - firstName
             - fullPhoneNumber
             - gender
+            - hopWebserviceUser
             - houseNumberOrName
             - iban
             - idCard
@@ -591,16 +624,19 @@ components:
             - idCardFront
             - idNumber
             - identityDocument
+            - incorporatedAt
             - individualDetails
             - lastName
             - legalBusinessName
             - legalEntity
             - legalEntityType
+            - merchantAccount
             - merchantCategoryCode
             - merchantReference
             - microDeposit
             - name
             - nationality
+            - originalReference
             - ownerCity
             - ownerCountryCode
             - ownerHouseNumberOrName
@@ -610,6 +646,7 @@ components:
             - ownerStreet
             - passport
             - passportNumber
+            - payoutMethodCode
             - personalData
             - phoneCountryCode
             - phoneNumber
@@ -617,14 +654,20 @@ components:
             - primaryCurrency
             - reason
             - registrationNumber
+            - returnUrl
             - schedule
             - shareholder
             - shareholderCode
             - socialSecurityNumber
             - sourceAccountCode
             - stateOrProvince
+            - status
+            - store
+            - storeDetail
+            - storeReference
             - street
             - taxId
+            - tier
             - tierNumber
             - transferCode
             - unknown
@@ -655,14 +698,16 @@ components:
             If left blank, a bank account is automatically selected.
           type: string
         description:
-          description: A description of the payout.
+          description: |-
+            A description of the payout. Maximum 35 characters.
+            Allowed: **abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/?:().,'+ ";**
           type: string
         merchantReference:
           description: A value that can be supplied at the discretion of the executing user in order to link multiple transactions to one another.
           type: string
-        payoutInstrumentTokenCode:
+        payoutMethodCode:
           description: |-
-            The unique ID of the payout instrument token held by the Account Holder to which the payout is to be made.
+            The unique ID of the payout method held by the Account Holder to which the payout is to be made.
             If left blank, a payout instrument is automatically selected.
           type: string
       required:
@@ -691,6 +736,41 @@ components:
       required:
         - pspReference
         - bankAccountUUID
+    RefundFundsTransferRequest:
+      properties:
+        amount:
+          description: The amount to be transferred.
+          $ref: '#/components/schemas/Amount'
+        merchantReference:
+          description: A value that can be supplied at the discretion of the executing user in order to link multiple transactions to one another.
+          type: string
+        originalReference:
+          description: A PSP reference of the original fund transfer.
+          type: string
+      required:
+        - originalReference
+        - amount
+    RefundFundsTransferResponse:
+      properties:
+        invalidFields:
+          description: Contains field validation errors that would prevent requests from being processed.
+          items:
+            $ref: '#/components/schemas/ErrorFieldType'
+          type: array
+        merchantReference:
+          type: string
+        message:
+          type: string
+        originalReference:
+          type: string
+        pspReference:
+          description: The reference of a request.  Can be used to uniquely identify the request.
+          type: string
+        resultCode:
+          description: The result code.
+          type: string
+      required:
+        - pspReference
     RefundNotPaidOutTransfersRequest:
       properties:
         accountCode:
@@ -798,6 +878,8 @@ components:
             >Permitted values: `PendingCredit`, `CreditFailed`, `Credited`, `Converted`, `PendingDebit`, `DebitFailed`, `Debited`, `DebitReversedReceived`, `DebitedReversed`, `ChargebackReceived`, `Chargeback`, `ChargebackReversedReceived`, `ChargebackReversed`, `Payout`, `PayoutReversed`, `FundTransfer`, `PendingFundTransfer`, `ManualCorrected`.
           enum:
             - Chargeback
+            - ChargebackCorrection
+            - ChargebackCorrectionReceived
             - ChargebackReceived
             - ChargebackReversed
             - ChargebackReversedReceived
@@ -809,6 +891,7 @@ components:
             - Debited
             - DebitedReversed
             - FundTransfer
+            - FundTransferReversed
             - ManualCorrected
             - Payout
             - PayoutReversed
