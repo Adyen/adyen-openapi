@@ -2,13 +2,13 @@
    "openapi" : "3.0.0",
    "servers" : [
       {
-         "url" : "https://pal-test.adyen.com/pal/servlet/Payment/v40"
+         "url" : "https://pal-test.adyen.com/pal/servlet/Payment/v50"
       }
    ],
    "info" : {
-      "version" : "40",
+      "version" : "50",
       "title" : "Adyen Payment API",
-      "description" : "A set of API endpoints that allow you to initiate, settle, and modify payments on the Adyen payments platform. You can use the API to accept card payments (including One-Click and 3D Secure), bank transfers, ewallets, and many other payment methods.\n\nTo learn more about the API, visit [Classic integration](https://docs.adyen.com/classic-integration).\n\n## Authentication\nTo connect to the Payments API, you must use your basic authentication credentials. For this, create your web service user, as described in [How to get the WS user password](https://docs.adyen.com/user-management/how-to-get-the-web-service-ws-user-password). Then use its credentials to authenticate your request, for example:\n\n```\ncurl\n-U \"ws@Company.YourCompany\":\"YourWsPassword\" \\\n-H \"Content-Type: application/json\" \\\n...\n```\nNote that when going live, you need to generate new web service user credentials to access the [live endpoints](https://docs.adyen.com/development-resources/live-endpoints).\n\n## Versioning\nPayments API supports versioning of its endpoints through a version suffix in the endpoint URL. This suffix has the following format: \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://pal-test.adyen.com/pal/servlet/Payment/v40/authorise\n```",
+      "description" : "A set of API endpoints that allow you to initiate, settle, and modify payments on the Adyen payments platform. You can use the API to accept card payments (including One-Click and 3D Secure), bank transfers, ewallets, and many other payment methods.\n\nTo learn more about the API, visit [Classic integration](https://docs.adyen.com/classic-integration).\n\n## Authentication\nTo connect to the Payments API, you must use your basic authentication credentials. For this, create your web service user, as described in [How to get the WS user password](https://docs.adyen.com/user-management/how-to-get-the-web-service-ws-user-password). Then use its credentials to authenticate your request, for example:\n\n```\ncurl\n-U \"ws@Company.YourCompany\":\"YourWsPassword\" \\\n-H \"Content-Type: application/json\" \\\n...\n```\nNote that when going live, you need to generate new web service user credentials to access the [live endpoints](https://docs.adyen.com/development-resources/live-endpoints).\n\n## Versioning\nPayments API supports versioning of its endpoints through a version suffix in the endpoint URL. This suffix has the following format: \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://pal-test.adyen.com/pal/servlet/Payment/v50/authorise\n```",
       "termsOfService" : "https://www.adyen.com/legal/terms-and-conditions",
       "contact" : {
          "name" : "Adyen Support",
@@ -530,6 +530,15 @@
                "accountCreationDate" : {
                   "description" : "Date when the shopper's account was created.",
                   "format" : "date-time",
+                  "type" : "string"
+               },
+               "accountType" : {
+                  "description" : "Indicates the type of account. For example, for a multi-account card product.\nAllowed values:\n* notApplicable\n* credit\n* debit",
+                  "enum" : [
+                     "notApplicable",
+                     "credit",
+                     "debit"
+                  ],
                   "type" : "string"
                },
                "addCardAttemptsDay" : {
@@ -1901,6 +1910,10 @@
                   "description" : "The amount that needs to be captured/refunded. Required for `/capture` and `/refund`, not allowed for `/cancel`. The `currency` must match the currency used in authorisation, the `value` must be smaller than or equal to the authorised amount.",
                   "$ref" : "#/components/schemas/Amount"
                },
+               "mpiData" : {
+                  "description" : "Authentication data produced by an MPI (Mastercard SecureCode or Verified By Visa).",
+                  "$ref" : "#/components/schemas/ThreeDSecureData"
+               },
                "originalMerchantReference" : {
                   "description" : "The original merchant reference to cancel.",
                   "type" : "string"
@@ -2205,6 +2218,10 @@
                   "description" : "Request fields for 3D Secure 2.",
                   "$ref" : "#/components/schemas/ThreeDS2RequestData"
                },
+               "threeDSAuthenticationOnly" : {
+                  "description" : "If set to true, you will only perform the [3D Secure 2 authentication](https://docs.adyen.com/checkout/3d-secure/native-3ds2/authentication-only), and not the payment authorisation.",
+                  "type" : "boolean"
+               },
                "totalsGroup" : {
                   "description" : "The reference value to aggregate sales totals in reporting. When not specified, the store field is used (if available).",
                   "maxLength" : 16,
@@ -2422,6 +2439,10 @@
                   "description" : "Request fields for 3D Secure 2.",
                   "$ref" : "#/components/schemas/ThreeDS2RequestData"
                },
+               "threeDSAuthenticationOnly" : {
+                  "description" : "If set to true, you will only perform the [3D Secure 2 authentication](https://docs.adyen.com/checkout/3d-secure/native-3ds2/authentication-only), and not the payment authorisation.",
+                  "type" : "boolean"
+               },
                "totalsGroup" : {
                   "description" : "The reference value to aggregate sales totals in reporting. When not specified, the store field is used (if available).",
                   "maxLength" : 16,
@@ -2624,6 +2645,10 @@
                "threeDS2Token" : {
                   "description" : "The ThreeDS2Token that was returned in the /authorise call.",
                   "type" : "string"
+               },
+               "threeDSAuthenticationOnly" : {
+                  "description" : "If set to true, you will only perform the [3D Secure 2 authentication](https://docs.adyen.com/checkout/3d-secure/native-3ds2/authentication-only), and not the payment authorisation.",
+                  "type" : "boolean"
                },
                "totalsGroup" : {
                   "description" : "The reference value to aggregate sales totals in reporting. When not specified, the store field is used (if available).",
@@ -2829,6 +2854,14 @@
          },
          "ThreeDS2RequestData" : {
             "properties" : {
+               "acquirerBIN" : {
+                  "description" : "Required for [authentication-only integration](https://docs.adyen.com/checkout/3d-secure/native-3ds2/authentication-only). The acquiring BIN enrolled for 3D Secure 2. This string should match the value that you will use in the authorisation. Use 123456 on the Test platform.",
+                  "type" : "string"
+               },
+               "acquirerMerchantID" : {
+                  "description" : "Required for [authentication-only integration](https://docs.adyen.com/checkout/3d-secure/native-3ds2/authentication-only). The merchantId that is enrolled for 3D Secure 2 by the merchant's acquirer. This string should match the value that you will use in the authorisation. Use 123456 on the Test platform.",
+                  "type" : "string"
+               },
                "authenticationOnly" : {
                   "description" : "If set to true, you will only perform the [3D Secure 2 authentication](https://docs.adyen.com/checkout/3d-secure/native-3ds2/authentication-only), and not the payment authorisation.",
                   "type" : "boolean"
@@ -2850,6 +2883,14 @@
                "deviceRenderOptions" : {
                   "description" : "Display options for the 3D Secure 2 SDK.\nOptional and only for `deviceChannel` **app**.",
                   "$ref" : "#/components/schemas/DeviceRenderOptions"
+               },
+               "mcc" : {
+                  "description" : "Required for merchants that have been enrolled for 3D Secure 2 by another party than Adyen, mostly [authentication-only integrations](https://docs.adyen.com/checkout/3d-secure/native-3ds2/authentication-only). The `mcc` is a four-digit code with which the previously given `acquirerMerchantID` is registered at the scheme.",
+                  "type" : "string"
+               },
+               "merchantName" : {
+                  "description" : "Required for [authentication-only integration](https://docs.adyen.com/checkout/3d-secure/native-3ds2/authentication-only). The merchant name that the issuer presents to the shopper if they get a challenge. We recommend to use the same value that you will use in the authorization. Maximum length is 40 characters.\n> Optional for a [full 3D Secure 2 integration](https://docs.adyen.com/checkout/3d-secure/native-3ds2/api-integration). Use this field if you are enrolled for 3D Secure 2 with us and want to override the merchant name already configured on your account.",
+                  "type" : "string"
                },
                "messageVersion" : {
                   "description" : "The `messageVersion` value indicating the 3D Secure 2 protocol version.",
@@ -2899,6 +2940,21 @@
                "threeDSRequestorURL" : {
                   "description" : "URL of the (customer service) website that will be shown to the shopper in case of technical errors during the 3D Secure 2 process.",
                   "type" : "string"
+               },
+               "transactionType" : {
+                  "description" : "Identify the type of the transaction being authenticated.",
+                  "enum" : [
+                     "goodsOrServicePurchase",
+                     "checkAcceptance",
+                     "accountFunding",
+                     "quasiCashTransaction",
+                     "prepaidActivationAndLoad"
+                  ],
+                  "type" : "string"
+               },
+               "whiteListStatus" : {
+                  "description" : "The `whiteListStatus` value returned from a previous 3D Secure 2 transaction, only applicable for 3D Secure 2 protocol version 2.2.0.",
+                  "type" : "string"
                }
             },
             "required" : [
@@ -2911,12 +2967,20 @@
                   "description" : "The `authenticationValue` value as defined in the 3D Secure 2 specification.",
                   "type" : "string"
                },
+               "cavvAlgorithm" : {
+                  "description" : "The algorithm used by the ACS to calculate the authentication value, only for CartesBancaires integrations.",
+                  "type" : "string"
+               },
                "dsTransID" : {
                   "description" : "The `dsTransID` value as defined in the 3D Secure 2 specification.",
                   "type" : "string"
                },
                "eci" : {
                   "description" : "The `eci` value as defined in the 3D Secure 2 specification.",
+                  "type" : "string"
+               },
+               "messageVersion" : {
+                  "description" : "The `messageVersion` value as defined in the 3D Secure 2 specification.",
                   "type" : "string"
                },
                "threeDSServerTransID" : {
@@ -2933,6 +2997,10 @@
                },
                "transStatusReason" : {
                   "description" : "The `transStatusReason` value as defined in the 3D Secure 2 specification.",
+                  "type" : "string"
+               },
+               "whiteListStatus" : {
+                  "description" : "The `whiteListStatus` value as defined in the 3D Secure 2 specification.",
                   "type" : "string"
                }
             }
@@ -2994,6 +3062,10 @@
                      "U",
                      "Y"
                   ],
+                  "type" : "string"
+               },
+               "dsTransID" : {
+                  "description" : "Supported for 3D Secure 2. The unique transaction identifier assigned by the Directory Server (DS) to identify a single transaction.",
                   "type" : "string"
                },
                "eci" : {
