@@ -1,8 +1,8 @@
 # Adyen OpenAPI / Swagger specifications
 
-Adyen provides [various APIs](https://docs.adyen.com/developers) to help you accept payments on your website or mobile application, implement subscription billing, make payouts, and much more.
+Adyen provides [various APIs](https://docs.adyen.com) to help you accept payments on your website or mobile application, implement subscription billing, make payouts, and much more.
 
-This repository contains Adyen API specifications, represented in the [OpenAPI standard](https://www.openapis.org/) (formerly known as Swagger Specification).
+This repository contains Adyen API specifications, represented in the [OpenAPI Specification](https://www.openapis.org/) standard (formerly known as Swagger Specification).
 
 ## Folder structure
 
@@ -10,11 +10,11 @@ Specifications in this repository are organized into two subfolders:
 
 ```
 /specs
-   /2.0 – Spec files in the OpenAPI 2.0 format.
-   /3.0 – Spec files in the OpenAPI 3.0.0 format.
+   /json – Spec files in the json format.
+   /yaml – Spec files in the yaml format.
 ```
 
-We provide specifications in both `.json` and `.yaml` formats, with the API version number (e.g. `v30`) in the file name.
+We support the OpenAPI version 3.0.0.
 
 ## Usage
   
