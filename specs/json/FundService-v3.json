@@ -7,8 +7,8 @@
    ],
    "info" : {
       "version" : "3",
-      "title" : "Adyen MarketPay Fund Service",
-      "description" : "The MarketPay Funding API provides endpoints for managing the funds in MarketPay accounts. These management operations include actions such as the transfer of funds from one account to another, the payout of funds to an account holder, and the retrieval of balances in an account.\n\nFor further information on MarketPay fund management, please visit the [MarketPay documentation](https://docs.adyen.com/developers/marketpay).\n## Authentication\nTo connect to the MarketPay API, you must use basic authentication credentials of your web service user. If you don't have one, please contact the [Adyen Support Team](https://support.adyen.com/hc/en-us/requests/new). Then use its credentials to authenticate your request, for example:\n\n```\ncurl\n-U \"ws@MarketPlace.YourMarketPlace\":\"YourWsPassword\" \\\n-H \"Content-Type: application/json\" \\\n...\n```\nNote that when going live, you need to generate new web service user credentials to access the [live endpoints](https://docs.adyen.com/developers/development-resources/live-endpoints).\n\n## Versioning\nMarketPay API supports versioning of its endpoints through a version suffix in the endpoint URL. This suffix has the following format: \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://cal-test.adyen.com/cal/services/Fund/v3/accountHolderBalance\n```",
+      "title" : "Adyen MarketPay Fund API",
+      "description" : "The MarketPay Funding API provides endpoints for managing the funds in MarketPay accounts. These management operations include actions such as the transfer of funds from one account to another, the payout of funds to an account holder, and the retrieval of balances in an account.\n\nFor further information on MarketPay fund management, please visit the [MarketPay documentation](https://docs.adyen.com/marketpay).\n## Authentication\nTo connect to the MarketPay API, you must use basic authentication credentials of your web service user. If you don't have one, please contact the [Adyen Support Team](https://support.adyen.com/hc/en-us/requests/new). Then use its credentials to authenticate your request, for example:\n\n```\ncurl\n-U \"ws@MarketPlace.YourMarketPlace\":\"YourWsPassword\" \\\n-H \"Content-Type: application/json\" \\\n...\n```\nNote that when going live, you need to generate new web service user credentials to access the [live endpoints](https://docs.adyen.com/development-resources/live-endpoints).\n\n## Versioning\nMarketPay API supports versioning of its endpoints through a version suffix in the endpoint URL. This suffix has the following format: \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://cal-test.adyen.com/cal/services/Fund/v3/accountHolderBalance\n```",
       "termsOfService" : "https://www.adyen.com/legal/terms-and-conditions",
       "contact" : {
          "name" : "Adyen Support",
@@ -152,6 +152,50 @@
             }
          }
       },
+      "/refundFundsTransfer" : {
+         "post" : {
+            "summary" : "Make a refund of the existing transfer funds transfer.",
+            "description" : "This endpoint is used to refund funds from one account to another account. Both accounts must be in the same marketplace, but can have different account holders. ",
+            "x-groupName" : "General",
+            "x-sortIndex" : 4,
+            "requestBody" : {
+               "content" : {
+                  "application/json" : {
+                     "schema" : {
+                        "$ref" : "#/components/schemas/RefundFundsTransferRequest"
+                     }
+                  }
+               }
+            },
+            "responses" : {
+               "200" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/RefundFundsTransferResponse"
+                        }
+                     }
+                  },
+                  "description" : "OK - the request has succeeded."
+               },
+               "400" : {
+                  "description" : "Bad Request - a problem reading or understanding the request."
+               },
+               "422" : {
+                  "description" : "Unprocessable Entity - a request validation error."
+               },
+               "401" : {
+                  "description" : "Unauthorized - authentication required."
+               },
+               "500" : {
+                  "description" : "Internal Server Error - the server could not process the request."
+               },
+               "403" : {
+                  "description" : "Forbidden - insufficient permissions to process the request."
+               }
+            }
+         }
+      },
       "/refundNotPaidOutTransfers" : {
          "post" : {
             "summary" : "Refund all transactions of an account since the most recent payout.",
@@ -243,7 +287,7 @@
       "/transferFunds" : {
          "post" : {
             "summary" : "Transfer funds from one platform account to another.",
-            "description" : "This endpoint is used to transfer funds from one account to another account. Both accounts must be in the same platform, but can have different account holders. The transfer must include a transfer code, which should be determined by the platform, in compliance with local regulations.",
+            "description" : "This endpoint is used to transfer funds from one account to another account. Both accounts must be in the same marketplace, but can have different account holders. The transfer must include a transfer code, which should be determined by the marketplace, in compliance with local regulations.",
             "x-groupName" : "General",
             "x-sortIndex" : 4,
             "requestBody" : {
@@ -359,6 +403,8 @@
                   "items" : {
                      "enum" : [
                         "Chargeback",
+                        "ChargebackCorrection",
+                        "ChargebackCorrectionReceived",
                         "ChargebackReceived",
                         "ChargebackReversed",
                         "ChargebackReversedReceived",
@@ -370,6 +416,7 @@
                         "Debited",
                         "DebitedReversed",
                         "FundTransfer",
+                        "FundTransferReversed",
                         "ManualCorrected",
                         "Payout",
                         "PayoutReversed",
@@ -437,13 +484,13 @@
          "Amount" : {
             "properties" : {
                "currency" : {
-                  "description" : "The three-character [ISO currency code](https://docs.adyen.com/developers/development-resources/currency-codes).",
+                  "description" : "The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).",
                   "maxLength" : 3,
                   "minLength" : 3,
                   "type" : "string"
                },
                "value" : {
-                  "description" : "The payable amount that can be charged for the transaction.\n\nThe transaction amount needs to be represented in minor units according to the [following table](https://docs.adyen.com/developers/development-resources/currency-codes).",
+                  "description" : "The payable amount that can be charged for the transaction.\n\nThe transaction amount needs to be represented in minor units according to the [following table](https://docs.adyen.com/development-resources/currency-codes).",
                   "format" : "int64",
                   "type" : "integer"
                }
@@ -456,11 +503,11 @@
          "BankAccountDetail" : {
             "properties" : {
                "accountNumber" : {
-                  "description" : "The bank account number (without separators).\n>Refer to the [Onboarding and verification](https://docs.adyen.com/developers/marketpay/onboarding-and-verification) section for details on field requirements.",
+                  "description" : "The bank account number (without separators).\n>Refer to the [Onboarding and verification](https://docs.adyen.com/marketpay/onboarding-and-verification) section for details on field requirements.",
                   "type" : "string"
                },
                "accountType" : {
-                  "description" : "The type of bank account.\nOnly applicable to bank accounts held in the USA.\nThe permitted values are: `checking`, `savings`.\n\n>Refer to the [Onboarding and verification](https://docs.adyen.com/developers/marketpay/onboarding-and-verification) section for details on field requirements.",
+                  "description" : "The type of bank account.\nOnly applicable to bank accounts held in the USA.\nThe permitted values are: `checking`, `savings`.\n\n>Refer to the [Onboarding and verification](https://docs.adyen.com/marketpay/onboarding-and-verification) section for details on field requirements.",
                   "type" : "string"
                },
                "bankAccountName" : {
@@ -472,47 +519,47 @@
                   "type" : "string"
                },
                "bankBicSwift" : {
-                  "description" : "The bank identifier code.\n>Refer to the [Onboarding and verification](https://docs.adyen.com/developers/marketpay/onboarding-and-verification) section for details on field requirements.",
+                  "description" : "The bank identifier code.\n>Refer to the [Onboarding and verification](https://docs.adyen.com/marketpay/onboarding-and-verification) section for details on field requirements.",
                   "type" : "string"
                },
                "bankCity" : {
-                  "description" : "The city in which the bank branch is located.\n\n>Refer to the [Onboarding and verification](https://docs.adyen.com/developers/marketpay/onboarding-and-verification) section for details on field requirements.",
+                  "description" : "The city in which the bank branch is located.\n\n>Refer to the [Onboarding and verification](https://docs.adyen.com/marketpay/onboarding-and-verification) section for details on field requirements.",
                   "type" : "string"
                },
                "bankCode" : {
-                  "description" : "The bank code of the banking institution with which the bank account is registered.\n\n>Refer to the [Onboarding and verification](https://docs.adyen.com/developers/marketpay/onboarding-and-verification) section for details on field requirements.",
+                  "description" : "The bank code of the banking institution with which the bank account is registered.\n\n>Refer to the [Onboarding and verification](https://docs.adyen.com/marketpay/onboarding-and-verification) section for details on field requirements.",
                   "type" : "string"
                },
                "bankName" : {
-                  "description" : "The name of the banking institution with which the bank account is held.\n\n>Refer to the [Onboarding and verification](https://docs.adyen.com/developers/marketpay/onboarding-and-verification) section for details on field requirements.",
+                  "description" : "The name of the banking institution with which the bank account is held.\n\n>Refer to the [Onboarding and verification](https://docs.adyen.com/marketpay/onboarding-and-verification) section for details on field requirements.",
                   "type" : "string"
                },
                "branchCode" : {
-                  "description" : "The branch code of the branch under which the bank account is registered. The value to be specified in this parameter depends on the country of the bank account:\n* United States - Routing number\n* United Kingdom - Sort code\n* Germany - Bankleitzahl\n>Refer to the [Onboarding and verification](https://docs.adyen.com/developers/marketpay/onboarding-and-verification) section for details on field requirements.",
+                  "description" : "The branch code of the branch under which the bank account is registered. The value to be specified in this parameter depends on the country of the bank account:\n* United States - Routing number\n* United Kingdom - Sort code\n* Germany - Bankleitzahl\n>Refer to the [Onboarding and verification](https://docs.adyen.com/marketpay/onboarding-and-verification) section for details on field requirements.",
                   "type" : "string"
                },
                "checkCode" : {
-                  "description" : "The check code of the bank account.\n\n>Refer to the [Onboarding and verification](https://docs.adyen.com/developers/marketpay/onboarding-and-verification) section for details on field requirements.",
+                  "description" : "The check code of the bank account.\n\n>Refer to the [Onboarding and verification](https://docs.adyen.com/marketpay/onboarding-and-verification) section for details on field requirements.",
                   "type" : "string"
                },
                "countryCode" : {
-                  "description" : "The two-letter country code in which the bank account is registered.\n>The permitted country codes are defined in ISO-3166-1 alpha-2 (e.g. 'NL').\n\n>Refer to the [Onboarding and verification](https://docs.adyen.com/developers/marketpay/onboarding-and-verification) section for details on field requirements.",
+                  "description" : "The two-letter country code in which the bank account is registered.\n>The permitted country codes are defined in ISO-3166-1 alpha-2 (e.g. 'NL').\n\n>Refer to the [Onboarding and verification](https://docs.adyen.com/marketpay/onboarding-and-verification) section for details on field requirements.",
                   "type" : "string"
                },
                "currencyCode" : {
-                  "description" : "The currency in which the bank account deals.\n>The permitted currency codes are defined in ISO-4217 (e.g. 'EUR').\n\n>Refer to the [Onboarding and verification](https://docs.adyen.com/developers/marketpay/onboarding-and-verification) section for details on field requirements.",
+                  "description" : "The currency in which the bank account deals.\n>The permitted currency codes are defined in ISO-4217 (e.g. 'EUR').\n\n>Refer to the [Onboarding and verification](https://docs.adyen.com/marketpay/onboarding-and-verification) section for details on field requirements.",
                   "type" : "string"
                },
                "iban" : {
-                  "description" : "The international bank account number.\n>The IBAN standard is defined in ISO-13616.\n\n>Refer to the [Onboarding and verification](https://docs.adyen.com/developers/marketpay/onboarding-and-verification) section for details on field requirements.",
+                  "description" : "The international bank account number.\n>The IBAN standard is defined in ISO-13616.\n\n>Refer to the [Onboarding and verification](https://docs.adyen.com/marketpay/onboarding-and-verification) section for details on field requirements.",
                   "type" : "string"
                },
                "ownerCity" : {
-                  "description" : "The city of residence of the bank account owner.\n>Refer to the [Onboarding and verification](https://docs.adyen.com/developers/marketpay/onboarding-and-verification) section for details on field requirements.",
+                  "description" : "The city of residence of the bank account owner.\n>Refer to the [Onboarding and verification](https://docs.adyen.com/marketpay/onboarding-and-verification) section for details on field requirements.",
                   "type" : "string"
                },
                "ownerCountryCode" : {
-                  "description" : "The country code of the country of residence of the bank account owner.\n>The permitted country codes are defined in ISO-3166-1 alpha-2 (e.g. 'NL').\n\n>Refer to the [Onboarding and verification](https://docs.adyen.com/developers/marketpay/onboarding-and-verification) section for details on field requirements.",
+                  "description" : "The country code of the country of residence of the bank account owner.\n>The permitted country codes are defined in ISO-3166-1 alpha-2 (e.g. 'NL').\n\n>Refer to the [Onboarding and verification](https://docs.adyen.com/marketpay/onboarding-and-verification) section for details on field requirements.",
                   "type" : "string"
                },
                "ownerDateOfBirth" : {
@@ -520,27 +567,27 @@
                   "type" : "string"
                },
                "ownerHouseNumberOrName" : {
-                  "description" : "The house name or number of the residence of the bank account owner.\n>Refer to the [Onboarding and verification](https://docs.adyen.com/developers/marketpay/onboarding-and-verification) section for details on field requirements.",
+                  "description" : "The house name or number of the residence of the bank account owner.\n>Refer to the [Onboarding and verification](https://docs.adyen.com/marketpay/onboarding-and-verification) section for details on field requirements.",
                   "type" : "string"
                },
                "ownerName" : {
-                  "description" : "The name of the bank account owner.\n>Refer to the [Onboarding and verification](https://docs.adyen.com/developers/marketpay/onboarding-and-verification) section for details on field requirements.",
+                  "description" : "The name of the bank account owner.\n>Refer to the [Onboarding and verification](https://docs.adyen.com/marketpay/onboarding-and-verification) section for details on field requirements.",
                   "type" : "string"
                },
                "ownerNationality" : {
-                  "description" : "The country code of the country of nationality of the bank account owner.\n>The permitted country codes are defined in ISO-3166-1 alpha-2 (e.g. 'NL').\n\n>Refer to the [Onboarding and verification](https://docs.adyen.com/developers/marketpay/onboarding-and-verification) section for details on field requirements.",
+                  "description" : "The country code of the country of nationality of the bank account owner.\n>The permitted country codes are defined in ISO-3166-1 alpha-2 (e.g. 'NL').\n\n>Refer to the [Onboarding and verification](https://docs.adyen.com/marketpay/onboarding-and-verification) section for details on field requirements.",
                   "type" : "string"
                },
                "ownerPostalCode" : {
-                  "description" : "The postal code of the residence of the bank account owner.\n>Refer to the [Onboarding and verification](https://docs.adyen.com/developers/marketpay/onboarding-and-verification) section for details on field requirements.",
+                  "description" : "The postal code of the residence of the bank account owner.\n>Refer to the [Onboarding and verification](https://docs.adyen.com/marketpay/onboarding-and-verification) section for details on field requirements.",
                   "type" : "string"
                },
                "ownerState" : {
-                  "description" : "The state of residence of the bank account owner.\n>Refer to the [Onboarding and verification](https://docs.adyen.com/developers/marketpay/onboarding-and-verification) section for details on field requirements.",
+                  "description" : "The state of residence of the bank account owner.\n>Refer to the [Onboarding and verification](https://docs.adyen.com/marketpay/onboarding-and-verification) section for details on field requirements.",
                   "type" : "string"
                },
                "ownerStreet" : {
-                  "description" : "The street name of the residence of the bank account owner.\n>Refer to the [Onboarding and verification](https://docs.adyen.com/developers/marketpay/onboarding-and-verification) section for details on field requirements.",
+                  "description" : "The street name of the residence of the bank account owner.\n>Refer to the [Onboarding and verification](https://docs.adyen.com/marketpay/onboarding-and-verification) section for details on field requirements.",
                   "type" : "string"
                },
                "primaryAccount" : {
@@ -548,11 +595,11 @@
                   "type" : "boolean"
                },
                "taxId" : {
-                  "description" : "The tax ID number.\n\n>Refer to the [Onboarding and verification](https://docs.adyen.com/developers/marketpay/onboarding-and-verification) section for details on field requirements.",
+                  "description" : "The tax ID number.\n\n>Refer to the [Onboarding and verification](https://docs.adyen.com/marketpay/onboarding-and-verification) section for details on field requirements.",
                   "type" : "string"
                },
                "urlForVerification" : {
-                  "description" : "The URL to be used for bank account verification.\nThis may be generated on bank account creation.\n\n>Refer to the [Onboarding and verification](https://docs.adyen.com/developers/marketpay/onboarding-and-verification) section for details on field requirements.",
+                  "description" : "The URL to be used for bank account verification.\nThis may be generated on bank account creation.\n\n>Refer to the [Onboarding and verification](https://docs.adyen.com/marketpay/onboarding-and-verification) section for details on field requirements.",
                   "type" : "string"
                }
             }
@@ -594,7 +641,7 @@
                   "type" : "string"
                },
                "description" : {
-                  "description" : "A description of the payout.",
+                  "description" : "A description of the payout. Maximum 35 characters.\nAllowed: **abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/?:().,'+ \";**",
                   "type" : "string"
                },
                "merchantReference" : {
@@ -635,6 +682,55 @@
                "pspReference",
                "submittedAsync",
                "bankAccountUUID"
+            ]
+         },
+         "RefundFundsTransferRequest" : {
+            "properties" : {
+               "amount" : {
+                  "description" : "The amount to be transferred.",
+                  "$ref" : "#/components/schemas/Amount"
+               },
+               "merchantReference" : {
+                  "description" : "A value that can be supplied at the discretion of the executing user in order to link multiple transactions to one another.",
+                  "type" : "string"
+               },
+               "originalReference" : {
+                  "description" : "A PSP reference of the original fund transfer.",
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "originalReference",
+               "amount"
+            ]
+         },
+         "RefundFundsTransferResponse" : {
+            "properties" : {
+               "merchantReference" : {
+                  "type" : "string"
+               },
+               "message" : {
+                  "type" : "string"
+               },
+               "originalReference" : {
+                  "type" : "string"
+               },
+               "pspReference" : {
+                  "description" : "The reference of a request.  Can be used to uniquely identify the request.",
+                  "type" : "string"
+               },
+               "resultCode" : {
+                  "description" : "The result code.",
+                  "type" : "string"
+               },
+               "submittedAsync" : {
+                  "description" : "Indicates whether the request is processed synchronously or asynchronously.  Depending on the request's platform settings, the following scenarios may be applied:\n* **sync:** The processing of the request is immediately attempted; it may result in an error if the providing service is unavailable.\n* **async:** The request is queued and will be executed when the providing service is available in the order in which the requests are received.\n* **asyncOnError:** The processing of the request is immediately attempted, but if the providing service is unavailable, the request is scheduled in a queue.",
+                  "type" : "boolean"
+               }
+            },
+            "required" : [
+               "pspReference",
+               "submittedAsync"
             ]
          },
          "RefundNotPaidOutTransfersRequest" : {
@@ -777,6 +873,8 @@
                   "description" : "The status of the transaction.\n>Permitted values: `PendingCredit`, `CreditFailed`, `Credited`, `Converted`, `PendingDebit`, `DebitFailed`, `Debited`, `DebitReversedReceived`, `DebitedReversed`, `ChargebackReceived`, `Chargeback`, `ChargebackReversedReceived`, `ChargebackReversed`, `Payout`, `PayoutReversed`, `FundTransfer`, `PendingFundTransfer`, `ManualCorrected`.",
                   "enum" : [
                      "Chargeback",
+                     "ChargebackCorrection",
+                     "ChargebackCorrectionReceived",
                      "ChargebackReceived",
                      "ChargebackReversed",
                      "ChargebackReversedReceived",
@@ -788,6 +886,7 @@
                      "Debited",
                      "DebitedReversed",
                      "FundTransfer",
+                     "FundTransferReversed",
                      "ManualCorrected",
                      "Payout",
                      "PayoutReversed",
@@ -841,7 +940,7 @@
                   "type" : "string"
                },
                "transferCode" : {
-                  "description" : "The code related to the type of transfer being performed.\n>The permitted codes differ for each platform and are defined in their service level agreement.",
+                  "description" : "The code related to the type of transfer being performed.\n>The permitted codes differ for each platform account and are defined in their service level agreement.",
                   "type" : "string"
                }
             },
