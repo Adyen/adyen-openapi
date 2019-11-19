@@ -1,8 +1,8 @@
 openapi: 3.0.0
 servers:
-  - url: 'https://checkout-test.adyen.com/v41'
+  - url: 'https://checkout-test.adyen.com/v49'
 info:
-  version: '41'
+  version: '49'
   title: Adyen Checkout API
   description: |-
     Adyen Checkout API provides a simple and flexible way to initiate and authorise online payments. You can use the same integration for payments made with cards (including One-Click and 3D Secure), mobile wallets, and local payment methods (e.g. iDEAL and Sofort).
@@ -25,7 +25,7 @@ info:
 
     For example:
     ```
-    https://checkout-test.adyen.com/v41/payments
+    https://checkout-test.adyen.com/v49/payments
     ```
   termsOfService: 'https://www.adyen.com/legal/terms-and-conditions'
   contact:
@@ -1619,6 +1619,82 @@ components:
         - expiryMonth
         - expiryYear
         - holderName
+    CheckoutPaymentsAction:
+      properties:
+        alternativeReference:
+          description: The voucher alternative reference code.
+          type: string
+        data:
+          description: 'When the redirect URL must be accessed via POST, use this data to post to the redirect URL.'
+          type: object
+        downloadUrl:
+          description: The URL to download the voucher.
+          type: string
+        expiresAt:
+          description: The date time of the voucher expiry.
+          type: string
+        initialAmount:
+          description: The initial amount.
+          $ref: '#/components/schemas/Amount'
+        instructionsUrl:
+          description: The URL to the detailed instructions to make payment using the voucher.
+          type: string
+        issuer:
+          description: The issuer of the voucher.
+          type: string
+        maskedTelephoneNumber:
+          description: The shopper telephone number (partially masked).
+          type: string
+        merchantName:
+          description: The merchant name.
+          type: string
+        merchantReference:
+          description: The merchant reference.
+          type: string
+        method:
+          description: 'Specifies the HTTP method, for example GET or POST.'
+          type: string
+        paymentData:
+          description: 'When non-empty, contains a value that you must submit to the `/payments/details` endpoint. In some cases, required for polling.'
+          type: string
+        paymentMethodType:
+          description: Specifies the payment method.
+          type: string
+        qrCodeData:
+          description: The contents of the QR code as a UTF8 string.
+          type: string
+        reference:
+          description: The voucher reference code.
+          type: string
+        shopperEmail:
+          description: The shopper email.
+          type: string
+        shopperName:
+          description: The shopper name.
+          type: string
+        surcharge:
+          description: The surcharge amount.
+          $ref: '#/components/schemas/Amount'
+        token:
+          description: A token to pass to the 3DS2 Component to get the fingerprint/challenge.
+          type: string
+        totalAmount:
+          description: The total amount (initial plus surcharge amount).
+          $ref: '#/components/schemas/Amount'
+        type:
+          description: Enum that specifies the action that needs to be taken by the client.
+          enum:
+            - await
+            - qrCode
+            - redirect
+            - threeDS2Challenge
+            - threeDS2Fingerprint
+            - voucher
+            - wechatpaySDK
+          type: string
+        url:
+          description: Specifies the URL to redirect to.
+          type: string
     CommonField:
       properties:
         name:
@@ -2072,6 +2148,11 @@ components:
         - gender
     PaymentMethod:
       properties:
+        brands:
+          description: 'List of possible brands. For example: visa, mc.'
+          items:
+            type: string
+          type: array
         configuration:
           description: The configuration of the payment method.
           type: object
@@ -2202,6 +2283,11 @@ components:
           description: Detailed list of payment methods required to generate payment forms.
           items:
             $ref: '#/components/schemas/PaymentMethod'
+          type: array
+        storedPaymentMethods:
+          description: List of all stored payment methods.
+          items:
+            $ref: '#/components/schemas/StoredPaymentMethod'
           type: array
     PaymentRequest:
       properties:
@@ -2446,6 +2532,9 @@ components:
           items:
             $ref: '#/components/schemas/Split'
           type: array
+        storePaymentMethod:
+          description: 'When true and `shopperReference` is provided, the payment details will be stored.'
+          type: boolean
         telephoneNumber:
           description: The shopper's telephone number.
           type: string
@@ -2463,6 +2552,9 @@ components:
         - paymentMethod
     PaymentResponse:
       properties:
+        action:
+          description: Action to be taken for completing the payment.
+          $ref: '#/components/schemas/CheckoutPaymentsAction'
         additionalData:
           description: 'This field contains additional data, which may be required to return in a particular payment response. To choose data fields to be returned, go to **Customer Area** > **Account** > **API URLs**.'
           type: object
@@ -2477,6 +2569,12 @@ components:
         fraudResult:
           description: The fraud result properties of the payment.
           $ref: '#/components/schemas/FraudResult'
+        merchantReference:
+          description: |-
+            The reference to uniquely identify a payment. This reference is used in all communication with you about the payment status. We recommend using a unique value per payment; however, it is not a requirement.
+            If you need to provide multiple references for a transaction, separate them with hyphens ("-").
+            Maximum length: 80 characters.
+          type: string
         outputDetails:
           description: Contains the details that will be presented to the shopper.
           type: object
@@ -2529,6 +2627,8 @@ components:
             - RedirectShopper
             - Refused
           type: string
+      required:
+        - merchantReference
     PaymentSetupRequest:
       properties:
         additionalData:
@@ -2746,6 +2846,9 @@ components:
           items:
             $ref: '#/components/schemas/Split'
           type: array
+        storePaymentMethod:
+          description: 'When true and `shopperReference` is provided, the payment details will be stored.'
+          type: boolean
         telephoneNumber:
           description: The shopper's telephone number.
           type: string
@@ -2882,6 +2985,11 @@ components:
           type: string
     RecurringDetail:
       properties:
+        brands:
+          description: 'List of possible brands. For example: visa, mc.'
+          items:
+            type: string
+          type: array
         configuration:
           description: The configuration of the payment method.
           type: object
@@ -3074,6 +3182,40 @@ components:
         emailAddress:
           description: The email associated with stored payment details.
           type: string
+    StoredPaymentMethod:
+      properties:
+        brand:
+          description: The brand of the card.
+          type: string
+        expiryMonth:
+          description: The month the card expires.
+          type: string
+        expiryYear:
+          description: The year the card expires.
+          type: string
+        holderName:
+          description: The unique payment method code.
+          type: string
+        id:
+          description: A unique identifier of this stored payment method.
+          type: string
+        lastFour:
+          description: The last four digits of the PAN.
+          type: string
+        name:
+          description: The display name of the stored payment method.
+          type: string
+        shopperEmail:
+          description: The shopper’s email address.
+          type: string
+        supportedShopperInteractions:
+          description: The supported shopper interactions for this stored payment method.
+          items:
+            type: string
+          type: array
+        type:
+          description: The type of payment method.
+          type: string
     SubInputDetail:
       properties:
         configuration:
@@ -3098,6 +3240,12 @@ components:
           type: string
     ThreeDS2RequestData:
       properties:
+        acquirerBIN:
+          description: 'Required for [authentication-only integration](https://docs.adyen.com/checkout/3d-secure/native-3ds2/authentication-only). The acquiring BIN enrolled for 3D Secure 2. This string should match the value that you will use in the authorisation. Use 123456 on the Test platform.'
+          type: string
+        acquirerMerchantID:
+          description: 'Required for [authentication-only integration](https://docs.adyen.com/checkout/3d-secure/native-3ds2/authentication-only). The merchantId that is enrolled for 3D Secure 2 by the merchant''s acquirer. This string should match the value that you will use in the authorisation. Use 123456 on the Test platform.'
+          type: string
         authenticationOnly:
           description: 'If set to true, you will only perform the [3D Secure 2 authentication](https://docs.adyen.com/checkout/3d-secure/native-3ds2/authentication-only), and not the payment authorisation.'
           type: boolean
@@ -3127,6 +3275,14 @@ components:
             Display options for the 3D Secure 2 SDK.
             Optional and only for `deviceChannel` **app**.
           $ref: '#/components/schemas/DeviceRenderOptions'
+        mcc:
+          description: 'Required for merchants that have been enrolled for 3D Secure 2 by another party than Adyen, mostly [authentication-only integrations](https://docs.adyen.com/checkout/3d-secure/native-3ds2/authentication-only). The `mcc` is a four-digit code with which the previously given `acquirerMerchantID` is registered at the scheme.'
+          type: string
+        merchantName:
+          description: |-
+            Required for [authentication-only integration](https://docs.adyen.com/checkout/3d-secure/native-3ds2/authentication-only). The merchant name that the issuer presents to the shopper if they get a challenge. We recommend to use the same value that you will use in the authorization. Maximum length is 40 characters.
+            > Optional for a [full 3D Secure 2 integration](https://docs.adyen.com/checkout/3d-secure/native-3ds2/api-integration). Use this field if you are enrolled for 3D Secure 2 with us and want to override the merchant name already configured on your account.
+          type: string
         messageVersion:
           description: The `messageVersion` value indicating the 3D Secure 2 protocol version.
           type: string
@@ -3176,6 +3332,9 @@ components:
         threeDSRequestorURL:
           description: URL of the (customer service) website that will be shown to the shopper in case of technical errors during the 3D Secure 2 process.
           type: string
+        whiteListStatus:
+          description: 'The `whiteListStatus` value returned from a previous 3D Secure 2 transaction, only applicable for 3D Secure 2 protocol version 2.2.0.'
+          type: string
       required:
         - deviceChannel
     ThreeDSecureData:
@@ -3212,6 +3371,9 @@ components:
             - R
             - U
             - 'Y'
+          type: string
+        dsTransID:
+          description: Supported for 3D Secure 2. The unique transaction identifier assigned by the Directory Server (DS) to identify a single transaction.
           type: string
         eci:
           description: The electronic commerce indicator.
