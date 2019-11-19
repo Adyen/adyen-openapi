@@ -7,8 +7,14 @@
    ],
    "info" : {
       "version" : "18",
-      "title" : "Adyen Recurring Service",
-      "description" : "Additional methods that allow you to manage payment details stored for recurring payments. For more information, refer to [Recurring payments](https://docs.adyen.com/developers/features/recurring-payments)."
+      "title" : "Adyen Recurring API",
+      "description" : "The Recurring APIs allow you to manage and remove your tokens or saved payment details. Tokens should be created with validation during a payment request.\n\nFor more information, refer to our [Tokenization documentation](https://docs.adyen.com/checkout/tokenization).\n## Authentication\nTo connect to the Recurring API, you must use your basic authentication credentials. For this, create your web service user, as described in [How to get the WS user password](https://docs.adyen.com/user-management/how-to-get-the-web-service-ws-user-password). Then use its credentials to authenticate your request, for example:\n\n```\ncurl\n-U \"ws@Company.YourCompany\":\"YourWsPassword\" \\\n-H \"Content-Type: application/json\" \\\n...\n```\nNote that when going live, you need to generate new web service user credentials to access the [live endpoints](https://docs.adyen.com/development-resources/live-endpoints).\n\n## Versioning\nRecurring API supports versioning of its endpoints through a version suffix in the endpoint URL. This suffix has the following format: \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://pal-test.adyen.com/pal/servlet/Recurring/v18/disable\n```",
+      "termsOfService" : "https://www.adyen.com/legal/terms-and-conditions",
+      "contact" : {
+         "name" : "Adyen Support",
+         "url" : "https://support.adyen.com/",
+         "email" : "support@adyen.com"
+      }
    },
    "x-groups" : [
       "General"
@@ -17,7 +23,7 @@
       "/disable" : {
          "post" : {
             "summary" : "Disables stored payment details.",
-            "description" : "Disables stored payment details to stop charging a shopper with this particular recurring detail ID.\n\nFor more information, refer to [Disable stored details](https://docs.adyen.com/developers/features/recurring-payments/disable-stored-details).",
+            "description" : "Disables stored payment details to stop charging a shopper with this particular recurring detail ID.\n\nFor more information, refer to [Disable stored details](https://docs.adyen.com/classic-integration/recurring-payments/disable-stored-details/).",
             "x-groupName" : "General",
             "x-sortIndex" : 2,
             "requestBody" : {
@@ -61,7 +67,7 @@
       "/listRecurringDetails" : {
          "post" : {
             "summary" : "Retrieves stored payment details for a shopper.",
-            "description" : "Lists the stored payment details for a shopper, if there are any available. The recurring detail ID can be used with a regular authorisation request to charge the shopper. A summary of the payment detail is returned for presentation to the shopper.\n\nFor more information, refer to [Retrieve stored details](https://docs.adyen.com/developers/features/recurring-payments/retrieve-stored-details).",
+            "description" : "Lists the stored payment details for a shopper, if there are any available. The recurring detail ID can be used with a regular authorisation request to charge the shopper. A summary of the payment detail is returned for presentation to the shopper.\n\nFor more information, refer to [Retrieve stored details](https://docs.adyen.com/classic-integration/recurring-payments/retrieve-stored-details/).",
             "x-groupName" : "General",
             "x-sortIndex" : 1,
             "requestBody" : {
@@ -101,6 +107,50 @@
                }
             }
          }
+      },
+      "/scheduleAccountUpdater" : {
+         "post" : {
+            "summary" : "Schedules running of the Account Updater.",
+            "description" : "When making the API call, you can submit either the credit card information, or the recurring detail reference and the shopper reference:\n* If the card information is provided, all the sub-fields for `card` are mandatory.\n* If the recurring detail reference is provided, the fields for `shopperReference` and `selectedRecurringDetailReference` are mandatory.",
+            "x-groupName" : "General",
+            "x-sortIndex" : 3,
+            "requestBody" : {
+               "content" : {
+                  "application/json" : {
+                     "schema" : {
+                        "$ref" : "#/components/schemas/ScheduleAccountUpdaterRequest"
+                     }
+                  }
+               }
+            },
+            "responses" : {
+               "200" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/ScheduleAccountUpdaterResult"
+                        }
+                     }
+                  },
+                  "description" : "OK - the request has succeeded."
+               },
+               "400" : {
+                  "description" : "Bad Request - a problem reading or understanding the request."
+               },
+               "422" : {
+                  "description" : "Unprocessable Entity - a request validation error."
+               },
+               "401" : {
+                  "description" : "Unauthorized - authentication required."
+               },
+               "500" : {
+                  "description" : "Internal Server Error - the server could not process the request."
+               },
+               "403" : {
+                  "description" : "Forbidden - insufficient permissions to process the request."
+               }
+            }
+         }
       }
    },
    "components" : {
@@ -108,27 +158,27 @@
          "Address" : {
             "properties" : {
                "city" : {
-                  "description" : "The city name.",
+                  "description" : "The name of the city.",
                   "type" : "string"
                },
                "country" : {
-                  "description" : "A valid value is an ISO two-character country code (e.g. 'NL').",
+                  "description" : "The two-character country code as defined in ISO-3166-1 alpha-2. For example, **US**.\n> If you don't know the country or are not collecting the country from the shopper, provide `country` as `ZZ`.",
                   "type" : "string"
                },
                "houseNumberOrName" : {
-                  "description" : "The house number or name.",
+                  "description" : "The number or name of the house.",
                   "type" : "string"
                },
                "postalCode" : {
-                  "description" : "The postal code with a maximum of 5 characters for USA and maximum of 10 characters for any other country.",
+                  "description" : "A maximum of five digits for an address in the US, or a maximum of ten characters for an address in all other countries.",
                   "type" : "string"
                },
                "stateOrProvince" : {
-                  "description" : "For USA or Canada, a valid 2-character abbreviation for the state or province respectively. For other countries any abbreviation with maximum 3 characters for the state or province.",
+                  "description" : "State or province codes as defined in ISO 3166-2. For example, **SF** in US or **ON** for Canada.\n> Required for the US and Canada.",
                   "type" : "string"
                },
                "street" : {
-                  "description" : "The street name.\n> Don't append the house number to this field. Instead, pass the house number separately as `houseNumberOrName`.\n",
+                  "description" : "The name of the street.\n> The house number should not be included in this field; it should be separately provided via `houseNumberOrName`.",
                   "type" : "string"
                }
             },
@@ -136,6 +186,7 @@
                "street",
                "houseNumberOrName",
                "city",
+               "postalCode",
                "country"
             ]
          },
@@ -185,7 +236,7 @@
                   "$ref" : "#/components/schemas/Address"
                },
                "cvc" : {
-                  "description" : "The [card verification code](https://docs.adyen.com/developers/payment-glossary#cardsecuritycodecvccvvcid) (1-20 characters). Depending on the card brand, it is known also as:\n* CVV2/CVC2 – length: 3 digits\n* CID – length: 4 digits\n> If you are using [Client-Side Encryption](https://docs.adyen.com/developers/ecommerce-integration), the CVC code is present in the encrypted data. You must never post the card details to the server.\n> This field must be always present in a [one-click payment request](https://docs.adyen.com/developers/features/recurring-payments).\n> When this value is returned in a response, it is always empty because it is not stored.",
+                  "description" : "The [card verification code](https://docs.adyen.com/payments-fundamentals/payment-glossary#card-security-code-cvc-cvv-cid) (1-20 characters). Depending on the card brand, it is known also as:\n* CVV2/CVC2 – length: 3 digits\n* CID – length: 4 digits\n> If you are using [Client-Side Encryption](https://docs.adyen.com/classic-integration/cse-integration-ecommerce), the CVC code is present in the encrypted data. You must never post the card details to the server.\n> This field must be always present in a [one-click payment request](https://docs.adyen.com/classic-integration/recurring-payments).\n> When this value is returned in a response, it is always empty because it is not stored.",
                   "maxLength" : 20,
                   "minLength" : 1,
                   "type" : "string"
@@ -247,7 +298,7 @@
                   "type" : "string"
                },
                "merchantAccount" : {
-                  "description" : "Your merchant account.",
+                  "description" : "The merchant account identifier with which you want to process the transaction.",
                   "type" : "string"
                },
                "recurringDetailReference" : {
@@ -266,34 +317,8 @@
          },
          "DisableResult" : {
             "properties" : {
-               "details" : {
-                  "description" : "A list of one or more recurring payment details that were disabled.",
-                  "items" : {
-                     "$ref" : "#/components/schemas/RecurringDetail"
-                  },
-                  "type" : "array"
-               },
                "response" : {
                   "description" : "Depending on whether a specific recurring detail was in the request, result is either [detail-successfully-disabled] or [all-details-successfully-disabled].",
-                  "type" : "string"
-               }
-            }
-         },
-         "ELV" : {
-            "properties" : {
-               "accountHolderName" : {
-                  "type" : "string"
-               },
-               "bankAccountNumber" : {
-                  "type" : "string"
-               },
-               "bankLocation" : {
-                  "type" : "string"
-               },
-               "bankLocationId" : {
-                  "type" : "string"
-               },
-               "bankName" : {
                   "type" : "string"
                }
             }
@@ -301,11 +326,11 @@
          "Name" : {
             "properties" : {
                "firstName" : {
-                  "description" : "A person's first name.",
+                  "description" : "The first name.",
                   "type" : "string"
                },
                "gender" : {
-                  "description" : "A person's gender (can be unknown).",
+                  "description" : "The gender.\n>The following values are permitted: `MALE`, `FEMALE`, `UNKNOWN`.",
                   "enum" : [
                      "MALE",
                      "FEMALE",
@@ -316,11 +341,11 @@
                   "type" : "string"
                },
                "infix" : {
-                  "description" : "A person name's infix, if applicable. Maximum length: 20 characters.",
+                  "description" : "The name's infix, if applicable.\n>A maximum length of twenty (20) characters is imposed.",
                   "type" : "string"
                },
                "lastName" : {
-                  "description" : "A person's last name.",
+                  "description" : "The last name.",
                   "type" : "string"
                }
             },
@@ -333,7 +358,7 @@
          "Recurring" : {
             "properties" : {
                "contract" : {
-                  "description" : "The type of recurring contract to be used.\nPossible values:\n* `ONECLICK` – The shopper opts to store their card details for future use. The shopper is present for the subsequent transaction, for cards the security code (CVC/CVV) is required.\n* `RECURRING` – Payment details are stored for future use. For cards, the security code (CVC/CVV) is not required for subsequent payments. This is used for shopper not present transactions.\n* `ONECLICK,RECURRING` – Payment details are stored for future use. This allows the use of the stored payment details regardless of whether the shopper is on your site or not.",
+                  "description" : "The type of recurring contract to be used.\nPossible values:\n* `ONECLICK` – Payment details can be used to initiate a one-click payment, where the shopper enters the [card security code (CVC/CVV)](https://docs.adyen.com/payments-fundamentals/payment-glossary#card-security-code-cvc-cvv-cid).\n* `RECURRING` – Payment details can be used without the card security code to initiate [card-not-present transactions](https://docs.adyen.com/payments-fundamentals/payment-glossary#card-not-present-cnp).\n* `ONECLICK,RECURRING` – Payment details can be used regardless of whether the shopper is on your site or not.\n* `PAYOUT` – Payment details can be used to [make a payout](https://docs.adyen.com/checkout/online-payouts).",
                   "enum" : [
                      "ONECLICK",
                      "RECURRING",
@@ -349,73 +374,75 @@
          },
          "RecurringDetail" : {
             "properties" : {
-               "acquirer" : {
-                  "type" : "string"
-               },
-               "acquirerAccount" : {
-                  "type" : "string"
-               },
                "additionalData" : {
-                  "additionalProperties" : {
-                     "type" : "string"
-                  },
+                  "description" : "This field contains additional data, which may be returned in a particular response.\n\nThe additionalData object consists of entries, each of which includes the key and value.",
                   "type" : "object"
                },
                "alias" : {
+                  "description" : "The alias of the credit card number.\n\nApplies only to recurring contracts storing credit card details",
                   "type" : "string"
                },
                "aliasType" : {
+                  "description" : "The alias type of the credit card number.\n\nApplies only to recurring contracts storing credit card details.",
                   "type" : "string"
                },
                "bank" : {
+                  "description" : "A container for bank account data.",
                   "$ref" : "#/components/schemas/BankAccount"
                },
                "billingAddress" : {
+                  "description" : "The billing address.",
                   "$ref" : "#/components/schemas/Address"
                },
                "card" : {
+                  "description" : "A container for card data.",
                   "$ref" : "#/components/schemas/Card"
                },
                "contractTypes" : {
+                  "description" : "Types of recurring contracts.",
                   "items" : {
                      "type" : "string"
                   },
                   "type" : "array"
                },
                "creationDate" : {
+                  "description" : "The date when the recurring details were created.",
                   "format" : "date-time",
                   "type" : "string"
                },
-               "elv" : {
-                  "$ref" : "#/components/schemas/ELV"
-               },
                "firstPspReference" : {
+                  "description" : "The `pspReference` of the first recurring payment that created the recurring detail.",
                   "type" : "string"
                },
                "name" : {
-                  "description" : "An optional descriptive name for this recurring detail",
+                  "description" : "An optional descriptive name for this recurring detail.",
                   "type" : "string"
                },
                "paymentMethodVariant" : {
+                  "description" : "The  type or sub-brand of a payment method used, e.g. Visa Debit, Visa Corporate, etc. For more information, refer to [PaymentMethodVariant](https://docs.adyen.com/api-reference/common-api/paymentmethodvariant).",
                   "type" : "string"
                },
                "recurringDetailReference" : {
-                  "description" : "The reference that uniquely identifies the recurring detail",
+                  "description" : "The reference that uniquely identifies the recurring detail.",
                   "type" : "string"
                },
                "shopperName" : {
+                  "description" : "The name of the shopper.",
                   "$ref" : "#/components/schemas/Name"
                },
                "socialSecurityNumber" : {
+                  "description" : "A shopper's social security number (only in countries where it is legal to collect).",
                   "type" : "string"
-               },
-               "tokenDetails" : {
-                  "$ref" : "#/components/schemas/TokenDetails"
                },
                "variant" : {
+                  "description" : "The payment method, such as “mc\", \"visa\", \"ideal\", \"paypal\".",
                   "type" : "string"
                }
-            }
+            },
+            "required" : [
+               "recurringDetailReference",
+               "variant"
+            ]
          },
          "RecurringDetailsRequest" : {
             "properties" : {
@@ -445,7 +472,7 @@
                   "type" : "string"
                },
                "details" : {
-                  "description" : "A list of one or more recurring payment details.",
+                  "description" : "Payment details stored for recurring payments.",
                   "items" : {
                      "$ref" : "#/components/schemas/RecurringDetail"
                   },
@@ -461,18 +488,53 @@
                }
             }
          },
-         "TokenDetails" : {
+         "ScheduleAccountUpdaterRequest" : {
             "properties" : {
-               "tokenData" : {
-                  "additionalProperties" : {
-                     "type" : "string"
-                  },
+               "additionalData" : {
+                  "description" : "This field contains additional data, which may be required for a particular request.",
                   "type" : "object"
                },
-               "tokenDataType" : {
+               "card" : {
+                  "description" : "A container for credit card data.\n\nOptional if `shopperReference` and `selectedRecurringDetailReference` are provided.",
+                  "$ref" : "#/components/schemas/Card"
+               },
+               "merchantAccount" : {
+                  "description" : "Account of the merchant.",
+                  "type" : "string"
+               },
+               "reference" : {
+                  "description" : "A reference that merchants can apply for the call.",
+                  "type" : "string"
+               },
+               "selectedRecurringDetailReference" : {
+                  "description" : "The selected detail recurring reference.\n\nOptional if `card` is provided.",
+                  "type" : "string"
+               },
+               "shopperReference" : {
+                  "description" : "The reference of the shopper that owns the recurring contract.\n\nOptional if `card` is provided.",
                   "type" : "string"
                }
-            }
+            },
+            "required" : [
+               "merchantAccount",
+               "reference"
+            ]
+         },
+         "ScheduleAccountUpdaterResult" : {
+            "properties" : {
+               "pspReference" : {
+                  "description" : "Adyen's 16-character unique reference associated with the transaction. This value is globally unique; quote it when communicating with us about this request.",
+                  "type" : "string"
+               },
+               "result" : {
+                  "description" : "The result of scheduling an Account Updater. If scheduling was successful, this field returns **Success**; otherwise it contains the error message.",
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "pspReference",
+               "result"
+            ]
          }
       }
    }
