@@ -1,8 +1,8 @@
 openapi: 3.0.0
 servers:
-  - url: 'https://pal-test.adyen.com/pal/servlet/Payment/v46'
+  - url: 'https://pal-test.adyen.com/pal/servlet/Payment/v49'
 info:
-  version: '46'
+  version: '49'
   title: Adyen Payment API
   description: |-
     A set of API endpoints that allow you to initiate, settle, and modify payments on the Adyen payments platform. You can use the API to accept card payments (including One-Click and 3D Secure), bank transfers, ewallets, and many other payment methods.
@@ -25,7 +25,7 @@ info:
 
     For example:
     ```
-    https://pal-test.adyen.com/pal/servlet/Payment/v46/authorise
+    https://pal-test.adyen.com/pal/servlet/Payment/v49/authorise
     ```
   termsOfService: 'https://www.adyen.com/legal/terms-and-conditions'
   contact:
@@ -2906,6 +2906,12 @@ components:
         - value
     ThreeDS2RequestData:
       properties:
+        acquirerBIN:
+          description: 'Required for [authentication-only integration](https://docs.adyen.com/checkout/3d-secure/native-3ds2/authentication-only). The acquiring BIN enrolled for 3D Secure 2. This string should match the value that you will use in the authorisation. Use 123456 on the Test platform.'
+          type: string
+        acquirerMerchantID:
+          description: 'Required for [authentication-only integration](https://docs.adyen.com/checkout/3d-secure/native-3ds2/authentication-only). The merchantId that is enrolled for 3D Secure 2 by the merchant''s acquirer. This string should match the value that you will use in the authorisation. Use 123456 on the Test platform.'
+          type: string
         authenticationOnly:
           description: 'If set to true, you will only perform the [3D Secure 2 authentication](https://docs.adyen.com/checkout/3d-secure/native-3ds2/authentication-only), and not the payment authorisation.'
           type: boolean
@@ -2935,6 +2941,14 @@ components:
             Display options for the 3D Secure 2 SDK.
             Optional and only for `deviceChannel` **app**.
           $ref: '#/components/schemas/DeviceRenderOptions'
+        mcc:
+          description: 'Required for merchants that have been enrolled for 3D Secure 2 by another party than Adyen, mostly [authentication-only integrations](https://docs.adyen.com/checkout/3d-secure/native-3ds2/authentication-only). The `mcc` is a four-digit code with which the previously given `acquirerMerchantID` is registered at the scheme.'
+          type: string
+        merchantName:
+          description: |-
+            Required for [authentication-only integration](https://docs.adyen.com/checkout/3d-secure/native-3ds2/authentication-only). The merchant name that the issuer presents to the shopper if they get a challenge. We recommend to use the same value that you will use in the authorization. Maximum length is 40 characters.
+            > Optional for a [full 3D Secure 2 integration](https://docs.adyen.com/checkout/3d-secure/native-3ds2/api-integration). Use this field if you are enrolled for 3D Secure 2 with us and want to override the merchant name already configured on your account.
+          type: string
         messageVersion:
           description: The `messageVersion` value indicating the 3D Secure 2 protocol version.
           type: string
@@ -2984,6 +2998,9 @@ components:
         threeDSRequestorURL:
           description: URL of the (customer service) website that will be shown to the shopper in case of technical errors during the 3D Secure 2 process.
           type: string
+        whiteListStatus:
+          description: 'The `whiteListStatus` value returned from a previous 3D Secure 2 transaction, only applicable for 3D Secure 2 protocol version 2.2.0.'
+          type: string
       required:
         - deviceChannel
     ThreeDS2Result:
@@ -2997,6 +3014,9 @@ components:
         eci:
           description: The `eci` value as defined in the 3D Secure 2 specification.
           type: string
+        messageVersion:
+          description: The `messageVersion` value as defined in the 3D Secure 2 specification.
+          type: string
         threeDSServerTransID:
           description: The `threeDSServerTransID` value as defined in the 3D Secure 2 specification.
           type: string
@@ -3008,6 +3028,9 @@ components:
           type: string
         transStatusReason:
           description: The `transStatusReason` value as defined in the 3D Secure 2 specification.
+          type: string
+        whiteListStatus:
+          description: The `whiteListStatus` value as defined in the 3D Secure 2 specification.
           type: string
     ThreeDS2ResultRequest:
       properties:
