@@ -1,9 +1,9 @@
 openapi: 3.0.0
 info:
   version: '4'
-  title: Adyen Notification API
+  title: Adyen MarketPay Notifications
   description: |-
-    The Notification Service sends notifications to the endpoints specified in a given subscription. Subscriptions are managed through the Notification Configuration API. The API specifications listed here detail the format of each notification.
+    The Notification API sends notifications to the endpoints specified in a given subscription. Subscriptions are managed through the Notification Configuration API. The API specifications listed here detail the format of each notification.
 
     For further information on MarketPay notifications, please visit the [MarketPay documentation](https://docs.adyen.com/marketpay).
   termsOfService: 'https://www.adyen.com/legal/terms-and-conditions'
@@ -109,6 +109,42 @@ paths:
               schema:
                 $ref: '#/components/schemas/NotificationResponse'
           description: OK - the request has succeeded.
+  /ACCOUNT_HOLDER_STORE_STATUS_CHANGE:
+    post:
+      summary: Triggered upon the status change of a store tied to an account holder.
+      description: This notification is sent when the status of a store tied to an account holder has been changed.
+      x-groupName: Account holders
+      x-sortIndex: 4
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountHolderStoreStatusChangeNotification'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationResponse'
+          description: OK - the request has succeeded.
+  /ACCOUNT_HOLDER_UPCOMING_DEADLINE:
+    post:
+      summary: Triggered upon an upcoming deadline.
+      description: 'This notification is sent when an Account Holder has a deadline, to fulfill the requirements of a specific event, coming up.'
+      x-groupName: Account holders
+      x-sortIndex: 1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountHolderUpcomingDeadlineNotification'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationResponse'
+          description: OK - the request has succeeded.
   /ACCOUNT_HOLDER_UPDATED:
     post:
       summary: Triggered upon the update of an account holder.
@@ -199,6 +235,24 @@ paths:
               schema:
                 $ref: '#/components/schemas/NotificationResponse'
           description: OK - the request has succeeded.
+  /DIRECT_DEBIT_INITIATED:
+    post:
+      summary: Triggered when an automated direct debit is initiated.
+      description: This notification is sent when an automated direct debit is initiated from the Adyen platform.
+      x-groupName: Fund management
+      x-sortIndex: 7
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DirectDebitInitiatedNotification'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationResponse'
+          description: OK - the request has succeeded.
   /PAYMENT_FAILURE:
     post:
       summary: Triggered upon an account payment failure.
@@ -210,6 +264,24 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/PaymentFailureNotification'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationResponse'
+          description: OK - the request has succeeded.
+  /REFUND_FUNDS_TRANSFER:
+    post:
+      summary: Triggered upon the transfer refund of funds between accounts.
+      description: This notification is sent when the refund of funds from an account have been transferred to another account.
+      x-groupName: Fund management
+      x-sortIndex: 6
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefundFundsTransferNotification'
       responses:
         '200':
           content:
@@ -430,6 +502,7 @@ components:
       required:
         - fullPhoneNumber
         - email
+        - webAddress
     AccountHolderPayoutNotification:
       properties:
         content:
@@ -467,10 +540,10 @@ components:
           description: The code of the Account Holder to which the payout was made.
           type: string
         amount:
-          description: payout amount
+          description: The payout amount.
           $ref: '#/components/schemas/Amount'
         amounts:
-          description: payout amounts (per currency)
+          description: The payout amounts (per currency).
           items:
             $ref: '#/components/schemas/Amount'
           type: array
@@ -481,15 +554,14 @@ components:
           description: A description of the payout.
           type: string
         merchantReference:
-          description: merchant reference
+          description: The merchant reference.
           type: string
         status:
-          description: payout status
+          description: The payout status.
           $ref: '#/components/schemas/OperationStatus'
       required:
         - accountHolderCode
         - accountCode
-        - bankAccountDetail
     AccountHolderStatus:
       properties:
         events:
@@ -568,6 +640,93 @@ components:
         - oldStatus
         - newStatus
         - reason
+    AccountHolderStoreStatusChangeNotification:
+      properties:
+        content:
+          description: The details of the Account Holder Store status change.
+          $ref: '#/components/schemas/AccountHolderStoreStatusChangeNotificationContent'
+        eventDate:
+          description: The date and time when an event has been completed.
+          format: date-time
+          type: string
+        eventType:
+          description: The event type of the notification.
+          type: string
+        executingUserKey:
+          description: The user or process that has triggered the notification.
+          type: string
+        live:
+          description: 'Indicates whether the notification originated from the live environment or the test environment. If true, the notification originated from the live environment. If false, the notification originated from the test environment.'
+          type: boolean
+        pspReference:
+          description: The PSP reference of the request from which the notification originates.
+          type: string
+      required:
+        - executingUserKey
+        - pspReference
+        - eventType
+        - live
+        - eventDate
+    AccountHolderStoreStatusChangeNotificationContent: {}
+    AccountHolderUpcomingDeadlineNotification:
+      properties:
+        content:
+          description: The details of the upcoming event.
+          $ref: '#/components/schemas/AccountHolderUpcomingDeadlineNotificationContent'
+        eventDate:
+          description: The date and time when an event has been completed.
+          format: date-time
+          type: string
+        eventType:
+          description: The event type of the notification.
+          type: string
+        executingUserKey:
+          description: The user or process that has triggered the notification.
+          type: string
+        live:
+          description: 'Indicates whether the notification originated from the live environment or the test environment. If true, the notification originated from the live environment. If false, the notification originated from the test environment.'
+          type: boolean
+        pspReference:
+          description: The PSP reference of the request from which the notification originates.
+          type: string
+      required:
+        - executingUserKey
+        - pspReference
+        - eventType
+        - live
+        - eventDate
+    AccountHolderUpcomingDeadlineNotificationContent:
+      properties:
+        accountHolderCode:
+          description: The code of the account holder whom the event refers to.
+          type: string
+        event:
+          description: The event name that will be trigger if no action is taken.
+          enum:
+            - AccessPii
+            - CloseAccount
+            - CloseStores
+            - DeleteBankAccounts
+            - DeletePayoutInstrumentTokens
+            - DeletePayoutMethods
+            - DeleteShareholders
+            - InactivateAccount
+            - RecalculateAccountStatusAndProcessingTier
+            - RefundNotPaidOutTransfers
+            - ResolveEvents
+            - SaveAccountHolder
+            - SaveKYCCheckStatus
+            - SuspendAccount
+            - UnSuspendAccount
+            - UpdateAccountHolderState
+            - Verification
+          type: string
+        executionDate:
+          description: The execution date scheduled for the event.
+          $ref: '#/components/schemas/LocalDate'
+        reason:
+          description: The reason that leads to scheduling of the event.
+          type: string
     AccountHolderUpdateNotification:
       properties:
         content:
@@ -1096,6 +1255,7 @@ components:
             - Business
             - Individual
             - NonProfit
+            - Partnership
             - PublicCompany
           type: string
         pspReference:
@@ -1165,6 +1325,54 @@ components:
         - accountHolderCode
         - accountCode
         - status
+    DirectDebitInitiatedNotification:
+      properties:
+        content:
+          description: Details of the direct debit.
+          $ref: '#/components/schemas/DirectDebitInitiatedNotificationContent'
+        eventDate:
+          description: The date and time when an event has been completed.
+          format: date-time
+          type: string
+        eventType:
+          description: The event type of the notification.
+          type: string
+        executingUserKey:
+          description: The user or process that has triggered the notification.
+          type: string
+        live:
+          description: 'Indicates whether the notification originated from the live environment or the test environment. If true, the notification originated from the live environment. If false, the notification originated from the test environment.'
+          type: boolean
+        pspReference:
+          description: The PSP reference of the request from which the notification originates.
+          type: string
+      required:
+        - executingUserKey
+        - pspReference
+        - eventType
+        - live
+        - eventDate
+    DirectDebitInitiatedNotificationContent:
+      properties:
+        accountCode:
+          description: The code of the account.
+          type: string
+        amount:
+          description: The amount to be debited from the funding account.
+          $ref: '#/components/schemas/Amount'
+        debitInitiationDate:
+          description: The date of the debit initiation.
+          $ref: '#/components/schemas/LocalDate'
+        merchantAccountCode:
+          description: The code of the merchant account.
+          type: string
+        status:
+          description: Direct debit status.
+          $ref: '#/components/schemas/OperationStatus'
+      required:
+        - amount
+        - accountCode
+        - merchantAccountCode
     ErrorFieldType:
       properties:
         errorCode:
@@ -1196,6 +1404,7 @@ components:
             - bankAccount
             - bankAccountCode
             - bankAccountName
+            - bankAccountUUID
             - bankBicSwift
             - bankCity
             - bankCode
@@ -1206,6 +1415,7 @@ components:
             - cardToken
             - checkCode
             - city
+            - companyRegistration
             - country
             - countryCode
             - currency
@@ -1228,6 +1438,7 @@ components:
             - firstName
             - fullPhoneNumber
             - gender
+            - hopWebserviceUser
             - houseNumberOrName
             - iban
             - idCard
@@ -1240,12 +1451,13 @@ components:
             - legalBusinessName
             - legalEntity
             - legalEntityType
+            - merchantAccount
             - merchantCategoryCode
-            - merchantCode
             - merchantReference
             - microDeposit
             - name
             - nationality
+            - originalReference
             - ownerCity
             - ownerCountryCode
             - ownerHouseNumberOrName
@@ -1255,6 +1467,7 @@ components:
             - ownerStreet
             - passport
             - passportNumber
+            - payoutMethodCode
             - personalData
             - phoneCountryCode
             - phoneNumber
@@ -1262,17 +1475,21 @@ components:
             - primaryCurrency
             - reason
             - registrationNumber
+            - returnUrl
             - schedule
             - shareholder
             - shareholderCode
             - socialSecurityNumber
             - sourceAccountCode
             - stateOrProvince
-            - storeCode
+            - status
+            - store
             - storeDetail
+            - storeName
             - storeReference
             - street
             - taxId
+            - tier
             - tierNumber
             - transferCode
             - unknown
@@ -1326,7 +1543,7 @@ components:
         status:
           description: |-
             The status of the check.
-            >Permitted Values: `UNCHECKED`, `DATA_PROVIDED`, `PASSED`, `PENDING`, `AWAITING_DATA`, `RETRY_LIMIT_REACHED`, `INVALID_DATA`, `FAILED`.
+            >Permitted Values: `DATA_PROVIDED`, `PASSED`, `PENDING`, `AWAITING_DATA`, `RETRY_LIMIT_REACHED`, `INVALID_DATA`, `FAILED`.
           enum:
             - AWAITING_DATA
             - DATA_PROVIDED
@@ -1400,6 +1617,14 @@ components:
         - accountHolder
         - shareholders
         - bankAccounts
+    LocalDate:
+      properties:
+        month:
+          format: int32
+          type: integer
+        year:
+          format: int32
+          type: integer
     Message:
       properties:
         code:
@@ -1479,6 +1704,9 @@ components:
             - BIWEEKLY_ON_1ST_AND_15TH_AT_NOON
             - DAILY
             - DAILY_6PM
+            - DAILY_AU
+            - DAILY_EU
+            - DAILY_US
             - DEFAULT
             - EVERY_6_HOURS_FROM_MIDNIGHT
             - HOLD
@@ -1524,6 +1752,51 @@ components:
       required:
         - type
         - number
+    RefundFundsTransferNotification:
+      properties:
+        content:
+          description: Details of the fund transfer refund.
+          $ref: '#/components/schemas/RefundFundsTransferNotificationContent'
+        eventDate:
+          description: The date and time when an event has been completed.
+          format: date-time
+          type: string
+        eventType:
+          description: The event type of the notification.
+          type: string
+        executingUserKey:
+          description: The user or process that has triggered the notification.
+          type: string
+        live:
+          description: 'Indicates whether the notification originated from the live environment or the test environment. If true, the notification originated from the live environment. If false, the notification originated from the test environment.'
+          type: boolean
+        pspReference:
+          description: The PSP reference of the request from which the notification originates.
+          type: string
+      required:
+        - executingUserKey
+        - pspReference
+        - eventType
+        - live
+        - eventDate
+        - content
+    RefundFundsTransferNotificationContent:
+      properties:
+        amount:
+          description: The amount to be refunded.
+          $ref: '#/components/schemas/Amount'
+        merchantReference:
+          description: A value that can be supplied at the discretion of the executing user in order to link multiple transactions to one another.
+          type: string
+        originalReference:
+          description: A PSP reference of the original fund transfer.
+          type: string
+        status:
+          description: The status of the fund transfer refund.
+          $ref: '#/components/schemas/OperationStatus'
+      required:
+        - originalReference
+        - amount
     RefundResult:
       properties:
         originalTransaction:
@@ -1664,7 +1937,7 @@ components:
 
             >**If, during an Account Holder update request, a UUID that is not correlated with an existing Shareholder is provided, the update of the Shareholder will fail.**
 
-            >**If, during an Account Holder update request, a UUID that is correlated with an existing Shareholder is provided, the existing Bank Account will be updated.**
+            >**If, during an Account Holder update request, a UUID that is correlated with an existing Shareholder is provided, the existing Shareholder will be updated.**
           type: string
         webAddress:
           description: The URL of the website of the contact.
@@ -1720,17 +1993,23 @@ components:
             >Permitted values: `PendingCredit`, `CreditFailed`, `Credited`, `Converted`, `PendingDebit`, `DebitFailed`, `Debited`, `DebitReversedReceived`, `DebitedReversed`, `ChargebackReceived`, `Chargeback`, `ChargebackReversedReceived`, `ChargebackReversed`, `Payout`, `PayoutReversed`, `FundTransfer`, `PendingFundTransfer`, `ManualCorrected`.
           enum:
             - Chargeback
+            - ChargebackCorrection
+            - ChargebackCorrectionReceived
             - ChargebackReceived
             - ChargebackReversed
             - ChargebackReversedReceived
             - Converted
             - CreditFailed
+            - CreditReversed
+            - CreditReversedReceived
             - Credited
             - DebitFailed
             - DebitReversedReceived
             - Debited
             - DebitedReversed
+            - Fee
             - FundTransfer
+            - FundTransferReversed
             - ManualCorrected
             - Payout
             - PayoutReversed
@@ -1821,6 +2100,7 @@ components:
             - Business
             - Individual
             - NonProfit
+            - Partnership
             - PublicCompany
           type: string
         pspReference:
@@ -1889,7 +2169,7 @@ components:
         country:
           description: |-
             The two-character country code of the address. The permitted country codes are defined in ISO-3166-1 alpha-2 (e.g. 'NL').
-            > If you don't know the country or are not collecting the country from the shopper, provide `countryCode` as `ZZ`.
+            > If you don't know the country or are not collecting the country from the shopper, provide `country` as `ZZ`.
           type: string
         houseNumberOrName:
           description: The number or name of the house.

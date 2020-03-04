@@ -2,8 +2,8 @@
    "openapi" : "3.0.0",
    "info" : {
       "version" : "5",
-      "title" : "Adyen Notification API",
-      "description" : "The Notification Service sends notifications to the endpoints specified in a given subscription. Subscriptions are managed through the Notification Configuration API. The API specifications listed here detail the format of each notification.\n\nFor further information on MarketPay notifications, please visit the [MarketPay documentation](https://docs.adyen.com/marketpay).",
+      "title" : "Adyen MarketPay Notifications",
+      "description" : "The Notification API sends notifications to the endpoints specified in a given subscription. Subscriptions are managed through the Notification Configuration API. The API specifications listed here detail the format of each notification.\n\nFor further information on MarketPay notifications, please visit the [MarketPay documentation](https://docs.adyen.com/marketpay).",
       "termsOfService" : "https://www.adyen.com/legal/terms-and-conditions",
       "contact" : {
          "name" : "Adyen Support",
@@ -147,6 +147,64 @@
                   "application/json" : {
                      "schema" : {
                         "$ref" : "#/components/schemas/AccountHolderStatusChangeNotification"
+                     }
+                  }
+               }
+            },
+            "responses" : {
+               "200" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/NotificationResponse"
+                        }
+                     }
+                  },
+                  "description" : "OK - the request has succeeded."
+               }
+            }
+         }
+      },
+      "/ACCOUNT_HOLDER_STORE_STATUS_CHANGE" : {
+         "post" : {
+            "summary" : "Triggered upon the status change of a store tied to an account holder.",
+            "description" : "This notification is sent when the status of a store tied to an account holder has been changed.",
+            "x-groupName" : "Account holders",
+            "x-sortIndex" : 4,
+            "requestBody" : {
+               "content" : {
+                  "application/json" : {
+                     "schema" : {
+                        "$ref" : "#/components/schemas/AccountHolderStoreStatusChangeNotification"
+                     }
+                  }
+               }
+            },
+            "responses" : {
+               "200" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/NotificationResponse"
+                        }
+                     }
+                  },
+                  "description" : "OK - the request has succeeded."
+               }
+            }
+         }
+      },
+      "/ACCOUNT_HOLDER_UPCOMING_DEADLINE" : {
+         "post" : {
+            "summary" : "Triggered upon an upcoming deadline.",
+            "description" : "This notification is sent when an Account Holder has a deadline, to fulfill the requirements of a specific event, coming up.",
+            "x-groupName" : "Account holders",
+            "x-sortIndex" : 1,
+            "requestBody" : {
+               "content" : {
+                  "application/json" : {
+                     "schema" : {
+                        "$ref" : "#/components/schemas/AccountHolderUpcomingDeadlineNotification"
                      }
                   }
                }
@@ -310,6 +368,35 @@
             }
          }
       },
+      "/DIRECT_DEBIT_INITIATED" : {
+         "post" : {
+            "summary" : "Triggered when an automated direct debit is initiated.",
+            "description" : "This notification is sent when an automated direct debit is initiated from the Adyen platform.",
+            "x-groupName" : "Fund management",
+            "x-sortIndex" : 7,
+            "requestBody" : {
+               "content" : {
+                  "application/json" : {
+                     "schema" : {
+                        "$ref" : "#/components/schemas/DirectDebitInitiatedNotification"
+                     }
+                  }
+               }
+            },
+            "responses" : {
+               "200" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/NotificationResponse"
+                        }
+                     }
+                  },
+                  "description" : "OK - the request has succeeded."
+               }
+            }
+         }
+      },
       "/PAYMENT_FAILURE" : {
          "post" : {
             "summary" : "Triggered upon an account payment failure.",
@@ -321,6 +408,35 @@
                   "application/json" : {
                      "schema" : {
                         "$ref" : "#/components/schemas/PaymentFailureNotification"
+                     }
+                  }
+               }
+            },
+            "responses" : {
+               "200" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/NotificationResponse"
+                        }
+                     }
+                  },
+                  "description" : "OK - the request has succeeded."
+               }
+            }
+         }
+      },
+      "/REFUND_FUNDS_TRANSFER" : {
+         "post" : {
+            "summary" : "Triggered upon the transfer refund of funds between accounts.",
+            "description" : "This notification is sent when the refund of funds from an account have been transferred to another account.",
+            "x-groupName" : "Fund management",
+            "x-sortIndex" : 6,
+            "requestBody" : {
+               "content" : {
+                  "application/json" : {
+                     "schema" : {
+                        "$ref" : "#/components/schemas/RefundFundsTransferNotification"
                      }
                   }
                }
@@ -629,7 +745,8 @@
             },
             "required" : [
                "fullPhoneNumber",
-               "email"
+               "email",
+               "webAddress"
             ]
          },
          "AccountHolderPayoutNotification" : {
@@ -684,11 +801,11 @@
                   "type" : "string"
                },
                "amount" : {
-                  "description" : "payout amount",
+                  "description" : "The payout amount.",
                   "$ref" : "#/components/schemas/Amount"
                },
                "amounts" : {
-                  "description" : "payout amounts (per currency)",
+                  "description" : "The payout amounts (per currency).",
                   "items" : {
                      "$ref" : "#/components/schemas/Amount"
                   },
@@ -702,6 +819,10 @@
                   "description" : "A description of the payout.",
                   "type" : "string"
                },
+               "estimatedArrivalDate" : {
+                  "description" : "The estimated date of arrival.",
+                  "$ref" : "#/components/schemas/LocalDate"
+               },
                "invalidFields" : {
                   "description" : "Invalid fields list.",
                   "items" : {
@@ -710,18 +831,21 @@
                   "type" : "array"
                },
                "merchantReference" : {
-                  "description" : "merchant reference",
+                  "description" : "The merchant reference.",
+                  "type" : "string"
+               },
+               "originalPspReference" : {
+                  "description" : "The PSP reference of the original payout.",
                   "type" : "string"
                },
                "status" : {
-                  "description" : "payout status",
+                  "description" : "The payout status.",
                   "$ref" : "#/components/schemas/OperationStatus"
                }
             },
             "required" : [
                "accountHolderCode",
-               "accountCode",
-               "bankAccountDetail"
+               "accountCode"
             ]
          },
          "AccountHolderStatus" : {
@@ -836,6 +960,182 @@
                "newStatus",
                "reason"
             ]
+         },
+         "AccountHolderStoreStatusChangeNotification" : {
+            "properties" : {
+               "content" : {
+                  "description" : "The details of the Account Holder Store status change.",
+                  "$ref" : "#/components/schemas/AccountHolderStoreStatusChangeNotificationContent"
+               },
+               "error" : {
+                  "description" : "Error information of failed request. No value provided here if no error occurred on processing.",
+                  "$ref" : "#/components/schemas/NotificationErrorContainer"
+               },
+               "eventDate" : {
+                  "description" : "The date and time when an event has been completed.",
+                  "format" : "date-time",
+                  "type" : "string"
+               },
+               "eventType" : {
+                  "description" : "The event type of the notification.",
+                  "type" : "string"
+               },
+               "executingUserKey" : {
+                  "description" : "The user or process that has triggered the notification.",
+                  "type" : "string"
+               },
+               "live" : {
+                  "description" : "Indicates whether the notification originated from the live environment or the test environment. If true, the notification originated from the live environment. If false, the notification originated from the test environment.",
+                  "type" : "boolean"
+               },
+               "pspReference" : {
+                  "description" : "The PSP reference of the request from which the notification originates.",
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "executingUserKey",
+               "pspReference",
+               "eventType",
+               "live",
+               "eventDate"
+            ]
+         },
+         "AccountHolderStoreStatusChangeNotificationContent" : {
+            "properties" : {
+               "accountHolderCode" : {
+                  "description" : "The code of the account holder.",
+                  "type" : "string"
+               },
+               "invalidFields" : {
+                  "description" : "In case the store status has not been updated, contains fields that did not pass the validation.",
+                  "items" : {
+                     "$ref" : "#/components/schemas/ErrorFieldType"
+                  },
+                  "type" : "array"
+               },
+               "newStatus" : {
+                  "description" : "The new status of the account holder.",
+                  "enum" : [
+                     "Active",
+                     "Closed",
+                     "Inactive",
+                     "InactiveWithModifications",
+                     "Pending"
+                  ],
+                  "type" : "string"
+               },
+               "oldStatus" : {
+                  "description" : "The former status of the account holder.",
+                  "enum" : [
+                     "Active",
+                     "Closed",
+                     "Inactive",
+                     "InactiveWithModifications",
+                     "Pending"
+                  ],
+                  "type" : "string"
+               },
+               "reason" : {
+                  "description" : "The reason for the status change.",
+                  "type" : "string"
+               },
+               "store" : {
+                  "description" : "Alphanumeric identifier of the store.",
+                  "type" : "string"
+               },
+               "storeReference" : {
+                  "description" : "Store store reference.",
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "accountHolderCode",
+               "store",
+               "storeReference",
+               "oldStatus",
+               "newStatus",
+               "reason"
+            ]
+         },
+         "AccountHolderUpcomingDeadlineNotification" : {
+            "properties" : {
+               "content" : {
+                  "description" : "The details of the upcoming event.",
+                  "$ref" : "#/components/schemas/AccountHolderUpcomingDeadlineNotificationContent"
+               },
+               "error" : {
+                  "description" : "Error information of failed request. No value provided here if no error occurred on processing.",
+                  "$ref" : "#/components/schemas/NotificationErrorContainer"
+               },
+               "eventDate" : {
+                  "description" : "The date and time when an event has been completed.",
+                  "format" : "date-time",
+                  "type" : "string"
+               },
+               "eventType" : {
+                  "description" : "The event type of the notification.",
+                  "type" : "string"
+               },
+               "executingUserKey" : {
+                  "description" : "The user or process that has triggered the notification.",
+                  "type" : "string"
+               },
+               "live" : {
+                  "description" : "Indicates whether the notification originated from the live environment or the test environment. If true, the notification originated from the live environment. If false, the notification originated from the test environment.",
+                  "type" : "boolean"
+               },
+               "pspReference" : {
+                  "description" : "The PSP reference of the request from which the notification originates.",
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "executingUserKey",
+               "pspReference",
+               "eventType",
+               "live",
+               "eventDate"
+            ]
+         },
+         "AccountHolderUpcomingDeadlineNotificationContent" : {
+            "properties" : {
+               "accountHolderCode" : {
+                  "description" : "The code of the account holder whom the event refers to.",
+                  "type" : "string"
+               },
+               "event" : {
+                  "description" : "The event name that will be trigger if no action is taken.",
+                  "enum" : [
+                     "AccessPii",
+                     "CloseAccount",
+                     "CloseStores",
+                     "DeleteBankAccounts",
+                     "DeletePayoutInstrumentTokens",
+                     "DeletePayoutMethods",
+                     "DeleteShareholders",
+                     "InactivateAccount",
+                     "RecalculateAccountStatusAndProcessingTier",
+                     "RefundNotPaidOutTransfers",
+                     "ResolveEvents",
+                     "SaveAccountHolder",
+                     "SaveKYCCheckStatus",
+                     "SuspendAccount",
+                     "UnSuspendAccount",
+                     "UpdateAccountHolderState",
+                     "Verification"
+                  ],
+                  "type" : "string"
+               },
+               "executionDate" : {
+                  "description" : "The execution date scheduled for the event.",
+                  "$ref" : "#/components/schemas/LocalDate"
+               },
+               "reason" : {
+                  "description" : "The reason that leads to scheduling of the event.",
+                  "type" : "string"
+               }
+            }
          },
          "AccountHolderUpdateNotification" : {
             "properties" : {
@@ -1292,6 +1592,10 @@
          },
          "CloseAccountResponse" : {
             "properties" : {
+               "accountCode" : {
+                  "description" : "The account code of the account that is closed.",
+                  "type" : "string"
+               },
                "invalidFields" : {
                   "description" : "Contains field validation errors that would prevent requests from being processed.",
                   "items" : {
@@ -1434,6 +1738,7 @@
                      "Business",
                      "Individual",
                      "NonProfit",
+                     "Partnership",
                      "PublicCompany"
                   ],
                   "type" : "string"
@@ -1521,6 +1826,75 @@
                "status"
             ]
          },
+         "DirectDebitInitiatedNotification" : {
+            "properties" : {
+               "content" : {
+                  "description" : "Details of the direct debit.",
+                  "$ref" : "#/components/schemas/DirectDebitInitiatedNotificationContent"
+               },
+               "error" : {
+                  "description" : "Error information of failed request. No value provided here if no error occurred on processing.",
+                  "$ref" : "#/components/schemas/NotificationErrorContainer"
+               },
+               "eventDate" : {
+                  "description" : "The date and time when an event has been completed.",
+                  "format" : "date-time",
+                  "type" : "string"
+               },
+               "eventType" : {
+                  "description" : "The event type of the notification.",
+                  "type" : "string"
+               },
+               "executingUserKey" : {
+                  "description" : "The user or process that has triggered the notification.",
+                  "type" : "string"
+               },
+               "live" : {
+                  "description" : "Indicates whether the notification originated from the live environment or the test environment. If true, the notification originated from the live environment. If false, the notification originated from the test environment.",
+                  "type" : "boolean"
+               },
+               "pspReference" : {
+                  "description" : "The PSP reference of the request from which the notification originates.",
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "executingUserKey",
+               "pspReference",
+               "eventType",
+               "live",
+               "eventDate"
+            ]
+         },
+         "DirectDebitInitiatedNotificationContent" : {
+            "properties" : {
+               "accountCode" : {
+                  "description" : "The code of the account.",
+                  "type" : "string"
+               },
+               "amount" : {
+                  "description" : "The amount to be debited from the funding account.",
+                  "$ref" : "#/components/schemas/Amount"
+               },
+               "debitInitiationDate" : {
+                  "description" : "The date of the debit initiation.",
+                  "$ref" : "#/components/schemas/LocalDate"
+               },
+               "merchantAccountCode" : {
+                  "description" : "The code of the merchant account.",
+                  "type" : "string"
+               },
+               "status" : {
+                  "description" : "Direct debit status.",
+                  "$ref" : "#/components/schemas/OperationStatus"
+               }
+            },
+            "required" : [
+               "amount",
+               "accountCode",
+               "merchantAccountCode"
+            ]
+         },
          "ErrorFieldType" : {
             "properties" : {
                "errorCode" : {
@@ -1558,6 +1932,7 @@
                      "bankAccount",
                      "bankAccountCode",
                      "bankAccountName",
+                     "bankAccountUUID",
                      "bankBicSwift",
                      "bankCity",
                      "bankCode",
@@ -1568,6 +1943,7 @@
                      "cardToken",
                      "checkCode",
                      "city",
+                     "companyRegistration",
                      "country",
                      "countryCode",
                      "currency",
@@ -1590,6 +1966,7 @@
                      "firstName",
                      "fullPhoneNumber",
                      "gender",
+                     "hopWebserviceUser",
                      "houseNumberOrName",
                      "iban",
                      "idCard",
@@ -1602,12 +1979,13 @@
                      "legalBusinessName",
                      "legalEntity",
                      "legalEntityType",
-                     "merchantAccountCode",
+                     "merchantAccount",
                      "merchantCategoryCode",
                      "merchantReference",
                      "microDeposit",
                      "name",
                      "nationality",
+                     "originalReference",
                      "ownerCity",
                      "ownerCountryCode",
                      "ownerHouseNumberOrName",
@@ -1617,6 +1995,7 @@
                      "ownerStreet",
                      "passport",
                      "passportNumber",
+                     "payoutMethodCode",
                      "personalData",
                      "phoneCountryCode",
                      "phoneNumber",
@@ -1624,6 +2003,7 @@
                      "primaryCurrency",
                      "reason",
                      "registrationNumber",
+                     "returnUrl",
                      "schedule",
                      "shareholder",
                      "shareholderCode",
@@ -1631,8 +2011,9 @@
                      "sourceAccountCode",
                      "stateOrProvince",
                      "status",
-                     "storeCode",
+                     "store",
                      "storeDetail",
+                     "storeName",
                      "storeReference",
                      "street",
                      "taxId",
@@ -1708,7 +2089,7 @@
                   "type" : "array"
                },
                "status" : {
-                  "description" : "The status of the check.\n>Permitted Values: `UNCHECKED`, `DATA_PROVIDED`, `PASSED`, `PENDING`, `AWAITING_DATA`, `RETRY_LIMIT_REACHED`, `INVALID_DATA`, `FAILED`.",
+                  "description" : "The status of the check.\n>Permitted Values: `DATA_PROVIDED`, `PASSED`, `PENDING`, `AWAITING_DATA`, `RETRY_LIMIT_REACHED`, `INVALID_DATA`, `FAILED`.",
                   "enum" : [
                      "AWAITING_DATA",
                      "DATA_PROVIDED",
@@ -1803,6 +2184,18 @@
                "shareholders",
                "bankAccounts"
             ]
+         },
+         "LocalDate" : {
+            "properties" : {
+               "month" : {
+                  "format" : "int32",
+                  "type" : "integer"
+               },
+               "year" : {
+                  "format" : "int32",
+                  "type" : "integer"
+               }
+            }
          },
          "Message" : {
             "properties" : {
@@ -1952,6 +2345,9 @@
                      "BIWEEKLY_ON_1ST_AND_15TH_AT_NOON",
                      "DAILY",
                      "DAILY_6PM",
+                     "DAILY_AU",
+                     "DAILY_EU",
+                     "DAILY_US",
                      "DEFAULT",
                      "EVERY_6_HOURS_FROM_MIDNIGHT",
                      "HOLD",
@@ -2003,6 +2399,78 @@
             "required" : [
                "type",
                "number"
+            ]
+         },
+         "RefundFundsTransferNotification" : {
+            "properties" : {
+               "content" : {
+                  "description" : "Details of the fund transfer refund.",
+                  "$ref" : "#/components/schemas/RefundFundsTransferNotificationContent"
+               },
+               "error" : {
+                  "description" : "Error information of failed request. No value provided here if no error occurred on processing.",
+                  "$ref" : "#/components/schemas/NotificationErrorContainer"
+               },
+               "eventDate" : {
+                  "description" : "The date and time when an event has been completed.",
+                  "format" : "date-time",
+                  "type" : "string"
+               },
+               "eventType" : {
+                  "description" : "The event type of the notification.",
+                  "type" : "string"
+               },
+               "executingUserKey" : {
+                  "description" : "The user or process that has triggered the notification.",
+                  "type" : "string"
+               },
+               "live" : {
+                  "description" : "Indicates whether the notification originated from the live environment or the test environment. If true, the notification originated from the live environment. If false, the notification originated from the test environment.",
+                  "type" : "boolean"
+               },
+               "pspReference" : {
+                  "description" : "The PSP reference of the request from which the notification originates.",
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "executingUserKey",
+               "pspReference",
+               "eventType",
+               "live",
+               "eventDate",
+               "content"
+            ]
+         },
+         "RefundFundsTransferNotificationContent" : {
+            "properties" : {
+               "amount" : {
+                  "description" : "The amount to be refunded.",
+                  "$ref" : "#/components/schemas/Amount"
+               },
+               "invalidFields" : {
+                  "description" : "Invalid fields list.",
+                  "items" : {
+                     "$ref" : "#/components/schemas/ErrorFieldType"
+                  },
+                  "type" : "array"
+               },
+               "merchantReference" : {
+                  "description" : "A value that can be supplied at the discretion of the executing user in order to link multiple transactions to one another.",
+                  "type" : "string"
+               },
+               "originalReference" : {
+                  "description" : "A PSP reference of the original fund transfer.",
+                  "type" : "string"
+               },
+               "status" : {
+                  "description" : "The status of the fund transfer refund.",
+                  "$ref" : "#/components/schemas/OperationStatus"
+               }
+            },
+            "required" : [
+               "originalReference",
+               "amount"
             ]
          },
          "RefundResult" : {
@@ -2195,10 +2663,11 @@
                   "$ref" : "#/components/schemas/ViasPhoneNumber"
                },
                "shareholderCode" : {
-                  "description" : "The unique identifier (UUID) of the Shareholder.\n>**If, during an Account Holder create or update request, this field is left blank (but other fields provided), a new Shareholder will be created with a procedurally-generated UUID.**\n\n>**If, during an Account Holder create request, a UUID is provided, the creation of the Shareholder will fail while the creation of the Account Holder will continue.**\n\n>**If, during an Account Holder update request, a UUID that is not correlated with an existing Shareholder is provided, the update of the Shareholder will fail.**\n\n>**If, during an Account Holder update request, a UUID that is correlated with an existing Shareholder is provided, the existing Bank Account will be updated.**\n",
+                  "description" : "The unique identifier (UUID) of the Shareholder.\n>**If, during an Account Holder create or update request, this field is left blank (but other fields provided), a new Shareholder will be created with a procedurally-generated UUID.**\n\n>**If, during an Account Holder create request, a UUID is provided, the creation of the Shareholder will fail while the creation of the Account Holder will continue.**\n\n>**If, during an Account Holder update request, a UUID that is not correlated with an existing Shareholder is provided, the update of the Shareholder will fail.**\n\n>**If, during an Account Holder update request, a UUID that is correlated with an existing Shareholder is provided, the existing Shareholder will be updated.**\n",
                   "type" : "string"
                },
                "shareholderReference" : {
+                  "description" : "Merchant reference to the Shareholder.",
                   "type" : "string"
                },
                "webAddress" : {
@@ -2270,17 +2739,23 @@
                   "description" : "The status of the transaction.\n>Permitted values: `PendingCredit`, `CreditFailed`, `Credited`, `Converted`, `PendingDebit`, `DebitFailed`, `Debited`, `DebitReversedReceived`, `DebitedReversed`, `ChargebackReceived`, `Chargeback`, `ChargebackReversedReceived`, `ChargebackReversed`, `Payout`, `PayoutReversed`, `FundTransfer`, `PendingFundTransfer`, `ManualCorrected`.",
                   "enum" : [
                      "Chargeback",
+                     "ChargebackCorrection",
+                     "ChargebackCorrectionReceived",
                      "ChargebackReceived",
                      "ChargebackReversed",
                      "ChargebackReversedReceived",
                      "Converted",
                      "CreditFailed",
+                     "CreditReversed",
+                     "CreditReversedReceived",
                      "Credited",
                      "DebitFailed",
                      "DebitReversedReceived",
                      "Debited",
                      "DebitedReversed",
+                     "Fee",
                      "FundTransfer",
+                     "FundTransferReversed",
                      "ManualCorrected",
                      "Payout",
                      "PayoutReversed",
@@ -2411,6 +2886,7 @@
                      "Business",
                      "Individual",
                      "NonProfit",
+                     "Partnership",
                      "PublicCompany"
                   ],
                   "type" : "string"
@@ -2488,7 +2964,7 @@
                   "type" : "string"
                },
                "country" : {
-                  "description" : "The two-character country code of the address. The permitted country codes are defined in ISO-3166-1 alpha-2 (e.g. 'NL').\n> If you don't know the country or are not collecting the country from the shopper, provide `countryCode` as `ZZ`.",
+                  "description" : "The two-character country code of the address. The permitted country codes are defined in ISO-3166-1 alpha-2 (e.g. 'NL').\n> If you don't know the country or are not collecting the country from the shopper, provide `country` as `ZZ`.",
                   "type" : "string"
                },
                "houseNumberOrName" : {

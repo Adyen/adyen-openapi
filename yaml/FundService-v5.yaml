@@ -121,9 +121,9 @@ paths:
   /refundFundsTransfer:
     post:
       summary: Make a refund of the existing transfer funds transfer.
-      description: 'This endpoint is used to refund funds from one account to another account. Both accounts must be in the same marketplace, but can have different account holders. '
+      description: 'This endpoint is used to refund funds transferred from one account to another. Both accounts must be in the same marketplace, but can have different account holders. '
       x-groupName: General
-      x-sortIndex: 4
+      x-sortIndex: 5
       requestBody:
         content:
           application/json:
@@ -151,7 +151,7 @@ paths:
       summary: Refund all transactions of an account since the most recent payout.
       description: 'This endpoint is used to refund all the transactions of an account which have taken place since the most recent payout. This request is on a per-account basis (as opposed to a per-payment basis), so only the portion of the payment which was made to the specified account will be refunded. The commission(s), fee(s), and payment(s) to other account(s), will remain in the accounts to which they were sent as designated by the original payment''s split details.'
       x-groupName: General
-      x-sortIndex: 6
+      x-sortIndex: 7
       requestBody:
         content:
           application/json:
@@ -179,7 +179,7 @@ paths:
       summary: Designate an account to be the beneficiary of a separate account and transfer the benefactor's current balance to the beneficiary.
       description: 'This endpoint is used to define a benefactor and a beneficiary relationship between two accounts. At the time of benefactor/beneficiary setup, the funds in the benefactor account are transferred to the beneficiary account, and any further payments to the benefactor account are automatically sent to the beneficiary account. Note that a series of benefactor/beneficiaries may not exceed four (4) beneficiaries and may not have a cycle in it.'
       x-groupName: General
-      x-sortIndex: 5
+      x-sortIndex: 6
       requestBody:
         content:
           application/json:
@@ -312,11 +312,14 @@ components:
               - ChargebackReversedReceived
               - Converted
               - CreditFailed
+              - CreditReversed
+              - CreditReversedReceived
               - Credited
               - DebitFailed
               - DebitReversedReceived
               - Debited
               - DebitedReversed
+              - Fee
               - FundTransfer
               - FundTransferReversed
               - ManualCorrected
@@ -594,6 +597,7 @@ components:
             - cardToken
             - checkCode
             - city
+            - companyRegistration
             - country
             - countryCode
             - currency
@@ -624,7 +628,6 @@ components:
             - idCardFront
             - idNumber
             - identityDocument
-            - incorporatedAt
             - individualDetails
             - lastName
             - legalBusinessName
@@ -664,6 +667,7 @@ components:
             - status
             - store
             - storeDetail
+            - storeName
             - storeReference
             - street
             - taxId
@@ -735,7 +739,6 @@ components:
           type: string
       required:
         - pspReference
-        - bankAccountUUID
     RefundFundsTransferRequest:
       properties:
         amount:
@@ -758,10 +761,12 @@ components:
             $ref: '#/components/schemas/ErrorFieldType'
           type: array
         merchantReference:
+          description: The value supplied by the executing user when initiating the transfer refund; may be used to link multiple transactions.
           type: string
         message:
           type: string
         originalReference:
+          description: A PSP reference of the original fund transfer.
           type: string
         pspReference:
           description: The reference of a request.  Can be used to uniquely identify the request.
@@ -885,11 +890,14 @@ components:
             - ChargebackReversedReceived
             - Converted
             - CreditFailed
+            - CreditReversed
+            - CreditReversedReceived
             - Credited
             - DebitFailed
             - DebitReversedReceived
             - Debited
             - DebitedReversed
+            - Fee
             - FundTransfer
             - FundTransferReversed
             - ManualCorrected
