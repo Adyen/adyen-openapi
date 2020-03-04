@@ -329,6 +329,10 @@
                "mpiImplementationType" : {
                   "description" : "In case of Secure+, this field must be set to **CUPSecurePlus**.",
                   "type" : "string"
+               },
+               "scaExemption" : {
+                  "description" : "Indicates the [exemption type](https://docs-admin.is.adyen.com/payments-fundamentals/psd2-sca-compliance-and-implementation-guide#specifypreferenceinyourapirequest) that you want to request for the transaction. Possible values:\n* **lowValue** \n* **secureCorporate** \n* **trustedBeneficiary** \n* **transactionRiskAnalysis** ",
+                  "type" : "string"
                }
             }
          },
@@ -384,6 +388,10 @@
                },
                "airline.boarding_fee" : {
                   "description" : "Chargeable amount for boarding the plane.\nThe transaction amount needs to be represented in minor units according to the [following table](https://docs.adyen.com/development-resources/currency-codes).\n* minLength: 1\n* maxLength: 18",
+                  "type" : "string"
+               },
+               "airline.document_type" : {
+                  "description" : "Optional 2-digit code; alphanumeric. It identifies the type of product of the transaction. The description of the code may appear on credit card statements.\n* Format: 2-digit code\n* Example: Passenger ticket = 01\n* minLength: 2\n* maxLength: 2",
                   "type" : "string"
                },
                "airline.leg.depart_airport" : {
@@ -442,7 +450,10 @@
                   "description" : "Date of birth of the passenger.\n\nDate format: `yyyy-MM-dd`\n* minLength: 10\n* maxLength: 10",
                   "type" : "string"
                }
-            }
+            },
+            "required" : [
+               "airline.passenger_name"
+            ]
          },
          "AdditionalDataCarRental" : {
             "properties": {
@@ -694,10 +705,6 @@
                   "description" : "Holds different merchant data points like product, purchase, customer, and so on. It takes data in a Base64 encoded string.\n\nThe `merchantData` parameter needs to be added to the `openinvoicedata` signature at the end.\n\nSince the field is optional, if it's not included it does not impact computing the merchant signature.\n\nApplies only to Klarna.\n\nYou can contact Klarna for the format and structure of the string.",
                   "type" : "string"
                },
-               "openinvoicedata.installmentConfigurationKey": {
-                  "description" : "Required for the Klarna account, identifying an installment plan. Include Klarna’s `pclassid` for the installment plan.",
-                  "type" : "string"
-               },
                "openinvoicedata.line[itemNr].currencyCode": {
                   "description" : "The three-character ISO currency code.",
                   "type" : "string"
@@ -727,7 +734,7 @@
                   "type" : "integer"
                },
                "openinvoicedata.line[itemNr].vatCategory": {
-                  "description" : "The country-specific VAT category a product falls under.\n\nAllowed values:\n* High\n* Low\n* None.",
+                  "description" : "Required for AfterPay. The country-specific VAT category a product falls under.\n\nAllowed values:\n* High\n* Low\n* None.",
                   "type" : "string"
                }
             }
@@ -786,94 +793,10 @@
          },
          "AdditionalDataRisk" : {
             "properties": {
-               "riskdata.deliveryMethod": {
-                  "description" : "The method to deliver the goods to the shopper.\n\nUsed in [Delivery Method](https://docs.adyen.com/risk-management/configure-standard-risk-rules/consistency-rules#delivery-method) check.",
-                  "type" : "string"
-               },
-               "riskdata.accountCreationDate": {
-                  "description" : "The creation date of a shopper account on the merchant's platform.\n* Format: `yyyy-MM-dd HH:mm:ss`\nUsed in [Custom risk checks](https://docs.adyen.com/risk-management/configure-custom-risk-rules). ",
-                  "type" : "string"
-               },
-               "riskdata.shopperAccountCreationDate": {
-                  "description" : "This specifies the date when the shopper's account was created.\n* Format: `yyyy-MM-dd HH:mm:ss.sssZ`\n\nUsed in [Shopper Account Age check](https://docs.adyen.com/risk-management/configure-standard-risk-rules/consistency-rules#shopper-account-age).",
-                  "type" : "string"
-               },
-               "riskdata.externalRiskScore": {
-                  "description" : "A risk score coming from a system external to Adyen.\n* Format: Numeric (when used in custom risk checks)\n\nUsed in [External Risk Score check](https://docs.adyen.com/risk-management/configure-standard-risk-rules/external-risk-rules#external-risk-score-generic).\n\nUsed in [Custom risk checks](https://docs.adyen.com/risk-management/configure-custom-risk-rules).",
-                  "type" : "string"
-               },
-               "riskdata.externalSuspectedFraud": {
-                  "description" : "Usually a boolean representing the fraud risk assessment coming from a system external to Adyen.\n\nUsed in [Custom risk checks](https://docs.adyen.com/risk-management/configure-custom-risk-rules).",
-                  "type" : "string"
-               },
-               "riskdata.operatorCode": {
-                  "description" : "A code corresponding to a telecom network operator\n\nUsed in [Custom risk checks](https://docs.adyen.com/risk-management/configure-custom-risk-rules).",
-                  "type" : "string"
-               },
-               "riskdata.operatorCountry": {
-                  "description" : "Country corresponding to the telecom network operator. Usually a two letter country code.\n\nUsed in [Custom risk checks](https://docs.adyen.com/risk-management/configure-custom-risk-rules).",
-                  "type" : "object"
-               },
-               "riskdata.operatorName": {
-                  "description" : "Name of a telecom network operator e.g. Vodafone, Orange etc.\n\nUsed in [Custom risk checks](https://docs.adyen.com/risk-management/configure-custom-risk-rules).",
-                  "type" : "string"
-               },
-               "riskdata.operatorProductCode": {
-                  "description" : "Product code of a telecom product.\n\nUsed in [Custom risk checks](https://docs.adyen.com/risk-management/configure-custom-risk-rules).",
-                  "type" : "string"
-               },
-               "riskdata.paymentMethod": {
-                  "description" : "Represents the payment method as it is understood by the merchant. Does not necessarily have to coincide with the payment method determined by Adyen.\n\nUsed in [Custom risk checks](https://docs.adyen.com/risk-management/configure-custom-risk-rules).\n\nFor visacheckout, masterpass, and paywithgoogle, use `riskdata.paymentDataSource` instead.",
-                  "type" : "string"
-               },
-               "riskdata.paymentDataSource": {
-                  "description" : "Used in [Custom risk checks](https://docs.adyen.com/risk-management/configure-custom-risk-rules) for visacheckout, masterpass, and paywithgoogle.",
-                  "type" : "string"
-               },
-               "riskdata.previousSuccessfulOrders": {
-                  "description" : "The number of previous non-fraudulent orders made by a shopper.\n* Format: Numeric\n\nUsed in [Custom risk checks](https://docs.adyen.com/risk-management/configure-custom-risk-rules).",
-                  "type" : "string"
-               },
-               "riskdata.referralMethod": {
-                  "description" : "The referral method/reason for joining the merchant's platform.\n\nUsed in [Custom risk checks](https://docs.adyen.com/risk-management/configure-custom-risk-rules).",
-                  "type" : "string"
-               },
-               "riskdata.referrerUserName": {
-                  "description" : "The user name of a member who referred somebody to the merchant's platform.\n\nUsed in [Custom risk checks](https://docs.adyen.com/risk-management/configure-custom-risk-rules).",
-                  "type" : "string"
-               },
-               "riskdata.riskProfileId": {
-                  "description" : "The id of the risk profile to use instead of the merchant account's currently set risk profile.",
-                  "type" : "string"
-               },
-               "riskdata.secondaryPhoneNumber": {
-                  "description" : "A secondary phone number for a user of the merchant's platform.\n\nUsed in [Custom risk checks](https://docs.adyen.com/risk-management/configure-custom-risk-rules).",
-                  "type" : "object"
-               },
-               "riskdata.shippingMethod": {
-                  "description" : "Name of the shipping method.\n\nUsed in [Custom risk checks](https://docs.adyen.com/risk-management/configure-custom-risk-rules).",
-                  "type" : "string"
-               },
-               "riskdata.shopperCountry": {
-                  "description" : "The shopper country as determined by the merchant, usually as a 2 letter country code. Does not have to coincide with the Adyen determined shopper country.\n\nUsed in [Custom risk checks](https://docs.adyen.com/risk-management/configure-custom-risk-rules).",
-                  "type" : "string"
-               },
-               "riskdata.simDistributor": {
-                  "description" : "Usually a SIM distribution company name e.g. Core, Elite, GK Tel etc.\n\nUsed in [Custom risk checks](https://docs.adyen.com/risk-management/configure-custom-risk-rules).",
-                  "type" : "string"
-               },
-               "riskdata.userName": {
-                  "description" : "User name of an account on the merchant's platform.\n\nUsed in [Custom risk checks](https://docs.adyen.com/risk-management/configure-custom-risk-rules).",
-                  "type" : "string"
-               },
-               "riskdata.userStatus": {
-                  "description" : "Usually a user's loyalty status e.g. Gold, Silver etc.\n\nUsed in [Custom risk checks](https://docs.adyen.com/risk-management/configure-custom-risk-rules).",
-                  "type" : "string"
-               },
-               "riskdata.browserLanguage": {
-                  "description" : "Name of the browser language used by the shopper. Usually a two letter country code (e.g. NL, FR, US etc.)\n\nUsed in [Custom risk checks](https://docs.adyen.com/risk-management/configure-custom-risk-rules).",
-                  "type" : "string"
-               },
+              "riskdata.[customFieldName]": {
+                "description" : "The data for your custom risk field. For more information, refer to [Create custom risk fields](https://docs.adyen.com/risk-management/configure-custom-risk-rules#step-1-create-custom-risk-fields).",
+                "type" : "string"
+              },
                "riskdata.basket.item[itemNr].itemID": {
                   "description" : "ID of the item.",
                   "type" : "string"
@@ -951,11 +874,11 @@
          "AdditionalDataRiskStandalone" : {
             "properties": {
                "avsResultRaw": {
-                  "description" : "Raw AVS result received from the acquirer, where available. Example: 7",
+                  "description" : "Raw AVS result received from the acquirer, where available. Example: D",
                   "type" : "string"
                },
                "bin": {
-                  "description" : "The Bank Identification Number of a credit card, which is the first six digits of a card number. Required for [tokenized card request](/risk-management/standalone-risk#tokenised-pan-request).",
+                  "description" : "The Bank Identification Number of a credit card, which is the first six digits of a card number. Required for [tokenized card request](https://docs.adyen.com/risk-management/standalone-risk#tokenised-pan-request).",
                   "type" : "string"
                },
                "cvcResultRaw": {
@@ -1080,6 +1003,362 @@
                }
             }
          },
+         "ResponseAdditionalDataCommon" : {
+            "properties" : {
+               "acquirerAccountCode" : {
+                  "description" : "The name of the Adyen acquirer account.\n\nExample: PayPalSandbox_TestAcquirer\n> Only relevant for PayPal transactions.",
+                  "type" : "string"
+               },
+               "acquirerCode" : {
+                  "description" : "The name of the acquirer processing the payment request.\n\nExample: TestPmmAcquirer",
+                  "type" : "string"
+               },
+               "acquirerReference" : {
+                  "description" : "The reference number that can be used for reconciliation in case a non-Adyen acquirer is used for settlement.\n\nExample: 7C9N3FNBKT9",
+                  "type" : "string"
+               },
+               "alias" : {
+                  "description" : "The Adyen alias of the card.\n\nExample: H167852639363479",
+                  "type" : "string"
+               },
+               "aliasType" : {
+                  "description" : "The type of the card alias.\n\nExample: Default",
+                  "type" : "string"
+               },
+               "authCode" : {
+                  "description" : "Authorisation code:\n* When the payment is authorised successfully, this field holds the authorisation code for the payment.\n* When the payment is not authorised, this field is empty.\n\nExample: 58747",
+                  "type" : "string"
+               },
+               "authorisedAmountCurrency" : {
+                  "description" : "The currency of the authorised amount, as a three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).",
+                  "type" : "string"
+               },
+               "authorisedAmountValue" : {
+                  "description" : "Value of the amount authorised.\n\nThis amount is represented in minor units according to the [following table](https://docs.adyen.com/development-resources/currency-codes).",
+                  "type" : "string"
+               },
+               "avsResult" : {
+                  "description" : "The AVS result code of the payment, which provides information about the outcome of the AVS check.\n\nFor possible values, see [AVS](https://docs.adyen.com/risk-management/configure-standard-risk-rules/consistency-rules#billing-address-does-not-match-cardholder-address-avs).",
+                  "type" : "string"
+               },
+               "avsResultRaw" : {
+                  "description" : "Raw AVS result received from the acquirer, where available.\n\nExample: D",
+                  "type" : "string"
+               },
+               "bic" : {
+                  "description" : "BIC of a bank account.\n\nExample: TESTNL01\n> Only relevant for SEPA Direct Debit transactions.",
+                  "type" : "string"
+               },
+               "dsTransID" : {
+                  "description" : "Supported for 3D Secure 2. The unique transaction identifier assigned by the DS to identify a single transaction.",
+                  "type" : "string"
+               },
+               "eci" : {
+                  "description" : "The Electronic Commerce Indicator returned from the schemes for the 3DS payment session.\n\nExample: 02",
+                  "type" : "string"
+               },
+               "expiryDate" : {
+                  "description" : "The expiry date on the card.\n\nExample: 6/2016\n> Returned only in case of a card payment.",
+                  "type" : "string"
+               },
+               "extraCostsCurrency" : {
+                  "description" : "The currency of the extra amount charged due to additional amounts set in the skin used in the HPP payment request.\n\nExample: EUR",
+                  "type" : "string"
+               },
+               "extraCostsValue" : {
+                  "description" : "The value of the extra amount charged due to additional amounts set in the skin used in the HPP payment request. The amount is in minor units.",
+                  "type" : "string"
+               },
+               "fraudCheck-[itemNr]-[FraudCheckname]" : {
+                  "description" : "The fraud score due to a particular fraud check. The fraud check name is found in the key of the key-value pair.",
+                  "type" : "string"
+               },
+               "fundingSource" : {
+                  "description" : "Information regarding the funding type of the card. The possible return values are:\n* CHARGE\n* CREDIT\n* DEBIT\n* PREPAID\n* PREPAID_RELOADABLE\n* PREPAID_NONRELOADABLE\n* DEFFERED_DEBIT\n> This functionality requires additional configuration on Adyen's end. To enable it, contact the Support Team.\n\nFor receiving this field in the notification, enable **Include Funding Source** in **Notifications** > **Additional settings**.",
+                  "type" : "string"
+               },
+               "fundsAvailability" : {
+                  "description" : "Indicates availability of funds.\n\nVisa:\n* \"I\" (fast funds are supported)\n* \"N\" (otherwise)\n\nMastercard:\n* \"I\" (product type is Prepaid or Debit, or issuing country is in CEE/HGEM list)\n* \"N\" (otherwise)\n\n> Returned when you verify a card BIN or estimate costs, and only if payoutEligible is \"Y\" or \"D\".",
+                  "type" : "string"
+               },
+               "inferredRefusalReason" : {
+                  "description" : "Provides the more granular indication of why a transaction was refused. When a transaction fails with either \"Refused\", \"Restricted Card\", \"Transaction Not Permitted\", \"Not supported\" or \"DeclinedNon Generic\" refusalReason from the issuer, Adyen cross references its PSP-wide data for extra insight into the refusal reason. If an inferred refusal reason is available, the `inferredRefusalReason`, field is populated and the `refusalReason`, is set to \"Not Supported\".\n\nPossible values:\n* 3D Secure Mandated\n* Closed Account\n* ContAuth Not Supported\n* CVC Mandated\n* Ecommerce Not Allowed\n* Crossborder Not Supported\n* Card Updated\n* Low Authrate Bin\n* Non-reloadable prepaid card",
+                  "type" : "string"
+               },
+               "issuerCountry" : {
+                  "description" : "The issuing country of the card based on the BIN list that Adyen maintains.\n\nExample: JP",
+                  "type" : "string"
+               },
+               "mcBankNetReferenceNumber" : {
+                  "description" : "The `mcBankNetReferenceNumber`, is a minimum of six characters and a maximum of nine characters long.\n> Contact Support Team to enable this field.",
+                  "type" : "string"
+               },
+               "networkTxReference" : {
+                  "description" : "Returned in the response if you are not tokenizing with Adyen and are using the Merchant-initiated transactions (MIT) framework from Mastercard or Visa.\n\nThis contains either the Mastercard Trace ID or the Visa Transaction ID.",
+                  "type" : "string"
+               },
+               "ownerName" : {
+                  "description" : "The owner name of a bank account.\n\nOnly relevant for SEPA Direct Debit transactions.",
+                  "type" : "string"
+               },
+               "paymentAccountReference" : {
+                  "description" : "The Payment Account Reference (PAR) value links a network token with the underlying primary account number (PAN). The PAR value consists of 29 uppercase alphanumeric characters.",
+                  "type" : "string"
+               },
+               "paymentMethodVariant" : {
+                  "description" : "The Adyen sub-variant of the payment method used for the payment request.\n\nFor more information, refer to [PaymentMethodVariant](https://docs.adyen.com/development-resources/paymentmethodvariant).\n\nExample: mcpro",
+                  "type" : "string"
+               },
+               "payoutEligible" : {
+                  "description" : "Indicates whether a payout is eligible or not for this card.\n\nVisa:\n* \"Y\"\n* \"N\"\n\nMastercard:\n* \"Y\" (domestic and cross-border)\n* \"D\" (only domestic)\n* \"N\" (no MoneySend)\n* \"U\" (unknown)",
+                  "type" : "string"
+               },
+               "realtimeAccountUpdaterStatus" : {
+                  "description" : "The response code from the Real Time Account Updater service.\n\nPossible return values are:\n* CardChanged\n* CardExpiryChanged\n* CloseAccount\n* ContactCardAccountHolder",
+                  "type" : "string"
+               },
+               "receiptFreeText" : {
+                  "description" : "Message to be displayed on the terminal.",
+                  "type" : "string"
+               },
+               "recurring.firstPspReference" : {
+                  "description" : "The `pspReference`, of the first recurring payment that created the recurring detail.\n\nThis functionality requires additional configuration on Adyen's end. To enable it, contact the Support Team.",
+                  "type" : "string"
+               },
+               "recurring.recurringDetailReference" : {
+                  "description" : "The reference that uniquely identifies the recurring transaction.",
+                  "type" : "string"
+               },
+               "referred" : {
+                  "description" : "If the payment is referred, this field is set to true.\n\nThis field is unavailable if the payment is referred and is usually not returned with ecommerce transactions.\n\nExample: true",
+                  "type" : "string"
+               },
+               "refusalReasonRaw" : {
+                  "description" : "Raw refusal reason received from the acquirer, where available.\n\nExample: AUTHORISED",
+                  "type" : "string"
+               },
+               "shopperInteraction" : {
+                  "description" : "The shopper interaction type of the payment request.\n\nExample: Ecommerce",
+                  "type" : "string"
+               },
+               "shopperReference" : {
+                  "description" : "The shopperReference passed in the payment request.\n\nExample: AdyenTestShopperXX",
+                  "type" : "string"
+               },
+               "terminalId" : {
+                  "description" : "The terminal ID used in a point-of-sale payment.\n\nExample: 06022622",
+                  "type" : "string"
+               },
+               "threeDAuthenticated" : {
+                  "description" : "A Boolean value indicating whether 3DS authentication was completed on this payment.\n\nExample: true",
+                  "type" : "string"
+               },
+               "threeDAuthenticatedResponse" : {
+                  "description" : "The raw 3DS authentication result from the card issuer.\n\nExample: N",
+                  "type" : "string"
+               },
+               "threeDOffered" : {
+                  "description" : "A Boolean value indicating whether 3DS was offered for this payment.\n\nExample: true",
+                  "type" : "string"
+               },
+               "threeDOfferedResponse" : {
+                  "description" : "The raw enrollment result from the 3DS directory services of the card schemes.\n\nExample: Y",
+                  "type" : "string"
+               },
+               "threeDSVersion" : {
+                  "description" : "The 3D Secure 2 version.",
+                  "type" : "string"
+               },
+               "visaTransactionId" : {
+                  "description" : "The `visaTransactionId`, has a fixed length of 15 numeric characters.\n> Contact Support Team to enable this field.",
+                  "type" : "string"
+               },
+               "xid" : {
+                  "description" : "The 3DS transaction ID of the 3DS session sent in notifications. The value is Base64-encoded and is returned for transactions with directoryResponse 'N' or 'Y'. If you want to submit the xid in your 3D Secure 1 request, use the `mpiData.xid`, field.\n\nExample: ODgxNDc2MDg2MDExODk5MAAAAAA=",
+                  "type" : "string"
+               }
+            }
+         },
+         "ResponseAdditionalDataBillingAddress" : {
+            "properties" : {
+               "billingAddress.city" : {
+                  "description" : "The billing address city passed in the payment request.",
+                  "type" : "string"
+               },
+               "billingAddress.country" : {
+                  "description" : "The billing address country passed in the payment request.\n\nExample: NL",
+                  "type" : "string"
+               },
+               "billingAddress.houseNumberOrName" : {
+                  "description" : "The billing address house number or name passed in the payment request.",
+                  "type" : "string"
+               },
+               "billingAddress.postalCode" : {
+                  "description" : "The billing address postal code passed in the payment request.\n\nExample: 1011 DJ",
+                  "type" : "string"
+               },
+               "billingAddress.stateOrProvince" : {
+                  "description" : "The billing address state or province passed in the payment request.\n\nExample: NH",
+                  "type" : "string"
+               },
+               "billingAddress.street" : {
+                  "description" : "The billing address street passed in the payment request.",
+                  "type" : "string"
+               }
+            }
+         },
+         "ResponseAdditionalDataCard" : {
+            "properties" : {
+               "cardBin" : {
+                  "description" : "The Bank Identification Number of a credit card, which is the first six digits of a card number.\n\nExample: 521234",
+                  "type" : "string"
+               },
+               "cardHolderName" : {
+                  "description" : "The cardholder name passed in the payment request.",
+                  "type" : "string"
+               },
+               "cardIssuingBank" : {
+                  "description" : "The bank or the financial institution granting lines of credit through card association branded payment cards. This information can be included when available.",
+                  "type" : "string"
+               },
+               "cardIssuingCountry" : {
+                  "description" : "The country where the card was issued.\n\nExample: US",
+                  "type" : "string"
+               },
+               "cardIssuingCurrency" : {
+                  "description" : "The currency in which the card is issued, if this information is available.\n\nExample: USD",
+                  "type" : "string"
+               },
+               "cardPaymentMethod" : {
+                  "description" : "The card payment method used for the transaction.\n\nExample: amex",
+                  "type" : "string"
+               },
+               "cardSummary" : {
+                  "description" : "The last four digits of a card number.\n> Returned only in case of a card payment.",
+                  "type" : "string"
+               }
+            }
+         },
+         "ResponseAdditionalDataDeliveryAddress" : {
+            "properties" : {
+               "deliveryAddress.city" : {
+                  "description" : "The delivery address city passed in the payment request.",
+                  "type" : "string"
+               },
+               "deliveryAddress.country" : {
+                  "description" : "The delivery address country passed in the payment request.\n\nExample: NL",
+                  "type" : "string"
+               },
+               "deliveryAddress.houseNumberOrName" : {
+                  "description" : "The delivery address house number or name passed in the payment request.",
+                  "type" : "string"
+               },
+               "deliveryAddress.postalCode" : {
+                  "description" : "The delivery address postal code passed in the payment request.\n\nExample: 1011 DJ",
+                  "type" : "string"
+               },
+               "deliveryAddress.stateOrProvince" : {
+                  "description" : "The delivery address state or province passed in the payment request.\n\nExample: NH",
+                  "type" : "string"
+               },
+               "deliveryAddress.street" : {
+                  "description" : "The delivery address street passed in the payment request.",
+                  "type" : "string"
+               }
+            }
+         },
+         "ResponseAdditionalDataInstallments" : {
+            "properties" : {
+               "installments.value" : {
+                  "description" : "The number of installments that the payment amount should be charged with.\n\nExample: 5\n> Only relevant for card payments in countries that support installments.",
+                  "type" : "string"
+               },
+               "installmentPaymentData.installmentType" : {
+                  "description" : "Type of installment. The value of `installmentType` should be **IssuerFinanced**.",
+                  "type" : "string"
+               },
+               "installmentPaymentData.paymentOptions" : {
+                  "description" : "Possible values:\n* PayInInstallmentsOnly\n* PayInFullOnly\n* PayInFullOrInstallments",
+                  "type" : "string"
+               },
+               "installmentPaymentData.option[itemNr].numberOfInstallments" : {
+                  "description" : "Total number of installments possible for this payment.",
+                  "type" : "string"
+               },
+               "installmentPaymentData.option[itemNr].interestRate" : {
+                  "description" : "Interest rate for the installment period.",
+                  "type" : "string"
+               },
+               "installmentPaymentData.option[itemNr].installmentFee" : {
+                  "description" : "Installment fee amount in minor units.",
+                  "type" : "string"
+               },
+               "installmentPaymentData.option[itemNr].annualPercentageRate" : {
+                  "description" : "Annual interest rate.",
+                  "type" : "string"
+               },
+               "installmentPaymentData.option[itemNr].firstInstallmentAmount" : {
+                  "description" : "First Installment Amount in minor units.",
+                  "type" : "string"
+               },
+               "installmentPaymentData.option[itemNr].subsequentInstallmentAmount" : {
+                  "description" : "Subsequent Installment Amount in minor units.",
+                  "type" : "string"
+               },
+               "installmentPaymentData.option[itemNr].minimumNumberOfInstallments" : {
+                  "description" : "Minimum number of installments possible for this payment.",
+                  "type" : "string"
+               },
+               "installmentPaymentData.option[itemNr].maximumNumberOfInstallments" : {
+                  "description" : "Maximum number of installments possible for this payment.",
+                  "type" : "string"
+               },
+               "installmentPaymentData.option[itemNr].totalAmountDue" : {
+                  "description" : "Total amount in minor units.",
+                  "type" : "string"
+               }
+            }
+         },
+         "ResponseAdditionalDataPayPal" : {
+            "properties" : {
+               "paypalPayerStatus" : {
+                  "description" : "The status of the buyer's PayPal account.\n\nExample: unverified",
+                  "type" : "string"
+               },
+               "paypalPayerResidenceCountry" : {
+                  "description" : "The buyer's country of residence.\n\nExample: NL",
+                  "type" : "string"
+               },
+               "paypalPayerId" : {
+                  "description" : "The buyer's PayPal ID.\n\nExample: LF5HCWWBRV2KL",
+                  "type" : "string"
+               },
+               "paypalEmail" : {
+                  "description" : "The buyer's PayPal account email address.\n\nExample: paypaltest@adyen.com",
+                  "type" : "string"
+               },
+               "paypalProtectionEligibility" : {
+                  "description" : "The eligibility for PayPal Seller Protection for this payment.\n\nExample: Ineligible",
+                  "type" : "string"
+               }
+            }
+         },
+         "ResponseAdditionalDataSepa" : {
+            "properties" : {
+               "sepadirectdebit.dateOfSignature" : {
+                  "description" : "The transaction signature date.\n\nFormat: yyyy-MM-dd",
+                  "type" : "string"
+               },
+               "sepadirectdebit.mandateId" : {
+                  "description" : "Its value corresponds to the  pspReference value of the transaction.",
+                  "type" : "string"
+               },
+               "sepadirectdebit.sequenceType" : {
+                  "description" : "This field can take one of the following values:\n* OneOff: (OOFF) Direct debit instruction to initiate exactly one direct debit transaction.\n* First: (FRST) Initial/first collection in a series of direct debit instructions.\n* Recurring: (RCUR) Direct debit instruction to carry out regular direct debit transactions initiated by the creditor.\n* Final: (FNAL) Last/final collection in a series of direct debit instructions.\n\nExample: OOFF",
+                  "type" : "string"
+               }
+            }
+         },
          "Address" : {
             "properties" : {
                "city" : {
@@ -1099,7 +1378,7 @@
                   "type" : "string"
                },
                "stateOrProvince" : {
-                  "description" : "State or province codes as defined in ISO 3166-2. For example, **SF** in US or **ON** for Canada.\n> Required for the US and Canada.",
+                  "description" : "State or province codes as defined in ISO 3166-2. For example, **CA** in the US or **ON** in Canada.\n> Required for the US and Canada.",
                   "type" : "string"
                },
                "street" : {
@@ -1308,7 +1587,7 @@
                   "type" : "boolean"
                },
                "installments" : {
-                  "description" : "Describes the configuration for [installment payments](https://docs.adyen.com/payment-methods/installment-payments).",
+                  "description" : "Describes the configuration for [installment payments](https://docs.adyen.com/payment-methods/cards/credit-card-installments).",
                   "$ref" : "#/components/schemas/Installments"
                }
             }
@@ -1316,14 +1595,14 @@
          "CreatePaymentLinkRequest" : {
             "properties" : {
                "allowedPaymentMethods" : {
-                  "description" : "List of payments methods to be presented to the shopper. To refer to payment methods, use their `brandCode` from [Payment methods overview](https://docs.adyen.com/payment-methods).",
+                  "description" : "List of payments methods to be presented to the shopper. To refer to payment methods, use their `paymentMethod.type` from [Payment methods overview](https://docs.adyen.com/payment-methods).\n\nExample: `\"allowedPaymentMethods\":[\"ideal\",\"giropay\"]`",
                   "items" : {
                      "type" : "string"
                   },
                   "type" : "array"
                },
                "amount" : {
-                  "description" : "The amount information for the transaction. For [BIN or card verification](https://docs.adyen.com/payment-methods/cards/bin-data-and-card-verification) requests, set amount to 0 (zero).",
+                  "description" : "The amount information for the transaction (in [minor units](https://docs.adyen.com/development-resources/currency-codes)). For [BIN or card verification](https://docs.adyen.com/payment-methods/cards/bin-data-and-card-verification) requests, set amount to 0 (zero).",
                   "$ref" : "#/components/schemas/Amount"
                },
                "billingAddress" : {
@@ -1331,7 +1610,7 @@
                   "$ref" : "#/components/schemas/Address"
                },
                "blockedPaymentMethods" : {
-                  "description" : "List of payments methods to be hidden from the shopper. To refer to payment methods, use their `brandCode` from [Payment methods overview](https://docs.adyen.com/payment-methods).",
+                  "description" : "List of payments methods to be hidden from the shopper. To refer to payment methods, use their `paymentMethod.type` from [Payment methods overview](https://docs.adyen.com/payment-methods).\n\nExample: `\"blockedPaymentMethods\":[\"ideal\",\"giropay\"]`",
                   "items" : {
                      "type" : "string"
                   },
@@ -1350,7 +1629,7 @@
                   "type" : "string"
                },
                "expiresAt" : {
-                  "description" : "The date that the Pay By Link expires; e.g. 2019-03-23T12:25:28Z. If not provided, the default expiry duration is 1 day.",
+                  "description" : "The date that the Pay By Link expires, in ISO 8601 format. For example, 2019-11-23T12:25:28Z. Maximum expiry date should be 30 days from when the payment link is created. If not provided, the default expiry duration is 24 hours.",
                   "type" : "string"
                },
                "merchantAccount" : {
@@ -1362,7 +1641,7 @@
                   "type" : "string"
                },
                "returnUrl" : {
-                  "description" : "Merchant URL used for redirection after payment is completed",
+                  "description" : "Website URL used for redirection after payment is completed.\nIf provided, a **Continue** button will be shown on the page. If shoppers select the button, they are redirected to the specified URL.",
                   "type" : "string"
                },
                "shopperEmail" : {
@@ -1381,7 +1660,8 @@
             "required" : [
                "merchantAccount",
                "reference",
-               "amount"
+               "amount",
+               "countryCode"
             ]
          },
          "CreatePaymentLinkResponse" : {
@@ -1629,7 +1909,7 @@
                   "type" : "integer"
                },
                "taxCategory" : {
-                  "description" : "Tax category: High, Low, None, Zero",
+                  "description" : "Required for AfterPay. Tax category: High, Low, None, Zero",
                   "enum" : [
                      "High",
                      "Low",
@@ -1775,18 +2055,18 @@
                   ]
                },
                "allowedPaymentMethods" : {
-                  "description" : "List of payments methods to be presented to the shopper. To refer to payment methods, use their `brandCode` from [Payment methods overview](https://docs.adyen.com/payment-methods).",
+                  "description" : "List of payments methods to be presented to the shopper. To refer to payment methods, use their `paymentMethod.type` from [Payment methods overview](https://docs.adyen.com/payment-methods).\n\nExample: `\"allowedPaymentMethods\":[\"ideal\",\"giropay\"]`",
                   "items" : {
                      "type" : "string"
                   },
                   "type" : "array"
                },
                "amount" : {
-                  "description" : "The amount information for the transaction. For [BIN or card verification](https://docs.adyen.com/payment-methods/cards/bin-data-and-card-verification) requests, set amount to 0 (zero).",
+                  "description" : "The amount information for the transaction (in [minor units](https://docs.adyen.com/development-resources/currency-codes)). For [BIN or card verification](https://docs.adyen.com/payment-methods/cards/bin-data-and-card-verification) requests, set amount to 0 (zero).",
                   "$ref" : "#/components/schemas/Amount"
                },
                "blockedPaymentMethods" : {
-                  "description" : "List of payments methods to be hidden from the shopper. To refer to payment methods, use their `brandCode` from [Payment methods overview](https://docs.adyen.com/payment-methods).",
+                  "description" : "List of payments methods to be hidden from the shopper. To refer to payment methods, use their `paymentMethod.type` from [Payment methods overview](https://docs.adyen.com/payment-methods).\n\nExample: `\"blockedPaymentMethods\":[\"ideal\",\"giropay\"]`",
                   "items" : {
                      "type" : "string"
                   },
@@ -1868,7 +2148,7 @@
                   ]
                },
                "amount" : {
-                  "description" : "The amount information for the transaction. For [BIN or card verification](https://docs.adyen.com/payment-methods/cards/bin-data-and-card-verification) requests, set amount to 0 (zero).",
+                  "description" : "The amount information for the transaction (in [minor units](https://docs.adyen.com/development-resources/currency-codes)). For [BIN or card verification](https://docs.adyen.com/payment-methods/cards/bin-data-and-card-verification) requests, set amount to 0 (zero).",
                   "$ref" : "#/components/schemas/Amount"
                },
                "billingAddress" : {
@@ -1894,7 +2174,7 @@
                   "type" : "string"
                },
                "company" : {
-                  "description" : "Information regarding the company",
+                  "description" : "Information regarding the company.",
                   "$ref" : "#/components/schemas/Company"
                },
                "countryCode" : {
@@ -1949,7 +2229,7 @@
                   "type" : "integer"
                },
                "installments" : {
-                  "description" : "Contains installment settings. For more information, refer to [Installments](https://docs.adyen.com/payment-methods/installment-payments).",
+                  "description" : "Contains installment settings. For more information, refer to [Installments](https://docs.adyen.com/payment-methods/cards/credit-card-installments).",
                   "$ref" : "#/components/schemas/Installments"
                },
                "lineItems" : {
@@ -2020,6 +2300,10 @@
                   "description" : "The URL to return to.",
                   "type" : "string"
                },
+               "riskData" : {
+                  "description" : "Contains risk data, such as client-side data, used to identify risk for a transaction.",
+                  "$ref" : "#/components/schemas/RiskData"
+               },
                "sessionValidity" : {
                   "description" : "The maximum validity of the session.",
                   "type" : "string"
@@ -2078,8 +2362,16 @@
          "PaymentResponse" : {
             "properties" : {
                "additionalData" : {
-                  "description" : "This field contains additional data, which may be required to return in a particular payment response. To choose data fields to be returned, go to **Customer Area** > **Account** > **API URLs**.",
-                  "type" : "object"
+                  "description" : "This field contains additional data, which may be required to return in a particular payment response. To choose data fields to be returned, go to **Customer Area** > **Account** > **API URLs** > **Additional data settings**.",
+                  "anyOf": [
+                     { "$ref" : "#/components/schemas/ResponseAdditionalDataCommon" },
+                     { "$ref" : "#/components/schemas/ResponseAdditionalDataBillingAddress"},
+                     { "$ref" : "#/components/schemas/ResponseAdditionalDataCard"},
+                     { "$ref" : "#/components/schemas/ResponseAdditionalDataDeliveryAddress"},
+                     { "$ref" : "#/components/schemas/ResponseAdditionalDataInstallments"},
+                     { "$ref" : "#/components/schemas/ResponseAdditionalDataPayPal"},
+                     { "$ref" : "#/components/schemas/ResponseAdditionalDataSepa"}
+                  ]
                },
                "details" : {
                   "description" : "When non-empty, contains all the fields that you must submit to the `/payments/details` endpoint.",
@@ -2113,7 +2405,7 @@
                   "type" : "string"
                },
                "resultCode" : {
-                  "description" : "The result of the payment. Possible values:\n\n* **AuthenticationFinished** – The payment has been successfully authenticated with 3D Secure 2. Returned for 3D Secure 2 authentication-only transactions.\n* **Authorised** – The payment was successfully authorised. This state serves as an indicator to proceed with the delivery of goods and services. This is a final state.\n* **Cancelled** – Indicates the payment has been cancelled (either by the shopper or the merchant) before processing was completed. This is a final state.\n* **ChallengeShopper** – The issuer requires further shopper interaction before the payment can be authenticated. Returned for 3D Secure 2 transactions.\n* **Error** – There was an error when the payment was being processed. The reason is given in the `refusalReason` field. This is a final state.\n* **IdentifyShopper** – The issuer requires the shopper's device fingerprint before the payment can be authenticated. Returned for 3D Secure 2 transactions.\n* **Pending** – Indicates that it is not possible to obtain the final status of the payment. This can happen if the systems providing final status information for the payment are unavailable, or if the shopper needs to take further action to complete the payment. For more information on handling a pending payment, refer to [Payments with pending status](https://docs.adyen.com/development-resources/payments-with-pending-status).\n* **PresentToShopper** – Indicates that the response contains additional information that you need to present to a shopper, so that they can use it to complete a payment.\n* **Received** – Indicates the payment has successfully been received by Adyen, and will be processed. This is the initial state for all payments.\n* **RedirectShopper** – Indicates the shopper should be redirected to an external web page or app to complete the authorisation.\n* **Refused** – Indicates the payment was refused. The reason is given in the `refusalReason` field. This is a final state.",
+                  "description" : "The result of the payment. Possible values:\n\n* **AuthenticationFinished** – The payment has been successfully authenticated with 3D Secure 2. Returned for 3D Secure 2 authentication-only transactions.\n* **Authorised** – The payment was successfully authorised. This state serves as an indicator to proceed with the delivery of goods and services. This is a final state.\n* **Cancelled** – Indicates the payment has been cancelled (either by the shopper or the merchant) before processing was completed. This is a final state.\n* **ChallengeShopper** – The issuer requires further shopper interaction before the payment can be authenticated. Returned for 3D Secure 2 transactions.\n* **Error** – There was an error when the payment was being processed. The reason is given in the `refusalReason` field. This is a final state.\n* **IdentifyShopper** – The issuer requires the shopper's device fingerprint before the payment can be authenticated. Returned for 3D Secure 2 transactions.\n* **Pending** – Indicates that it is not possible to obtain the final status of the payment. This can happen if the systems providing final status information for the payment are unavailable, or if the shopper needs to take further action to complete the payment. For more information, refer to [Result codes](https://docs.adyen.com/checkout/payment-result-codes).\n* **PresentToShopper** – Indicates that the response contains additional information that you need to present to a shopper, so that they can use it to complete a payment.\n* **Received** – Indicates the payment has successfully been received by Adyen, and will be processed. This is the initial state for all payments.\n* **RedirectShopper** – Indicates the shopper should be redirected to an external web page or app to complete the authorisation.\n* **Refused** – Indicates the payment was refused. The reason is given in the `refusalReason` field. This is a final state.",
                   "enum" : [
                      "AuthenticationFinished",
                      "Authorised",
@@ -2151,14 +2443,14 @@
                   ]
                },
                "allowedPaymentMethods" : {
-                  "description" : "List of payments methods to be presented to the shopper. To refer to payment methods, use their `brandCode` from [Payment methods overview](https://docs.adyen.com/payment-methods).",
+                  "description" : "List of payments methods to be presented to the shopper. To refer to payment methods, use their `paymentMethod.type` from [Payment methods overview](https://docs.adyen.com/payment-methods).\n\nExample: `\"allowedPaymentMethods\":[\"ideal\",\"giropay\"]`",
                   "items" : {
                      "type" : "string"
                   },
                   "type" : "array"
                },
                "amount" : {
-                  "description" : "The amount information for the transaction. For [BIN or card verification](https://docs.adyen.com/payment-methods/cards/bin-data-and-card-verification) requests, set amount to 0 (zero).",
+                  "description" : "The amount information for the transaction (in [minor units](https://docs.adyen.com/development-resources/currency-codes)). For [BIN or card verification](https://docs.adyen.com/payment-methods/cards/bin-data-and-card-verification) requests, set amount to 0 (zero).",
                   "$ref" : "#/components/schemas/Amount"
                },
                "billingAddress" : {
@@ -2166,7 +2458,7 @@
                   "$ref" : "#/components/schemas/Address"
                },
                "blockedPaymentMethods" : {
-                  "description" : "List of payments methods to be hidden from the shopper. To refer to payment methods, use their `brandCode` from [Payment methods overview](https://docs.adyen.com/payment-methods).",
+                  "description" : "List of payments methods to be hidden from the shopper. To refer to payment methods, use their `paymentMethod.type` from [Payment methods overview](https://docs.adyen.com/payment-methods).\n\nExample: `\"blockedPaymentMethods\":[\"ideal\",\"giropay\"]`",
                   "items" : {
                      "type" : "string"
                   },
@@ -2187,7 +2479,7 @@
                   "type" : "string"
                },
                "company" : {
-                  "description" : "Information regarding the company",
+                  "description" : "Information regarding the company.",
                   "$ref" : "#/components/schemas/Company"
                },
                "configuration" : {
@@ -2242,7 +2534,7 @@
                   "type" : "integer"
                },
                "installments" : {
-                  "description" : "Contains installment settings. For more information, refer to [Installments](https://docs.adyen.com/payment-methods/installment-payments).",
+                  "description" : "Contains installment settings. For more information, refer to [Installments](https://docs.adyen.com/payment-methods/cards/credit-card-installments).",
                   "$ref" : "#/components/schemas/Installments"
                },
                "lineItems" : {
@@ -2291,6 +2583,10 @@
                "returnUrl" : {
                   "description" : "The URL to return to.",
                   "type" : "string"
+               },
+               "riskData" : {
+                  "description" : "Contains risk data, such as client-side data, used to identify risk for a transaction.",
+                  "$ref" : "#/components/schemas/RiskData"
                },
                "sdkVersion" : {
                   "description" : "The version of the SDK you are using (for Web SDK integrations only).",
@@ -2385,8 +2681,16 @@
          "PaymentVerificationResponse" : {
             "properties" : {
                "additionalData" : {
-                  "description" : "This field contains additional data, which may be required to return in a particular payment response. To choose data fields to be returned, go to **Customer Area** > **Account** > **API URLs**.",
-                  "type" : "object"
+                  "description" : "This field contains additional data, which may be required to return in a particular payment response. To choose data fields to be returned, go to **Customer Area** > **Account** > **API URLs** > **Additional data settings**.",
+                  "anyOf": [
+                     { "$ref" : "#/components/schemas/ResponseAdditionalDataCommon" },
+                     { "$ref" : "#/components/schemas/ResponseAdditionalDataBillingAddress"},
+                     { "$ref" : "#/components/schemas/ResponseAdditionalDataCard"},
+                     { "$ref" : "#/components/schemas/ResponseAdditionalDataDeliveryAddress"},
+                     { "$ref" : "#/components/schemas/ResponseAdditionalDataInstallments"},
+                     { "$ref" : "#/components/schemas/ResponseAdditionalDataPayPal"},
+                     { "$ref" : "#/components/schemas/ResponseAdditionalDataSepa"}
+                  ]
                },
                "authResponse" : {
                   "description" : "The authorisation code representing the authentication result.\n\nPossible values:\n* Received\n* Authorised\n* Error\n* Refused\n* Cancelled\n* Unknown",
@@ -2413,7 +2717,7 @@
                   "type" : "string"
                },
                "resultCode" : {
-                  "description" : "The result of the payment. Possible values:\n\n* **AuthenticationFinished** – The payment has been successfully authenticated with 3D Secure 2. Returned for 3D Secure 2 authentication-only transactions.\n* **Authorised** – The payment was successfully authorised. This state serves as an indicator to proceed with the delivery of goods and services. This is a final state.\n* **Cancelled** – Indicates the payment has been cancelled (either by the shopper or the merchant) before processing was completed. This is a final state.\n* **ChallengeShopper** – The issuer requires further shopper interaction before the payment can be authenticated. Returned for 3D Secure 2 transactions.\n* **Error** – There was an error when the payment was being processed. The reason is given in the `refusalReason` field. This is a final state.\n* **IdentifyShopper** – The issuer requires the shopper's device fingerprint before the payment can be authenticated. Returned for 3D Secure 2 transactions.\n* **Pending** – Indicates that it is not possible to obtain the final status of the payment. This can happen if the systems providing final status information for the payment are unavailable, or if the shopper needs to take further action to complete the payment. For more information on handling a pending payment, refer to [Payments with pending status](https://docs.adyen.com/development-resources/payments-with-pending-status).\n* **PresentToShopper** – Indicates that the response contains additional information that you need to present to a shopper, so that they can use it to complete a payment.\n* **Received** – Indicates the payment has successfully been received by Adyen, and will be processed. This is the initial state for all payments.\n* **RedirectShopper** – Indicates the shopper should be redirected to an external web page or app to complete the authorisation.\n* **Refused** – Indicates the payment was refused. The reason is given in the `refusalReason` field. This is a final state.",
+                  "description" : "The result of the payment. Possible values:\n\n* **AuthenticationFinished** – The payment has been successfully authenticated with 3D Secure 2. Returned for 3D Secure 2 authentication-only transactions.\n* **Authorised** – The payment was successfully authorised. This state serves as an indicator to proceed with the delivery of goods and services. This is a final state.\n* **Cancelled** – Indicates the payment has been cancelled (either by the shopper or the merchant) before processing was completed. This is a final state.\n* **ChallengeShopper** – The issuer requires further shopper interaction before the payment can be authenticated. Returned for 3D Secure 2 transactions.\n* **Error** – There was an error when the payment was being processed. The reason is given in the `refusalReason` field. This is a final state.\n* **IdentifyShopper** – The issuer requires the shopper's device fingerprint before the payment can be authenticated. Returned for 3D Secure 2 transactions.\n* **Pending** – Indicates that it is not possible to obtain the final status of the payment. This can happen if the systems providing final status information for the payment are unavailable, or if the shopper needs to take further action to complete the payment. For more information, refer to [Result codes](https://docs.adyen.com/checkout/payment-result-codes).\n* **PresentToShopper** – Indicates that the response contains additional information that you need to present to a shopper, so that they can use it to complete a payment.\n* **Received** – Indicates the payment has successfully been received by Adyen, and will be processed. This is the initial state for all payments.\n* **RedirectShopper** – Indicates the shopper should be redirected to an external web page or app to complete the authorisation.\n* **Refused** – Indicates the payment was refused. The reason is given in the `refusalReason` field. This is a final state.",
                   "enum" : [
                      "AuthenticationFinished",
                      "Authorised",
@@ -2537,6 +2841,14 @@
                },
                "url" : {
                   "description" : "The URL, to which you must redirect a shopper to complete a payment.",
+                  "type" : "string"
+               }
+            }
+         },
+         "RiskData" : {
+            "properties" : {
+               "clientData" : {
+                  "description" : "Contains client-side data, like the device fingerprint, cookies, and specific browser settings.",
                   "type" : "string"
                }
             }
