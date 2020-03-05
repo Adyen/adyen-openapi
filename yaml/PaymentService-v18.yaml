@@ -276,6 +276,11 @@ components:
             * Format: alpha-numeric.
             * Fixed length: 15 characters.
           type: string
+    AdditionalDataModifications:
+      properties:
+        installmentPaymentData.selectedInstallmentOption:
+          description: This is the installment option selected by the shopper. It is required only if specified by the user.
+          type: string
     AdditionalData3DSecure:
       properties:
         allow3DS2:
@@ -294,6 +299,14 @@ components:
           type: string
         mpiImplementationType:
           description: 'In case of Secure+, this field must be set to **CUPSecurePlus**.'
+          type: string
+        scaExemption:
+          description: |-
+            Indicates the [exemption type](https://docs-admin.is.adyen.com/payments-fundamentals/psd2-sca-compliance-and-implementation-guide#specifypreferenceinyourapirequest) that you want to request for the transaction. Possible values:
+            * **lowValue**
+            * **secureCorporate**
+            * **trustedBeneficiary**
+            * **transactionRiskAnalysis**
           type: string
     AdditionalDataAirline:
       properties:
@@ -384,6 +397,14 @@ components:
             The transaction amount needs to be represented in minor units according to the [following table](https://docs.adyen.com/development-resources/currency-codes).
             * minLength: 1
             * maxLength: 18
+          type: string
+        airline.document_type:
+          description: |-
+            Optional 2-digit code; alphanumeric. It identifies the type of product of the transaction. The description of the code may appear on credit card statements.
+            * Format: 2-digit code
+            * Example: Passenger ticket = 01
+            * minLength: 2
+            * maxLength: 2
           type: string
         airline.leg.depart_airport:
           description: |-
@@ -487,6 +508,8 @@ components:
             * minLength: 10
             * maxLength: 10
           type: string
+      required:
+        - airline.passenger_name
     AdditionalDataCarRental:
       properties:
         carRental.rentalAgreementNumber:
@@ -862,9 +885,6 @@ components:
 
             You can contact Klarna for the format and structure of the string.
           type: string
-        openinvoicedata.installmentConfigurationKey:
-          description: 'Required for the Klarna account, identifying an installment plan. Include Klarna’s `pclassid` for the installment plan.'
-          type: string
         'openinvoicedata.line[itemNr].currencyCode':
           description: The three-character ISO currency code.
           type: string
@@ -894,7 +914,7 @@ components:
           type: integer
         'openinvoicedata.line[itemNr].vatCategory':
           description: |-
-            The country-specific VAT category a product falls under.
+            Required for AfterPay. The country-specific VAT category a product falls under.
 
             Allowed values:
             * High
@@ -946,138 +966,8 @@ components:
           type: boolean
     AdditionalDataRisk:
       properties:
-        riskdata.deliveryMethod:
-          description: |-
-            The method to deliver the goods to the shopper.
-
-            Used in [Delivery Method](https://docs.adyen.com/risk-management/configure-standard-risk-rules/consistency-rules#delivery-method) check.
-          type: string
-        riskdata.accountCreationDate:
-          description: |-
-            The creation date of a shopper account on the merchant's platform.
-            * Format: `yyyy-MM-dd HH:mm:ss`
-            Used in [Custom risk checks](https://docs.adyen.com/risk-management/configure-custom-risk-rules).
-          type: string
-        riskdata.shopperAccountCreationDate:
-          description: |-
-            This specifies the date when the shopper's account was created.
-            * Format: `yyyy-MM-dd HH:mm:ss.sssZ`
-
-            Used in [Shopper Account Age check](https://docs.adyen.com/risk-management/configure-standard-risk-rules/consistency-rules#shopper-account-age).
-          type: string
-        riskdata.externalRiskScore:
-          description: |-
-            A risk score coming from a system external to Adyen.
-            * Format: Numeric (when used in custom risk checks)
-
-            Used in [External Risk Score check](https://docs.adyen.com/risk-management/configure-standard-risk-rules/external-risk-rules#external-risk-score-generic).
-
-            Used in [Custom risk checks](https://docs.adyen.com/risk-management/configure-custom-risk-rules).
-          type: string
-        riskdata.externalSuspectedFraud:
-          description: |-
-            Usually a boolean representing the fraud risk assessment coming from a system external to Adyen.
-
-            Used in [Custom risk checks](https://docs.adyen.com/risk-management/configure-custom-risk-rules).
-          type: string
-        riskdata.operatorCode:
-          description: |-
-            A code corresponding to a telecom network operator
-
-            Used in [Custom risk checks](https://docs.adyen.com/risk-management/configure-custom-risk-rules).
-          type: string
-        riskdata.operatorCountry:
-          description: |-
-            Country corresponding to the telecom network operator. Usually a two letter country code.
-
-            Used in [Custom risk checks](https://docs.adyen.com/risk-management/configure-custom-risk-rules).
-          type: object
-        riskdata.operatorName:
-          description: |-
-            Name of a telecom network operator e.g. Vodafone, Orange etc.
-
-            Used in [Custom risk checks](https://docs.adyen.com/risk-management/configure-custom-risk-rules).
-          type: string
-        riskdata.operatorProductCode:
-          description: |-
-            Product code of a telecom product.
-
-            Used in [Custom risk checks](https://docs.adyen.com/risk-management/configure-custom-risk-rules).
-          type: string
-        riskdata.paymentMethod:
-          description: |-
-            Represents the payment method as it is understood by the merchant. Does not necessarily have to coincide with the payment method determined by Adyen.
-
-            Used in [Custom risk checks](https://docs.adyen.com/risk-management/configure-custom-risk-rules).
-
-            For visacheckout, masterpass, and paywithgoogle, use `riskdata.paymentDataSource` instead.
-          type: string
-        riskdata.paymentDataSource:
-          description: 'Used in [Custom risk checks](https://docs.adyen.com/risk-management/configure-custom-risk-rules) for visacheckout, masterpass, and paywithgoogle.'
-          type: string
-        riskdata.previousSuccessfulOrders:
-          description: |-
-            The number of previous non-fraudulent orders made by a shopper.
-            * Format: Numeric
-
-            Used in [Custom risk checks](https://docs.adyen.com/risk-management/configure-custom-risk-rules).
-          type: string
-        riskdata.referralMethod:
-          description: |-
-            The referral method/reason for joining the merchant's platform.
-
-            Used in [Custom risk checks](https://docs.adyen.com/risk-management/configure-custom-risk-rules).
-          type: string
-        riskdata.referrerUserName:
-          description: |-
-            The user name of a member who referred somebody to the merchant's platform.
-
-            Used in [Custom risk checks](https://docs.adyen.com/risk-management/configure-custom-risk-rules).
-          type: string
-        riskdata.riskProfileId:
-          description: The id of the risk profile to use instead of the merchant account's currently set risk profile.
-          type: string
-        riskdata.secondaryPhoneNumber:
-          description: |-
-            A secondary phone number for a user of the merchant's platform.
-
-            Used in [Custom risk checks](https://docs.adyen.com/risk-management/configure-custom-risk-rules).
-          type: object
-        riskdata.shippingMethod:
-          description: |-
-            Name of the shipping method.
-
-            Used in [Custom risk checks](https://docs.adyen.com/risk-management/configure-custom-risk-rules).
-          type: string
-        riskdata.shopperCountry:
-          description: |-
-            The shopper country as determined by the merchant, usually as a 2 letter country code. Does not have to coincide with the Adyen determined shopper country.
-
-            Used in [Custom risk checks](https://docs.adyen.com/risk-management/configure-custom-risk-rules).
-          type: string
-        riskdata.simDistributor:
-          description: |-
-            Usually a SIM distribution company name e.g. Core, Elite, GK Tel etc.
-
-            Used in [Custom risk checks](https://docs.adyen.com/risk-management/configure-custom-risk-rules).
-          type: string
-        riskdata.userName:
-          description: |-
-            User name of an account on the merchant's platform.
-
-            Used in [Custom risk checks](https://docs.adyen.com/risk-management/configure-custom-risk-rules).
-          type: string
-        riskdata.userStatus:
-          description: |-
-            Usually a user's loyalty status e.g. Gold, Silver etc.
-
-            Used in [Custom risk checks](https://docs.adyen.com/risk-management/configure-custom-risk-rules).
-          type: string
-        riskdata.browserLanguage:
-          description: |-
-            Name of the browser language used by the shopper. Usually a two letter country code (e.g. NL, FR, US etc.)
-
-            Used in [Custom risk checks](https://docs.adyen.com/risk-management/configure-custom-risk-rules).
+        'riskdata.[customFieldName]':
+          description: 'The data for your custom risk field. For more information, refer to [Create custom risk fields](https://docs.adyen.com/risk-management/configure-custom-risk-rules#step-1-create-custom-risk-fields). '
           type: string
         'riskdata.basket.item[itemNr].itemID':
           description: ID of the item.
@@ -1139,10 +1029,10 @@ components:
     AdditionalDataRiskStandalone:
       properties:
         avsResultRaw:
-          description: 'Raw AVS result received from the acquirer, where available. Example: 7'
+          description: 'Raw AVS result received from the acquirer, where available. Example: D'
           type: string
         bin:
-          description: 'The Bank Identification Number of a credit card, which is the first six digits of a card number. Required for [tokenized card request](/risk-management/standalone-risk#tokenised-pan-request).'
+          description: 'The Bank Identification Number of a credit card, which is the first six digits of a card number. Required for [tokenized card request](https://docs.adyen.com/risk-management/standalone-risk#tokenised-pan-request).'
           type: string
         cvcResultRaw:
           description: 'Raw CVC result received from the acquirer, where available. Example: 1'
@@ -1257,6 +1147,480 @@ components:
         visacheckout.callId:
           description: The Visa Checkout Call ID retrieved from the SDK.
           type: string
+    ResponseAdditionalDataCommon:
+      properties:
+        acquirerAccountCode:
+          description: |-
+            The name of the Adyen acquirer account.
+
+            Example: PayPalSandbox_TestAcquirer
+            > Only relevant for PayPal transactions.
+          type: string
+        acquirerCode:
+          description: |-
+            The name of the acquirer processing the payment request.
+
+            Example: TestPmmAcquirer
+          type: string
+        acquirerReference:
+          description: |-
+            The reference number that can be used for reconciliation in case a non-Adyen acquirer is used for settlement.
+
+            Example: 7C9N3FNBKT9
+          type: string
+        alias:
+          description: |-
+            The Adyen alias of the card.
+
+            Example: H167852639363479
+          type: string
+        aliasType:
+          description: |-
+            The type of the card alias.
+
+            Example: Default
+          type: string
+        authCode:
+          description: |-
+            Authorisation code:
+            * When the payment is authorised successfully, this field holds the authorisation code for the payment.
+            * When the payment is not authorised, this field is empty.
+
+            Example: 58747
+          type: string
+        authorisedAmountCurrency:
+          description: 'The currency of the authorised amount, as a three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).'
+          type: string
+        authorisedAmountValue:
+          description: |-
+            Value of the amount authorised.
+
+            This amount is represented in minor units according to the [following table](https://docs.adyen.com/development-resources/currency-codes).
+          type: string
+        avsResult:
+          description: |-
+            The AVS result code of the payment, which provides information about the outcome of the AVS check.
+
+            For possible values, see [AVS](https://docs.adyen.com/risk-management/configure-standard-risk-rules/consistency-rules#billing-address-does-not-match-cardholder-address-avs).
+          type: string
+        avsResultRaw:
+          description: |-
+            Raw AVS result received from the acquirer, where available.
+
+            Example: D
+          type: string
+        bic:
+          description: |-
+            BIC of a bank account.
+
+            Example: TESTNL01
+            > Only relevant for SEPA Direct Debit transactions.
+          type: string
+        dsTransID:
+          description: Supported for 3D Secure 2. The unique transaction identifier assigned by the DS to identify a single transaction.
+          type: string
+        eci:
+          description: |-
+            The Electronic Commerce Indicator returned from the schemes for the 3DS payment session.
+
+            Example: 02
+          type: string
+        expiryDate:
+          description: |-
+            The expiry date on the card.
+
+            Example: 6/2016
+            > Returned only in case of a card payment.
+          type: string
+        extraCostsCurrency:
+          description: |-
+            The currency of the extra amount charged due to additional amounts set in the skin used in the HPP payment request.
+
+            Example: EUR
+          type: string
+        extraCostsValue:
+          description: The value of the extra amount charged due to additional amounts set in the skin used in the HPP payment request. The amount is in minor units.
+          type: string
+        'fraudCheck-[itemNr]-[FraudCheckname]':
+          description: The fraud score due to a particular fraud check. The fraud check name is found in the key of the key-value pair.
+          type: string
+        fundingSource:
+          description: |-
+            Information regarding the funding type of the card. The possible return values are:
+            * CHARGE
+            * CREDIT
+            * DEBIT
+            * PREPAID
+            * PREPAID_RELOADABLE
+            * PREPAID_NONRELOADABLE
+            * DEFFERED_DEBIT
+            > This functionality requires additional configuration on Adyen's end. To enable it, contact the Support Team.
+
+            For receiving this field in the notification, enable **Include Funding Source** in **Notifications** > **Additional settings**.
+          type: string
+        fundsAvailability:
+          description: |-
+            Indicates availability of funds.
+
+            Visa:
+            * "I" (fast funds are supported)
+            * "N" (otherwise)
+
+            Mastercard:
+            * "I" (product type is Prepaid or Debit, or issuing country is in CEE/HGEM list)
+            * "N" (otherwise)
+
+            > Returned when you verify a card BIN or estimate costs, and only if payoutEligible is "Y" or "D".
+          type: string
+        inferredRefusalReason:
+          description: |-
+            Provides the more granular indication of why a transaction was refused. When a transaction fails with either "Refused", "Restricted Card", "Transaction Not Permitted", "Not supported" or "DeclinedNon Generic" refusalReason from the issuer, Adyen cross references its PSP-wide data for extra insight into the refusal reason. If an inferred refusal reason is available, the `inferredRefusalReason`, field is populated and the `refusalReason`, is set to "Not Supported".
+
+            Possible values:
+            * 3D Secure Mandated
+            * Closed Account
+            * ContAuth Not Supported
+            * CVC Mandated
+            * Ecommerce Not Allowed
+            * Crossborder Not Supported
+            * Card Updated
+            * Low Authrate Bin
+            * Non-reloadable prepaid card
+          type: string
+        issuerCountry:
+          description: |-
+            The issuing country of the card based on the BIN list that Adyen maintains.
+
+            Example: JP
+          type: string
+        mcBankNetReferenceNumber:
+          description: |-
+            The `mcBankNetReferenceNumber`, is a minimum of six characters and a maximum of nine characters long.
+            > Contact Support Team to enable this field.
+          type: string
+        networkTxReference:
+          description: |-
+            Returned in the response if you are not tokenizing with Adyen and are using the Merchant-initiated transactions (MIT) framework from Mastercard or Visa.
+
+            This contains either the Mastercard Trace ID or the Visa Transaction ID.
+          type: string
+        ownerName:
+          description: |-
+            The owner name of a bank account.
+
+            Only relevant for SEPA Direct Debit transactions.
+          type: string
+        paymentAccountReference:
+          description: The Payment Account Reference (PAR) value links a network token with the underlying primary account number (PAN). The PAR value consists of 29 uppercase alphanumeric characters.
+          type: string
+        paymentMethodVariant:
+          description: |-
+            The Adyen sub-variant of the payment method used for the payment request.
+
+            For more information, refer to [PaymentMethodVariant](https://docs.adyen.com/development-resources/paymentmethodvariant).
+
+            Example: mcpro
+          type: string
+        payoutEligible:
+          description: |-
+            Indicates whether a payout is eligible or not for this card.
+
+            Visa:
+            * "Y"
+            * "N"
+
+            Mastercard:
+            * "Y" (domestic and cross-border)
+            * "D" (only domestic)
+            * "N" (no MoneySend)
+            * "U" (unknown)
+          type: string
+        realtimeAccountUpdaterStatus:
+          description: |-
+            The response code from the Real Time Account Updater service.
+
+            Possible return values are:
+            * CardChanged
+            * CardExpiryChanged
+            * CloseAccount
+            * ContactCardAccountHolder
+          type: string
+        receiptFreeText:
+          description: Message to be displayed on the terminal.
+          type: string
+        recurring.firstPspReference:
+          description: |-
+            The `pspReference`, of the first recurring payment that created the recurring detail.
+
+            This functionality requires additional configuration on Adyen's end. To enable it, contact the Support Team.
+          type: string
+        recurring.recurringDetailReference:
+          description: The reference that uniquely identifies the recurring transaction.
+          type: string
+        referred:
+          description: |-
+            If the payment is referred, this field is set to true.
+
+            This field is unavailable if the payment is referred and is usually not returned with ecommerce transactions.
+
+            Example: true
+          type: string
+        refusalReasonRaw:
+          description: |-
+            Raw refusal reason received from the acquirer, where available.
+
+            Example: AUTHORISED
+          type: string
+        shopperInteraction:
+          description: |-
+            The shopper interaction type of the payment request.
+
+            Example: Ecommerce
+          type: string
+        shopperReference:
+          description: |-
+            The shopperReference passed in the payment request.
+
+            Example: AdyenTestShopperXX
+          type: string
+        terminalId:
+          description: |-
+            The terminal ID used in a point-of-sale payment.
+
+            Example: 06022622
+          type: string
+        threeDAuthenticated:
+          description: |-
+            A Boolean value indicating whether 3DS authentication was completed on this payment.
+
+            Example: true
+          type: string
+        threeDAuthenticatedResponse:
+          description: |-
+            The raw 3DS authentication result from the card issuer.
+
+            Example: N
+          type: string
+        threeDOffered:
+          description: |-
+            A Boolean value indicating whether 3DS was offered for this payment.
+
+            Example: true
+          type: string
+        threeDOfferedResponse:
+          description: |-
+            The raw enrollment result from the 3DS directory services of the card schemes.
+
+            Example: Y
+          type: string
+        threeDSVersion:
+          description: The 3D Secure 2 version.
+          type: string
+        visaTransactionId:
+          description: |-
+            The `visaTransactionId`, has a fixed length of 15 numeric characters.
+            > Contact Support Team to enable this field.
+          type: string
+        xid:
+          description: |-
+            The 3DS transaction ID of the 3DS session sent in notifications. The value is Base64-encoded and is returned for transactions with directoryResponse 'N' or 'Y'. If you want to submit the xid in your 3D Secure 1 request, use the `mpiData.xid`, field.
+
+            Example: ODgxNDc2MDg2MDExODk5MAAAAAA=
+          type: string
+    ResponseAdditionalDataBillingAddress:
+      properties:
+        billingAddress.city:
+          description: The billing address city passed in the payment request.
+          type: string
+        billingAddress.country:
+          description: |-
+            The billing address country passed in the payment request.
+
+            Example: NL
+          type: string
+        billingAddress.houseNumberOrName:
+          description: The billing address house number or name passed in the payment request.
+          type: string
+        billingAddress.postalCode:
+          description: |-
+            The billing address postal code passed in the payment request.
+
+            Example: 1011 DJ
+          type: string
+        billingAddress.stateOrProvince:
+          description: |-
+            The billing address state or province passed in the payment request.
+
+            Example: NH
+          type: string
+        billingAddress.street:
+          description: The billing address street passed in the payment request.
+          type: string
+    ResponseAdditionalDataCard:
+      properties:
+        cardBin:
+          description: |-
+            The Bank Identification Number of a credit card, which is the first six digits of a card number.
+
+            Example: 521234
+          type: string
+        cardHolderName:
+          description: The cardholder name passed in the payment request.
+          type: string
+        cardIssuingBank:
+          description: The bank or the financial institution granting lines of credit through card association branded payment cards. This information can be included when available.
+          type: string
+        cardIssuingCountry:
+          description: |-
+            The country where the card was issued.
+
+            Example: US
+          type: string
+        cardIssuingCurrency:
+          description: |-
+            The currency in which the card is issued, if this information is available.
+
+            Example: USD
+          type: string
+        cardPaymentMethod:
+          description: |-
+            The card payment method used for the transaction.
+
+            Example: amex
+          type: string
+        cardSummary:
+          description: |-
+            The last four digits of a card number.
+            > Returned only in case of a card payment.
+          type: string
+    ResponseAdditionalDataDeliveryAddress:
+      properties:
+        deliveryAddress.city:
+          description: The delivery address city passed in the payment request.
+          type: string
+        deliveryAddress.country:
+          description: |-
+            The delivery address country passed in the payment request.
+
+            Example: NL
+          type: string
+        deliveryAddress.houseNumberOrName:
+          description: The delivery address house number or name passed in the payment request.
+          type: string
+        deliveryAddress.postalCode:
+          description: |-
+            The delivery address postal code passed in the payment request.
+
+            Example: 1011 DJ
+          type: string
+        deliveryAddress.stateOrProvince:
+          description: |-
+            The delivery address state or province passed in the payment request.
+
+            Example: NH
+          type: string
+        deliveryAddress.street:
+          description: The delivery address street passed in the payment request.
+          type: string
+    ResponseAdditionalDataInstallments:
+      properties:
+        installments.value:
+          description: |-
+            The number of installments that the payment amount should be charged with.
+
+            Example: 5
+            > Only relevant for card payments in countries that support installments.
+          type: string
+        installmentPaymentData.installmentType:
+          description: Type of installment. The value of `installmentType` should be **IssuerFinanced**.
+          type: string
+        installmentPaymentData.paymentOptions:
+          description: |-
+            Possible values:
+            * PayInInstallmentsOnly
+            * PayInFullOnly
+            * PayInFullOrInstallments
+          type: string
+        'installmentPaymentData.option[itemNr].numberOfInstallments':
+          description: Total number of installments possible for this payment.
+          type: string
+        'installmentPaymentData.option[itemNr].interestRate':
+          description: Interest rate for the installment period.
+          type: string
+        'installmentPaymentData.option[itemNr].installmentFee':
+          description: Installment fee amount in minor units.
+          type: string
+        'installmentPaymentData.option[itemNr].annualPercentageRate':
+          description: Annual interest rate.
+          type: string
+        'installmentPaymentData.option[itemNr].firstInstallmentAmount':
+          description: First Installment Amount in minor units.
+          type: string
+        'installmentPaymentData.option[itemNr].subsequentInstallmentAmount':
+          description: Subsequent Installment Amount in minor units.
+          type: string
+        'installmentPaymentData.option[itemNr].minimumNumberOfInstallments':
+          description: Minimum number of installments possible for this payment.
+          type: string
+        'installmentPaymentData.option[itemNr].maximumNumberOfInstallments':
+          description: Maximum number of installments possible for this payment.
+          type: string
+        'installmentPaymentData.option[itemNr].totalAmountDue':
+          description: Total amount in minor units.
+          type: string
+    ResponseAdditionalDataPayPal:
+      properties:
+        paypalPayerStatus:
+          description: |-
+            The status of the buyer's PayPal account.
+
+            Example: unverified
+          type: string
+        paypalPayerResidenceCountry:
+          description: |-
+            The buyer's country of residence.
+
+            Example: NL
+          type: string
+        paypalPayerId:
+          description: |-
+            The buyer's PayPal ID.
+
+            Example: LF5HCWWBRV2KL
+          type: string
+        paypalEmail:
+          description: |-
+            The buyer's PayPal account email address.
+
+            Example: paypaltest@adyen.com
+          type: string
+        paypalProtectionEligibility:
+          description: |-
+            The eligibility for PayPal Seller Protection for this payment.
+
+            Example: Ineligible
+          type: string
+    ResponseAdditionalDataSepa:
+      properties:
+        sepadirectdebit.dateOfSignature:
+          description: |-
+            The transaction signature date.
+
+            Format: yyyy-MM-dd
+          type: string
+        sepadirectdebit.mandateId:
+          description: Its value corresponds to the  pspReference value of the transaction.
+          type: string
+        sepadirectdebit.sequenceType:
+          description: |-
+            This field can take one of the following values:
+            * OneOff: (OOFF) Direct debit instruction to initiate exactly one direct debit transaction.
+            * First: (FRST) Initial/first collection in a series of direct debit instructions.
+            * Recurring: (RCUR) Direct debit instruction to carry out regular direct debit transactions initiated by the creditor.
+            * Final: (FNAL) Last/final collection in a series of direct debit instructions.
+
+            Example: OOFF
+          type: string
     Address:
       properties:
         city:
@@ -1275,7 +1639,7 @@ components:
           type: string
         stateOrProvince:
           description: |-
-            State or province codes as defined in ISO 3166-2. For example, **SF** in US or **ON** for Canada.
+            State or province codes as defined in ISO 3166-2. For example, **CA** in the US or **ON** in Canada.
             > Required for the US and Canada.
           type: string
         street:
@@ -1517,8 +1881,22 @@ components:
           description: |-
             This field contains additional data, which may be required for a particular modification request.
 
-            The additionalData object consists of entries, each of which includes the key and value. For more information on possible key-value pairs, refer to the [ModificationRequest.additionalData](https://docs.adyen.com/api-reference/payments-api/modificationrequest/modificationrequest-additionaldata) section.
-          type: object
+            The additionalData object consists of entries, each of which includes the key and value.
+          anyOf:
+            - $ref: '#/components/schemas/AdditionalDataCommon'
+            - $ref: '#/components/schemas/AdditionalDataModifications'
+            - $ref: '#/components/schemas/AdditionalData3DSecure'
+            - $ref: '#/components/schemas/AdditionalDataAirline'
+            - $ref: '#/components/schemas/AdditionalDataCarRental'
+            - $ref: '#/components/schemas/AdditionalDataLevel23'
+            - $ref: '#/components/schemas/AdditionalDataLodging'
+            - $ref: '#/components/schemas/AdditionalDataOpenInvoice'
+            - $ref: '#/components/schemas/AdditionalDataRatepay'
+            - $ref: '#/components/schemas/AdditionalDataRetry'
+            - $ref: '#/components/schemas/AdditionalDataRisk'
+            - $ref: '#/components/schemas/AdditionalDataRiskStandalone'
+            - $ref: '#/components/schemas/AdditionalDataTemporaryServices'
+            - $ref: '#/components/schemas/AdditionalDataWallets'
         merchantAccount:
           description: The merchant account that is used to process the payment.
           type: string
@@ -1555,6 +1933,9 @@ components:
             - '[cancel-received]'
             - '[refund-received]'
             - '[cancelOrRefund-received]'
+            - '[adjustAuthorisation-received]'
+            - '[technical-cancel-received]'
+            - '[voidPendingRefund-received]'
           type: string
     Name:
       properties:
@@ -1611,7 +1992,7 @@ components:
             - $ref: '#/components/schemas/AdditionalDataTemporaryServices'
             - $ref: '#/components/schemas/AdditionalDataWallets'
         amount:
-          description: 'The amount information for the transaction. For [BIN or card verification](https://docs.adyen.com/payment-methods/cards/bin-data-and-card-verification) requests, set amount to 0 (zero).'
+          description: 'The amount information for the transaction (in [minor units](https://docs.adyen.com/development-resources/currency-codes)). For [BIN or card verification](https://docs.adyen.com/payment-methods/cards/bin-data-and-card-verification) requests, set amount to 0 (zero).'
           $ref: '#/components/schemas/Amount'
         bankAccount:
           description: |-
@@ -1667,7 +2048,7 @@ components:
           format: int32
           type: integer
         installments:
-          description: 'Contains installment settings. For more information, refer to [Installments](https://docs.adyen.com/payment-methods/installment-payments).'
+          description: 'Contains installment settings. For more information, refer to [Installments](https://docs.adyen.com/payment-methods/cards/credit-card-installments).'
           $ref: '#/components/schemas/Installments'
         mcc:
           description: 'The [merchant category code](https://en.wikipedia.org/wiki/Merchant_category_code) (MCC) is a four-digit number, which relates to a particular market segment. This code reflects the predominant activity that is conducted by the merchant.'
@@ -1792,7 +2173,7 @@ components:
             - $ref: '#/components/schemas/AdditionalDataTemporaryServices'
             - $ref: '#/components/schemas/AdditionalDataWallets'
         amount:
-          description: 'The amount information for the transaction. For [BIN or card verification](https://docs.adyen.com/payment-methods/cards/bin-data-and-card-verification) requests, set amount to 0 (zero).'
+          description: 'The amount information for the transaction (in [minor units](https://docs.adyen.com/development-resources/currency-codes)). For [BIN or card verification](https://docs.adyen.com/payment-methods/cards/bin-data-and-card-verification) requests, set amount to 0 (zero).'
           $ref: '#/components/schemas/Amount'
         billingAddress:
           description: |-
@@ -1838,7 +2219,7 @@ components:
           format: int32
           type: integer
         installments:
-          description: 'Contains installment settings. For more information, refer to [Installments](https://docs.adyen.com/payment-methods/installment-payments).'
+          description: 'Contains installment settings. For more information, refer to [Installments](https://docs.adyen.com/payment-methods/cards/credit-card-installments).'
           $ref: '#/components/schemas/Installments'
         mcc:
           description: 'The [merchant category code](https://en.wikipedia.org/wiki/Merchant_category_code) (MCC) is a four-digit number, which relates to a particular market segment. This code reflects the predominant activity that is conducted by the merchant.'
@@ -1942,8 +2323,15 @@ components:
     PaymentResult:
       properties:
         additionalData:
-          description: 'This field contains additional data, which may be required to return in a particular payment response. To choose data fields to be returned, go to **Customer Area** > **Account** > **API URLs**.'
-          type: object
+          description: 'This field contains additional data, which may be required to return in a particular payment response. To choose data fields to be returned, go to **Customer Area** > **Account** > **API URLs** > **Additional data settings**.'
+          anyOf:
+            - $ref: '#/components/schemas/ResponseAdditionalDataCommon'
+            - $ref: '#/components/schemas/ResponseAdditionalDataBillingAddress'
+            - $ref: '#/components/schemas/ResponseAdditionalDataCard'
+            - $ref: '#/components/schemas/ResponseAdditionalDataDeliveryAddress'
+            - $ref: '#/components/schemas/ResponseAdditionalDataInstallments'
+            - $ref: '#/components/schemas/ResponseAdditionalDataPayPal'
+            - $ref: '#/components/schemas/ResponseAdditionalDataSepa'
         authCode:
           description: |-
             Authorisation code:
@@ -1999,7 +2387,7 @@ components:
             * **ChallengeShopper** – The issuer requires further shopper interaction before the payment can be authenticated. Returned for 3D Secure 2 transactions.
             * **Error** – There was an error when the payment was being processed. The reason is given in the `refusalReason` field. This is a final state.
             * **IdentifyShopper** – The issuer requires the shopper's device fingerprint before the payment can be authenticated. Returned for 3D Secure 2 transactions.
-            * **Pending** – Indicates that it is not possible to obtain the final status of the payment. This can happen if the systems providing final status information for the payment are unavailable, or if the shopper needs to take further action to complete the payment. For more information on handling a pending payment, refer to [Payments with pending status](https://docs.adyen.com/development-resources/payments-with-pending-status).
+            * **Pending** – Indicates that it is not possible to obtain the final status of the payment. This can happen if the systems providing final status information for the payment are unavailable, or if the shopper needs to take further action to complete the payment. For more information, refer to [Result codes](https://docs.adyen.com/checkout/payment-result-codes).
             * **PresentToShopper** – Indicates that the response contains additional information that you need to present to a shopper, so that they can use it to complete a payment.
             * **Received** – Indicates the payment has successfully been received by Adyen, and will be processed. This is the initial state for all payments.
             * **RedirectShopper** – Indicates the shopper should be redirected to an external web page or app to complete the authorisation.
