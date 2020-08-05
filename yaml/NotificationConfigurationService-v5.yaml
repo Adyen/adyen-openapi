@@ -1,15 +1,15 @@
-openapi: 3.0.0
+openapi: 3.0.3
 servers:
   - url: 'https://cal-test.adyen.com/cal/services/Notification/v5'
 info:
   version: '5'
-  title: Adyen MarketPay Notification Configuration API
+  title: 'Adyen for Platforms: Notification Configuration API'
   description: |-
-    The MarketPay Notification Configuration API provides endpoints for configuration a subscription to a marketplace's MarketPay-related notifications. Notifications are sent upon the occurrence of certain events (such as a KYC check completion or a payout completion), and the subscription to these notifications dictates to where they are sent.
+    The Notification Configuration API provides endpoints for setting up and testing notifications that inform you of events on your platform, for example when a KYC check or a payout has been completed.
 
-    For further information on MarketPay notifications, please visit the [MarketPay documentation](https://docs.adyen.com/marketpay).
+    For more information, refer to our [documentation](https://docs.adyen.com/marketpay/marketpay-notifications).
     ## Authentication
-    To connect to the MarketPay API, you must use basic authentication credentials of your web service user. If you don't have one, please contact the [Adyen Support Team](https://support.adyen.com/hc/en-us/requests/new). Then use its credentials to authenticate your request, for example:
+    To connect to the Notification Configuration API, you must use basic authentication credentials of your web service user. If you don't have one, contact our [Adyen Support Team](https://support.adyen.com/hc/en-us/requests/new). Then use its credentials to authenticate your request, for example:
 
     ```
     curl
@@ -20,7 +20,7 @@ info:
     Note that when going live, you need to generate new web service user credentials to access the [live endpoints](https://docs.adyen.com/development-resources/live-endpoints).
 
     ## Versioning
-    MarketPay API supports versioning of its endpoints through a version suffix in the endpoint URL. This suffix has the following format: "vXX", where XX is the version number.
+    The Notification Configuration API supports versioning of its endpoints through a version suffix in the endpoint URL. This suffix has the following format: "vXX", where XX is the version number.
 
     For example:
     ```
@@ -36,8 +36,9 @@ x-groups:
 paths:
   /createNotificationConfiguration:
     post:
-      summary: Configure a new subscription to notifications.
-      description: 'This endpoint is used to create a subscription to MarketPay event notifications. After the subscription is created, the events specified in the configuration will be sent to the URL specified in the configuration. Subscriptions must be configured on a per-event basis (as opposed to, for example, a per-account holder basis), so all event notifications of a marketplace and of a given type will be sent to the same endpoint(s). A marketplace may have multiple endpoints if desired; an event notification may be sent to as many or as few different endpoints as configured.'
+      summary: Subscribe to notifications.
+      description: 'Creates a subscription to notifications informing you of events on your platform. After the subscription is created, the events specified in the configuration will be sent to the URL specified in the configuration. Subscriptions must be configured on a per-event basis (as opposed to, for example, a per-account holder basis), so all event notifications of a marketplace and of a given type will be sent to the same endpoint(s). A marketplace may have multiple endpoints if desired; an event notification may be sent to as many or as few different endpoints as configured.'
+      operationId: post-createNotificationConfiguration
       x-groupName: General
       x-sortIndex: 1
       requestBody:
@@ -56,6 +57,7 @@ paths:
     post:
       summary: Delete an existing notification subscription configuration.
       description: 'This endpoint is used to delete an existing notification subscription configuration. After the subscription is deleted, no further event notifications will be sent to the URL that was in the subscription.'
+      operationId: post-deleteNotificationConfigurations
       x-groupName: General
       x-sortIndex: 6
       requestBody:
@@ -74,6 +76,7 @@ paths:
     post:
       summary: Retrieve an existing notification subscription configuration.
       description: This endpoint is used to retrieve the details of the configuration of a notification subscription.
+      operationId: post-getNotificationConfiguration
       x-groupName: General
       x-sortIndex: 2
       requestBody:
@@ -92,6 +95,7 @@ paths:
     post:
       summary: Retrieve a list of existing notification subscription configurations.
       description: This endpoint is used to retrieve the details of the configurations of all of the notification subscriptions in the marketplace of the executing user.
+      operationId: post-getNotificationConfigurationList
       x-groupName: General
       x-sortIndex: 3
       requestBody:
@@ -110,6 +114,7 @@ paths:
     post:
       summary: Test an existing notification configuration.
       description: 'This endpoint is used to test an existing notification subscription configuration. For each event type specified, a test notification will be generated and sent to the URL configured in the subscription specified.'
+      operationId: post-testNotificationConfiguration
       x-groupName: General
       x-sortIndex: 4
       requestBody:
@@ -128,6 +133,7 @@ paths:
     post:
       summary: Update an existing notification subscription configuration.
       description: 'This endpoint is used to update an existing notification subscription configuration. If updating the event types, all event types desired must be provided, otherwise the previous event type configuration will be overwritten.'
+      operationId: post-updateNotificationConfiguration
       x-groupName: General
       x-sortIndex: 5
       requestBody:
@@ -278,6 +284,9 @@ components:
             - sourceAccountCode
             - stateOrProvince
             - status
+            - stockExchange
+            - stockNumber
+            - stockTicker
             - store
             - storeDetail
             - storeName
@@ -304,13 +313,11 @@ components:
             $ref: '#/components/schemas/ErrorFieldType'
           type: array
         pspReference:
-          description: The reference of a request.  Can be used to uniquely identify the request.
+          description: The reference of a request. Can be used to uniquely identify the request.
           type: string
         resultCode:
           description: The result code.
           type: string
-      required:
-        - pspReference
     GetNotificationConfigurationListResponse:
       properties:
         configurations:
@@ -324,13 +331,12 @@ components:
             $ref: '#/components/schemas/ErrorFieldType'
           type: array
         pspReference:
-          description: The reference of a request.  Can be used to uniquely identify the request.
+          description: The reference of a request. Can be used to uniquely identify the request.
           type: string
         resultCode:
           description: The result code.
           type: string
       required:
-        - pspReference
         - configurations
     GetNotificationConfigurationRequest:
       properties:
@@ -351,13 +357,12 @@ components:
             $ref: '#/components/schemas/ErrorFieldType'
           type: array
         pspReference:
-          description: The reference of a request.  Can be used to uniquely identify the request.
+          description: The reference of a request. Can be used to uniquely identify the request.
           type: string
         resultCode:
           description: The result code.
           type: string
       required:
-        - pspReference
         - configurationDetails
     NotificationConfigurationDetails:
       properties:
@@ -369,9 +374,7 @@ components:
           format: int32
           type: integer
         description:
-          description: |-
-            A description of the notification subscription configuration.
-            >Required when creating a configuration, forbidden when updating a configuration.
+          description: A description of the notification subscription configuration.
           type: string
         eventConfigs:
           description: The types of events whose notifications apply to this configuration.
@@ -439,10 +442,10 @@ components:
             - COMPENSATE_NEGATIVE_BALANCE
             - DIRECT_DEBIT_INITIATED
             - PAYMENT_FAILURE
+            - REFUND_FUNDS_TRANSFER
             - REPORT_AVAILABLE
             - SCHEDULED_REFUNDS
             - TRANSFER_FUNDS
-            - TRANSFER_FUNDS_REFUND
           type: string
         includeMode:
           description: |-
@@ -480,10 +483,10 @@ components:
               - COMPENSATE_NEGATIVE_BALANCE
               - DIRECT_DEBIT_INITIATED
               - PAYMENT_FAILURE
+              - REFUND_FUNDS_TRANSFER
               - REPORT_AVAILABLE
               - SCHEDULED_REFUNDS
               - TRANSFER_FUNDS
-              - TRANSFER_FUNDS_REFUND
             type: string
           type: array
         notificationId:
@@ -520,10 +523,10 @@ components:
               - COMPENSATE_NEGATIVE_BALANCE
               - DIRECT_DEBIT_INITIATED
               - PAYMENT_FAILURE
+              - REFUND_FUNDS_TRANSFER
               - REPORT_AVAILABLE
               - SCHEDULED_REFUNDS
               - TRANSFER_FUNDS
-              - TRANSFER_FUNDS_REFUND
             type: string
           type: array
         exchangeMessages:
@@ -546,13 +549,12 @@ components:
             type: string
           type: array
         pspReference:
-          description: The reference of a request.  Can be used to uniquely identify the request.
+          description: The reference of a request. Can be used to uniquely identify the request.
           type: string
         resultCode:
           description: The result code.
           type: string
       required:
-        - pspReference
         - notificationId
         - eventTypes
         - okMessages
@@ -564,3 +566,11 @@ components:
           $ref: '#/components/schemas/NotificationConfigurationDetails'
       required:
         - configurationDetails
+  securitySchemes:
+    ApiKeyAuth:
+      in: header
+      name: X-API-Key
+      type: apiKey
+    BasicAuth:
+      scheme: basic
+      type: http
