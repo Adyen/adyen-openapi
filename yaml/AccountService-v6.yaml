@@ -1,8 +1,8 @@
 openapi: 3.0.3
 servers:
-  - url: 'https://cal-test.adyen.com/cal/services/Account/v5'
+  - url: 'https://cal-test.adyen.com/cal/services/Account/v6'
 info:
-  version: '5'
+  version: '6'
   title: 'Adyen for Platforms: Account API'
   description: |-
     The Account API provides endpoints for managing account-related entities on your platform. These related entities include account holders, accounts, bank accounts, shareholders, and KYC-related documents. The management operations include actions such as creation, retrieval, updating, and deletion of them.
@@ -24,7 +24,7 @@ info:
 
     For example:
     ```
-    https://cal-test.adyen.com/cal/services/Account/v5/createAccountHolder
+    https://cal-test.adyen.com/cal/services/Account/v6/createAccountHolder
     ```
   termsOfService: 'https://www.adyen.com/legal/terms-and-conditions'
   contact:
@@ -900,6 +900,15 @@ components:
           items:
             $ref: '#/components/schemas/ShareholderContact'
           type: array
+        stockExchange:
+          description: Market Identifier Code (MIC).
+          type: string
+        stockNumber:
+          description: International Securities Identification Number (ISIN).
+          type: string
+        stockTicker:
+          description: Stock Ticker symbol.
+          type: string
         taxId:
           description: The tax ID of the company.
           type: string
@@ -1003,6 +1012,9 @@ components:
           description: 'The starting [processing tier](https://docs.adyen.com/marketpay/onboarding-and-verification/verification-checks#tiers) for the prospective account holder.'
           format: int32
           type: integer
+        verificationProfile:
+          description: The identifier of the profile that applies to this entity.
+          type: string
       required:
         - accountHolderCode
         - legalEntity
@@ -1050,6 +1062,9 @@ components:
         verification:
           description: The details of KYC Verification of the account holder.
           $ref: '#/components/schemas/KYCVerificationResult'
+        verificationProfile:
+          description: The identifier of the profile that applies to this entity.
+          type: string
       required:
         - accountHolderCode
         - accountHolderStatus
@@ -1456,6 +1471,9 @@ components:
         verification:
           description: The details of KYC Verification of the account holder.
           $ref: '#/components/schemas/KYCVerificationResult'
+        verificationProfile:
+          description: The identifier of the profile that applies to this entity.
+          type: string
       required:
         - accountHolderCode
         - legalEntity
@@ -1525,26 +1543,6 @@ components:
         personalData:
           description: Personal information of the individual.
           $ref: '#/components/schemas/ViasPersonalData'
-    KYCBankAccountCheckResult:
-      properties:
-        bankAccountUUID:
-          description: The unique ID of the bank account to which the check applies.
-          type: string
-        checks:
-          description: A list of the checks and their statuses.
-          items:
-            $ref: '#/components/schemas/KYCCheckStatusData'
-          type: array
-    KYCCardCheckResult:
-      properties:
-        checks:
-          description: A list of the checks and their statuses.
-          items:
-            $ref: '#/components/schemas/KYCCheckStatusData'
-          type: array
-        payoutMethodCode:
-          description: The unique ID of the card to which the check applies.
-          type: string
     KYCCheckResult:
       properties:
         checks:
@@ -1602,6 +1600,16 @@ components:
         kycCheckDescription:
           description: A description of the check.
           type: string
+    KYCPayoutMethodCheckResult:
+      properties:
+        checks:
+          description: A list of the checks and their statuses.
+          items:
+            $ref: '#/components/schemas/KYCCheckStatusData'
+          type: array
+        payoutMethodCode:
+          description: The unique ID of the payoput method to which the check applies.
+          type: string
     KYCShareholderCheckResult:
       properties:
         checks:
@@ -1617,15 +1625,10 @@ components:
         accountHolder:
           description: The result(s) of the checks on the account holder.
           $ref: '#/components/schemas/KYCCheckResult'
-        bankAccounts:
-          description: The result(s) of the checks on the bank account(s).
+        payoutMethods:
+          description: The result(s) of the checks on the payout method(s).
           items:
-            $ref: '#/components/schemas/KYCBankAccountCheckResult'
-          type: array
-        cards:
-          description: The result(s) of the checks on the card(s).
-          items:
-            $ref: '#/components/schemas/KYCCardCheckResult'
+            $ref: '#/components/schemas/KYCPayoutMethodCheckResult'
           type: array
         shareholders:
           description: The result(s) of the checks on the shareholder(s).
@@ -1866,6 +1869,9 @@ components:
             >Required if accountHolderDetails are not provided.
           format: int32
           type: integer
+        verificationProfile:
+          description: The identifier of the profile that applies to this entity.
+          type: string
       required:
         - accountHolderCode
     UpdateAccountHolderResponse:
@@ -1908,6 +1914,9 @@ components:
         verification:
           description: The details of KYC Verification of the account holder.
           $ref: '#/components/schemas/KYCVerificationResult'
+        verificationProfile:
+          description: The identifier of the profile that applies to this entity.
+          type: string
       required:
         - accountHolderStatus
         - verification
