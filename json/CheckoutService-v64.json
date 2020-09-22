@@ -2,13 +2,13 @@
    "openapi" : "3.0.3",
    "servers" : [
       {
-         "url" : "https://checkout-test.adyen.com/v41"
+         "url" : "https://checkout-test.adyen.com/v64"
       }
    ],
    "info" : {
-      "version" : "41",
+      "version" : "64",
       "title" : "Adyen Checkout API",
-      "description" : "Adyen Checkout API provides a simple and flexible way to initiate and authorise online payments. You can use the same integration for payments made with cards (including 3D Secure), mobile wallets, and local payment methods (for example, iDEAL and Sofort).\n\nThis API reference provides information on available endpoints and how to interact with them. To learn more about the API, visit [Checkout documentation](https://docs.adyen.com/checkout).\n\n## Authentication\nEach request to the Checkout API must be signed with an API key. For this, obtain an API Key from your Customer Area, as described in [How to get the API key](https://docs.adyen.com/user-management/how-to-get-the-api-key). Then set this key to the `X-API-Key` header value, for example:\n\n```\ncurl\n-H \"Content-Type: application/json\" \\\n-H \"X-API-Key: Your_Checkout_API_key\" \\\n...\n```\nNote that when going live, you need to generate a new API Key to access the [live endpoints](https://docs.adyen.com/development-resources/live-endpoints).\n\n## Versioning\nCheckout API supports versioning of its endpoints through a version suffix in the endpoint URL. This suffix has the following format: \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://checkout-test.adyen.com/v41/payments\n```",
+      "description" : "Adyen Checkout API provides a simple and flexible way to initiate and authorise online payments. You can use the same integration for payments made with cards (including 3D Secure), mobile wallets, and local payment methods (for example, iDEAL and Sofort).\n\nThis API reference provides information on available endpoints and how to interact with them. To learn more about the API, visit [Checkout documentation](https://docs.adyen.com/checkout).\n\n## Authentication\nEach request to the Checkout API must be signed with an API key. For this, obtain an API Key from your Customer Area, as described in [How to get the API key](https://docs.adyen.com/user-management/how-to-get-the-api-key). Then set this key to the `X-API-Key` header value, for example:\n\n```\ncurl\n-H \"Content-Type: application/json\" \\\n-H \"X-API-Key: Your_Checkout_API_key\" \\\n...\n```\nNote that when going live, you need to generate a new API Key to access the [live endpoints](https://docs.adyen.com/development-resources/live-endpoints).\n\n## Versioning\nCheckout API supports versioning of its endpoints through a version suffix in the endpoint URL. This suffix has the following format: \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://checkout-test.adyen.com/v64/payments\n```",
       "termsOfService" : "https://www.adyen.com/legal/terms-and-conditions",
       "contact" : {
          "name" : "Adyen Support",
@@ -614,6 +614,15 @@
                   "format" : "date-time",
                   "type" : "string"
                },
+               "accountType" : {
+                  "description" : "Indicates the type of account. For example, for a multi-account card product.\nAllowed values:\n* notApplicable\n* credit\n* debit",
+                  "enum" : [
+                     "notApplicable",
+                     "credit",
+                     "debit"
+                  ],
+                  "type" : "string"
+               },
                "addCardAttemptsDay" : {
                   "description" : "Number of attempts the shopper tried to add a card to their account in the last day.",
                   "format" : "int32",
@@ -721,7 +730,7 @@
                   "description" : "The name of the bank account holder.\nIf you submit a name with non-Latin characters, we automatically replace some of them with corresponding Latin characters to meet the FATF recommendations. For example:\n* χ12 is converted to ch12.\n* üA is converted to euA.\n* Peter Møller is converted to Peter Mller, because banks don't accept 'ø'.\nAfter replacement, the ownerName must have at least three alphanumeric characters (A-Z, a-z, 0-9), and at least one of them must be a valid Latin character (A-Z, a-z). For example:\n* John17 - allowed.\n* J17 - allowed.\n* 171 - not allowed.\n* John-7 - allowed.\n> If provided details don't match the required format, the response returns the error message: 203 'Invalid bank account holder name'.",
                   "type" : "string"
                },
-               "recurringDetailReference" : {
+               "storedPaymentMethodId" : {
                   "description" : "This is the `recurringDetailReference` returned in the response when you created the token.",
                   "type" : "string"
                },
@@ -1589,7 +1598,7 @@
                   ],
                   "type" : "string"
                },
-               "recurringDetailReference" : {
+               "storedPaymentMethodId" : {
                   "description" : "This is the `recurringDetailReference` returned in the response when you created the token.",
                   "type" : "string"
                },
@@ -1895,7 +1904,7 @@
                "number" : {
                   "type" : "string"
                },
-               "recurringDetailReference" : {
+               "storedPaymentMethodId" : {
                   "description" : "This is the `recurringDetailReference` returned in the response when you created the token.",
                   "type" : "string"
                },
@@ -1911,6 +1920,22 @@
                "encryptedExpiryMonth",
                "encryptedExpiryYear"
             ]
+         },
+         "CheckoutAwaitAction" : {
+            "properties" : {
+               "paymentData" : {
+                  "description" : "When non-empty, contains a value that you must submit to the `/payments/details` endpoint. In some cases, required for polling.",
+                  "type" : "string"
+               },
+               "paymentMethodType" : {
+                  "description" : "Specifies the payment method.",
+                  "type" : "string"
+               },
+               "url" : {
+                  "description" : "Specifies the URL to redirect to.",
+                  "type" : "string"
+               }
+            }
          },
          "CheckoutBalanceCheckRequest" : {
             "properties" : {
@@ -2011,6 +2036,11 @@
                "deviceFingerprint" : {
                   "description" : "A string containing the shopper's device fingerprint. For more information, refer to [Device fingerprinting](https://docs.adyen.com/risk-management/device-fingerprinting).",
                   "type" : "string"
+               },
+               "enableRealTimeUpdate" : {
+                  "deprecated" : true,
+                  "description" : "Choose if a specific transaction should use the Real-time Account Updater, regardless of other settings.",
+                  "type" : "boolean"
                },
                "fraudOffset" : {
                   "description" : "An integer value that is added to the normal fraud score. The value can be either positive or negative.",
@@ -2142,6 +2172,11 @@
                "threeDS2RequestData" : {
                   "description" : "Request fields for 3D Secure 2.",
                   "$ref" : "#/components/schemas/ThreeDS2RequestData"
+               },
+               "threeDSAuthenticationOnly" : {
+                  "default" : "false",
+                  "description" : "If set to true, you will only perform the [3D Secure 2 authentication](https://docs.adyen.com/checkout/3d-secure/other-3ds-flows/authentication-only), and not the payment authorisation.",
+                  "type" : "boolean"
                },
                "totalsGroup" : {
                   "description" : "The reference value to aggregate sales totals in reporting. When not specified, the store field is used (if available).",
@@ -2371,6 +2406,56 @@
                "orderData"
             ]
          },
+         "CheckoutDonationAction" : {
+            "properties" : {
+               "paymentData" : {
+                  "description" : "When non-empty, contains a value that you must submit to the `/payments/details` endpoint. In some cases, required for polling.",
+                  "type" : "string"
+               },
+               "paymentMethodType" : {
+                  "description" : "Specifies the payment method.",
+                  "type" : "string"
+               },
+               "url" : {
+                  "description" : "Specifies the URL to redirect to.",
+                  "type" : "string"
+               }
+            }
+         },
+         "CheckoutOneTimePasscodeAction" : {
+            "properties" : {
+               "paymentData" : {
+                  "description" : "When non-empty, contains a value that you must submit to the `/payments/details` endpoint. In some cases, required for polling.",
+                  "type" : "string"
+               },
+               "paymentMethodType" : {
+                  "description" : "Specifies the payment method.",
+                  "type" : "string"
+               },
+               "redirect" : {
+                  "description" : "When the payment flow requires a redirect as fallback, this object contains information about the redirect.",
+                  "$ref" : "#/components/schemas/Redirect"
+               },
+               "resendInterval" : {
+                  "description" : "The interval in second between OTP resend.",
+                  "format" : "int32",
+                  "type" : "integer"
+               },
+               "resendMaxAttempts" : {
+                  "description" : "The maximum number of OTP resend attempts.",
+                  "format" : "int32",
+                  "type" : "integer"
+               },
+               "resendUrl" : {
+                  "description" : "The URL, to which you make POST request to trigger OTP resend.",
+                  "type" : "string"
+               },
+               "url" : {
+                  "description" : "Specifies the URL to redirect to.",
+                  "type" : "string"
+               }
+            }
+         },
          "CheckoutOrder" : {
             "properties" : {
                "orderData" : {
@@ -2414,6 +2499,116 @@
                "pspReference"
             ]
          },
+         "CheckoutQrCodeAction" : {
+            "properties" : {
+               "paymentData" : {
+                  "description" : "When non-empty, contains a value that you must submit to the `/payments/details` endpoint. In some cases, required for polling.",
+                  "type" : "string"
+               },
+               "paymentMethodType" : {
+                  "description" : "Specifies the payment method.",
+                  "type" : "string"
+               },
+               "qrCodeData" : {
+                  "description" : "The contents of the QR code as a UTF8 string.",
+                  "type" : "string"
+               },
+               "url" : {
+                  "description" : "Specifies the URL to redirect to.",
+                  "type" : "string"
+               }
+            }
+         },
+         "CheckoutRedirectAction" : {
+            "properties" : {
+               "data" : {
+                  "additionalProperties" : {
+                     "type" : "string"
+                  },
+                  "description" : "When the redirect URL must be accessed via POST, use this data to post to the redirect URL.",
+                  "type" : "object"
+               },
+               "method" : {
+                  "description" : "Specifies the HTTP method, for example GET or POST.",
+                  "type" : "string"
+               },
+               "paymentData" : {
+                  "description" : "When non-empty, contains a value that you must submit to the `/payments/details` endpoint. In some cases, required for polling.",
+                  "type" : "string"
+               },
+               "paymentMethodType" : {
+                  "description" : "Specifies the payment method.",
+                  "type" : "string"
+               },
+               "url" : {
+                  "description" : "Specifies the URL to redirect to.",
+                  "type" : "string"
+               }
+            }
+         },
+         "CheckoutSDKAction" : {
+            "properties" : {
+               "paymentData" : {
+                  "description" : "When non-empty, contains a value that you must submit to the `/payments/details` endpoint. In some cases, required for polling.",
+                  "type" : "string"
+               },
+               "paymentMethodType" : {
+                  "description" : "Specifies the payment method.",
+                  "type" : "string"
+               },
+               "sdkData" : {
+                  "additionalProperties" : {
+                     "type" : "string"
+                  },
+                  "description" : "The data to pass to the SDK.",
+                  "type" : "object"
+               },
+               "url" : {
+                  "description" : "Specifies the URL to redirect to.",
+                  "type" : "string"
+               }
+            }
+         },
+         "CheckoutThreeDS2ChallengeAction" : {
+            "properties" : {
+               "paymentData" : {
+                  "description" : "When non-empty, contains a value that you must submit to the `/payments/details` endpoint. In some cases, required for polling.",
+                  "type" : "string"
+               },
+               "paymentMethodType" : {
+                  "description" : "Specifies the payment method.",
+                  "type" : "string"
+               },
+               "token" : {
+                  "description" : "A token to pass to the 3DS2 Component to get the challenge.",
+                  "type" : "string"
+               },
+               "url" : {
+                  "description" : "Specifies the URL to redirect to.",
+                  "type" : "string"
+               }
+            }
+         },
+         "CheckoutThreeDS2FingerPrintAction" : {
+            "properties" : {
+               "paymentData" : {
+                  "description" : "When non-empty, contains a value that you must submit to the `/payments/details` endpoint. In some cases, required for polling.",
+                  "type" : "string"
+               },
+               "paymentMethodType" : {
+                  "description" : "Specifies the payment method.",
+                  "type" : "string"
+               },
+               "token" : {
+                  "description" : "A token to pass to the 3DS2 Component to get the fingerprint.",
+                  "type" : "string"
+               },
+               "url" : {
+                  "description" : "Specifies the URL to redirect to.",
+                  "type" : "string"
+               }
+            }
+         },
          "CheckoutUtilityRequest" : {
             "properties" : {
                "originDomains" : {
@@ -2436,6 +2631,86 @@
                   },
                   "description" : "The list of origin keys for all requested domains. For each list item, the key is the domain and the value is the origin key.",
                   "type" : "object"
+               }
+            }
+         },
+         "CheckoutVoucherAction" : {
+            "properties" : {
+               "alternativeReference" : {
+                  "description" : "The voucher alternative reference code.",
+                  "type" : "string"
+               },
+               "collectionInstitutionNumber" : {
+                  "description" : "A collection institution number (store number) for Econtext Pay-Easy ATM.",
+                  "type" : "string"
+               },
+               "downloadUrl" : {
+                  "description" : "The URL to download the voucher.",
+                  "type" : "string"
+               },
+               "entity" : {
+                  "description" : "An entity number of Multibanco.",
+                  "type" : "string"
+               },
+               "expiresAt" : {
+                  "description" : "The date time of the voucher expiry.",
+                  "type" : "string"
+               },
+               "initialAmount" : {
+                  "description" : "The initial amount.",
+                  "$ref" : "#/components/schemas/Amount"
+               },
+               "instructionsUrl" : {
+                  "description" : "The URL to the detailed instructions to make payment using the voucher.",
+                  "type" : "string"
+               },
+               "issuer" : {
+                  "description" : "The issuer of the voucher.",
+                  "type" : "string"
+               },
+               "maskedTelephoneNumber" : {
+                  "description" : "The shopper telephone number (partially masked).",
+                  "type" : "string"
+               },
+               "merchantName" : {
+                  "description" : "The merchant name.",
+                  "type" : "string"
+               },
+               "merchantReference" : {
+                  "description" : "The merchant reference.",
+                  "type" : "string"
+               },
+               "paymentData" : {
+                  "description" : "When non-empty, contains a value that you must submit to the `/payments/details` endpoint. In some cases, required for polling.",
+                  "type" : "string"
+               },
+               "paymentMethodType" : {
+                  "description" : "Specifies the payment method.",
+                  "type" : "string"
+               },
+               "reference" : {
+                  "description" : "The voucher reference code.",
+                  "type" : "string"
+               },
+               "shopperEmail" : {
+                  "description" : "The shopper email.",
+                  "type" : "string"
+               },
+               "shopperName" : {
+                  "description" : "The shopper name.",
+                  "type" : "string"
+               },
+               "surcharge" : {
+                  "description" : "The surcharge amount.",
+                  "$ref" : "#/components/schemas/Amount"
+               },
+               "totalAmount" : {
+                  "description" : "The total amount (initial plus surcharge amount).",
+                  "$ref" : "#/components/schemas/Amount"
+               },
+               "url" : {
+                  "description" : "Specifies the URL to redirect to.",
+                  "type" : "string"
                }
             }
          },
@@ -2622,6 +2897,10 @@
                "store" : {
                   "description" : "The physical store, for which this payment is processed.",
                   "type" : "string"
+               },
+               "storePaymentMethod" : {
+                  "description" : "When this is set to **true** and the `shopperReference` is provided, the payment details will be stored.",
+                  "type" : "boolean"
                }
             },
             "required" : [
@@ -2934,7 +3213,7 @@
          },
          "GiropayDetails" : {
             "properties" : {
-               "recurringDetailReference" : {
+               "storedPaymentMethodId" : {
                   "description" : "This is the `recurringDetailReference` returned in the response when you created the token.",
                   "type" : "string"
                },
@@ -2965,7 +3244,7 @@
                   "description" : "",
                   "type" : "string"
                },
-               "recurringDetailReference" : {
+               "storedPaymentMethodId" : {
                   "description" : "This is the `recurringDetailReference` returned in the response when you created the token.",
                   "type" : "string"
                },
@@ -2987,7 +3266,7 @@
                   "description" : "The iDEAL issuer value of the shopper's selected bank. Set this to an **id** of an iDEAL issuer to preselect it.",
                   "type" : "string"
                },
-               "recurringDetailReference" : {
+               "storedPaymentMethodId" : {
                   "description" : "This is the `recurringDetailReference` returned in the response when you created the token.",
                   "type" : "string"
                },
@@ -3057,6 +3336,14 @@
          },
          "Installments" : {
             "properties" : {
+               "plan" : {
+                  "description" : "Defines the type of installment plan. If not set, defaults to **regular**.\n\nPossible values:\n* **regular**\n* **revolving**",
+                  "enum" : [
+                     "regular",
+                     "revolving"
+                  ],
+                  "type" : "string"
+               },
                "value" : {
                   "description" : "Defines the number of installments. Its value needs to be greater than zero.\n\nUsually, the maximum allowed number of installments is capped. For example, it may not be possible to split a payment in more than 24 installments. The acquirer sets this upper limit, so its value may vary.",
                   "format" : "int32",
@@ -3096,11 +3383,11 @@
                "personalDetails" : {
                   "type" : "string"
                },
-               "recurringDetailReference" : {
-                  "description" : "This is the `recurringDetailReference` returned in the response when you created the token.",
+               "separateDeliveryAddress" : {
                   "type" : "string"
                },
-               "separateDeliveryAddress" : {
+               "storedPaymentMethodId" : {
+                  "description" : "This is the `recurringDetailReference` returned in the response when you created the token.",
                   "type" : "string"
                },
                "token" : {
@@ -3408,11 +3695,11 @@
                "personalDetails" : {
                   "type" : "string"
                },
-               "recurringDetailReference" : {
-                  "description" : "This is the `recurringDetailReference` returned in the response when you created the token.",
+               "separateDeliveryAddress" : {
                   "type" : "string"
                },
-               "separateDeliveryAddress" : {
+               "storedPaymentMethodId" : {
+                  "description" : "This is the `recurringDetailReference` returned in the response when you created the token.",
                   "type" : "string"
                },
                "type" : {
@@ -3453,12 +3740,12 @@
          },
          "PayUUpiDetails" : {
             "properties" : {
-               "recurringDetailReference" : {
-                  "description" : "This is the `recurringDetailReference` returned in the response when you created the token.",
-                  "type" : "string"
-               },
                "shopperNotificationReference" : {
                   "description" : "The `shopperNotificationReference` returned in the response when you requested to notify the shopper. Used for recurring payment only.",
+                  "type" : "string"
+               },
+               "storedPaymentMethodId" : {
+                  "description" : "This is the `recurringDetailReference` returned in the response when you created the token.",
                   "type" : "string"
                },
                "subscriptionDetails" : {
@@ -3671,6 +3958,10 @@
                   "description" : "The physical store, for which this payment is processed.",
                   "type" : "string"
                },
+               "storePaymentMethod" : {
+                  "description" : "When this is set to **true** and the `shopperReference` is provided, the payment details will be stored.",
+                  "type" : "boolean"
+               },
                "url" : {
                   "description" : "The URL at which the shopper can complete the payment.",
                   "readOnly" : true,
@@ -3688,6 +3979,13 @@
          },
          "PaymentMethod" : {
             "properties" : {
+               "brands" : {
+                  "description" : "List of possible brands. For example: visa, mc.",
+                  "items" : {
+                     "type" : "string"
+                  },
+                  "type" : "array"
+               },
                "configuration" : {
                   "additionalProperties" : {
                      "type" : "string"
@@ -3701,6 +3999,14 @@
                      "$ref" : "#/components/schemas/InputDetail"
                   },
                   "type" : "array"
+               },
+               "fundingSource" : {
+                  "description" : "The funding source of the payment method.",
+                  "enum" : [
+                     "credit",
+                     "debit"
+                  ],
+                  "type" : "string"
                },
                "group" : {
                   "description" : "The group where this payment method belongs to.",
@@ -3847,9 +4153,18 @@
                   "description" : "The shopper's country code.",
                   "type" : "string"
                },
+               "enableRealTimeUpdate" : {
+                  "deprecated" : true,
+                  "description" : "Choose if a specific transaction should use the Real-time Account Updater, regardless of other settings.",
+                  "type" : "boolean"
+               },
                "merchantAccount" : {
                   "description" : "The merchant account identifier, with which you want to process the transaction.",
                   "type" : "string"
+               },
+               "order" : {
+                  "description" : "Contains the order information which is required for partial payments.",
+                  "$ref" : "#/components/schemas/CheckoutOrder"
                },
                "shopperLocale" : {
                   "description" : "The combination of a language code and a country code to specify the language to be used in the payment.",
@@ -3858,6 +4173,11 @@
                "shopperReference" : {
                   "description" : "The shopper's reference to uniquely identify this shopper (e.g. user ID or account ID).\n> This field is required for recurring payments.",
                   "type" : "string"
+               },
+               "splitCardFundingSources" : {
+                  "default" : "false",
+                  "description" : "Boolean value indicating whether the card payment method should be split into separate debit and credit options.",
+                  "type" : "boolean"
                },
                "store" : {
                   "description" : "The physical store, for which this payment is processed.",
@@ -3891,6 +4211,13 @@
                   "description" : "Detailed list of payment methods required to generate payment forms.",
                   "items" : {
                      "$ref" : "#/components/schemas/PaymentMethod"
+                  },
+                  "type" : "array"
+               },
+               "storedPaymentMethods" : {
+                  "description" : "List of all stored payment methods.",
+                  "items" : {
+                     "$ref" : "#/components/schemas/StoredPaymentMethod"
                   },
                   "type" : "array"
                }
@@ -3983,6 +4310,10 @@
                   "description" : "Information regarding the company.",
                   "$ref" : "#/components/schemas/Company"
                },
+               "conversionId" : {
+                  "description" : "Conversion ID that corresponds to the Id generated for tracking user payment journey.",
+                  "type" : "string"
+               },
                "countryCode" : {
                   "description" : "The shopper country.\n\nFormat: [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)\nExample: NL or DE",
                   "type" : "string"
@@ -4015,6 +4346,11 @@
                },
                "enablePayOut" : {
                   "description" : "When true and `shopperReference` is provided, the payment details will be tokenized for payouts.",
+                  "type" : "boolean"
+               },
+               "enableRealTimeUpdate" : {
+                  "deprecated" : true,
+                  "description" : "Choose if a specific transaction should use the Real-time Account Updater, regardless of other settings.",
                   "type" : "boolean"
                },
                "enableRecurring" : {
@@ -4286,6 +4622,10 @@
                   "minLength" : 1,
                   "type" : "string"
                },
+               "storePaymentMethod" : {
+                  "description" : "When true and `shopperReference` is provided, the payment details will be stored.",
+                  "type" : "boolean"
+               },
                "telephoneNumber" : {
                   "description" : "The shopper's telephone number.",
                   "type" : "string"
@@ -4293,6 +4633,11 @@
                "threeDS2RequestData" : {
                   "description" : "Request fields for 3D Secure 2.",
                   "$ref" : "#/components/schemas/ThreeDS2RequestData"
+               },
+               "threeDSAuthenticationOnly" : {
+                  "default" : "false",
+                  "description" : "If set to true, you will only perform the [3D Secure 2 authentication](https://docs.adyen.com/checkout/3d-secure/other-3ds-flows/authentication-only), and not the payment authorisation.",
+                  "type" : "boolean"
                },
                "trustedShopper" : {
                   "description" : "Set to true if the payment should be routed to a trusted MID.",
@@ -4309,6 +4654,38 @@
          },
          "PaymentResponse" : {
             "properties" : {
+               "action" : {
+                  "description" : "Action to be taken for completing the payment.",
+                  "oneOf" : [
+                     {
+                        "$ref" : "#/components/schemas/CheckoutDonationAction"
+                     },
+                     {
+                        "$ref" : "#/components/schemas/CheckoutQrCodeAction"
+                     },
+                     {
+                        "$ref" : "#/components/schemas/CheckoutRedirectAction"
+                     },
+                     {
+                        "$ref" : "#/components/schemas/CheckoutSDKAction"
+                     },
+                     {
+                        "$ref" : "#/components/schemas/CheckoutThreeDS2ChallengeAction"
+                     },
+                     {
+                        "$ref" : "#/components/schemas/CheckoutThreeDS2FingerPrintAction"
+                     },
+                     {
+                        "$ref" : "#/components/schemas/CheckoutAwaitAction"
+                     },
+                     {
+                        "$ref" : "#/components/schemas/CheckoutVoucherAction"
+                     },
+                     {
+                        "$ref" : "#/components/schemas/CheckoutOneTimePasscodeAction"
+                     }
+                  ]
+               },
                "additionalData" : {
                   "anyOf" : [
                      {
@@ -4341,14 +4718,23 @@
                   ],
                   "description" : "This field contains additional data, which may be required to return in a particular payment response. To choose data fields to be returned, go to **Customer Area** > **Account** > **API URLs** > **Additional data settings**."
                },
+               "amount" : {
+                  "description" : "Authorised amount in the transaction.",
+                  "$ref" : "#/components/schemas/Amount"
+               },
                "authentication" : {
                   "additionalProperties" : {
                      "type" : "string"
                   },
+                  "deprecated" : true,
+                  "x-deprecatedInVersion" : 64,
+                  "x-deprecatedMessage" : "Use `action` instead.",
                   "description" : "Contains `threeds2.fingerprint` or `threeds2.challengeToken` values to be used in further calls to `/payments/details` endpoint. ",
                   "type" : "object"
                },
                "details" : {
+                  "deprecated" : true,
+                  "x-deprecatedInVersion" : 64,
                   "description" : "When non-empty, contains all the fields that you must submit to the `/payments/details` endpoint.",
                   "items" : {
                      "$ref" : "#/components/schemas/InputDetail"
@@ -4359,6 +4745,10 @@
                   "description" : "The fraud result properties of the payment.",
                   "$ref" : "#/components/schemas/FraudResult"
                },
+               "merchantReference" : {
+                  "description" : "The reference to uniquely identify a payment. This reference is used in all communication with you about the payment status. We recommend using a unique value per payment; however, it is not a requirement.\nIf you need to provide multiple references for a transaction, separate them with hyphens (\"-\").\nMaximum length: 80 characters.",
+                  "type" : "string"
+               },
                "order" : {
                   "description" : "Contains updated information regarding the order in case order information was provided in the request.",
                   "$ref" : "#/components/schemas/CheckoutOrderResponse"
@@ -4367,10 +4757,16 @@
                   "additionalProperties" : {
                      "type" : "string"
                   },
+                  "deprecated" : true,
+                  "x-deprecatedInVersion" : 64,
+                  "x-deprecatedMessage" : "Use `action` instead.",
                   "description" : "Contains the details that will be presented to the shopper.",
                   "type" : "object"
                },
                "paymentData" : {
+                  "deprecated" : true,
+                  "x-deprecatedInVersion" : 64,
+                  "x-deprecatedMessage" : "Use `action.paymentData` instead.",
                   "description" : "When non-empty, contains a value that you must submit to the `/payments/details` endpoint.",
                   "type" : "string"
                },
@@ -4379,6 +4775,9 @@
                   "type" : "string"
                },
                "redirect" : {
+                  "deprecated" : true,
+                  "x-deprecatedInVersion" : 64,
+                  "x-deprecatedMessage" : "Use `action` instead.",
                   "description" : "When the payment flow requires a redirect, this object contains information about the redirect URL.",
                   "$ref" : "#/components/schemas/Redirect"
                },
@@ -4506,6 +4905,10 @@
                   "description" : "Specify configurations to enable additional features.",
                   "$ref" : "#/components/schemas/Configuration"
                },
+               "conversionId" : {
+                  "description" : "Conversion ID that corresponds to the Id generated for tracking user payment journey.",
+                  "type" : "string"
+               },
                "countryCode" : {
                   "description" : "The shopper country.\n\nFormat: [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)\nExample: NL or DE",
                   "type" : "string"
@@ -4534,6 +4937,11 @@
                },
                "enablePayOut" : {
                   "description" : "When true and `shopperReference` is provided, the payment details will be tokenized for payouts.",
+                  "type" : "boolean"
+               },
+               "enableRealTimeUpdate" : {
+                  "deprecated" : true,
+                  "description" : "Choose if a specific transaction should use the Real-time Account Updater, regardless of other settings.",
                   "type" : "boolean"
                },
                "enableRecurring" : {
@@ -4664,9 +5072,18 @@
                   },
                   "type" : "array"
                },
+               "storePaymentMethod" : {
+                  "description" : "When true and `shopperReference` is provided, the payment details will be stored.",
+                  "type" : "boolean"
+               },
                "telephoneNumber" : {
                   "description" : "The shopper's telephone number.",
                   "type" : "string"
+               },
+               "threeDSAuthenticationOnly" : {
+                  "default" : "false",
+                  "description" : "If set to true, you will only perform the [3D Secure 2 authentication](https://docs.adyen.com/checkout/3d-secure/other-3ds-flows/authentication-only), and not the payment authorisation.",
+                  "type" : "boolean"
                },
                "token" : {
                   "description" : "The token obtained when initializing the SDK.\n\n> This parameter is required for iOS and Android; not required for Web.",
@@ -4859,6 +5276,13 @@
          },
          "RecurringDetail" : {
             "properties" : {
+               "brands" : {
+                  "description" : "List of possible brands. For example: visa, mc.",
+                  "items" : {
+                     "type" : "string"
+                  },
+                  "type" : "array"
+               },
                "configuration" : {
                   "additionalProperties" : {
                      "type" : "string"
@@ -4872,6 +5296,14 @@
                      "$ref" : "#/components/schemas/InputDetail"
                   },
                   "type" : "array"
+               },
+               "fundingSource" : {
+                  "description" : "The funding source of the payment method.",
+                  "enum" : [
+                     "credit",
+                     "debit"
+                  ],
+                  "type" : "string"
                },
                "group" : {
                   "description" : "The group where this payment method belongs to.",
@@ -5351,12 +5783,12 @@
                   ],
                   "type" : "string"
                },
-               "recurringDetailReference" : {
-                  "description" : "This is the `recurringDetailReference` returned in the response when you created the token.",
-                  "type" : "string"
-               },
                "samsungPayToken" : {
                   "description" : "",
+                  "type" : "string"
+               },
+               "storedPaymentMethodId" : {
+                  "description" : "This is the `recurringDetailReference` returned in the response when you created the token.",
                   "type" : "string"
                },
                "type" : {
@@ -5380,7 +5812,7 @@
                   "description" : "The name of the bank account holder.",
                   "type" : "string"
                },
-               "recurringDetailReference" : {
+               "storedPaymentMethodId" : {
                   "description" : "This is the `recurringDetailReference` returned in the response when you created the token.",
                   "type" : "string"
                },
@@ -5527,9 +5959,56 @@
                }
             }
          },
+         "StoredPaymentMethod" : {
+            "properties" : {
+               "brand" : {
+                  "description" : "The brand of the card.",
+                  "type" : "string"
+               },
+               "expiryMonth" : {
+                  "description" : "The month the card expires.",
+                  "type" : "string"
+               },
+               "expiryYear" : {
+                  "description" : "The year the card expires.",
+                  "type" : "string"
+               },
+               "holderName" : {
+                  "description" : "The unique payment method code.",
+                  "type" : "string"
+               },
+               "id" : {
+                  "description" : "A unique identifier of this stored payment method.",
+                  "type" : "string"
+               },
+               "lastFour" : {
+                  "description" : "The last four digits of the PAN.",
+                  "type" : "string"
+               },
+               "name" : {
+                  "description" : "The display name of the stored payment method.",
+                  "type" : "string"
+               },
+               "shopperEmail" : {
+                  "description" : "The shopper’s email address.",
+                  "type" : "string"
+               },
+               "supportedShopperInteractions" : {
+                  "description" : "The supported shopper interactions for this stored payment method.",
+                  "items" : {
+                     "type" : "string"
+                  },
+                  "type" : "array"
+               },
+               "type" : {
+                  "description" : "The type of payment method.",
+                  "type" : "string"
+               }
+            }
+         },
          "StoredPaymentMethodDetails" : {
             "properties" : {
-               "recurringDetailReference" : {
+               "storedPaymentMethodId" : {
                   "description" : "This is the `recurringDetailReference` returned in the response when you created the token.",
                   "type" : "string"
                },
@@ -5578,8 +6057,19 @@
          },
          "ThreeDS2RequestData" : {
             "properties" : {
+               "acquirerBIN" : {
+                  "description" : "Required for [authentication-only integration](https://docs.adyen.com/checkout/3d-secure/other-3ds-flows/authentication-only). The acquiring BIN enrolled for 3D Secure 2. This string should match the value that you will use in the authorisation. Use 123456 on the Test platform.",
+                  "type" : "string"
+               },
+               "acquirerMerchantID" : {
+                  "description" : "Required for [authentication-only integration](https://docs.adyen.com/checkout/3d-secure/other-3ds-flows/authentication-only). The merchantId that is enrolled for 3D Secure 2 by the merchant's acquirer. This string should match the value that you will use in the authorisation. Use 123456 on the Test platform.",
+                  "type" : "string"
+               },
                "authenticationOnly" : {
                   "default" : "false",
+                  "deprecated" : true,
+                  "x-deprecatedInVersion" : 50,
+                  "x-deprecatedMessage" : "Use `threeDSAuthenticationOnly` instead.",
                   "description" : "If set to true, you will only perform the [3D Secure 2 authentication](https://docs.adyen.com/checkout/3d-secure/other-3ds-flows/authentication-only), and not the payment authorisation.",
                   "type" : "boolean"
                },
@@ -5600,6 +6090,14 @@
                "deviceRenderOptions" : {
                   "description" : "Display options for the 3D Secure 2 SDK.\nOptional and only for `deviceChannel` **app**.",
                   "$ref" : "#/components/schemas/DeviceRenderOptions"
+               },
+               "mcc" : {
+                  "description" : "Required for merchants that have been enrolled for 3D Secure 2 by another party than Adyen, mostly [authentication-only integrations](https://docs.adyen.com/checkout/3d-secure/other-3ds-flows/authentication-only). The `mcc` is a four-digit code with which the previously given `acquirerMerchantID` is registered at the scheme.",
+                  "type" : "string"
+               },
+               "merchantName" : {
+                  "description" : "Required for [authentication-only integration](https://docs.adyen.com/checkout/3d-secure/other-3ds-flows/authentication-only). The merchant name that the issuer presents to the shopper if they get a challenge. We recommend to use the same value that you will use in the authorization. Maximum length is 40 characters.\n> Optional for a [full 3D Secure 2 integration](https://docs.adyen.com/checkout/3d-secure/native-3ds2/api-integration). Use this field if you are enrolled for 3D Secure 2 with us and want to override the merchant name already configured on your account.",
+                  "type" : "string"
                },
                "messageVersion" : {
                   "default" : "2.1.0",
@@ -5650,6 +6148,21 @@
                },
                "threeDSRequestorURL" : {
                   "description" : "URL of the (customer service) website that will be shown to the shopper in case of technical errors during the 3D Secure 2 process.",
+                  "type" : "string"
+               },
+               "transactionType" : {
+                  "description" : "Identify the type of the transaction being authenticated.",
+                  "enum" : [
+                     "goodsOrServicePurchase",
+                     "checkAcceptance",
+                     "accountFunding",
+                     "quasiCashTransaction",
+                     "prepaidActivationAndLoad"
+                  ],
+                  "type" : "string"
+               },
+               "whiteListStatus" : {
+                  "description" : "The `whiteListStatus` value returned from a previous 3D Secure 2 transaction, only applicable for 3D Secure 2 protocol version 2.2.0.",
                   "type" : "string"
                }
             },
@@ -5727,7 +6240,7 @@
          },
          "VippsDetails" : {
             "properties" : {
-               "recurringDetailReference" : {
+               "storedPaymentMethodId" : {
                   "description" : "This is the `recurringDetailReference` returned in the response when you created the token.",
                   "type" : "string"
                },

@@ -575,6 +575,9 @@ components:
             * John-7 - allowed.
             > If provided details don't match the required format, the response returns the error message: 203 'Invalid bank account holder name'.
           type: string
+        recurringDetailReference:
+          description: This is the `recurringDetailReference` returned in the response when you created the token.
+          type: string
         type:
           default: ach
           description: '**ach**'
@@ -826,9 +829,9 @@ components:
           type: string
         carRental.daysRented:
           description: |-
-            Specifies whether the given rate is applied daily or weekly.
-            * D - Daily rate.
-            * W - Weekly rate.
+            Number of days for which the car is being rented.
+            * Format: Numeric
+            * maxLength: 19
           type: string
         carRental.fuelCharges:
           description: |-
@@ -844,26 +847,27 @@ components:
           type: string
         carRental.locationCity:
           description: |-
-            The location from which the car is rented.
+            The city from which the car is rented.
             * Format: Alphanumeric
             * maxLength: 18
           type: string
         carRental.locationCountry:
           description: |-
-            The customer service phone number of the car rental company.
+            The country from which the car is rented.
             * Format: Alphanumeric
-            * maxLength: 17
+            * maxLength: 2
           type: string
         carRental.locationStateProvince:
           description: |-
-            Pick-up date.
-            * Date format: `yyyyMMdd`
+            The state or province from where the car is rented.
+            * Format: Alphanumeric
+            * maxLength: 3
           type: string
         carRental.noShowIndicator:
           description: |-
             Indicates if the customer was a "no-show" (neither keeps nor cancels their booking).
-            * 0 - Not applicable.
-            * 1 - Customer was a no show.
+            * Y - Customer was a no show.
+            * N - Not applicable.
           type: string
         carRental.oneWayDropOffCharges:
           description: Charge associated with not returning a vehicle to the original rental location.
@@ -884,7 +888,7 @@ components:
           description: |-
             The rental agreement number associated with this car rental.
             * Format: Alphanumeric
-            * maxLength: 14
+            * maxLength: 9
           type: string
         carRental.rentalClassId:
           description: |-
@@ -932,8 +936,8 @@ components:
             Indicates whether the goods or services were tax-exempt, or tax was not collected.
 
             Values:
-            * 0 - Tax was not collected
-            * 1 - Goods or services were tax exempt
+            * Y - Goods or services were tax exempt
+            * N - Tax was not collected
           type: string
         travelEntertainmentAuthData.duration:
           description: |-
@@ -1340,6 +1344,14 @@ components:
             * Low
             * None.
           type: string
+    AdditionalDataOpi:
+      properties:
+        opi.includeTransToken:
+          description: |-
+            Optional boolean indicator. Set to **true** if you want an ecommerce transaction to return an `opi.transToken` as additional data in the response.
+
+            Make sure that you set `shopperInteraction` to **Ecommerce** and leave the `shopperReference` blank. You can use this token to identify an ecommerce transaction in your Oracle system integrations such as Opera.
+          type: string
     AdditionalDataRatepay:
       properties:
         ratepay.installmentAmount:
@@ -1623,10 +1635,7 @@ components:
           minLength: 3
           type: string
         value:
-          description: |-
-            The payable amount that can be charged for the transaction.
-
-            The transaction amount needs to be represented in minor units according to the [following table](https://docs.adyen.com/development-resources/currency-codes).
+          description: 'The amount of the transaction, in [minor units](https://docs.adyen.com/development-resources/currency-codes).'
           format: int64
           type: integer
       required:
@@ -1638,7 +1647,8 @@ components:
           description: ''
           type: string
         type:
-          description: The payment method type.
+          default: androidpay
+          description: '**androidpay**'
           type: string
       required:
         - type
@@ -1652,6 +1662,9 @@ components:
           enum:
             - credit
             - debit
+          type: string
+        recurringDetailReference:
+          description: This is the `recurringDetailReference` returned in the response when you created the token.
           type: string
         type:
           default: applepay
@@ -1912,6 +1925,9 @@ components:
           type: string
         number:
           type: string
+        recurringDetailReference:
+          description: This is the `recurringDetailReference` returned in the response when you created the token.
+          type: string
         type:
           default: scheme
           description: '**scheme**'
@@ -1942,6 +1958,7 @@ components:
             - $ref: '#/components/schemas/AdditionalDataLevel23'
             - $ref: '#/components/schemas/AdditionalDataLodging'
             - $ref: '#/components/schemas/AdditionalDataOpenInvoice'
+            - $ref: '#/components/schemas/AdditionalDataOpi'
             - $ref: '#/components/schemas/AdditionalDataRatepay'
             - $ref: '#/components/schemas/AdditionalDataRetry'
             - $ref: '#/components/schemas/AdditionalDataRisk'
@@ -2155,6 +2172,7 @@ components:
             - $ref: '#/components/schemas/ResponseAdditionalDataDeliveryAddress'
             - $ref: '#/components/schemas/ResponseAdditionalDataInstallments'
             - $ref: '#/components/schemas/ResponseAdditionalDataNetworkTokens'
+            - $ref: '#/components/schemas/ResponseAdditionalDataOpi'
             - $ref: '#/components/schemas/ResponseAdditionalDataPayPal'
             - $ref: '#/components/schemas/ResponseAdditionalDataSepa'
           description: 'This field contains additional data, which may be required to return in a particular payment response. To choose data fields to be returned, go to **Customer Area** > **Account** > **API URLs** > **Additional data settings**.'
@@ -2257,6 +2275,7 @@ components:
             - $ref: '#/components/schemas/ResponseAdditionalDataDeliveryAddress'
             - $ref: '#/components/schemas/ResponseAdditionalDataInstallments'
             - $ref: '#/components/schemas/ResponseAdditionalDataNetworkTokens'
+            - $ref: '#/components/schemas/ResponseAdditionalDataOpi'
             - $ref: '#/components/schemas/ResponseAdditionalDataPayPal'
             - $ref: '#/components/schemas/ResponseAdditionalDataSepa'
           description: 'This field contains additional data, which may be required to return in a particular payment response. To choose data fields to be returned, go to **Customer Area** > **Account** > **API URLs** > **Additional data settings**.'
@@ -2446,6 +2465,10 @@ components:
         countryCode:
           description: The shopper's two-letter country code.
           type: string
+        deliverAt:
+          description: The date and time the purchased goods should be delivered.
+          format: date-time
+          type: string
         deliveryAddress:
           description: The address where the purchased goods should be delivered.
           $ref: '#/components/schemas/Address'
@@ -2507,7 +2530,10 @@ components:
           description: The shopper's email address.
           type: string
         shopperLocale:
-          description: 'The combination of a language code and a country code to specify the language to be used in the payment. For example, `en-US`.'
+          description: |-
+            The language to be used in the payment page, specified by a combination of a language and country code. For example, `en-US`.
+
+            For a list of shopper locales that Pay by Link supports, refer to [Language and localization](https://docs.adyen.com/checkout/pay-by-link#language-and-localization).
           type: string
         shopperName:
           description: 'The shopper''s full name. This object is required for some payment methods such as AfterPay, Klarna, or if you''re enrolled in the PayPal Seller Protection program.'
@@ -2530,11 +2556,8 @@ components:
     DetailsRequest:
       properties:
         details:
-          additionalProperties:
-            type: string
-          deprecated: true
           description: Use this collection to submit the details that were returned as a result of the `/payments` call.
-          type: object
+          $ref: '#/components/schemas/PaymentCompletionDetails'
         paymentData:
           description: The `paymentData` value that you received in the response to the `/payments` call.
           type: string
@@ -2631,7 +2654,12 @@ components:
           description: The shopper’s email address.
           type: string
         type:
-          description: The payment method type.
+          description: '**dragonpay**'
+          enum:
+            - dragonpay_ebanking
+            - dragonpay_otc_banking
+            - dragonpay_otc_non_banking
+            - dragonpay_otc_philippines
           type: string
       required:
         - type
@@ -2760,6 +2788,9 @@ components:
         - accountScore
     GiropayDetails:
       properties:
+        recurringDetailReference:
+          description: This is the `recurringDetailReference` returned in the response when you created the token.
+          type: string
         type:
           default: giropay
           description: '**giropay**'
@@ -2779,6 +2810,9 @@ components:
         googlePayToken:
           description: ''
           type: string
+        recurringDetailReference:
+          description: This is the `recurringDetailReference` returned in the response when you created the token.
+          type: string
         type:
           default: paywithgoogle
           description: '**paywithgoogle**'
@@ -2791,6 +2825,9 @@ components:
       properties:
         issuer:
           description: The iDEAL issuer value of the shopper's selected bank. Set this to an **id** of an iDEAL issuer to preselect it.
+          type: string
+        recurringDetailReference:
+          description: This is the `recurringDetailReference` returned in the response when you created the token.
           type: string
         type:
           default: ideal
@@ -2868,12 +2905,24 @@ components:
           type: string
         personalDetails:
           type: string
+        recurringDetailReference:
+          description: This is the `recurringDetailReference` returned in the response when you created the token.
+          type: string
         separateDeliveryAddress:
           type: string
         token:
           type: string
         type:
-          description: The payment method type.
+          default: openinvoice
+          description: '**klarna**'
+          enum:
+            - klarna
+            - klarnapayments
+            - klarnapayments_account
+            - klarnapayments_b2b
+            - klarna_paynow
+            - klarna_account
+            - klarna_b2b
           type: string
       required:
         - type
@@ -2883,7 +2932,11 @@ components:
           description: ''
           type: string
         type:
-          description: The payment method type.
+          description: '**lianlianpay**'
+          enum:
+            - lianlianpay_ebanking_enterprise
+            - lianlianpay_ebanking_credit
+            - lianlianpay_ebanking_debit
           type: string
       required:
         - type
@@ -2950,7 +3003,8 @@ components:
           description: ''
           type: string
         type:
-          description: The payment method type.
+          default: mbway
+          description: '**mbway**'
           type: string
       required:
         - type
@@ -3010,10 +3064,10 @@ components:
             - twoOrMoreDaysShipping
           type: string
         giftCardAmount:
-          description: The amount of prepaid or gift cards used for this purchase.
+          description: 'For prepaid or gift card purchase, the purchase amount total of prepaid or gift card(s).'
           $ref: '#/components/schemas/Amount'
         giftCardCount:
-          description: Number of individual prepaid or gift cards used for this purchase.
+          description: 'For prepaid or gift card purchase, total count of individual prepaid or gift cards/codes purchased.'
           format: int32
           type: integer
         preOrderDate:
@@ -3040,7 +3094,10 @@ components:
           description: ''
           type: string
         type:
-          description: The payment method type.
+          description: '**molpay**'
+          enum:
+            - molpay_ebanking_fpx_MY
+            - molpay_ebanking_TH
           type: string
       required:
         - type
@@ -3076,7 +3133,8 @@ components:
     NexoRouterDetails:
       properties:
         type:
-          description: The payment method type.
+          default: VIRTUAL_pos
+          description: '**nexorouter**'
           type: string
         uniqueTerminalId:
           type: string
@@ -3094,10 +3152,14 @@ components:
           type: string
         personalDetails:
           type: string
+        recurringDetailReference:
+          description: This is the `recurringDetailReference` returned in the response when you created the token.
+          type: string
         separateDeliveryAddress:
           type: string
         type:
-          description: The payment method type.
+          default: openinvoice
+          description: '**openinvoice**'
           type: string
       required:
         - type
@@ -3119,6 +3181,62 @@ components:
           type: string
       required:
         - type
+    PayUUpiDetails:
+      properties:
+        recurringDetailReference:
+          description: This is the `recurringDetailReference` returned in the response when you created the token.
+          type: string
+        shopperNotificationReference:
+          description: The `shopperNotificationReference` returned in the response when you requested to notify the shopper. Used for recurring payment only.
+          type: string
+        subscriptionDetails:
+          additionalProperties:
+            type: string
+          description: The details to initiate subscription tracntion.
+          type: object
+        type:
+          default: payu_IN_upi
+          description: '**payu_IN_upi**'
+          type: string
+        virtualPaymentAddress:
+          description: The virtual payment address for UPI.
+          type: string
+      required:
+        - type
+    PaymentCompletionDetails:
+      properties:
+        MD:
+          type: string
+        PaReq:
+          type: string
+        PaRes:
+          type: string
+        billingToken:
+          type: string
+        cupsecureplus.smscode:
+          type: string
+        facilitatorAccessToken:
+          type: string
+        oneTimePasscode:
+          type: string
+        orderID:
+          type: string
+        payerID:
+          type: string
+        payload:
+          type: string
+        paymentID:
+          type: string
+        paymentStatus:
+          type: string
+        redirectResult:
+          type: string
+        returnUrlQueryString:
+          type: string
+        threeds2.challengeResult:
+          type: string
+        threeds2.fingerprint:
+          type: string
     PaymentDetails:
       properties:
         type:
@@ -3155,6 +3273,10 @@ components:
           type: array
         countryCode:
           description: The shopper's two-letter country code.
+          type: string
+        deliverAt:
+          description: The date and time the purchased goods should be delivered.
+          format: date-time
           type: string
         deliveryAddress:
           description: The address where the purchased goods should be delivered.
@@ -3211,7 +3333,10 @@ components:
           description: The shopper's email address.
           type: string
         shopperLocale:
-          description: 'The combination of a language code and a country code to specify the language to be used in the payment. For example, `en-US`.'
+          description: |-
+            The language to be used in the payment page, specified by a combination of a language and country code. For example, `en-US`.
+
+            For a list of shopper locales that Pay by Link supports, refer to [Language and localization](https://docs.adyen.com/checkout/pay-by-link#language-and-localization).
           type: string
         shopperName:
           description: 'The shopper''s full name. This object is required for some payment methods such as AfterPay, Klarna, or if you''re enrolled in the PayPal Seller Protection program.'
@@ -3317,6 +3442,7 @@ components:
             - $ref: '#/components/schemas/AdditionalDataLevel23'
             - $ref: '#/components/schemas/AdditionalDataLodging'
             - $ref: '#/components/schemas/AdditionalDataOpenInvoice'
+            - $ref: '#/components/schemas/AdditionalDataOpi'
             - $ref: '#/components/schemas/AdditionalDataRatepay'
             - $ref: '#/components/schemas/AdditionalDataRetry'
             - $ref: '#/components/schemas/AdditionalDataRisk'
@@ -3412,6 +3538,7 @@ components:
             - $ref: '#/components/schemas/AdditionalDataLevel23'
             - $ref: '#/components/schemas/AdditionalDataLodging'
             - $ref: '#/components/schemas/AdditionalDataOpenInvoice'
+            - $ref: '#/components/schemas/AdditionalDataOpi'
             - $ref: '#/components/schemas/AdditionalDataRatepay'
             - $ref: '#/components/schemas/AdditionalDataRetry'
             - $ref: '#/components/schemas/AdditionalDataRisk'
@@ -3515,7 +3642,7 @@ components:
         lineItems:
           description: |-
             Price and product information about the purchased items, to be included on the invoice sent to the shopper.
-            > This field is required for Klarna, AfterPay, and RatePay.
+            > This field is required for Klarna, AfterPay, 3x 4x Oney, Zip and RatePay.
           items:
             $ref: '#/components/schemas/LineItem'
           type: array
@@ -3568,8 +3695,9 @@ components:
             - $ref: '#/components/schemas/GooglePayDetails'
             - $ref: '#/components/schemas/AmazonPayDetails'
             - $ref: '#/components/schemas/MasterpassDetails'
-            - $ref: '#/components/schemas/PaymentDetails'
+            - $ref: '#/components/schemas/StoredPaymentMethodDetails'
             - $ref: '#/components/schemas/CardDetails'
+            - $ref: '#/components/schemas/PaymentDetails'
             - $ref: '#/components/schemas/AchDetails'
             - $ref: '#/components/schemas/KlarnaDetails'
             - $ref: '#/components/schemas/IdealDetails'
@@ -3584,6 +3712,7 @@ components:
             - $ref: '#/components/schemas/MolPayDetails'
             - $ref: '#/components/schemas/BillDeskOnlineDetails'
             - $ref: '#/components/schemas/BillDeskWalletDetails'
+            - $ref: '#/components/schemas/PayUUpiDetails'
             - $ref: '#/components/schemas/DotpayDetails'
             - $ref: '#/components/schemas/EntercashDetails'
             - $ref: '#/components/schemas/OpenInvoiceDetails'
@@ -3639,7 +3768,10 @@ components:
           description: 'Contains risk data, such as client-side data, used to identify risk for a transaction.'
           $ref: '#/components/schemas/RiskData'
         sessionValidity:
-          description: The maximum validity of the session.
+          description: |-
+            The date and time until when the session remains valid, in [ISO 8601](https://www.w3.org/TR/NOTE-datetime) format.
+
+            For example: 2020-07-18T15:42:40.428+01:00
           type: string
         shopperEmail:
           description: |-
@@ -3721,6 +3853,7 @@ components:
             - $ref: '#/components/schemas/ResponseAdditionalDataDeliveryAddress'
             - $ref: '#/components/schemas/ResponseAdditionalDataInstallments'
             - $ref: '#/components/schemas/ResponseAdditionalDataNetworkTokens'
+            - $ref: '#/components/schemas/ResponseAdditionalDataOpi'
             - $ref: '#/components/schemas/ResponseAdditionalDataPayPal'
             - $ref: '#/components/schemas/ResponseAdditionalDataSepa'
           description: 'This field contains additional data, which may be required to return in a particular payment response. To choose data fields to be returned, go to **Customer Area** > **Account** > **API URLs** > **Additional data settings**.'
@@ -3807,6 +3940,7 @@ components:
             - $ref: '#/components/schemas/AdditionalDataLevel23'
             - $ref: '#/components/schemas/AdditionalDataLodging'
             - $ref: '#/components/schemas/AdditionalDataOpenInvoice'
+            - $ref: '#/components/schemas/AdditionalDataOpi'
             - $ref: '#/components/schemas/AdditionalDataRatepay'
             - $ref: '#/components/schemas/AdditionalDataRetry'
             - $ref: '#/components/schemas/AdditionalDataRisk'
@@ -3921,7 +4055,7 @@ components:
         lineItems:
           description: |-
             Price and product information about the purchased items, to be included on the invoice sent to the shopper.
-            > This field is required for Klarna, AfterPay, and RatePay.
+            > This field is required for Klarna, AfterPay, 3x 4x Oney, Zip and RatePay.
           items:
             $ref: '#/components/schemas/LineItem'
           type: array
@@ -3983,7 +4117,10 @@ components:
           description: The version of the SDK you are using (for Web SDK integrations only).
           type: string
         sessionValidity:
-          description: The maximum validity of the session.
+          description: |-
+            The date and time until when the session remains valid, in [ISO 8601](https://www.w3.org/TR/NOTE-datetime) format.
+
+            For example: 2020-07-18T15:42:40.428+01:00
           type: string
         shopperEmail:
           description: |-
@@ -4081,6 +4218,7 @@ components:
             - $ref: '#/components/schemas/ResponseAdditionalDataDeliveryAddress'
             - $ref: '#/components/schemas/ResponseAdditionalDataInstallments'
             - $ref: '#/components/schemas/ResponseAdditionalDataNetworkTokens'
+            - $ref: '#/components/schemas/ResponseAdditionalDataOpi'
             - $ref: '#/components/schemas/ResponseAdditionalDataPayPal'
             - $ref: '#/components/schemas/ResponseAdditionalDataSepa'
           description: 'This field contains additional data, which may be required to return in a particular payment response. To choose data fields to be returned, go to **Customer Area** > **Account** > **API URLs** > **Additional data settings**.'
@@ -4696,6 +4834,11 @@ components:
         networkToken.tokenSummary:
           description: The last four digits of a card number.
           type: string
+    ResponseAdditionalDataOpi:
+      properties:
+        opi.transToken:
+          description: Returned in the response if you included `opi.returnTransToken` in an ecommerce request. This contains an OPI token that you can use to identify an ecommerce transaction in your Oracle system integrations such as Opera.
+          type: string
     ResponseAdditionalDataPayPal:
       properties:
         paypalEmail:
@@ -4776,6 +4919,9 @@ components:
             - credit
             - debit
           type: string
+        recurringDetailReference:
+          description: This is the `recurringDetailReference` returned in the response when you created the token.
+          type: string
         samsungPayToken:
           description: ''
           type: string
@@ -4793,6 +4939,9 @@ components:
           type: string
         ownerName:
           description: The name of the bank account holder.
+          type: string
+        recurringDetailReference:
+          description: This is the `recurringDetailReference` returned in the response when you created the token.
           type: string
         type:
           default: sepadirectdebit
@@ -4929,6 +5078,16 @@ components:
         emailAddress:
           description: The email associated with stored payment details.
           type: string
+    StoredPaymentMethodDetails:
+      properties:
+        recurringDetailReference:
+          description: This is the `recurringDetailReference` returned in the response when you created the token.
+          type: string
+        type:
+          description: The payment method type.
+          type: string
+      required:
+        - type
     SubInputDetail:
       properties:
         configuration:
@@ -5073,6 +5232,9 @@ components:
             - U
             - 'Y'
           type: string
+        dsTransID:
+          description: Supported for 3D Secure 2. The unique transaction identifier assigned by the Directory Server (DS) to identify a single transaction.
+          type: string
         eci:
           description: The electronic commerce indicator.
           type: string
@@ -5096,6 +5258,9 @@ components:
         - status
     VippsDetails:
       properties:
+        recurringDetailReference:
+          description: This is the `recurringDetailReference` returned in the response when you created the token.
+          type: string
         telephoneNumber:
           description: ''
           type: string
@@ -5130,7 +5295,8 @@ components:
         openid:
           type: string
         type:
-          description: The payment method type.
+          default: wechatpay
+          description: '**wechatpay**'
           type: string
       required:
         - type
@@ -5141,7 +5307,8 @@ components:
         openid:
           type: string
         type:
-          description: The payment method type.
+          default: wechatpayMiniProgram
+          description: '**wechatpayMiniProgram**'
           type: string
       required:
         - type
