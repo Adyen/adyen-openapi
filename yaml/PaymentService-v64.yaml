@@ -1,8 +1,8 @@
 openapi: 3.0.3
 servers:
-  - url: 'https://pal-test.adyen.com/pal/servlet/Payment/v46'
+  - url: 'https://pal-test.adyen.com/pal/servlet/Payment/v64'
 info:
-  version: '46'
+  version: '64'
   title: Adyen Payment API
   description: |-
     A set of API endpoints that allow you to initiate, settle, and modify payments on the Adyen payments platform. You can use the API to accept card payments (including One-Click and 3D Secure), bank transfers, ewallets, and many other payment methods.
@@ -25,7 +25,7 @@ info:
 
     For example:
     ```
-    https://pal-test.adyen.com/pal/servlet/Payment/v46/authorise
+    https://pal-test.adyen.com/pal/servlet/Payment/v64/authorise
     ```
   termsOfService: 'https://www.adyen.com/legal/terms-and-conditions'
   contact:
@@ -294,6 +294,35 @@ paths:
           description: Unprocessable Entity - a request validation error.
         '500':
           description: Internal Server Error - the server could not process the request.
+  /getAuthenticationResult:
+    post:
+      summary: Return the authentication result after doing a 3D Secure authentication only.
+      description: Return the authentication result after doing a 3D Secure authentication only.
+      operationId: post-getAuthenticationResult
+      x-groupName: General
+      x-sortIndex: 4
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthenticationResultRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticationResultResponse'
+          description: OK - the request has succeeded.
+        '400':
+          description: Bad Request - a problem reading or understanding the request.
+        '401':
+          description: Unauthorized - authentication required.
+        '403':
+          description: Forbidden - insufficient permissions to process the request.
+        '422':
+          description: Unprocessable Entity - a request validation error.
+        '500':
+          description: Internal Server Error - the server could not process the request.
   /refund:
     post:
       summary: Refunds a captured payment.
@@ -463,6 +492,18 @@ components:
         accountCreationDate:
           description: Date when the shopper's account was created.
           format: date-time
+          type: string
+        accountType:
+          description: |-
+            Indicates the type of account. For example, for a multi-account card product.
+            Allowed values:
+            * notApplicable
+            * credit
+            * debit
+          enum:
+            - notApplicable
+            - credit
+            - debit
           type: string
         addCardAttemptsDay:
           description: Number of attempts the shopper tried to add a card to their account in the last day.
@@ -1619,6 +1660,25 @@ components:
         shopperInteractionDevice:
           description: 'Shopper interaction device, such as terminal, mobile device or web browser, to initiate payment requests.'
           $ref: '#/components/schemas/ShopperInteractionDevice'
+    AuthenticationResultRequest:
+      properties:
+        merchantAccount:
+          description: 'The merchant account identifier, with which the authentication was processed.'
+          type: string
+        pspReference:
+          description: The pspReference identifier for the transaction.
+          type: string
+      required:
+        - merchantAccount
+        - pspReference
+    AuthenticationResultResponse:
+      properties:
+        threeDS1Result:
+          description: The result of the 3D Secure authentication.
+          $ref: '#/components/schemas/ThreeDS1Result'
+        threeDS2Result:
+          description: The result of the 3D Secure 2 authentication.
+          $ref: '#/components/schemas/ThreeDS2Result'
     BankAccount:
       properties:
         bankAccountNumber:
@@ -1925,6 +1985,17 @@ components:
         - accountScore
     Installments:
       properties:
+        plan:
+          description: |-
+            Defines the type of installment plan. If not set, defaults to **regular**.
+
+            Possible values:
+            * **regular**
+            * **revolving**
+          enum:
+            - regular
+            - revolving
+          type: string
         value:
           description: |-
             Defines the number of installments. Its value needs to be greater than zero.
@@ -2202,6 +2273,10 @@ components:
         deviceFingerprint:
           description: 'A string containing the shopper''s device fingerprint. For more information, refer to [Device fingerprinting](https://docs.adyen.com/risk-management/device-fingerprinting).'
           type: string
+        enableRealTimeUpdate:
+          deprecated: true
+          description: 'Choose if a specific transaction should use the Real-time Account Updater, regardless of other settings.'
+          type: boolean
         entityType:
           description: The type of the entity the payment is processed for.
           enum:
@@ -2212,6 +2287,16 @@ components:
           description: An integer value that is added to the normal fraud score. The value can be either positive or negative.
           format: int32
           type: integer
+        fundingSource:
+          description: |-
+            How to process a combo card (for some Brazilian cards only).
+            Allowed values:
+            * debit
+            * credit
+          enum:
+            - debit
+            - credit
+          type: string
         installments:
           description: 'Contains installment settings. For more information, refer to [Installments](https://docs.adyen.com/payment-methods/cards/credit-card-installments).'
           $ref: '#/components/schemas/Installments'
@@ -2345,6 +2430,10 @@ components:
         threeDS2RequestData:
           description: Request fields for 3D Secure 2.
           $ref: '#/components/schemas/ThreeDS2RequestData'
+        threeDSAuthenticationOnly:
+          default: 'false'
+          description: 'If set to true, you will only perform the [3D Secure 2 authentication](https://docs.adyen.com/checkout/3d-secure/other-3ds-flows/authentication-only), and not the payment authorisation.'
+          type: boolean
         totalsGroup:
           description: 'The reference value to aggregate sales totals in reporting. When not specified, the store field is used (if available).'
           maxLength: 16
@@ -2434,6 +2523,10 @@ components:
         deviceFingerprint:
           description: 'A string containing the shopper''s device fingerprint. For more information, refer to [Device fingerprinting](https://docs.adyen.com/risk-management/device-fingerprinting).'
           type: string
+        enableRealTimeUpdate:
+          deprecated: true
+          description: 'Choose if a specific transaction should use the Real-time Account Updater, regardless of other settings.'
+          type: boolean
         fraudOffset:
           description: An integer value that is added to the normal fraud score. The value can be either positive or negative.
           format: int32
@@ -2570,6 +2663,10 @@ components:
         threeDS2RequestData:
           description: Request fields for 3D Secure 2.
           $ref: '#/components/schemas/ThreeDS2RequestData'
+        threeDSAuthenticationOnly:
+          default: 'false'
+          description: 'If set to true, you will only perform the [3D Secure 2 authentication](https://docs.adyen.com/checkout/3d-secure/other-3ds-flows/authentication-only), and not the payment authorisation.'
+          type: boolean
         totalsGroup:
           description: 'The reference value to aggregate sales totals in reporting. When not specified, the store field is used (if available).'
           maxLength: 16
@@ -2659,6 +2756,10 @@ components:
         deviceFingerprint:
           description: 'A string containing the shopper''s device fingerprint. For more information, refer to [Device fingerprinting](https://docs.adyen.com/risk-management/device-fingerprinting).'
           type: string
+        enableRealTimeUpdate:
+          deprecated: true
+          description: 'Choose if a specific transaction should use the Real-time Account Updater, regardless of other settings.'
+          type: boolean
         fraudOffset:
           description: An integer value that is added to the normal fraud score. The value can be either positive or negative.
           format: int32
@@ -2795,6 +2896,10 @@ components:
         threeDS2Token:
           description: The ThreeDS2Token that was returned in the /authorise call.
           type: string
+        threeDSAuthenticationOnly:
+          default: 'false'
+          description: 'If set to true, you will only perform the [3D Secure 2 authentication](https://docs.adyen.com/checkout/3d-secure/other-3ds-flows/authentication-only), and not the payment authorisation.'
+          type: boolean
         totalsGroup:
           description: 'The reference value to aggregate sales totals in reporting. When not specified, the store field is used (if available).'
           maxLength: 16
@@ -3511,10 +3616,39 @@ components:
           type: integer
       required:
         - value
+    ThreeDS1Result:
+      properties:
+        cavv:
+          description: The cardholder authentication value (base64 encoded).
+          type: string
+        cavvAlgorithm:
+          description: The CAVV algorithm used.
+          type: string
+        eci:
+          description: 3D Secure Electronic Commerce Indicator (ECI).
+          type: string
+        threeDAuthenticatedResponse:
+          description: The authentication response from the ACS.
+          type: string
+        threeDOfferedResponse:
+          description: Whether 3D Secure was offered or not.
+          type: string
+        xid:
+          description: 'A unique transaction identifier generated by the MPI on behalf of the merchant to identify the 3D Secure transaction, in `Base64` encoding.'
+          type: string
     ThreeDS2RequestData:
       properties:
+        acquirerBIN:
+          description: 'Required for [authentication-only integration](https://docs.adyen.com/checkout/3d-secure/other-3ds-flows/authentication-only). The acquiring BIN enrolled for 3D Secure 2. This string should match the value that you will use in the authorisation. Use 123456 on the Test platform.'
+          type: string
+        acquirerMerchantID:
+          description: 'Required for [authentication-only integration](https://docs.adyen.com/checkout/3d-secure/other-3ds-flows/authentication-only). The merchantId that is enrolled for 3D Secure 2 by the merchant''s acquirer. This string should match the value that you will use in the authorisation. Use 123456 on the Test platform.'
+          type: string
         authenticationOnly:
           default: 'false'
+          deprecated: true
+          x-deprecatedInVersion: 50
+          x-deprecatedMessage: Use `threeDSAuthenticationOnly` instead.
           description: 'If set to true, you will only perform the [3D Secure 2 authentication](https://docs.adyen.com/checkout/3d-secure/other-3ds-flows/authentication-only), and not the payment authorisation.'
           type: boolean
         challengeIndicator:
@@ -3543,6 +3677,14 @@ components:
             Display options for the 3D Secure 2 SDK.
             Optional and only for `deviceChannel` **app**.
           $ref: '#/components/schemas/DeviceRenderOptions'
+        mcc:
+          description: 'Required for merchants that have been enrolled for 3D Secure 2 by another party than Adyen, mostly [authentication-only integrations](https://docs.adyen.com/checkout/3d-secure/other-3ds-flows/authentication-only). The `mcc` is a four-digit code with which the previously given `acquirerMerchantID` is registered at the scheme.'
+          type: string
+        merchantName:
+          description: |-
+            Required for [authentication-only integration](https://docs.adyen.com/checkout/3d-secure/other-3ds-flows/authentication-only). The merchant name that the issuer presents to the shopper if they get a challenge. We recommend to use the same value that you will use in the authorization. Maximum length is 40 characters.
+            > Optional for a [full 3D Secure 2 integration](https://docs.adyen.com/checkout/3d-secure/native-3ds2/api-integration). Use this field if you are enrolled for 3D Secure 2 with us and want to override the merchant name already configured on your account.
+          type: string
         messageVersion:
           default: 2.1.0
           description: The `messageVersion` value indicating the 3D Secure 2 protocol version.
@@ -3594,6 +3736,18 @@ components:
         threeDSRequestorURL:
           description: URL of the (customer service) website that will be shown to the shopper in case of technical errors during the 3D Secure 2 process.
           type: string
+        transactionType:
+          description: Identify the type of the transaction being authenticated.
+          enum:
+            - goodsOrServicePurchase
+            - checkAcceptance
+            - accountFunding
+            - quasiCashTransaction
+            - prepaidActivationAndLoad
+          type: string
+        whiteListStatus:
+          description: 'The `whiteListStatus` value returned from a previous 3D Secure 2 transaction, only applicable for 3D Secure 2 protocol version 2.2.0.'
+          type: string
       required:
         - deviceChannel
     ThreeDS2Result:
@@ -3601,11 +3755,17 @@ components:
         authenticationValue:
           description: The `authenticationValue` value as defined in the 3D Secure 2 specification.
           type: string
+        cavvAlgorithm:
+          description: 'The algorithm used by the ACS to calculate the authentication value, only for CartesBancaires integrations.'
+          type: string
         dsTransID:
           description: The `dsTransID` value as defined in the 3D Secure 2 specification.
           type: string
         eci:
           description: The `eci` value as defined in the 3D Secure 2 specification.
+          type: string
+        messageVersion:
+          description: The `messageVersion` value as defined in the 3D Secure 2 specification.
           type: string
         threeDSServerTransID:
           description: The `threeDSServerTransID` value as defined in the 3D Secure 2 specification.
@@ -3618,6 +3778,9 @@ components:
           type: string
         transStatusReason:
           description: The `transStatusReason` value as defined in the 3D Secure 2 specification.
+          type: string
+        whiteListStatus:
+          description: The `whiteListStatus` value as defined in the 3D Secure 2 specification.
           type: string
     ThreeDS2ResultRequest:
       properties:
