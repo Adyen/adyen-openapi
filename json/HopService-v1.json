@@ -7,23 +7,25 @@
    ],
    "info" : {
       "version" : "1",
-      "title" : "Adyen for Platforms: Hosted Onboarding Page API",
-      "description" : "The Hosted Onboarding Page (HOP) API provides endpoints for using the Hosted Onboarding Page. The related entities include account holders only. \nFor more information, refer to our [documentation](https://docs.adyen.com/platforms/onboarding-and-verification/hosted-onboarding-page).\n## Authentication\nTo connect to the HOP API, you must use basic authentication credentials of your web service user. If you don't have one, please contact the [Adyen Support Team](https://support.adyen.com/hc/en-us/requests/new). Then use its credentials to authenticate your request, for example:\n\n```\ncurl\n-U \"ws@MarketPlace.YourMarketPlace\":\"YourWsPassword\" \\\n-H \"Content-Type: application/json\" \\\n...\n```\nNote that when going live, you need to generate new web service user credentials to access the [live endpoints](https://docs.adyen.com/development-resources/live-endpoints).\n\n## Versioning\nThe HOP API supports versioning of its endpoints through a version suffix in the endpoint URL. This suffix has the following format: \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://cal-test.adyen.com/cal/services/Hop/v1/getOnboardingUrl\n```",
+      "x-publicVersion" : true,
+      "title" : "Adyen for Platforms: Hosted Onboarding",
+      "description" : "Hosted Onboarding provides endpoints for using the Hosted Onboarding Page. The related entities include account holders only. \nFor more information, refer to our [documentation](https://docs.adyen.com/platforms/hosted-onboarding-page).\n## Authentication\nTo connect to the HOP API, you must use basic authentication credentials of your web service user. If you don't have one, please contact the [Adyen Support Team](https://support.adyen.com/hc/en-us/requests/new). Then use its credentials to authenticate your request, for example:\n\n```\ncurl\n-U \"ws@MarketPlace.YourMarketPlace\":\"YourWsPassword\" \\\n-H \"Content-Type: application/json\" \\\n...\n```\nNote that when going live, you need to generate new web service user credentials to access the [live endpoints](https://docs.adyen.com/development-resources/live-endpoints).\n\n## Versioning\nThe HOP API supports versioning of its endpoints through a version suffix in the endpoint URL. This suffix has the following format: \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://cal-test.adyen.com/cal/services/Hop/v1/getOnboardingUrl\n```",
       "termsOfService" : "https://www.adyen.com/legal/terms-and-conditions",
       "contact" : {
-         "name" : "Adyen Support",
-         "url" : "https://support.adyen.com/",
-         "email" : "support@adyen.com"
+         "name" : "Adyen Developer Experience team",
+         "url" : "https://www.adyen.help/hc/en-us/community/topics",
+         "email" : "developer-experience@adyen.com"
       }
    },
    "x-groups" : [
-      "Hosted Onboarding Page"
+      "Hosted Onboarding Page",
+      "PCI Compliance Questionnaire Page"
    ],
    "paths" : {
       "/getOnboardingUrl" : {
          "post" : {
-            "summary" : "Get a new onboarding url for an account holder.",
-            "description" : "This endpoint is used to get a new onboarding url for a specific account holder. Each account holder represents a single sub-merchant, and each sub-merchant must be represented by an account holder. A returnUrl can also be specified as part of this request.",
+            "summary" : "Get a link to a Hosted Onboarding Page.",
+            "description" : "Returns a link to a Hosted Onboarding Page (HOP) to be used by a specific account holder. Each account holder represents a single sub-merchant.\n\nFor more information on how to use HOP, refer to [Hosted Onboarding Page](https://docs.adyen.com/platforms/hosted-onboarding-page). ",
             "operationId" : "post-getOnboardingUrl",
             "x-groupName" : "Hosted Onboarding Page",
             "x-sortIndex" : 1,
@@ -48,19 +50,134 @@
                   "description" : "OK - the request has succeeded."
                },
                "400" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/ServiceError"
+                        }
+                     }
+                  },
                   "description" : "Bad Request - a problem reading or understanding the request."
                },
-               "422" : {
-                  "description" : "Unprocessable Entity - a request validation error."
-               },
                "401" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/ServiceError"
+                        }
+                     }
+                  },
                   "description" : "Unauthorized - authentication required."
                },
+               "403" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/ServiceError"
+                        }
+                     }
+                  },
+                  "description" : "Forbidden - insufficient permissions to process the request."
+               },
+               "422" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/ServiceError"
+                        }
+                     }
+                  },
+                  "description" : "Unprocessable Entity - a request validation error."
+               },
                "500" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/ServiceError"
+                        }
+                     }
+                  },
                   "description" : "Internal Server Error - the server could not process the request."
+               }
+            }
+         }
+      },
+      "/getPciQuestionnaireUrl" : {
+         "post" : {
+            "summary" : "Get a new PCI compliance questionnaire URL for an account holder.",
+            "description" : "This endpoint is used to get a new PCI compliance questionnaire URL for a specific account holder. Each account holder represents a single sub-merchant, and each sub-merchant must be represented by an account holder. ",
+            "operationId" : "post-getPciQuestionnaireUrl",
+            "x-groupName" : "PCI Compliance Questionnaire Page",
+            "x-sortIndex" : 1,
+            "requestBody" : {
+               "content" : {
+                  "application/json" : {
+                     "schema" : {
+                        "$ref" : "#/components/schemas/GetPciUrlRequest"
+                     }
+                  }
+               }
+            },
+            "responses" : {
+               "200" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/GetPciUrlResponse"
+                        }
+                     }
+                  },
+                  "description" : "OK - the request has succeeded."
+               },
+               "400" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/ServiceError"
+                        }
+                     }
+                  },
+                  "description" : "Bad Request - a problem reading or understanding the request."
+               },
+               "401" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/ServiceError"
+                        }
+                     }
+                  },
+                  "description" : "Unauthorized - authentication required."
                },
                "403" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/ServiceError"
+                        }
+                     }
+                  },
                   "description" : "Forbidden - insufficient permissions to process the request."
+               },
+               "422" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/ServiceError"
+                        }
+                     }
+                  },
+                  "description" : "Unprocessable Entity - a request validation error."
+               },
+               "500" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/ServiceError"
+                        }
+                     }
+                  },
+                  "description" : "Internal Server Error - the server could not process the request."
                }
             }
          }
@@ -117,6 +234,7 @@
                      "checkCode",
                      "city",
                      "companyRegistration",
+                     "constitutionalDocument",
                      "country",
                      "countryCode",
                      "currency",
@@ -137,6 +255,7 @@
                      "drivingLicense",
                      "email",
                      "firstName",
+                     "formType",
                      "fullPhoneNumber",
                      "gender",
                      "hopWebserviceUser",
@@ -148,7 +267,19 @@
                      "idNumber",
                      "identityDocument",
                      "individualDetails",
+                     "jobTitle",
                      "lastName",
+                     "legalArrangement",
+                     "legalArrangementCode",
+                     "legalArrangementEntity",
+                     "legalArrangementEntityCode",
+                     "legalArrangementLegalForm",
+                     "legalArrangementMember",
+                     "legalArrangementName",
+                     "legalArrangementReference",
+                     "legalArrangementRegistrationNumber",
+                     "legalArrangementTaxNumber",
+                     "legalArrangementType",
                      "legalBusinessName",
                      "legalEntity",
                      "legalEntityType",
@@ -180,8 +311,13 @@
                      "schedule",
                      "shareholder",
                      "shareholderCode",
+                     "shareholderType",
                      "socialSecurityNumber",
                      "sourceAccountCode",
+                     "splitAccount",
+                     "splitCurrency",
+                     "splitValue",
+                     "splits",
                      "stateOrProvince",
                      "status",
                      "stockExchange",
@@ -200,7 +336,8 @@
                      "value",
                      "virtualAccount",
                      "visaNumber",
-                     "webAddress"
+                     "webAddress",
+                     "year"
                   ],
                   "type" : "string"
                },
@@ -217,7 +354,7 @@
                   "type" : "string"
                },
                "editMode" : {
-                  "description" : "Allows editing checks even if all the checks have passed.",
+                  "description" : "Indicates if editing checks is allowed even if all the checks have passed.",
                   "type" : "boolean"
                },
                "platformName" : {
@@ -226,6 +363,10 @@
                },
                "returnUrl" : {
                   "description" : "The URL where the sub-merchant will be redirected back to after they complete the onboarding, or if their session times out. Maximum length of 500 characters. If you don't provide this, the sub-merchant will be redirected back to the default return URL configured in your platform account.",
+                  "type" : "string"
+               },
+               "shopperLocale" : {
+                  "description" : "The language to be used in the page, specified by a combination of a language and country code. For example, **pt-BR**. \n\nIf not specified in the request or if the language is not supported, the page uses the browser language. If the browser language is not supported, the page uses **en-US** by default.\n\nFor a list supported languages, refer to [Change the page language](https://docs.adyen.com/platforms/hosted-onboarding-page#change-page-language).",
                   "type" : "string"
                }
             },
@@ -236,7 +377,8 @@
          "GetOnboardingUrlResponse" : {
             "properties" : {
                "invalidFields" : {
-                  "description" : "Contains field validation errors that would prevent requests from being processed.",
+                  "x-addedInVersion" : 5,
+                  "description" : "Information about any invalid fields.",
                   "items" : {
                      "$ref" : "#/components/schemas/ErrorFieldType"
                   },
@@ -247,7 +389,7 @@
                   "type" : "string"
                },
                "redirectUrl" : {
-                  "description" : "The URL to the Hosted Onboarding Page where you should redirect your sub-merchant. This URL must be used within 15 seconds and can only be used once.",
+                  "description" : "The URL to the Hosted Onboarding Page where you should redirect your sub-merchant. This URL must be used within 30 seconds and can only be used once.",
                   "type" : "string"
                },
                "resultCode" : {
@@ -257,6 +399,69 @@
                "submittedAsync" : {
                   "description" : "Indicates whether the request is processed asynchronously. Depending on the request's platform settings, the following scenarios may be applied:\n* **true**: The request is queued and will be executed when the providing service is available in the order in which the requests are received.\n* **false**: The processing of the request is immediately attempted; it may result in an error if the providing service is unavailable.",
                   "type" : "boolean"
+               }
+            }
+         },
+         "GetPciUrlRequest" : {
+            "properties" : {
+               "accountHolderCode" : {
+                  "description" : "The account holder code you provided when you created the account holder.",
+                  "type" : "string"
+               },
+               "returnUrl" : {
+                  "description" : "The URL where the sub-merchant will be redirected back to after they complete the onboarding, or if their session times out. Maximum length of 500 characters.",
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "accountHolderCode"
+            ]
+         },
+         "GetPciUrlResponse" : {
+            "properties" : {
+               "invalidFields" : {
+                  "x-addedInVersion" : 5,
+                  "description" : "Information about any invalid fields.",
+                  "items" : {
+                     "$ref" : "#/components/schemas/ErrorFieldType"
+                  },
+                  "type" : "array"
+               },
+               "pspReference" : {
+                  "description" : "The reference of a request. Can be used to uniquely identify the request.",
+                  "type" : "string"
+               },
+               "redirectUrl" : {
+                  "description" : "The URL to the PCI Compliance Questionnaire Page where you should redirect your sub-merchant. This URL must be used within 30 seconds and can only be used once.",
+                  "type" : "string"
+               },
+               "resultCode" : {
+                  "description" : "The result code.",
+                  "type" : "string"
+               },
+               "submittedAsync" : {
+                  "description" : "Indicates whether the request is processed asynchronously. Depending on the request's platform settings, the following scenarios may be applied:\n* **true**: The request is queued and will be executed when the providing service is available in the order in which the requests are received.\n* **false**: The processing of the request is immediately attempted; it may result in an error if the providing service is unavailable.",
+                  "type" : "boolean"
+               }
+            }
+         },
+         "ServiceError" : {
+            "properties" : {
+               "errorCode" : {
+                  "description" : "The error code mapped to the error message.",
+                  "type" : "string"
+               },
+               "errorType" : {
+                  "description" : "The category of the error.",
+                  "type" : "string"
+               },
+               "message" : {
+                  "description" : "A short explanation of the issue.",
+                  "type" : "string"
+               },
+               "pspReference" : {
+                  "description" : "The PSP reference of the payment.",
+                  "type" : "string"
                }
             }
          }
@@ -271,6 +476,9 @@
             "scheme" : "basic",
             "type" : "http"
          }
+      },
+      "examples" : {
+         
       }
    }
 }
