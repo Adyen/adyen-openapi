@@ -377,45 +377,30 @@ paths:
         '400':
           content:
             application/json:
-              examples:
-                generic-400:
-                  $ref: '#/components/examples/generic-400'
               schema:
                 $ref: '#/components/schemas/ServiceError'
           description: Bad Request - a problem reading or understanding the request.
         '401':
           content:
             application/json:
-              examples:
-                generic-401:
-                  $ref: '#/components/examples/generic-401'
               schema:
                 $ref: '#/components/schemas/ServiceError'
           description: Unauthorized - authentication required.
         '403':
           content:
             application/json:
-              examples:
-                generic-403:
-                  $ref: '#/components/examples/generic-403'
               schema:
                 $ref: '#/components/schemas/ServiceError'
           description: Forbidden - insufficient permissions to process the request.
         '422':
           content:
             application/json:
-              examples:
-                generic-422:
-                  $ref: '#/components/examples/generic-422'
               schema:
                 $ref: '#/components/schemas/ServiceError'
           description: Unprocessable Entity - a request validation error.
         '500':
           content:
             application/json:
-              examples:
-                generic-500:
-                  $ref: '#/components/examples/generic-500'
               schema:
                 $ref: '#/components/schemas/ServiceError'
           description: Internal Server Error - the server could not process the request.
@@ -726,18 +711,14 @@ paths:
   /payments:
     post:
       summary: Starts a transaction.
-      description: 'Sends payment parameters (like amount, country, and currency)
-        together with other required input details collected from the shopper. To
-        know more about required parameters for specific payment methods, refer to
-        our [payment method guides](https://docs.adyen.com/payment-methods). The response
-        returns the result of the payment request:
-
-        * For some payment methods (e.g. Visa, Mastercard, and SEPA Direct Debits)
-        you''ll get a final state in the `resultCode` (e.g. **Authorised** or **Refused**).
-
-        * For other payment methods, you''ll receive **RedirectShopper** as `resultCode`
-        together with a `redirectUrl`. In this case, the shopper must finalize the
-        payment on the page behind the `redirectUrl`.'
+      description: "Sends payment parameters (like amount, country, and currency)\
+        \ together with other required input details collected from the shopper. To\
+        \ know more about required parameters for specific payment methods, refer\
+        \ to our [payment method guides](https://docs.adyen.com/payment-methods).\
+        \ \nThe response depends on the [payment flow](https://docs.adyen.com/payment-methods#payment-flow):\n\
+        * For a direct flow, the response includes a `pspReference` and a `resultCode`\
+        \ with the payment result, for example **Authorised** or **Refused**. \n*\
+        \ For a redirect or additional action, the response contains an `action` object. "
       operationId: post-payments
       x-groupName: Payments
       x-sortIndex: 2
@@ -850,14 +831,14 @@ paths:
         content:
           application/json:
             examples:
+              redirect:
+                $ref: '#/components/examples/post-payments-details-redirect'
               3d-secure-2-challenge:
                 $ref: '#/components/examples/post-payments-details-3d-secure-2-challenge'
               3d-secure-2-fingerprint:
                 $ref: '#/components/examples/post-payments-details-3d-secure-2-fingerprint'
               3d-secure:
                 $ref: '#/components/examples/post-payments-details-3d-secure'
-              app-switch:
-                $ref: '#/components/examples/post-payments-details-app-switch'
             schema:
               $ref: '#/components/schemas/DetailsRequest'
       responses:
@@ -1142,6 +1123,7 @@ components:
           description: Shopper's work phone number (including the country code).
           type: string
     AchDetails:
+      additionalProperties: false
       properties:
         bankAccountNumber:
           description: The bank account number (without separators).
@@ -1178,6 +1160,8 @@ components:
         type:
           default: ach
           description: '**ach**'
+          enum:
+          - ach
           type: string
       required:
       - bankAccountNumber
@@ -2659,6 +2643,7 @@ components:
       - postalCode
       - country
     AfterpayDetails:
+      additionalProperties: false
       properties:
         billingAddress:
           description: The address where to send the invoice.
@@ -2685,6 +2670,7 @@ components:
       - type
       title: Afterpay
     AmazonPayDetails:
+      additionalProperties: false
       properties:
         amazonPayToken:
           description: This is the `amazonPayToken` that you obtained from the [Get
@@ -2694,6 +2680,8 @@ components:
         type:
           default: amazonpay
           description: '**amazonpay**'
+          enum:
+          - amazonpay
           type: string
       title: Amazon Pay
     Amount:
@@ -2711,13 +2699,17 @@ components:
       - value
       - currency
     AndroidPayDetails:
+      additionalProperties: false
       properties:
         type:
           default: androidpay
           description: '**androidpay**'
+          enum:
+          - androidpay
           type: string
       title: Android Pay
     ApplePayDetails:
+      additionalProperties: false
       properties:
         applePayToken:
           description: The stringified and base64 encoded `paymentData` you retrieved
@@ -2737,6 +2729,8 @@ components:
         type:
           default: applepay
           description: '**applepay**'
+          enum:
+          - applepay
           type: string
       required:
       - applePayToken
@@ -2785,6 +2779,7 @@ components:
           - automatic
           type: string
     BacsDirectDebitDetails:
+      additionalProperties: false
       properties:
         recurringDetailReference:
           description: This is the `recurringDetailReference` returned in the response
@@ -2793,6 +2788,8 @@ components:
         type:
           default: directdebit_GB
           description: '**directdebit_GB**'
+          enum:
+          - directdebit_GB
           type: string
       title: BACS Direct Debit
     BankAccount:
@@ -2844,6 +2841,7 @@ components:
           description: The bank account holder's tax ID.
           type: string
     BillDeskDetails:
+      additionalProperties: false
       properties:
         issuer:
           description: The issuer id of the shopper's selected bank.
@@ -2859,6 +2857,7 @@ components:
       - issuer
       title: BillDesk
     BlikDetails:
+      additionalProperties: false
       properties:
         blikCode:
           description: BLIK code consisting of 6 digits.
@@ -2869,6 +2868,8 @@ components:
           type: string
         type:
           description: '**blik**'
+          enum:
+          - blik
           type: string
       title: BLIK
     BrowserInfo:
@@ -3001,6 +3002,7 @@ components:
       - expiryYear
       - holderName
     CardDetails:
+      additionalProperties: false
       properties:
         cupsecureplus.smscode:
           deprecated: true
@@ -3029,6 +3031,13 @@ components:
           description: The card expiry year. Only collect raw card data if you are
             [fully PCI compliant](https://docs.adyen.com/development-resources/pci-dss-compliance-guide).
           type: string
+        fundingSource:
+          description: The funding source that should be used when multiple sources
+            are available. For Brazilian combo cards, by default the funding source
+            is credit. To use debit, set this value to **debit**.
+          enum:
+          - debit
+          type: string
         holderName:
           description: The name of the card holder.
           type: string
@@ -3043,6 +3052,8 @@ components:
         type:
           default: scheme
           description: '**scheme**'
+          enum:
+          - giftcard
           type: string
       required:
       - encryptedCardNumber
@@ -3050,6 +3061,7 @@ components:
       - encryptedExpiryYear
       title: Card
     CellulantDetails:
+      additionalProperties: false
       properties:
         issuer:
           description: The Cellulant issuer.
@@ -3057,6 +3069,8 @@ components:
         type:
           default: cellulant
           description: '**Cellulant**'
+          enum:
+          - cellulant
           type: string
       title: Cellulant
     CheckoutBalanceCheckRequest:
@@ -3418,12 +3432,9 @@ components:
           description: The fraud result properties of the payment.
           $ref: '#/components/schemas/FraudResult'
         pspReference:
-          description: 'Adyen''s 16-character string reference associated with the
-            transaction/request. This value is globally unique; quote it when communicating
-            with us about this request.
-
-
-            > `pspReference` is returned only for non-redirect payment methods.'
+          description: Adyen's 16-character reference associated with the transaction/request.
+            This value is globally unique; quote it when communicating with us about
+            this request.
           type: string
         refusalReason:
           description: 'If the payment''s authorisation is refused or an error occurs
@@ -3556,12 +3567,9 @@ components:
             payments to the order.
           type: string
         pspReference:
-          description: 'Adyen''s 16-character string reference associated with the
-            transaction/request. This value is globally unique; quote it when communicating
-            with us about this request.
-
-
-            > `pspReference` is returned only for non-redirect payment methods.'
+          description: Adyen's 16-character reference associated with the transaction/request.
+            This value is globally unique; quote it when communicating with us about
+            this request.
           type: string
         refusalReason:
           description: 'If the payment''s authorisation is refused or an error occurs
@@ -3637,6 +3645,9 @@ components:
       - orderData
     CheckoutOrderResponse:
       properties:
+        amount:
+          description: The initial amount of the order.
+          $ref: '#/components/schemas/Amount'
         expiresAt:
           description: The expiry date for the order.
           type: string
@@ -3901,8 +3912,9 @@ components:
             as a result of the `/payments` call.
           $ref: '#/components/schemas/PaymentCompletionDetails'
         paymentData:
-          description: The `paymentData` value from the `/payments` response. In v67
-            and later, you will always get this value from the Component.
+          description: The `paymentData` value from the `/payments` response. Required
+            if the `/payments` response returns this value. In v67 and later, you
+            will always get this value from the Component.
           type: string
         threeDSAuthenticationOnly:
           x-addedInVersion: 40
@@ -3956,6 +3968,7 @@ components:
             type: string
           type: array
     DokuDetails:
+      additionalProperties: false
       properties:
         firstName:
           description: The shopper's first name.
@@ -3986,6 +3999,7 @@ components:
       - shopperEmail
       title: Doku
     DotpayDetails:
+      additionalProperties: false
       properties:
         issuer:
           description: The Dotpay issuer value of the shopper's selected bank. Set
@@ -3994,11 +4008,14 @@ components:
         type:
           default: dotpay
           description: '**dotpay**'
+          enum:
+          - dotpay
           type: string
       required:
       - issuer
       title: Dotpay
     DragonpayDetails:
+      additionalProperties: false
       properties:
         issuer:
           description: The Dragonpay issuer value of the shopper's selected bank.
@@ -4020,6 +4037,7 @@ components:
       - issuer
       title: Dragonpay
     EcontextVoucherDetails:
+      additionalProperties: false
       properties:
         firstName:
           description: The shopper's first name.
@@ -4049,6 +4067,7 @@ components:
       - telephoneNumber
       title: Voucher
     EntercashDetails:
+      additionalProperties: false
       properties:
         issuer:
           description: The issuer id of the shopper's selected bank.
@@ -4056,6 +4075,8 @@ components:
         type:
           default: entercash
           description: '**entercash**'
+          enum:
+          - entercash
           type: string
       required:
       - type
@@ -4146,6 +4167,7 @@ components:
       required:
       - accountScore
     GenericIssuerPaymentMethodDetails:
+      additionalProperties: false
       properties:
         issuer:
           description: The issuer id of the shopper's selected bank.
@@ -4156,12 +4178,15 @@ components:
           type: string
         type:
           description: '**genericissuer**'
+          enum:
+          - eps
           type: string
       required:
       - type
       - issuer
       title: Stored Payment Method
     GiropayDetails:
+      additionalProperties: false
       properties:
         recurringDetailReference:
           description: This is the `recurringDetailReference` returned in the response
@@ -4170,9 +4195,12 @@ components:
         type:
           default: giropay
           description: '**giropay**'
+          enum:
+          - giropay
           type: string
       title: Giropay
     GooglePayDetails:
+      additionalProperties: false
       properties:
         fundingSource:
           description: The funding source that should be used when multiple sources
@@ -4192,11 +4220,14 @@ components:
         type:
           default: paywithgoogle
           description: '**paywithgoogle**'
+          enum:
+          - paywithgoogle
           type: string
       required:
       - googlePayToken
       title: Google Pay
     IdealDetails:
+      additionalProperties: false
       properties:
         issuer:
           description: The iDEAL issuer value of the shopper's selected bank. Set
@@ -4209,6 +4240,8 @@ components:
         type:
           default: ideal
           description: '**ideal**'
+          enum:
+          - ideal
           type: string
       required:
       - issuer
@@ -4289,6 +4322,7 @@ components:
           description: The display name.
           type: string
     KlarnaDetails:
+      additionalProperties: false
       properties:
         billingAddress:
           description: The address where to send the invoice.
@@ -4319,6 +4353,7 @@ components:
       - type
       title: Klarna
     LianLianPayDetails:
+      additionalProperties: false
       properties:
         telephoneNumber:
           description: ''
@@ -4376,7 +4411,70 @@ components:
           description: Tax percentage, in minor units.
           format: int64
           type: integer
+    Mandate:
+      properties:
+        amount:
+          description: The billing amount of the recurring transactions.
+          type: string
+        amountRule:
+          description: "The limitation rule of the billing amount.\n\nPossible values:\n\
+            \ * **max**: The transaction amount can not exceed the `amount`.\n\n *\
+            \ **exact**: The transaction amount should be the same as the `amount`.\n\
+            \n"
+          enum:
+          - max
+          - exact
+          type: string
+        billingAttemptsRule:
+          description: "The rule to specify the period, within which the recurring\
+            \ debit can happen, relative to the mandate recurring date.\n\nPossible\
+            \ values:\n\n * **on**: On a specific date.\n\n * **before**:  Before\
+            \ and on a specific date.\n\n * **after**: On and after a specific date.\n\
+            \n"
+          enum:
+          - 'on'
+          - before
+          - after
+          type: string
+        billingDay:
+          description: 'The number of the day, on which the recurring debit can happen.
+            Should be within the same calendar month as the mandate recurring date.
+
+
+            Possible values: 1-31 based on the `frequency`.'
+          type: string
+        endsAt:
+          description: End date of the billing plan, in YYYY-MM-DD format.
+          type: string
+        frequency:
+          description: 'The frequency with which a shopper should be charged.
+
+
+            Possible values: **daily**, **weekly**, **biWeekly**, **monthly**, **quarterly**,
+            **halfYearly**, **yearly**.'
+          enum:
+          - adhoc
+          - daily
+          - weekly
+          - biWeekly
+          - monthly
+          - quarterly
+          - halfYearly
+          - yearly
+          type: string
+        remarks:
+          description: The message shown by UPI to the shopper on the approval screen.
+          type: string
+        startsAt:
+          description: Start date of the billing plan, in YYYY-MM-DD format. By default,
+            the transaction date.
+          type: string
+      required:
+      - frequency
+      - amount
+      - endsAt
     MasterpassDetails:
+      additionalProperties: false
       properties:
         fundingSource:
           description: The funding source that should be used when multiple sources
@@ -4391,11 +4489,14 @@ components:
         type:
           default: masterpass
           description: '**masterpass**'
+          enum:
+          - masterpass
           type: string
       required:
       - masterpassTransactionId
       title: Masterpass
     MbwayDetails:
+      additionalProperties: false
       properties:
         shopperEmail:
           description: ''
@@ -4406,6 +4507,8 @@ components:
         type:
           default: mbway
           description: '**mbway**'
+          enum:
+          - mbway
           type: string
       required:
       - telephoneNumber
@@ -4500,13 +4603,17 @@ components:
             same items in the past.
           type: boolean
     MobilePayDetails:
+      additionalProperties: false
       properties:
         type:
           default: mobilepay
           description: '**mobilepay**'
+          enum:
+          - mobilepay
           type: string
       title: MobilePay
     MolPayDetails:
+      additionalProperties: false
       properties:
         issuer:
           description: The shopper's bank. Specify this with the issuer value that
@@ -4539,6 +4646,7 @@ components:
       - firstName
       - lastName
     OpenInvoiceDetails:
+      additionalProperties: false
       properties:
         billingAddress:
           description: The address where to send the invoice.
@@ -4556,9 +4664,12 @@ components:
         type:
           default: openinvoice
           description: '**openinvoice**'
+          enum:
+          - openinvoice
           type: string
       title: Open Invoice
     PayPalDetails:
+      additionalProperties: false
       properties:
         orderID:
           description: The unique ID associated with the order.
@@ -4579,11 +4690,14 @@ components:
         type:
           default: paypal
           description: '**paypal**'
+          enum:
+          - paypal
           type: string
       required:
       - type
       title: PayPal
     PayUUpiDetails:
+      additionalProperties: false
       properties:
         recurringDetailReference:
           description: This is the `recurringDetailReference` returned in the response
@@ -4596,6 +4710,8 @@ components:
         type:
           default: payu_IN_upi
           description: '**payu_IN_upi**'
+          enum:
+          - payu_IN_upi
           type: string
         virtualPaymentAddress:
           description: The virtual payment address for UPI.
@@ -4659,9 +4775,12 @@ components:
             challenge flow. It contains the following parameter: `threeDSCompInd`.'
           type: string
     PaymentDetails:
+      additionalProperties: false
       properties:
         type:
           description: The payment method type.
+          enum:
+          - multibanco
           type: string
       title: Payment Details
     PaymentDetailsResponse:
@@ -4715,12 +4834,9 @@ components:
             `/payments/details` endpoint.
           type: string
         pspReference:
-          description: 'Adyen''s 16-character string reference associated with the
-            transaction/request. This value is globally unique; quote it when communicating
-            with us about this request.
-
-
-            > `pspReference` is returned only for non-redirect payment methods.'
+          description: Adyen's 16-character string reference associated with the transaction/request.
+            This value is globally unique; quote it when communicating with us about
+            this request.
           type: string
         redirect:
           description: When the payment flow requires a redirect, this object contains
@@ -5285,6 +5401,9 @@ components:
           items:
             $ref: '#/components/schemas/LineItem'
           type: array
+        mandate:
+          description: The mandate details to initiate recurring transaction.
+          $ref: '#/components/schemas/Mandate'
         mcc:
           x-addedInVersion: 12
           description: The [merchant category code](https://en.wikipedia.org/wiki/Merchant_category_code)
@@ -5633,7 +5752,8 @@ components:
             with us about this request.
 
 
-            > `pspReference` is returned only for non-redirect payment methods.'
+            > For payment methods that require a redirect or additional action, you
+            will get this value in the `/payments/details` response.'
           type: string
         redirect:
           description: When the payment flow requires a redirect, this object contains
@@ -5878,6 +5998,9 @@ components:
           items:
             $ref: '#/components/schemas/LineItem'
           type: array
+        mandate:
+          description: The mandate details to initiate recurring transaction.
+          $ref: '#/components/schemas/Mandate'
         mcc:
           x-addedInVersion: 12
           description: The [merchant category code](https://en.wikipedia.org/wiki/Merchant_category_code)
@@ -6145,12 +6268,9 @@ components:
           description: The payment method used in the transaction.
           type: string
         pspReference:
-          description: 'Adyen''s 16-character string reference associated with the
-            transaction/request. This value is globally unique; quote it when communicating
-            with us about this request.
-
-
-            > `pspReference` is returned only for non-redirect payment methods.'
+          description: Adyen's 16-character reference associated with the transaction/request.
+            This value is globally unique; quote it when communicating with us about
+            this request.
           type: string
         refusalReason:
           description: 'If the payment''s authorisation is refused or an error occurs
@@ -6222,6 +6342,7 @@ components:
       - paymentMethod
       - shopperLocale
     QiwiWalletDetails:
+      additionalProperties: false
       properties:
         telephoneNumber:
           description: ''
@@ -6229,11 +6350,14 @@ components:
         type:
           default: qiwiwallet
           description: '**qiwiwallet**'
+          enum:
+          - qiwiwallet
           type: string
       required:
       - telephoneNumber
       title: QIWI
     RatepayDetails:
+      additionalProperties: false
       properties:
         billingAddress:
           description: The address where to send the invoice.
@@ -6251,6 +6375,8 @@ components:
         type:
           default: ratepay
           description: '**ratepay**'
+          enum:
+          - ratepay
           type: string
       required:
       - type
@@ -6986,6 +7112,7 @@ components:
           description: The `y` value as received from the 3D Secure 2 SDK.
           type: string
     SamsungPayDetails:
+      additionalProperties: false
       properties:
         fundingSource:
           description: The funding source that should be used when multiple sources
@@ -7004,11 +7131,14 @@ components:
         type:
           default: samsungpay
           description: '**samsungpay**'
+          enum:
+          - samsungpay
           type: string
       required:
       - samsungPayToken
       title: Samsung Pay
     SepaDirectDebitDetails:
+      additionalProperties: false
       properties:
         iban:
           description: The International Bank Account Number (IBAN).
@@ -7023,6 +7153,8 @@ components:
         type:
           default: sepadirectdebit
           description: '**sepadirectdebit**'
+          enum:
+          - sepadirectdebit
           type: string
       required:
       - iban
@@ -7193,6 +7325,7 @@ components:
           description: The email associated with stored payment details.
           type: string
     StoredPaymentMethodDetails:
+      additionalProperties: false
       properties:
         recurringDetailReference:
           description: This is the `recurringDetailReference` returned in the response
@@ -7200,6 +7333,8 @@ components:
           type: string
         type:
           description: The payment method type.
+          enum:
+          - grabpay_SG
           type: string
       title: Stored Payment Method
     SubInputDetail:
@@ -7447,6 +7582,7 @@ components:
       - type
       title: UPI
     VippsDetails:
+      additionalProperties: false
       properties:
         recurringDetailReference:
           description: This is the `recurringDetailReference` returned in the response
@@ -7458,11 +7594,14 @@ components:
         type:
           default: vipps
           description: '**vipps**'
+          enum:
+          - vipps
           type: string
       required:
       - telephoneNumber
       title: Vipps
     VisaCheckoutDetails:
+      additionalProperties: false
       properties:
         fundingSource:
           description: The funding source that should be used when multiple sources
@@ -7474,6 +7613,8 @@ components:
         type:
           default: visacheckout
           description: '**visacheckout**'
+          enum:
+          - visacheckout
           type: string
         visaCheckoutCallId:
           description: The Visa Click to Pay Call ID value. When your shopper selects
@@ -7484,13 +7625,17 @@ components:
       - visaCheckoutCallId
       title: Visa Checkout
     WeChatPayDetails:
+      additionalProperties: false
       properties:
         type:
           default: wechatpay
           description: '**wechatpay**'
+          enum:
+          - wechatpay
           type: string
       title: WeChat Pay
     WeChatPayMiniProgramDetails:
+      additionalProperties: false
       properties:
         appId:
           type: string
@@ -7499,9 +7644,12 @@ components:
         type:
           default: wechatpayMiniProgram
           description: '**wechatpayMiniProgram**'
+          enum:
+          - wechatpayMiniProgram
           type: string
       title: WeChat Pay - Mini Program
     ZipDetails:
+      additionalProperties: false
       properties:
         clickAndCollect:
           description: Set this to **true** if the shopper would like to pick up and
@@ -7514,6 +7662,8 @@ components:
         type:
           default: zip
           description: '**zip**'
+          enum:
+          - zip
           type: string
       title: Zip
   securitySchemes:
@@ -7878,12 +8028,12 @@ components:
         details:
           threeds2.fingerprint: eyJ0aHJlZURTQ29tcEluZCI6ICJZIn0=
         paymentData: YOUR_PAYMENT_DATA...
-    post-payments-details-app-switch:
-      summary: Submit details for the payment with involved app switch
+    post-payments-details-redirect:
+      summary: Submit the redirect result
       value:
-        paymentData: Hee57361f99....
+        paymentData: Ab02b4c0!BQABAgCJN1wRZuGJmq8dMncmypvknj9s7l5Tj...
         details:
-          returnUrlQueryString: ref=eNrNV0mTo7gS&id=An78i...
+          redirectResult: X6XtfGC3!Y...
     post-payments-enableOneClick-SF:
       summary: Tokenize card details for one-off payments (using encrypted card details)
       value:

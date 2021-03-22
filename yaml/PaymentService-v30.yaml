@@ -2580,6 +2580,68 @@ components:
           type: integer
       required:
       - value
+    Mandate:
+      properties:
+        amount:
+          description: The billing amount of the recurring transactions.
+          type: string
+        amountRule:
+          description: "The limitation rule of the billing amount.\n\nPossible values:\n\
+            \ * **max**: The transaction amount can not exceed the `amount`.\n\n *\
+            \ **exact**: The transaction amount should be the same as the `amount`.\n\
+            \n"
+          enum:
+          - max
+          - exact
+          type: string
+        billingAttemptsRule:
+          description: "The rule to specify the period, within which the recurring\
+            \ debit can happen, relative to the mandate recurring date.\n\nPossible\
+            \ values:\n\n * **on**: On a specific date.\n\n * **before**:  Before\
+            \ and on a specific date.\n\n * **after**: On and after a specific date.\n\
+            \n"
+          enum:
+          - 'on'
+          - before
+          - after
+          type: string
+        billingDay:
+          description: 'The number of the day, on which the recurring debit can happen.
+            Should be within the same calendar month as the mandate recurring date.
+
+
+            Possible values: 1-31 based on the `frequency`.'
+          type: string
+        endsAt:
+          description: End date of the billing plan, in YYYY-MM-DD format.
+          type: string
+        frequency:
+          description: 'The frequency with which a shopper should be charged.
+
+
+            Possible values: **daily**, **weekly**, **biWeekly**, **monthly**, **quarterly**,
+            **halfYearly**, **yearly**.'
+          enum:
+          - adhoc
+          - daily
+          - weekly
+          - biWeekly
+          - monthly
+          - quarterly
+          - halfYearly
+          - yearly
+          type: string
+        remarks:
+          description: The message shown by UPI to the shopper on the approval screen.
+          type: string
+        startsAt:
+          description: Start date of the billing plan, in YYYY-MM-DD format. By default,
+            the transaction date.
+          type: string
+      required:
+      - frequency
+      - amount
+      - endsAt
     ModificationResult:
       properties:
         additionalData:
@@ -2745,6 +2807,9 @@ components:
           description: Contains installment settings. For more information, refer
             to [Installments](https://docs.adyen.com/payment-methods/cards/credit-card-installments).
           $ref: '#/components/schemas/Installments'
+        mandate:
+          description: The mandate details to initiate recurring transaction.
+          $ref: '#/components/schemas/Mandate'
         mcc:
           x-addedInVersion: 12
           description: The [merchant category code](https://en.wikipedia.org/wiki/Merchant_category_code)
@@ -3295,12 +3360,9 @@ components:
             For more information, see [3D Secure](https://docs.adyen.com/classic-integration/3d-secure).'
           type: string
         pspReference:
-          description: 'Adyen''s 16-character string reference associated with the
-            transaction/request. This value is globally unique; quote it when communicating
-            with us about this request.
-
-
-            > `pspReference` is returned only for non-redirect payment methods.'
+          description: Adyen's 16-character reference associated with the transaction/request.
+            This value is globally unique; quote it when communicating with us about
+            this request.
           type: string
         refusalReason:
           description: 'If the payment''s authorisation is refused or an error occurs

@@ -9,7 +9,37 @@ info:
     or decline a payout.
 
 
-    For more information, refer to [Online payouts](https://docs.adyen.com/online-payments/online-payouts).'
+    For more information, refer to [Online payouts](https://docs.adyen.com/online-payments/online-payouts).
+
+    ## Authentication
+
+    To use the Payout API, you need to have [two API credentials](https://docs.adyen.com/online-payments/online-payouts#payouts-to-bank-accounts-and-wallets):
+    one for storing payout details and submitting payouts, and another one for confirming
+    or declining payouts. If you don''t have the required API credentials, contact
+    our [Support Team](https://support.adyen.com/hc/en-us/requests/new).
+
+
+    Both of these API credentials must be authenticated with [basic authentication](https://docs.adyen.com/development-resources/api-credentials#basic-authentication).The
+    following example shows how to authenticate your request when submitting a payout:
+
+
+    ```
+
+    curl
+
+    -U "storePayout@Company.[YourCompany]":"YourBasicAuthenticationPassword" \
+
+    -H "Content-Type: application/json" \
+
+    ...
+
+    ```
+
+    When going live, you need to generate new API credentials to access the [live
+    endpoints](https://docs.adyen.com/development-resources/live-endpoints).
+
+
+    '
   termsOfService: https://www.adyen.com/legal/terms-and-conditions
   contact:
     name: Adyen Developer Experience team
@@ -2118,6 +2148,68 @@ components:
           type: integer
       required:
       - value
+    Mandate:
+      properties:
+        amount:
+          description: The billing amount of the recurring transactions.
+          type: string
+        amountRule:
+          description: "The limitation rule of the billing amount.\n\nPossible values:\n\
+            \ * **max**: The transaction amount can not exceed the `amount`.\n\n *\
+            \ **exact**: The transaction amount should be the same as the `amount`.\n\
+            \n"
+          enum:
+          - max
+          - exact
+          type: string
+        billingAttemptsRule:
+          description: "The rule to specify the period, within which the recurring\
+            \ debit can happen, relative to the mandate recurring date.\n\nPossible\
+            \ values:\n\n * **on**: On a specific date.\n\n * **before**:  Before\
+            \ and on a specific date.\n\n * **after**: On and after a specific date.\n\
+            \n"
+          enum:
+          - 'on'
+          - before
+          - after
+          type: string
+        billingDay:
+          description: 'The number of the day, on which the recurring debit can happen.
+            Should be within the same calendar month as the mandate recurring date.
+
+
+            Possible values: 1-31 based on the `frequency`.'
+          type: string
+        endsAt:
+          description: End date of the billing plan, in YYYY-MM-DD format.
+          type: string
+        frequency:
+          description: 'The frequency with which a shopper should be charged.
+
+
+            Possible values: **daily**, **weekly**, **biWeekly**, **monthly**, **quarterly**,
+            **halfYearly**, **yearly**.'
+          enum:
+          - adhoc
+          - daily
+          - weekly
+          - biWeekly
+          - monthly
+          - quarterly
+          - halfYearly
+          - yearly
+          type: string
+        remarks:
+          description: The message shown by UPI to the shopper on the approval screen.
+          type: string
+        startsAt:
+          description: Start date of the billing plan, in YYYY-MM-DD format. By default,
+            the transaction date.
+          type: string
+      required:
+      - frequency
+      - amount
+      - endsAt
     ModifyRequest:
       properties:
         additionalData:
@@ -2298,6 +2390,9 @@ components:
           description: Contains installment settings. For more information, refer
             to [Installments](https://docs.adyen.com/payment-methods/cards/credit-card-installments).
           $ref: '#/components/schemas/Installments'
+        mandate:
+          description: The mandate details to initiate recurring transaction.
+          $ref: '#/components/schemas/Mandate'
         mcc:
           x-addedInVersion: 12
           description: The [merchant category code](https://en.wikipedia.org/wiki/Merchant_category_code)
@@ -2554,12 +2649,9 @@ components:
             For more information, see [3D Secure](https://docs.adyen.com/classic-integration/3d-secure).'
           type: string
         pspReference:
-          description: 'Adyen''s 16-character string reference associated with the
-            transaction/request. This value is globally unique; quote it when communicating
-            with us about this request.
-
-
-            > `pspReference` is returned only for non-redirect payment methods.'
+          description: Adyen's 16-character reference associated with the transaction/request.
+            This value is globally unique; quote it when communicating with us about
+            this request.
           type: string
         refusalReason:
           description: 'If the payment''s authorisation is refused or an error occurs
