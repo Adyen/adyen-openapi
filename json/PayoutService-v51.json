@@ -9,7 +9,7 @@
       "version" : "51",
       "x-publicVersion" : true,
       "title" : "Adyen Payout API",
-      "description" : "A set of API endpoints that allow you to store payout details, confirm, or decline a payout.\n\nFor more information, refer to [Online payouts](https://docs.adyen.com/online-payments/online-payouts).",
+      "description" : "A set of API endpoints that allow you to store payout details, confirm, or decline a payout.\n\nFor more information, refer to [Online payouts](https://docs.adyen.com/online-payments/online-payouts).\n## Authentication\nTo use the Payout API, you need to have [two API credentials](https://docs.adyen.com/online-payments/online-payouts#payouts-to-bank-accounts-and-wallets): one for storing payout details and submitting payouts, and another one for confirming or declining payouts. If you don't have the required API credentials, contact our [Support Team](https://support.adyen.com/hc/en-us/requests/new).\n\nBoth of these API credentials must be authenticated with [basic authentication](https://docs.adyen.com/development-resources/api-credentials#basic-authentication).The following example shows how to authenticate your request when submitting a payout:\n\n```\ncurl\n-U \"storePayout@Company.[YourCompany]\":\"YourBasicAuthenticationPassword\" \\\n-H \"Content-Type: application/json\" \\\n...\n```\nWhen going live, you need to generate new API credentials to access the [live endpoints](https://docs.adyen.com/development-resources/live-endpoints).\n\n",
       "termsOfService" : "https://www.adyen.com/legal/terms-and-conditions",
       "contact" : {
          "name" : "Adyen Developer Experience team",
@@ -2035,6 +2035,66 @@
                "value"
             ]
          },
+         "Mandate" : {
+            "properties" : {
+               "amount" : {
+                  "description" : "The billing amount of the recurring transactions.",
+                  "type" : "string"
+               },
+               "amountRule" : {
+                  "description" : "The limitation rule of the billing amount.\n\nPossible values:\n * **max**: The transaction amount can not exceed the `amount`.\n\n * **exact**: The transaction amount should be the same as the `amount`.\n\n",
+                  "enum" : [
+                     "max",
+                     "exact"
+                  ],
+                  "type" : "string"
+               },
+               "billingAttemptsRule" : {
+                  "description" : "The rule to specify the period, within which the recurring debit can happen, relative to the mandate recurring date.\n\nPossible values:\n\n * **on**: On a specific date.\n\n * **before**:  Before and on a specific date.\n\n * **after**: On and after a specific date.\n\n",
+                  "enum" : [
+                     "on",
+                     "before",
+                     "after"
+                  ],
+                  "type" : "string"
+               },
+               "billingDay" : {
+                  "description" : "The number of the day, on which the recurring debit can happen. Should be within the same calendar month as the mandate recurring date.\n\nPossible values: 1-31 based on the `frequency`.",
+                  "type" : "string"
+               },
+               "endsAt" : {
+                  "description" : "End date of the billing plan, in YYYY-MM-DD format.",
+                  "type" : "string"
+               },
+               "frequency" : {
+                  "description" : "The frequency with which a shopper should be charged.\n\nPossible values: **daily**, **weekly**, **biWeekly**, **monthly**, **quarterly**, **halfYearly**, **yearly**.",
+                  "enum" : [
+                     "adhoc",
+                     "daily",
+                     "weekly",
+                     "biWeekly",
+                     "monthly",
+                     "quarterly",
+                     "halfYearly",
+                     "yearly"
+                  ],
+                  "type" : "string"
+               },
+               "remarks" : {
+                  "description" : "The message shown by UPI to the shopper on the approval screen.",
+                  "type" : "string"
+               },
+               "startsAt" : {
+                  "description" : "Start date of the billing plan, in YYYY-MM-DD format. By default, the transaction date.",
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "frequency",
+               "amount",
+               "endsAt"
+            ]
+         },
          "MerchantDevice" : {
             "properties" : {
                "os" : {
@@ -2325,6 +2385,10 @@
                   "description" : "Contains installment settings. For more information, refer to [Installments](https://docs.adyen.com/payment-methods/cards/credit-card-installments).",
                   "$ref" : "#/components/schemas/Installments"
                },
+               "mandate" : {
+                  "description" : "The mandate details to initiate recurring transaction.",
+                  "$ref" : "#/components/schemas/Mandate"
+               },
                "mcc" : {
                   "x-addedInVersion" : 12,
                   "description" : "The [merchant category code](https://en.wikipedia.org/wiki/Merchant_category_code) (MCC) is a four-digit number, which relates to a particular market segment. This code reflects the predominant activity that is conducted by the merchant.",
@@ -2557,7 +2621,7 @@
                   "type" : "string"
                },
                "pspReference" : {
-                  "description" : "Adyen's 16-character string reference associated with the transaction/request. This value is globally unique; quote it when communicating with us about this request.\n\n> `pspReference` is returned only for non-redirect payment methods.",
+                  "description" : "Adyen's 16-character reference associated with the transaction/request. This value is globally unique; quote it when communicating with us about this request.",
                   "type" : "string"
                },
                "refusalReason" : {
