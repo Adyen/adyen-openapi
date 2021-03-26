@@ -62,11 +62,10 @@ x-groups:
 paths:
   /closeAccount:
     post:
-      summary: Close an existing account under an account holder.
-      description: This endpoint is used to close an existing account under an account
-        holder. If an account is closed, it may not process transactions or have its
-        funds paid out,and it may not be reopened. Any payments made to a closed account
-        will be directed to the merchant's liable account.
+      summary: Close an account.
+      description: Closes an account. If an account is closed, you cannot process
+        transactions, pay out its funds, or reopen it. If payments are made to a closed
+        account, the payments will be directed to your liable account.
       operationId: post-closeAccount
       x-groupName: Accounts
       x-sortIndex: 3
@@ -123,11 +122,12 @@ paths:
           description: Internal Server Error - the server could not process the request.
   /closeAccountHolder:
     post:
-      summary: Close an existing account holder.
-      description: This endpoint is used to close an existing account holder and its
-        accounts. If an account holder is closed, it may not process transactions
-        or pay out funds, and it may not be reopened. Any payments made to a closed
-        account will be directed to the merchant's liable account.
+      summary: Close an account holder.
+      description: Changes the [status of an account holder](https://docs.adyen.com/platforms/account-holders-and-accounts#account-holder-statuses)
+        to **Closed**. This state is final. If an account holder is closed, you can't
+        process transactions, pay out funds, or reopen it. If payments are made to
+        an account of an account holder with a **Closed** status,the payments will
+        be directed to your liable account.
       operationId: post-closeAccountHolder
       x-groupName: Account holders
       x-sortIndex: 7
@@ -184,9 +184,9 @@ paths:
           description: Internal Server Error - the server could not process the request.
   /createAccount:
     post:
-      summary: Create a new account under an existing account holder.
-      description: This endpoint is used to create an account under an existing account
-        holder. An account holder may have multiple accounts.
+      summary: Create a new account.
+      description: Creates an account under an account holder. An account holder can
+        have [multiple accounts](https://docs.adyen.com/platforms/account-holders-and-accounts#create-additional-accounts).
       operationId: post-createAccount
       x-groupName: Accounts
       x-sortIndex: 1
@@ -244,10 +244,11 @@ paths:
   /createAccountHolder:
     post:
       summary: Create a new account holder.
-      description: This endpoint is used to create an account holder. Each account
-        holder represents a single sub-merchant, and each sub-merchant must be represented
-        by an account holder. Depending on the legal entity type, different details
-        are required to be provided in the call to this endpoint.
+      description: Creates an account holder, which [represents the sub-merchant's
+        entity](https://docs.adyen.com/platforms/account-structure#your-platform)
+        in your platform. The details that you need to provide in the request depend
+        on the sub-merchant's legal entity type. For more information, refer to [Account
+        holder and accounts](https://docs.adyen.com/platforms/account-holders-and-accounts#legal-entity-types).
       operationId: post-createAccountHolder
       x-groupName: Account holders
       x-sortIndex: 1
@@ -306,11 +307,8 @@ paths:
           description: Internal Server Error - the server could not process the request.
   /deleteBankAccounts:
     post:
-      summary: Delete bank accounts of an existing account holder.
-      description: This endpoint is used to delete existing bank accounts from an
-        account holder. For this, pass the `accountHolderCode` you got on the account
-        holder creation, and one or more `bankAccountUUIDs` specifying bank accounts
-        to delete.
+      summary: Delete bank accounts of an account holder.
+      description: 'Deletes one or more bank accounts of an account holder. '
       operationId: post-deleteBankAccounts
       x-groupName: Verification
       x-sortIndex: 3
@@ -368,8 +366,7 @@ paths:
   /deleteShareholders:
     post:
       summary: Delete shareholders of an existing account holder.
-      description: This endpoint is used to delete existing shareholders from an account
-        holder.
+      description: Deletes one or more shareholders from an account holder.
       operationId: post-deleteShareholders
       x-groupName: Verification
       x-sortIndex: 4
@@ -427,7 +424,7 @@ paths:
   /getAccountHolder:
     post:
       summary: Retrieve the details of an account holder.
-      description: This endpoint is used to retrieve the details of an account holder.
+      description: Retrieves the details of an account holder.
       operationId: post-getAccountHolder
       x-groupName: Account holders
       x-sortIndex: 2
@@ -487,13 +484,17 @@ paths:
   /getTaxForm:
     post:
       summary: Request a tax form for an account holder.
-      description: This endpoint allows to generate a tax form for an account holder.
+      description: Generates a tax form for account holders operating in the US. For
+        more information, refer to [Providing tax forms](https://docs.adyen.com/platforms/tax-forms).
       operationId: post-getTaxForm
       x-groupName: Account holders
       x-sortIndex: 8
       requestBody:
         content:
           application/json:
+            examples:
+              basic:
+                $ref: '#/components/examples/post-getTaxForm-basic'
             schema:
               $ref: '#/components/schemas/GetTaxFormRequest'
       responses:
@@ -542,12 +543,10 @@ paths:
   /getUploadedDocuments:
     post:
       summary: Retrieve the uploaded documents of an existing account holder.
-      description: 'This endpoint is used to retrieve documents previously uploaded
-        for use in the KYC Verification of an account holder.
+      description: 'Retrieves documents that were previously uploaded for an account
+        holder. Adyen uses the documents in the [KYC verification checks](https://docs.adyen.com/platforms/verification-checks).
 
-
-        For further information regarding KYC Verification, refer to [Verification
-        checks](https://docs.adyen.com/platforms/verification-checks).'
+        '
       operationId: post-getUploadedDocuments
       x-groupName: Verification
       x-sortIndex: 2
@@ -604,11 +603,9 @@ paths:
           description: Internal Server Error - the server could not process the request.
   /suspendAccountHolder:
     post:
-      summary: Suspend an existing account holder.
-      description: This endpoint is used to suspend an existing account holder. If
-        an account holder is suspended, it may not process transactions or pay out
-        funds. Any payments made to a suspended account holder will be directed to
-        the merchant's liable account.
+      summary: Suspend an account holder.
+      description: Changes the [status of an account holder](https://docs.adyen.com/platforms/account-holders-and-accounts#account-holder-statuses)
+        to **Suspended**.
       operationId: post-suspendAccountHolder
       x-groupName: Account holders
       x-sortIndex: 5
@@ -665,15 +662,15 @@ paths:
           description: Internal Server Error - the server could not process the request.
   /unSuspendAccountHolder:
     post:
-      summary: Reinstate a disabled account holder.
-      description: 'This endpoint is used to reinstate an existing account holder
-        that has been suspended either through the `/suspendAccountHolder` endpoint
-        or because a KYC deadline expired.
+      summary: Unsuspend an account holder.
+      description: 'Changes the [status of an account holder](https://docs.adyen.com/platforms/account-holders-and-accounts#account-holder-statuses)
+        from **Suspended** to **Inactive**. Account holders can have a **Suspended**
+        status if you suspend them through the [`/suspendAccountHolder`](https://docs.adyen.com/api-explorer/#/Account/v5/post/suspendAccountHolder)
+        endpoint or if a KYC deadline expires.
 
 
-        However, an account holder that has been suspended by Adyen because of KYC
-        verification issues (indicated by a **FAILED** verification [`status`](https://docs.adyen.com/api-explorer/#/Account/latest/post/getAccountHolder__resParam_verification-accountHolder-checks-status))
-        cannot be reinstated through this endpoint.'
+        You can only unsuspend account holders if they _do not_ have verification
+        checks with a **FAILED** [`status`](https://docs.adyen.com/api-explorer/#/Account/latest/post/getAccountHolder__resParam_verification-accountHolder-checks-status).'
       operationId: post-unSuspendAccountHolder
       x-groupName: Account holders
       x-sortIndex: 6
@@ -730,9 +727,8 @@ paths:
           description: Internal Server Error - the server could not process the request.
   /updateAccount:
     post:
-      summary: Update an existing account under an account holder.
-      description: This endpoint is used to update the description or payout schedule
-        of an existing account.
+      summary: Update an account.
+      description: Updates the description or payout schedule of an account.
       operationId: post-updateAccount
       x-groupName: Accounts
       x-sortIndex: 2
@@ -789,38 +785,21 @@ paths:
           description: Internal Server Error - the server could not process the request.
   /updateAccountHolder:
     post:
-      summary: Update an existing account holder.
-      description: 'This endpoint is used to update the `accountHolderDetails` or
-        `processingTier` of an account holder.
-
-
-        If updating the `accountHolderDetails`, only the details which have been provided
-        will be updated. Other details will be left as-is with the exception of the
-        following fields:
-
-        * `accountHolderDetails.address`
-
-        * `accountHolderDetails.fullPhoneNumber`
-
-        * `accountHolderDetails.bankAccountDetails.BankAccountDetail`
-
-        * `accountHolderDetails.businessDetails.shareholders.ShareholderContact`,
-        which requires all fields necessary for validation (i.e. in order to update
-        only the `accountHolderDetails.address.postalCode`, the fields `accountHolderDetails.address.country`,
-        `.city`, `.street`, `.postalCode`, and possibly `.stateOrProvince` must be
-        provided as well, so that the address can be properly validated).
-
-
-        Note that this endpoint can also be used to create new bank accounts. For
-        this, provide details of a bank account without providing a `bankAccountUUID`.
-
-
-        Similarly, it can also be used to create new shareholders by providing details
-        of a shareholder without providing a `shareholderCode`.
-
-        > The updating of the `metadata` field will overwite all of the existing account
-        holder metadata. In order to update an existing metadata key-value pair, all
-        otherkey-value pairs should be provided in order to not delete them.'
+      summary: Update an account holder.
+      description: "Updates the `accountHolderDetails` and `processingTier` of an\
+        \ account holder, and adds bank accounts and shareholders.\n\nWhen updating\
+        \ `accountHolderDetails`, parameters that are not included in the request\
+        \ are left unchanged except for the objects below.\n\n* `metadata`: Updating\
+        \ the metadata replaces the entire object. This means that to update an existing\
+        \ key-value pair, you must provide the changes along with other existing key-value\
+        \ pairs.\n\nWhen updating any field in the following objects, you must submit\
+        \ all the fields required for validation.\n\n * `address`\n\n* `fullPhoneNumber`\n\
+        \n* `bankAccountDetails.BankAccountDetail`\n\n* `businessDetails.shareholders.ShareholderContact`\n\
+        \n For example, to update the `address.postalCode`, you must also submit the\
+        \ `address.country`, `.city`, `.street`, `.postalCode`, and possibly `.stateOrProvince`\
+        \ so that the address can be validated.\n\nTo add a bank account or shareholder,\
+        \ provide the bank account or shareholder details without a `bankAccountUUID`\
+        \ or a `shareholderCode`.\n\n"
       operationId: post-updateAccountHolder
       x-groupName: Account holders
       x-sortIndex: 3
@@ -883,13 +862,9 @@ paths:
           description: Internal Server Error - the server could not process the request.
   /updateAccountHolderState:
     post:
-      summary: Update the state of an existing account holder.
-      description: 'This endpoint is used to disable or enable the processing or payout
-        state of an account holder.
-
-
-        For more information about processing and payout states of an account holder,
-        refer to [our documentation](https://docs.adyen.com/platforms).'
+      summary: Update the payout or processing state of an account holder.
+      description: Disables or enables the processing or payout state of an account
+        holder.
       operationId: post-updateAccountHolderState
       x-groupName: Account holders
       x-sortIndex: 4
@@ -946,13 +921,9 @@ paths:
           description: Internal Server Error - the server could not process the request.
   /uploadDocument:
     post:
-      summary: Upload a document for an existing account holder.
-      description: 'This endpoint is used to upload a document for use in the KYC
-        verification of an account holder.
-
-
-        For further information regarding KYC Verification, refer to [Verification
-        checks](https://docs.adyen.com/platforms/verification-checks).'
+      summary: Upload a document for an account holder.
+      description: Uploads a document for an account holder. Adyen uses the documents
+        in the [KYC verification checks](https://docs.adyen.com/platforms/verification-checks).
       operationId: post-uploadDocument
       x-groupName: Verification
       x-sortIndex: 1
@@ -1660,6 +1631,7 @@ components:
           - DAILY_6PM
           - DAILY_AU
           - DAILY_EU
+          - DAILY_SG
           - DAILY_US
           - DEFAULT
           - EVERY_6_HOURS_FROM_MIDNIGHT
@@ -2334,6 +2306,7 @@ components:
           - DAILY_6PM
           - DAILY_AU
           - DAILY_EU
+          - DAILY_SG
           - DAILY_US
           - DEFAULT
           - EVERY_6_HOURS_FROM_MIDNIGHT
@@ -2744,6 +2717,7 @@ components:
           - DAILY_6PM
           - DAILY_AU
           - DAILY_EU
+          - DAILY_SG
           - DAILY_US
           - DEFAULT
           - EVERY_6_HOURS_FROM_MIDNIGHT
@@ -2965,6 +2939,7 @@ components:
                   lastName: Carpenter
                 email: testshareholder@adyen.com
           email: test@adyen.com
+          webAddress: https://www.your-website.com
         legalEntity: Business
     post-createAccountHolder-individual:
       summary: Create an individual account holder
@@ -2979,6 +2954,7 @@ components:
               lastName: Green
           address:
             country: US
+          webAddress: https://www.your-website.com
         legalEntity: Individual
     post-deleteBankAccounts-basic:
       summary: Delete bank accounts
@@ -3000,6 +2976,12 @@ components:
       summary: Get an account holder for the account
       value:
         accountHolderCode: CODE_OF_ACCOUNT_HOLDER
+    post-getTaxForm-basic:
+      summary: Get a tax form
+      value:
+        accountHolderCode: CODE_OF_ACCOUNT_HOLDER
+        formType: 1099-K
+        year: 2020
     post-getUploadedDocuments-basic:
       summary: Get uploaded documents
       value:
