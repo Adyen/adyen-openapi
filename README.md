@@ -56,7 +56,7 @@ paths:
 
 ### x-publicVersion
 
-This is an auxiliary extension that help us verify that the current API version is publicly available.
+This is an auxiliary extension that helps us verify that the current API version is publicly available.
 
 ### x-addedInVersion, x-deprecatedInVersion and x-deprecatedMessage
 
