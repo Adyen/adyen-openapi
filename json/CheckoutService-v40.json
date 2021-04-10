@@ -828,6 +828,9 @@
                "content" : {
                   "application/json" : {
                      "examples" : {
+                        "plastix" : {
+                           "$ref" : "#/components/examples/post-paymentMethods-balance-plastix"
+                        },
                         "basic" : {
                            "$ref" : "#/components/examples/post-paymentMethods-balance-basic"
                         }
@@ -1211,14 +1214,6 @@
             "requestBody" : {
                "content" : {
                   "application/json" : {
-                     "examples" : {
-                        "3d-secure" : {
-                           "$ref" : "#/components/examples/post-payments-details-3d-secure"
-                        },
-                        "app-switch" : {
-                           "$ref" : "#/components/examples/post-payments-details-app-switch"
-                        }
-                     },
                      "schema" : {
                         "$ref" : "#/components/schemas/DetailsRequest"
                      }
@@ -1239,11 +1234,6 @@
                "400" : {
                   "content" : {
                      "application/json" : {
-                        "examples" : {
-                           "generic-400" : {
-                              "$ref" : "#/components/examples/generic-400"
-                           }
-                        },
                         "schema" : {
                            "$ref" : "#/components/schemas/ServiceError"
                         }
@@ -1269,11 +1259,6 @@
                "403" : {
                   "content" : {
                      "application/json" : {
-                        "examples" : {
-                           "generic-403" : {
-                              "$ref" : "#/components/examples/generic-403"
-                           }
-                        },
                         "schema" : {
                            "$ref" : "#/components/schemas/ServiceError"
                         }
@@ -1284,11 +1269,6 @@
                "422" : {
                   "content" : {
                      "application/json" : {
-                        "examples" : {
-                           "generic-422" : {
-                              "$ref" : "#/components/examples/generic-422"
-                           }
-                        },
                         "schema" : {
                            "$ref" : "#/components/schemas/ServiceError"
                         }
@@ -1299,11 +1279,6 @@
                "500" : {
                   "content" : {
                      "application/json" : {
-                        "examples" : {
-                           "generic-500" : {
-                              "$ref" : "#/components/examples/generic-500"
-                           }
-                        },
                         "schema" : {
                            "$ref" : "#/components/schemas/ServiceError"
                         }
@@ -2896,22 +2871,22 @@
                },
                "encryptedCardNumber" : {
                   "description" : "The encrypted card number.",
-                  "maxLength" : 6000,
+                  "maxLength" : 7000,
                   "type" : "string"
                },
                "encryptedExpiryMonth" : {
                   "description" : "The encrypted card expiry month.",
-                  "maxLength" : 5000,
+                  "maxLength" : 7000,
                   "type" : "string"
                },
                "encryptedExpiryYear" : {
                   "description" : "The encrypted card expiry year.",
-                  "maxLength" : 5000,
+                  "maxLength" : 7000,
                   "type" : "string"
                },
                "encryptedSecurityCode" : {
                   "description" : "The encrypted card verification code.",
-                  "maxLength" : 5000,
+                  "maxLength" : 7000,
                   "type" : "string"
                },
                "expiryMonth" : {
@@ -2943,9 +2918,28 @@
                },
                "type" : {
                   "default" : "scheme",
-                  "description" : "**scheme**",
+                  "description" : "Default payment method details. Common for scheme payment methods, and for simple payment method details.",
                   "enum" : [
-                     "##fallback"
+                     "scheme",
+                     "networkToken",
+                     "giftcard",
+                     "alliancedata",
+                     "card",
+                     "moneybookers",
+                     "alipay_hk",
+                     "alipay_hk_wap",
+                     "alipay_hk_web",
+                     "alipay_wap",
+                     "upi",
+                     "primeiropay_boleto",
+                     "gopay_wallet",
+                     "poli",
+                     "mada",
+                     "naps",
+                     "benefit",
+                     "knet",
+                     "fawry",
+                     "omannet"
                   ],
                   "type" : "string"
                }
@@ -3324,7 +3318,8 @@
                      "PresentToShopper",
                      "Received",
                      "RedirectShopper",
-                     "Refused"
+                     "Refused",
+                     "Success"
                   ],
                   "type" : "string"
                }
@@ -3447,6 +3442,10 @@
                   "description" : "Adyen's 16-character reference associated with the transaction/request. This value is globally unique; quote it when communicating with us about this request.",
                   "type" : "string"
                },
+               "reference" : {
+                  "description" : "The reference provided by merchant for creating the order.",
+                  "type" : "string"
+               },
                "refusalReason" : {
                   "description" : "If the payment's authorisation is refused or an error occurs during authorisation, this field holds Adyen's mapped reason for the refusal or a description of the error. When a transaction fails, the authorisation response includes `resultCode` and `refusalReason` values.\n\nFor more information, see [Refusal reasons](https://docs.adyen.com/development-resources/refusal-reasons).",
                   "type" : "string"
@@ -3468,7 +3467,8 @@
                      "PresentToShopper",
                      "Received",
                      "RedirectShopper",
-                     "Refused"
+                     "Refused",
+                     "Success"
                   ],
                   "type" : "string"
                }
@@ -3760,7 +3760,7 @@
                },
                "paymentData" : {
                   "description" : "The `paymentData` value from the `/payments` response. Required if the `/payments` response returns this value. In v67 and later, you will always get this value from the Component.",
-                  "maxLength" : 60000,
+                  "maxLength" : 100000,
                   "type" : "string"
                },
                "threeDSAuthenticationOnly" : {
@@ -4802,7 +4802,48 @@
                "type" : {
                   "description" : "The payment method type.",
                   "enum" : [
-                     "facilypay_6x"
+                     "alipay",
+                     "multibanco",
+                     "bankTransfer_IBAN",
+                     "paybright",
+                     "affirm",
+                     "oney",
+                     "facilypay",
+                     "facilypay_3x",
+                     "facilypay_4x",
+                     "facilypay_6x",
+                     "facilypay_10x",
+                     "facilypay_12x",
+                     "unionpay",
+                     "kcp_banktransfer",
+                     "kcp_payco",
+                     "kcp_creditcard",
+                     "wechatpaySDK",
+                     "wechatpayQR",
+                     "wechatpayWeb",
+                     "payu_IN_cashcard",
+                     "payu_IN_nb",
+                     "molpay_ebanking_VN",
+                     "openbanking_UK",
+                     "ebanking_FI",
+                     "molpay_ebanking_MY",
+                     "molpay_ebanking_direct_MY",
+                     "swish",
+                     "twint",
+                     "pix",
+                     "molpay_fpx",
+                     "konbini",
+                     "directEbanking",
+                     "boletobancario",
+                     "neteller",
+                     "dana",
+                     "paysafecard",
+                     "cashticket",
+                     "isracard",
+                     "ikano",
+                     "karenmillen",
+                     "oasis",
+                     "warehouse"
                   ],
                   "type" : "string"
                }
@@ -4884,6 +4925,10 @@
                   "description" : "When non-empty, contains a value that you must submit to the `/payments/details` endpoint.",
                   "type" : "string"
                },
+               "paymentMethod" : {
+                  "description" : "The payment method used in the transaction.",
+                  "type" : "string"
+               },
                "pspReference" : {
                   "description" : "Adyen's 16-character string reference associated with the transaction/request. This value is globally unique; quote it when communicating with us about this request.",
                   "type" : "string"
@@ -4914,8 +4959,13 @@
                      "PresentToShopper",
                      "Received",
                      "RedirectShopper",
-                     "Refused"
+                     "Refused",
+                     "Success"
                   ],
+                  "type" : "string"
+               },
+               "shopperLocale" : {
+                  "description" : "The shopperLocale.",
                   "type" : "string"
                }
             }
@@ -5033,7 +5083,8 @@
                   "enum" : [
                      "active",
                      "completed",
-                     "expired"
+                     "expired",
+                     "paymentPending"
                   ],
                   "type" : "string"
                },
@@ -5846,7 +5897,8 @@
                      "PresentToShopper",
                      "Received",
                      "RedirectShopper",
-                     "Refused"
+                     "Refused",
+                     "Success"
                   ],
                   "type" : "string"
                }
@@ -6282,7 +6334,8 @@
                      "PresentToShopper",
                      "Received",
                      "RedirectShopper",
-                     "Refused"
+                     "Refused",
+                     "Success"
                   ],
                   "type" : "string"
                },
@@ -6467,6 +6520,10 @@
          },
          "ResponseAdditionalData3DSecure" : {
             "properties" : {
+               "cardHolderInfo" : {
+                  "description" : "Information provided by the issuer to the cardholder. If this field is present, you need to display this information to the cardholder. ",
+                  "type" : "string"
+               },
                "scaExemptionRequested" : {
                   "description" : "Shows the [exemption type](https://docs.adyen.com/payments-fundamentals/psd2-sca-compliance-and-implementation-guide#specifypreferenceinyourapirequest) that Adyen requested for the payment.\n\n Possible values:\n* **lowValue** \n* **secureCorporate** \n* **trustedBeneficiary** \n* **transactionRiskAnalysis** ",
                   "type" : "string"
@@ -6579,6 +6636,16 @@
                   "description" : "BIC of a bank account.\n\nExample: TESTNL01\n\n> Only relevant for SEPA Direct Debit transactions.",
                   "type" : "string"
                },
+               "cvcResult" : {
+                  "description" : "The result of CVC verification.",
+                  "example" : "1 Matches",
+                  "type" : "string"
+               },
+               "cvcResultRaw" : {
+                  "description" : "The raw result of CVC verification.",
+                  "example" : "M",
+                  "type" : "string"
+               },
                "dsTransID" : {
                   "description" : "Supported for 3D Secure 2. The unique transaction identifier assigned by the DS to identify a single transaction.",
                   "type" : "string"
@@ -6627,6 +6694,14 @@
                   "description" : "Returned in the response if you are not tokenizing with Adyen and are using the Merchant-initiated transactions (MIT) framework from Mastercard or Visa.\n\nThis contains either the Mastercard Trace ID or the Visa Transaction ID.",
                   "type" : "string"
                },
+               "nonScheme.transactionLimit" : {
+                  "description" : "The maximum spendable value for a single transaction. Applicable to some gift cards.",
+                  "type" : "string"
+               },
+               "nonScheme.transactionLimitCcy" : {
+                  "description" : "The currency of the transaction limit.",
+                  "type" : "string"
+               },
                "ownerName" : {
                   "description" : "The owner name of a bank account.\n\nOnly relevant for SEPA Direct Debit transactions.",
                   "type" : "string"
@@ -6657,6 +6732,21 @@
                },
                "recurring.recurringDetailReference" : {
                   "description" : "The reference that uniquely identifies the recurring transaction.",
+                  "type" : "string"
+               },
+               "recurring.shopperReference" : {
+                  "x-addedInVersion" : 40,
+                  "description" : "The provided reference of the shopper for a recurring transaction.",
+                  "type" : "string"
+               },
+               "recurringProcessingModel" : {
+                  "x-addedInVersion" : 40,
+                  "description" : "The processing model used for the recurring transaction.",
+                  "enum" : [
+                     "CardOnFile",
+                     "Subscription",
+                     "UnscheduledCardOnFile"
+                  ],
                   "type" : "string"
                },
                "referred" : {
@@ -6960,6 +7050,11 @@
                "pspReference" : {
                   "description" : "The PSP reference of the payment.",
                   "type" : "string"
+               },
+               "status" : {
+                  "description" : "The HTTP response status.",
+                  "format" : "int32",
+                  "type" : "integer"
                }
             }
          },
@@ -7104,7 +7199,22 @@
                "type" : {
                   "description" : "The payment method type.",
                   "enum" : [
-                     "grabpay_TH"
+                     "bcmc_mobile",
+                     "bcmc_mobile_QR",
+                     "bcmc_mobile_app",
+                     "momo_wallet",
+                     "momo_wallet_app",
+                     "paymaya_wallet",
+                     "grabpay_SG",
+                     "grabpay_MY",
+                     "grabpay_TH",
+                     "grabpay_ID",
+                     "grabpay_VN",
+                     "grabpay_VN",
+                     "grabpay_PH",
+                     "oxxo",
+                     "gcash",
+                     "kakaopay"
                   ],
                   "type" : "string"
                }
@@ -7297,6 +7407,7 @@
             ]
          },
          "UpiDetails" : {
+            "additionalProperties" : false,
             "properties" : {
                "recurringDetailReference" : {
                   "description" : "This is the `recurringDetailReference` returned in the response when you created the token.",
@@ -7309,6 +7420,9 @@
                "type" : {
                   "default" : "upi",
                   "description" : "**upi**",
+                  "enum" : [
+                     "upi_collect"
+                  ],
                   "type" : "string"
                },
                "virtualPaymentAddress" : {
@@ -7568,6 +7682,18 @@
                "merchantAccount" : "YOUR_MERCHANT_ACCOUNT"
             }
          },
+         "post-paymentMethods-balance-plastix" : {
+            "summary" : "Retrieve gift card balance",
+            "value" : {
+               "paymentMethod" : {
+                  "type" : "plastix",
+                  "number" : "4010100000000000000",
+                  "cvc" : "73737",
+                  "holderName" : "BALANCE EUR 888"
+               },
+               "merchantAccount" : "YOUR_MERCHANT_ACCOUNT"
+            }
+         },
          "post-paymentMethods-basic" : {
             "summary" : "Get available payment methods",
             "value" : {
@@ -7807,25 +7933,6 @@
                },
                "returnUrl" : "https://your-company.com/...",
                "merchantAccount" : "YOUR_MERCHANT_ACCOUNT"
-            }
-         },
-         "post-payments-details-3d-secure" : {
-            "summary" : "Submit details for the 3D Secure payment ",
-            "value" : {
-               "paymentData" : "Hee57361f99....",
-               "details" : {
-                  "MD" : "Ab02b4c0!BQABAgCW5sxB4e/==...",
-                  "PaRes" : "eNrNV0mTo7gS..."
-               }
-            }
-         },
-         "post-payments-details-app-switch" : {
-            "summary" : "Submit details for the payment with involved app switch",
-            "value" : {
-               "paymentData" : "Hee57361f99....",
-               "details" : {
-                  "returnUrlQueryString" : "ref=eNrNV0mTo7gS&id=An78i..."
-               }
             }
          },
          "post-payments-enableOneClick-SF" : {
