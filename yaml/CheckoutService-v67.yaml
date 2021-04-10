@@ -588,6 +588,8 @@ paths:
         content:
           application/json:
             examples:
+              plastix:
+                $ref: '#/components/examples/post-paymentMethods-balance-plastix'
               basic:
                 $ref: '#/components/examples/post-paymentMethods-balance-basic'
             schema:
@@ -849,11 +851,6 @@ paths:
       requestBody:
         content:
           application/json:
-            examples:
-              redirect:
-                $ref: '#/components/examples/post-payments-details-redirect'
-              3d-secure-2-native:
-                $ref: '#/components/examples/post-payments-details-3d-secure-2-native'
             schema:
               $ref: '#/components/schemas/DetailsRequest'
       responses:
@@ -866,9 +863,6 @@ paths:
         '400':
           content:
             application/json:
-              examples:
-                generic-400:
-                  $ref: '#/components/examples/generic-400'
               schema:
                 $ref: '#/components/schemas/ServiceError'
           description: Bad Request - a problem reading or understanding the request.
@@ -884,27 +878,18 @@ paths:
         '403':
           content:
             application/json:
-              examples:
-                generic-403:
-                  $ref: '#/components/examples/generic-403'
               schema:
                 $ref: '#/components/schemas/ServiceError'
           description: Forbidden - insufficient permissions to process the request.
         '422':
           content:
             application/json:
-              examples:
-                generic-422:
-                  $ref: '#/components/examples/generic-422'
               schema:
                 $ref: '#/components/schemas/ServiceError'
           description: Unprocessable Entity - a request validation error.
         '500':
           content:
             application/json:
-              examples:
-                generic-500:
-                  $ref: '#/components/examples/generic-500'
               schema:
                 $ref: '#/components/schemas/ServiceError'
           description: Internal Server Error - the server could not process the request.
@@ -3098,19 +3083,19 @@ components:
           type: string
         encryptedCardNumber:
           description: The encrypted card number.
-          maxLength: 6000
+          maxLength: 7000
           type: string
         encryptedExpiryMonth:
           description: The encrypted card expiry month.
-          maxLength: 5000
+          maxLength: 7000
           type: string
         encryptedExpiryYear:
           description: The encrypted card expiry year.
-          maxLength: 5000
+          maxLength: 7000
           type: string
         encryptedSecurityCode:
           description: The encrypted card verification code.
-          maxLength: 5000
+          maxLength: 7000
           type: string
         expiryMonth:
           description: The card expiry month. Only collect raw card data if you are
@@ -3148,9 +3133,29 @@ components:
           type: string
         type:
           default: scheme
-          description: '**scheme**'
+          description: Default payment method details. Common for scheme payment methods,
+            and for simple payment method details.
           enum:
-          - '##fallback'
+          - scheme
+          - networkToken
+          - giftcard
+          - alliancedata
+          - card
+          - moneybookers
+          - alipay_hk
+          - alipay_hk_wap
+          - alipay_hk_web
+          - alipay_wap
+          - upi
+          - primeiropay_boleto
+          - gopay_wallet
+          - poli
+          - mada
+          - naps
+          - benefit
+          - knet
+          - fawry
+          - omannet
           type: string
       required:
       - encryptedCardNumber
@@ -3612,6 +3617,7 @@ components:
           - Received
           - RedirectShopper
           - Refused
+          - Success
           type: string
         transactionLimit:
           x-addedInVersion: 65
@@ -3736,6 +3742,9 @@ components:
             This value is globally unique; quote it when communicating with us about
             this request.
           type: string
+        reference:
+          description: The reference provided by merchant for creating the order.
+          type: string
         refusalReason:
           description: 'If the payment''s authorisation is refused or an error occurs
             during authorisation, this field holds Adyen''s mapped reason for the
@@ -3792,6 +3801,7 @@ components:
           - Received
           - RedirectShopper
           - Refused
+          - Success
           type: string
       required:
       - remainingAmount
@@ -3951,6 +3961,7 @@ components:
         type:
           description: The type of the action.
           enum:
+          - sdk
           - wechatpaySDK
           type: string
         url:
@@ -4254,8 +4265,12 @@ components:
           type: string
         requiredShopperFields:
           x-addedInVersion: 67
-          description: The fields that have to be filled in by the shopper before
-            completing the payment.
+          description: "The fields that have to be filled in by the shopper before\
+            \ completing the payment.\nPossible values:\n* `billingAddress` \u2013\
+            \ The address where to send the invoice.\n* `deliveryAddress` \u2013 The\
+            \ address where the purchased goods should be delivered.\n* `shopperEmail`\
+            \ \u2013 The shopper's email address.\n* `shopperName` \u2013 The shopper's\
+            \ full name.\n* `telephoneNumber` \u2013 The shopper's phone number.\n"
           items:
             enum:
             - billingAddress
@@ -4329,7 +4344,7 @@ components:
           description: The `paymentData` value from the `/payments` response. Required
             if the `/payments` response returns this value. In v67 and later, you
             will always get this value from the Component.
-          maxLength: 60000
+          maxLength: 100000
           type: string
         threeDSAuthenticationOnly:
           x-addedInVersion: 40
@@ -5313,7 +5328,48 @@ components:
         type:
           description: The payment method type.
           enum:
+          - alipay
+          - multibanco
+          - bankTransfer_IBAN
+          - paybright
+          - affirm
+          - oney
+          - facilypay
+          - facilypay_3x
+          - facilypay_4x
           - facilypay_6x
+          - facilypay_10x
+          - facilypay_12x
+          - unionpay
+          - kcp_banktransfer
+          - kcp_payco
+          - kcp_creditcard
+          - wechatpaySDK
+          - wechatpayQR
+          - wechatpayWeb
+          - payu_IN_cashcard
+          - payu_IN_nb
+          - molpay_ebanking_VN
+          - openbanking_UK
+          - ebanking_FI
+          - molpay_ebanking_MY
+          - molpay_ebanking_direct_MY
+          - swish
+          - twint
+          - pix
+          - molpay_fpx
+          - konbini
+          - directEbanking
+          - boletobancario
+          - neteller
+          - dana
+          - paysafecard
+          - cashticket
+          - isracard
+          - ikano
+          - karenmillen
+          - oasis
+          - warehouse
           type: string
       title: Payment Details
     PaymentDetailsResponse:
@@ -5349,19 +5405,15 @@ components:
           $ref: '#/components/schemas/FraudResult'
         merchantReference:
           x-addedInVersion: 49
-          description: 'The reference to uniquely identify a payment. This reference
-            is used in all communication with you about the payment status. We recommend
-            using a unique value per payment; however, it is not a requirement.
-
-            If you need to provide multiple references for a transaction, separate
-            them with hyphens ("-").
-
-            Maximum length: 80 characters.'
+          description: The reference used during the /payments request.
           type: string
         order:
           description: Contains updated information regarding the order in case order
             information was provided in the request.
           $ref: '#/components/schemas/CheckoutOrderResponse'
+        paymentMethod:
+          description: The payment method used in the transaction.
+          type: string
         pspReference:
           description: Adyen's 16-character string reference associated with the transaction/request.
             This value is globally unique; quote it when communicating with us about
@@ -5425,6 +5477,10 @@ components:
           - Received
           - RedirectShopper
           - Refused
+          - Success
+          type: string
+        shopperLocale:
+          description: The shopperLocale.
           type: string
         threeDS2Result:
           x-addedInVersion: 41
@@ -5578,6 +5634,7 @@ components:
           - active
           - completed
           - expired
+          - paymentPending
           type: string
         store:
           description: The physical store, for which this payment is processed.
@@ -6387,6 +6444,7 @@ components:
           - Received
           - RedirectShopper
           - Refused
+          - Success
           type: string
         threeDS2Result:
           x-addedInVersion: 41
@@ -6917,6 +6975,7 @@ components:
           - Received
           - RedirectShopper
           - Refused
+          - Success
           type: string
         serviceError:
           description: The type of the error.
@@ -7087,6 +7146,10 @@ components:
           type: string
     ResponseAdditionalData3DSecure:
       properties:
+        cardHolderInfo:
+          description: 'Information provided by the issuer to the cardholder. If this
+            field is present, you need to display this information to the cardholder. '
+          type: string
         scaExemptionRequested:
           description: "Shows the [exemption type](https://docs.adyen.com/payments-fundamentals/psd2-sca-compliance-and-implementation-guide#specifypreferenceinyourapirequest)\
             \ that Adyen requested for the payment.\n\n Possible values:\n* **lowValue**\
@@ -7242,6 +7305,14 @@ components:
 
 
             > Only relevant for SEPA Direct Debit transactions.'
+          type: string
+        cvcResult:
+          description: The result of CVC verification.
+          example: 1 Matches
+          type: string
+        cvcResultRaw:
+          description: The raw result of CVC verification.
+          example: M
           type: string
         dsTransID:
           description: Supported for 3D Secure 2. The unique transaction identifier
@@ -7453,6 +7524,18 @@ components:
           type: string
         recurring.recurringDetailReference:
           description: The reference that uniquely identifies the recurring transaction.
+          type: string
+        recurring.shopperReference:
+          x-addedInVersion: 40
+          description: The provided reference of the shopper for a recurring transaction.
+          type: string
+        recurringProcessingModel:
+          x-addedInVersion: 40
+          description: The processing model used for the recurring transaction.
+          enum:
+          - CardOnFile
+          - Subscription
+          - UnscheduledCardOnFile
           type: string
         referred:
           description: 'If the payment is referred, this field is set to true.
@@ -7823,6 +7906,10 @@ components:
         pspReference:
           description: The PSP reference of the payment.
           type: string
+        status:
+          description: The HTTP response status.
+          format: int32
+          type: integer
     ServiceError2:
       properties:
         errorCode:
@@ -8026,7 +8113,22 @@ components:
         type:
           description: The payment method type.
           enum:
+          - bcmc_mobile
+          - bcmc_mobile_QR
+          - bcmc_mobile_app
+          - momo_wallet
+          - momo_wallet_app
+          - paymaya_wallet
+          - grabpay_SG
+          - grabpay_MY
           - grabpay_TH
+          - grabpay_ID
+          - grabpay_VN
+          - grabpay_VN
+          - grabpay_PH
+          - oxxo
+          - gcash
+          - kakaopay
           type: string
       title: Stored Payment Method
     SubInputDetail:
@@ -8339,6 +8441,7 @@ components:
       required:
       - status
     UpiDetails:
+      additionalProperties: false
       properties:
         recurringDetailReference:
           deprecated: true
@@ -8359,6 +8462,8 @@ components:
         type:
           default: upi
           description: '**upi**'
+          enum:
+          - upi_collect
           type: string
         virtualPaymentAddress:
           description: The virtual payment address for UPI.
@@ -8573,6 +8678,15 @@ components:
           type: givex
           number: '4126491073027401'
           cvc: '737'
+        merchantAccount: YOUR_MERCHANT_ACCOUNT
+    post-paymentMethods-balance-plastix:
+      summary: Retrieve gift card balance
+      value:
+        paymentMethod:
+          type: plastix
+          number: '4010100000000000000'
+          cvc: '73737'
+          holderName: BALANCE EUR 888
         merchantAccount: YOUR_MERCHANT_ACCOUNT
     post-paymentMethods-basic:
       summary: Get available payment methods
@@ -8812,16 +8926,6 @@ components:
           encryptedSecurityCode: test_737
         returnUrl: https://your-company.com/...
         merchantAccount: YOUR_MERCHANT_ACCOUNT
-    post-payments-details-3d-secure-2-native:
-      summary: Submit 3D Secure 2 authentication result
-      value:
-        details:
-          threeDSResult: eyJ0cmFuc1N0YXR1cyI6IlkifQ==
-    post-payments-details-redirect:
-      summary: Submit the redirect result
-      value:
-        details:
-          redirectResult: X6XtfGC3!Y...
     post-payments-enableOneClick-SF:
       summary: Tokenize card details for one-off payments (using encrypted card details)
       value:
