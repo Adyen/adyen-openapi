@@ -73,6 +73,9 @@ paths:
         '200':
           content:
             application/json:
+              examples:
+                confirmThirdParty-200:
+                  $ref: '#/components/examples/post-confirmThirdParty-confirmThirdParty-200'
               schema:
                 $ref: '#/components/schemas/ModifyResponse'
           description: OK - the request has succeeded.
@@ -132,6 +135,9 @@ paths:
         '200':
           content:
             application/json:
+              examples:
+                declineThirdParty-200:
+                  $ref: '#/components/examples/post-declineThirdParty-declineThirdParty-200'
               schema:
                 $ref: '#/components/schemas/ModifyResponse'
           description: OK - the request has succeeded.
@@ -182,11 +188,6 @@ paths:
       requestBody:
         content:
           application/json:
-            examples:
-              payout-p2p:
-                $ref: '#/components/examples/post-payout-payout-p2p'
-              payout-b2c:
-                $ref: '#/components/examples/post-payout-payout-b2c'
             schema:
               $ref: '#/components/schemas/PayoutRequest'
       responses:
@@ -199,9 +200,6 @@ paths:
         '400':
           content:
             application/json:
-              examples:
-                generic-400:
-                  $ref: '#/components/examples/generic-400'
               schema:
                 $ref: '#/components/schemas/ServiceError'
           description: Bad Request - a problem reading or understanding the request.
@@ -250,6 +248,9 @@ paths:
         '200':
           content:
             application/json:
+              examples:
+                storeDetail-200:
+                  $ref: '#/components/examples/post-storeDetail-storeDetail-200'
               schema:
                 $ref: '#/components/schemas/StoreDetailResponse'
           description: OK - the request has succeeded.
@@ -304,14 +305,8 @@ paths:
             examples:
               storeDetailAndSubmitThirdParty-Neteller:
                 $ref: '#/components/examples/post-storeDetailAndSubmitThirdParty-storeDetailAndSubmitThirdParty-Neteller'
-              storeDetailAndSubmitThirdParty-Skrill:
-                $ref: '#/components/examples/post-storeDetailAndSubmitThirdParty-storeDetailAndSubmitThirdParty-Skrill'
-              storeDetailAndSubmitThirdParty-PayPal:
-                $ref: '#/components/examples/post-storeDetailAndSubmitThirdParty-storeDetailAndSubmitThirdParty-PayPal'
               storeDetailAndSubmitThirdParty:
                 $ref: '#/components/examples/post-storeDetailAndSubmitThirdParty-storeDetailAndSubmitThirdParty'
-              storeDetailAndSubmitThirdParty-Paysafecard:
-                $ref: '#/components/examples/post-storeDetailAndSubmitThirdParty-storeDetailAndSubmitThirdParty-Paysafecard'
             schema:
               $ref: '#/components/schemas/StoreDetailAndSubmitRequest'
       responses:
@@ -324,9 +319,6 @@ paths:
         '400':
           content:
             application/json:
-              examples:
-                generic-400:
-                  $ref: '#/components/examples/generic-400'
               schema:
                 $ref: '#/components/schemas/ServiceError'
           description: Bad Request - a problem reading or understanding the request.
@@ -2869,8 +2861,14 @@ components:
           description: 'Metadata consists of entries, each of which includes a key
             and a value.
 
-            Limitations: Maximum 20 key-value pairs per request. When exceeding, the
-            "177" error occurs: "Metadata size exceeds limit".'
+            Limits:
+
+            * Maximum 20 key-value pairs per request. When exceeding, the "177" error
+            occurs: "Metadata size exceeds limit".
+
+            * Maximum 20 characters per key.
+
+            * Maximum 80 characters per value. '
           type: object
         mpiData:
           description: Authentication data produced by an MPI (Mastercard SecureCode
@@ -3929,11 +3927,11 @@ components:
             split to other operations such as captures and refunds.
 
 
-            This is required if `type` is **MarketPlace**. For the other types, we
-            also recommend sending a reference so you can reconcile the split and
-            the associated payment in the transaction overview and in the reports.
-            If the reference is not provided, the split is reported as part of the
-            aggregated [TransferBalance record type](https://docs.adyen.com/reporting/marketpay-payments-accounting-report)
+            This is required if `type` is **MarketPlace** or **BalanceAccount**. For
+            the other types, we also recommend sending a reference so you can reconcile
+            the split and the associated payment in the transaction overview and in
+            the reports. If the reference is not provided, the split is reported as
+            part of the aggregated [TransferBalance record type](https://docs.adyen.com/reporting/marketpay-payments-accounting-report)
             in Adyen for Platforms.'
           type: string
         type:
@@ -4607,73 +4605,22 @@ components:
       value:
         merchantAccount: YOUR_MERCHANT_ACCOUNT
         originalReference: '9913140798220028'
+    post-confirmThirdParty-confirmThirdParty-200:
+      summary: Example response for request 'confirmThirdParty'
+      value:
+        pspReference: 991617894325358C
+        response: '[payout-confirm-received]'
     post-declineThirdParty-declineThirdParty:
       summary: Cancel a payout
       description: Cancel a previously submitted payout
       value:
         merchantAccount: YOUR_MERCHANT_ACCOUNT
         originalReference: '9913140798220028'
-    post-payout-payout-b2c:
-      summary: Instant card payout (B2C)
-      description: Pay out to your sellers, customers, freelancers, etc
+    post-declineThirdParty-declineThirdParty-200:
+      summary: Example response for request 'declineThirdParty'
       value:
-        amount:
-          value: 2500
-          currency: USD
-        card:
-          number: '4111111111111111'
-          expiryMonth: '03'
-          expiryYear: '2030'
-          holderName: John Smith
-        billingAddress:
-          houseNumberOrName: '121'
-          street: Populierenlaan
-          city: Beverly Hills
-          postalCode: '90210'
-          stateOrProvince: CA
-          country: US
-        merchantAccount: YOUR_MERCHANT_ACCOUNT
-        reference: P9999999999999999
-        shopperName:
-          firstName: John
-          lastName: Smith
-        dateOfBirth: '1990-01-01'
-        nationality: NL
-    post-payout-payout-p2p:
-      summary: Instant card payout (P2P)
-      description: Facilitate the transfer of money between two individuals
-      value:
-        amount:
-          value: 2500
-          currency: USD
-        card:
-          number: '4111111111111111'
-          expiryMonth: '03'
-          expiryYear: '2030'
-          holderName: John Smith
-        fundSource:
-          additionalData:
-            fundingSource: DEBIT
-          billingAddress:
-            country: US
-            postalCode: '90210'
-            city: Beverly Hills
-          card:
-            expiryMonth: '03'
-            expiryYear: '2030'
-            holderName: Payer Name
-            number: '4400000000000008'
-          shopperName:
-            firstName: Payer
-            lastName: Name
-        merchantAccount: YOUR_MERCHANT_ACCOUNT
-        reference: P9999999999999999
-        shopperName:
-          firstName: John
-          lastName: Smith
-        shopperStatement: Payer Name
-        dateOfBirth: '1990-01-01'
-        nationality: NL
+        pspReference: 991617894325360J
+        response: '[payout-decline-received]'
     post-storeDetail-storeDetail:
       summary: Store payout details
       description: Store payment details under the PAYOUT recurring contract
@@ -4705,6 +4652,12 @@ components:
           stateOrProvince: NY
           country: US
           postalCode: '12345'
+    post-storeDetail-storeDetail-200:
+      summary: Example response for request 'storeDetail'
+      value:
+        pspReference: 991617894326362D
+        recurringDetailReference: '9916178936754752'
+        resultCode: Success
     post-storeDetailAndSubmitThirdParty-storeDetailAndSubmitThirdParty:
       summary: Submit a payout and stores details
       description: Submit a payout and stores its details for subsequent payouts
@@ -4743,82 +4696,6 @@ components:
         additionalData:
           tokenDataType: Neteller
           account: myNetellerAccount
-        shopperName:
-          firstName: Test
-          gender: FEMALE
-          lastName: Test2
-        dateOfBirth: '1982-07-17'
-        entityType: NaturalPerson
-        nationality: NL
-        merchantAccount: YOUR_MERCHANT_ACCOUNT
-        recurring:
-          contract: PAYOUT
-        reference: Test Payout
-        shopperEmail: test@company.com
-        shopperReference: YOUR_UNIQUE_SHOPPER_ID_IOfW3k9G2PvXFu2j
-    post-storeDetailAndSubmitThirdParty-storeDetailAndSubmitThirdParty-PayPal:
-      summary: Submit a payout to PayPal
-      description: Submit a payout to PayPal and stores its details for subsequent
-        payouts
-      value:
-        amount:
-          currency: EUR
-          value: 1750
-        selectedBrand: paypal
-        additionalData:
-          tokenDataType: PayPal
-          emailId: EmailUsedForPayPalAccount@example.com
-          paypal.payerId: AK5HCWWRUV2KL
-        shopperName:
-          firstName: Test
-          gender: FEMALE
-          lastName: Test2
-        dateOfBirth: '1982-07-17'
-        entityType: NaturalPerson
-        nationality: NL
-        merchantAccount: YOUR_MERCHANT_ACCOUNT
-        recurring:
-          contract: PAYOUT
-        reference: Test Payout
-        shopperEmail: test@company.com
-        shopperReference: YOUR_UNIQUE_SHOPPER_ID_IOfW3k9G2PvXFu2j
-    post-storeDetailAndSubmitThirdParty-storeDetailAndSubmitThirdParty-Paysafecard:
-      summary: Submit a payout to Paysafecard
-      description: Submit a payout to Paysafecard and stores its details for subsequent
-        payouts
-      value:
-        amount:
-          currency: EUR
-          value: 1000
-        selectedBrand: paysafecard
-        additionalData:
-          emailId: EmailUsedForPaysafecardAccount@example.com
-        shopperName:
-          firstName: Test
-          gender: MALE
-          lastName: Test2
-        dateOfBirth: '1982-07-17'
-        entityType: NaturalPerson
-        nationality: NL
-        merchantAccount: YOUR_MERCHANT_ACCOUNT
-        recurring:
-          contract: PAYOUT
-        reference: Test Payout
-        shopperEmail: test@company.com
-        shopperReference: YOUR_UNIQUE_SHOPPER_ID_IOfW3k9G2PvXFu2j
-        shopperIP: 61.294.12.12
-    post-storeDetailAndSubmitThirdParty-storeDetailAndSubmitThirdParty-Skrill:
-      summary: Submit a payout to Skrill
-      description: Submit a payout to Skrill and stores its details for subsequent
-        payouts
-      value:
-        amount:
-          currency: EUR
-          value: 100
-        selectedBrand: moneybookers
-        additionalData:
-          tokenDataType: MoneyBookers
-          email: name@adyen.com
         shopperName:
           firstName: Test
           gender: FEMALE
