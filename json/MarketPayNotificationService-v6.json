@@ -600,6 +600,36 @@
                }
             }
          }
+      },
+      "/TRANSFER_NOT_PAIDOUT_TRANSFERS" : {
+         "post" : {
+            "summary" : "Triggered when not paid out transfers are transferred to liable.",
+            "description" : "This notification is sent when not paidout transfers from an account have been transferred to the configured liable account.",
+            "operationId" : "post-TRANSFER_NOT_PAIDOUT_TRANSFERS",
+            "x-groupName" : "Fund management",
+            "x-sortIndex" : 9,
+            "requestBody" : {
+               "content" : {
+                  "application/json" : {
+                     "schema" : {
+                        "$ref" : "#/components/schemas/TransferNotPaidoutTransfersNotification"
+                     }
+                  }
+               }
+            },
+            "responses" : {
+               "200" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/NotificationResponse"
+                        }
+                     }
+                  },
+                  "description" : "OK - the request has succeeded."
+               }
+            }
+         }
       }
    },
    "components" : {
@@ -3060,7 +3090,7 @@
                   "type" : "string"
                },
                "reference" : {
-                  "description" : "Your reference for the split, which you can use to link the split to other operations such as captures and refunds.\n\nThis is required if `type` is **MarketPlace**. For the other types, we also recommend sending a reference so you can reconcile the split and the associated payment in the transaction overview and in the reports. If the reference is not provided, the split is reported as part of the aggregated [TransferBalance record type](https://docs.adyen.com/reporting/marketpay-payments-accounting-report) in Adyen for Platforms.",
+                  "description" : "Your reference for the split, which you can use to link the split to other operations such as captures and refunds.\n\nThis is required if `type` is **MarketPlace** or **BalanceAccount**. For the other types, we also recommend sending a reference so you can reconcile the split and the associated payment in the transaction overview and in the reports. If the reference is not provided, the split is reported as part of the aggregated [TransferBalance record type](https://docs.adyen.com/reporting/marketpay-payments-accounting-report) in Adyen for Platforms.",
                   "type" : "string"
                },
                "type" : {
@@ -3243,6 +3273,7 @@
                "transactionStatus" : {
                   "description" : "The status of the transaction.\n>Permitted values: `PendingCredit`, `CreditFailed`, `CreditClosed`, `CreditSuspended`, `Credited`, `Converted`, `PendingDebit`, `DebitFailed`, `Debited`, `DebitReversedReceived`, `DebitedReversed`, `ChargebackReceived`, `Chargeback`, `ChargebackReversedReceived`, `ChargebackReversed`, `Payout`, `PayoutReversed`, `FundTransfer`, `PendingFundTransfer`, `ManualCorrected`.",
                   "enum" : [
+                     "BalanceNotPaidOutTransfer",
                      "Chargeback",
                      "ChargebackCorrection",
                      "ChargebackCorrectionReceived",
@@ -3374,6 +3405,82 @@
                "destinationAccountCode",
                "amount",
                "transferCode"
+            ]
+         },
+         "TransferNotPaidoutTransfersNotification" : {
+            "properties" : {
+               "content" : {
+                  "description" : "Details of the fund transfer.",
+                  "$ref" : "#/components/schemas/TransferNotPaidoutTransfersNotificationContent"
+               },
+               "error" : {
+                  "x-addedInVersion" : 5,
+                  "description" : "Error information of failed request. No value provided here if no error occurred on processing.",
+                  "$ref" : "#/components/schemas/NotificationErrorContainer"
+               },
+               "eventDate" : {
+                  "x-addedInVersion" : 4,
+                  "description" : "The date and time when an event has been completed.",
+                  "format" : "date-time",
+                  "type" : "string"
+               },
+               "eventType" : {
+                  "description" : "The event type of the notification.",
+                  "type" : "string"
+               },
+               "executingUserKey" : {
+                  "description" : "The user or process that has triggered the notification.",
+                  "type" : "string"
+               },
+               "live" : {
+                  "description" : "Indicates whether the notification originated from the live environment or the test environment. If true, the notification originated from the live environment. If false, the notification originated from the test environment.",
+                  "type" : "boolean"
+               },
+               "pspReference" : {
+                  "description" : "The PSP reference of the request from which the notification originates.",
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "executingUserKey",
+               "pspReference",
+               "eventType",
+               "live",
+               "eventDate",
+               "content"
+            ]
+         },
+         "TransferNotPaidoutTransfersNotificationContent" : {
+            "properties" : {
+               "amount" : {
+                  "description" : "The amount transferred.",
+                  "$ref" : "#/components/schemas/Amount"
+               },
+               "destinationAccountCode" : {
+                  "description" : "The code of the Account to which funds were credited.",
+                  "type" : "string"
+               },
+               "invalidFields" : {
+                  "x-addedInVersion" : 5,
+                  "description" : "Invalid fields list.",
+                  "items" : {
+                     "$ref" : "#/components/schemas/ErrorFieldType"
+                  },
+                  "type" : "array"
+               },
+               "sourceAccountCode" : {
+                  "description" : "The code of the Account from which funds were debited.",
+                  "type" : "string"
+               },
+               "status" : {
+                  "description" : "The status of the fund transfer.",
+                  "$ref" : "#/components/schemas/OperationStatus"
+               }
+            },
+            "required" : [
+               "sourceAccountCode",
+               "destinationAccountCode",
+               "amount"
             ]
          },
          "UpdateAccountHolderResponse" : {
