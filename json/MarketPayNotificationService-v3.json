@@ -394,7 +394,7 @@
       "/COMPENSATE_NEGATIVE_BALANCE" : {
          "post" : {
             "summary" : "Triggered upon the compensation of negative account balances.",
-            "description" : "This notification is sent when funds have been transferred from the Marketplace's liable account to an overdrawn account in order to compensate for the overdraft.",
+            "description" : "This notification is sent when funds have been transferred from your platform's liable account to an overdrawn account in order to compensate for the overdraft.",
             "operationId" : "post-COMPENSATE_NEGATIVE_BALANCE",
             "x-groupName" : "Fund management",
             "x-sortIndex" : 5,
@@ -453,8 +453,8 @@
       },
       "/PAYMENT_FAILURE" : {
          "post" : {
-            "summary" : "Triggered upon an account payment failure.",
-            "description" : "This notification is sent when a payment to an account has failed. In these cases, the funds which were meant for the account are redirected to the Marketplace's liable account.",
+            "summary" : "Triggered when a booking for a capture or refund fails.",
+            "description" : "This notification is sent when a [split payment](https://docs.adyen.com/platforms/processing-payments#providing-split-information) booking for a capture or refund fails. When a booking fails due to an invalid account status or an unknown `accountCode`, the funds are credited or debited to your platform's liable account instead of the account specified in the split data.",
             "operationId" : "post-PAYMENT_FAILURE",
             "x-groupName" : "Other",
             "x-sortIndex" : 1,
@@ -583,36 +583,6 @@
                   "application/json" : {
                      "schema" : {
                         "$ref" : "#/components/schemas/TransferFundsNotification"
-                     }
-                  }
-               }
-            },
-            "responses" : {
-               "200" : {
-                  "content" : {
-                     "application/json" : {
-                        "schema" : {
-                           "$ref" : "#/components/schemas/NotificationResponse"
-                        }
-                     }
-                  },
-                  "description" : "OK - the request has succeeded."
-               }
-            }
-         }
-      },
-      "/TRANSFER_NOT_PAIDOUT_TRANSFERS" : {
-         "post" : {
-            "summary" : "Triggered when not paid out transfers are transferred to liable.",
-            "description" : "This notification is sent when not paidout transfers from an account have been transferred to the configured liable account.",
-            "operationId" : "post-TRANSFER_NOT_PAIDOUT_TRANSFERS",
-            "x-groupName" : "Fund management",
-            "x-sortIndex" : 9,
-            "requestBody" : {
-               "content" : {
-                  "application/json" : {
-                     "schema" : {
-                        "$ref" : "#/components/schemas/TransferNotPaidoutTransfersNotification"
                      }
                   }
                }
@@ -1110,6 +1080,7 @@
                      "DeleteBankAccounts",
                      "DeletePayoutMethods",
                      "DeleteShareholders",
+                     "DeleteSignatories",
                      "InactivateAccount",
                      "KYCDeadlineExtension",
                      "RecalculateAccountStatusAndProcessingTier",
@@ -1960,9 +1931,12 @@
                      "schedule",
                      "shareholder",
                      "shareholderCode",
+                     "shareholderCodeAndSignatoryCode",
+                     "shareholderCodeOrSignatoryCode",
                      "shareholderType",
                      "shopperInteraction",
                      "signatory",
+                     "signatoryCode",
                      "socialSecurityNumber",
                      "sourceAccountCode",
                      "splitAccount",
@@ -2060,7 +2034,7 @@
                   "type" : "array"
                },
                "status" : {
-                  "description" : "The status of the check.\n>Permitted Values: `DATA_PROVIDED`, `PASSED`, `PENDING`, `AWAITING_DATA`, `RETRY_LIMIT_REACHED`, `INVALID_DATA`, `FAILED`.",
+                  "description" : "The status of the check.\n\nPossible values: **AWAITING_DATA** , **DATA_PROVIDED**, **FAILED**, **INVALID_DATA**, **PASSED**, **PENDING**, **RETRY_LIMIT_REACHED**.",
                   "enum" : [
                      "AWAITING_DATA",
                      "DATA_PROVIDED",
@@ -2079,7 +2053,7 @@
                   "$ref" : "#/components/schemas/KYCCheckSummary"
                },
                "type" : {
-                  "description" : "The type of check.\n>Permitted Values: `COMPANY_VERIFICATION`, `IDENTITY_VERIFICATION`, `PASSPORT_VERIFICATION`, `BANK_ACCOUNT_VERIFICATION`, `NONPROFIT_VERIFICATION`, `CARD_VERIFICATION`.",
+                  "description" : "The type of check.\n\nPossible values:\n\n * **BANK_ACCOUNT_VERIFICATION**: Used in v5 and earlier. Replaced by **PAYOUT_METHOD_VERIFICATION** in v6 and later.\n\n * **COMPANY_VERIFICATION**\n\n  * **CARD_VERIFICATION**\n\n* **IDENTITY_VERIFICATION**\n\n* **PASSPORT_VERIFICATION**\n\n* **PAYOUT_METHOD_VERIFICATION**: Used in v6 and later.\n\n* **NONPROFIT_VERIFICATION**\n\n ",
                   "enum" : [
                      "BANK_ACCOUNT_VERIFICATION",
                      "CARD_VERIFICATION",
@@ -2138,18 +2112,18 @@
          "KYCVerificationResult2" : {
             "properties" : {
                "accountHolder" : {
-                  "description" : "The result(s) of the checks on the account holder.",
+                  "description" : "The results of the checks on the account holder.",
                   "$ref" : "#/components/schemas/KYCCheckResult2"
                },
                "bankAccounts" : {
-                  "description" : "The result(s) of the checks on the bank account(s).",
+                  "description" : "The results of the checks on the bank accounts.",
                   "items" : {
                      "$ref" : "#/components/schemas/KYCBankAccountCheckResult"
                   },
                   "type" : "array"
                },
                "shareholders" : {
-                  "description" : "The result(s) of the checks on the shareholder(s).",
+                  "description" : "The results of the checks on the shareholders.",
                   "items" : {
                      "$ref" : "#/components/schemas/KYCShareholderCheckResult"
                   },
@@ -2244,6 +2218,22 @@
                "errorMessage" : {
                   "description" : "The error message.",
                   "$ref" : "#/components/schemas/Message"
+               },
+               "modificationMerchantReference" : {
+                  "description" : "The `reference` of the capture or refund.",
+                  "type" : "string"
+               },
+               "modificationPspReference" : {
+                  "description" : "The `pspReference` of the capture or refund.",
+                  "type" : "string"
+               },
+               "paymentMerchantReference" : {
+                  "description" : "The `reference` of the payment.",
+                  "type" : "string"
+               },
+               "paymentPspReference" : {
+                  "description" : "The `pspReference` of the payment.",
+                  "type" : "string"
                }
             },
             "required" : [
@@ -2273,6 +2263,7 @@
                      "EVERY_6_HOURS_FROM_MIDNIGHT",
                      "HOLD",
                      "MONTHLY",
+                     "MONTHLY_ON_15TH_AT_MIDNIGHT",
                      "WEEKLY",
                      "WEEKLY_ON_TUE_FRI_MIDNIGHT",
                      "YEARLY"
@@ -2760,6 +2751,8 @@
                      "PendingDebit",
                      "PendingFundTransfer",
                      "SecondChargeback",
+                     "SecondChargebackCorrection",
+                     "SecondChargebackCorrectionReceived",
                      "SecondChargebackReceived"
                   ],
                   "type" : "string"
@@ -2834,62 +2827,6 @@
                "destinationAccountCode",
                "amount",
                "transferCode"
-            ]
-         },
-         "TransferNotPaidoutTransfersNotification" : {
-            "properties" : {
-               "content" : {
-                  "description" : "Details of the fund transfer.",
-                  "$ref" : "#/components/schemas/TransferNotPaidoutTransfersNotificationContent"
-               },
-               "eventType" : {
-                  "description" : "The event type of the notification.",
-                  "type" : "string"
-               },
-               "executingUserKey" : {
-                  "description" : "The user or process that has triggered the notification.",
-                  "type" : "string"
-               },
-               "live" : {
-                  "description" : "Indicates whether the notification originated from the live environment or the test environment. If true, the notification originated from the live environment. If false, the notification originated from the test environment.",
-                  "type" : "boolean"
-               },
-               "pspReference" : {
-                  "description" : "The PSP reference of the request from which the notification originates.",
-                  "type" : "string"
-               }
-            },
-            "required" : [
-               "executingUserKey",
-               "pspReference",
-               "eventType",
-               "live",
-               "content"
-            ]
-         },
-         "TransferNotPaidoutTransfersNotificationContent" : {
-            "properties" : {
-               "amount" : {
-                  "description" : "The amount transferred.",
-                  "$ref" : "#/components/schemas/Amount"
-               },
-               "destinationAccountCode" : {
-                  "description" : "The code of the Account to which funds were credited.",
-                  "type" : "string"
-               },
-               "sourceAccountCode" : {
-                  "description" : "The code of the Account from which funds were debited.",
-                  "type" : "string"
-               },
-               "status" : {
-                  "description" : "The status of the fund transfer.",
-                  "$ref" : "#/components/schemas/OperationStatus"
-               }
-            },
-            "required" : [
-               "sourceAccountCode",
-               "destinationAccountCode",
-               "amount"
             ]
          },
          "UpdateAccountHolderResponse" : {

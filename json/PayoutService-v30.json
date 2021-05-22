@@ -226,6 +226,14 @@
             "requestBody" : {
                "content" : {
                   "application/json" : {
+                     "examples" : {
+                        "payout-p2p" : {
+                           "$ref" : "#/components/examples/post-payout-payout-p2p"
+                        },
+                        "payout-b2c" : {
+                           "$ref" : "#/components/examples/post-payout-payout-b2c"
+                        }
+                     },
                      "schema" : {
                         "$ref" : "#/components/schemas/PayoutRequest"
                      }
@@ -246,6 +254,11 @@
                "400" : {
                   "content" : {
                      "application/json" : {
+                        "examples" : {
+                           "generic-400" : {
+                              "$ref" : "#/components/examples/generic-400"
+                           }
+                        },
                         "schema" : {
                            "$ref" : "#/components/schemas/ServiceError"
                         }
@@ -406,8 +419,17 @@
                         "storeDetailAndSubmitThirdParty-Neteller" : {
                            "$ref" : "#/components/examples/post-storeDetailAndSubmitThirdParty-storeDetailAndSubmitThirdParty-Neteller"
                         },
+                        "storeDetailAndSubmitThirdParty-Skrill" : {
+                           "$ref" : "#/components/examples/post-storeDetailAndSubmitThirdParty-storeDetailAndSubmitThirdParty-Skrill"
+                        },
+                        "storeDetailAndSubmitThirdParty-PayPal" : {
+                           "$ref" : "#/components/examples/post-storeDetailAndSubmitThirdParty-storeDetailAndSubmitThirdParty-PayPal"
+                        },
                         "storeDetailAndSubmitThirdParty" : {
                            "$ref" : "#/components/examples/post-storeDetailAndSubmitThirdParty-storeDetailAndSubmitThirdParty"
+                        },
+                        "storeDetailAndSubmitThirdParty-Paysafecard" : {
+                           "$ref" : "#/components/examples/post-storeDetailAndSubmitThirdParty-storeDetailAndSubmitThirdParty-Paysafecard"
                         }
                      },
                      "schema" : {
@@ -430,6 +452,11 @@
                "400" : {
                   "content" : {
                      "application/json" : {
+                        "examples" : {
+                           "generic-400" : {
+                              "$ref" : "#/components/examples/generic-400"
+                           }
+                        },
                         "schema" : {
                            "$ref" : "#/components/schemas/ServiceError"
                         }
@@ -2127,7 +2154,7 @@
                   "type" : "string"
                },
                "shopperStatement" : {
-                  "description" : "The text to be shown on the shopper's bank statement. To enable this field, contact our [Support Team](https://support.adyen.com/hc/en-us/requests/new).\n We recommend sending a maximum of 25 characters, otherwise banks might truncate the string.",
+                  "description" : "The text to be shown on the shopper's bank statement. To enable this field, contact our [Support Team](https://support.adyen.com/hc/en-us/requests/new).\n We recommend sending a maximum of 22 characters, otherwise banks might truncate the string.",
                   "type" : "string"
                },
                "socialSecurityNumber" : {
@@ -2291,6 +2318,14 @@
                   "description" : "Information provided by the issuer to the cardholder. If this field is present, you need to display this information to the cardholder. ",
                   "type" : "string"
                },
+               "cavv" : {
+                  "description" : "The Cardholder Authentication Verification Value (CAVV) for the 3D Secure authentication session, as a Base64-encoded 20-byte array.",
+                  "type" : "string"
+               },
+               "cavvAlgorithm" : {
+                  "description" : "The CAVV algorithm used.",
+                  "type" : "string"
+               },
                "scaExemptionRequested" : {
                   "description" : "Shows the [exemption type](https://docs.adyen.com/payments-fundamentals/psd2-sca-compliance-and-implementation-guide#specifypreferenceinyourapirequest) that Adyen requested for the payment.\n\n Possible values:\n* **lowValue** \n* **secureCorporate** \n* **trustedBeneficiary** \n* **transactionRiskAnalysis** ",
                   "type" : "string"
@@ -2383,6 +2418,10 @@
                   "description" : "Authorisation code:\n* When the payment is authorised successfully, this field holds the authorisation code for the payment.\n* When the payment is not authorised, this field is empty.\n\nExample: 58747",
                   "type" : "string"
                },
+               "authorisationMid" : {
+                  "description" : "Merchant ID known by the acquirer.",
+                  "type" : "string"
+               },
                "authorisedAmountCurrency" : {
                   "description" : "The currency of the authorised amount, as a three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).",
                   "type" : "string"
@@ -2401,6 +2440,10 @@
                },
                "bic" : {
                   "description" : "BIC of a bank account.\n\nExample: TESTNL01\n\n> Only relevant for SEPA Direct Debit transactions.",
+                  "type" : "string"
+               },
+               "coBrandedWith" : {
+                  "description" : "Includes the co-branded card information.",
                   "type" : "string"
                },
                "cvcResult" : {
@@ -2437,6 +2480,18 @@
                   "description" : "The fraud score due to a particular fraud check. The fraud check name is found in the key of the key-value pair.",
                   "type" : "string"
                },
+               "fraudManualReview" : {
+                  "description" : "Indicates if the payment is sent to manual review.",
+                  "type" : "string"
+               },
+               "fraudResultType" : {
+                  "description" : "The fraud result properties of the payment.",
+                  "enum" : [
+                     "GREEN",
+                     "FRAUD"
+                  ],
+                  "type" : "string"
+               },
                "fundingSource" : {
                   "description" : "Information regarding the funding type of the card. The possible return values are:\n* CHARGE\n* CREDIT\n* DEBIT\n* PREPAID\n* PREPAID_RELOADABLE\n\n* PREPAID_NONRELOADABLE\n* DEFFERED_DEBIT\n\n> This functionality requires additional configuration on Adyen's end. To enable it, contact the Support Team.\n\nFor receiving this field in the notification, enable **Include Funding Source** in **Notifications** > **Additional settings**.",
                   "type" : "string"
@@ -2449,12 +2504,24 @@
                   "description" : "Provides the more granular indication of why a transaction was refused. When a transaction fails with either \"Refused\", \"Restricted Card\", \"Transaction Not Permitted\", \"Not supported\" or \"DeclinedNon Generic\" refusalReason from the issuer, Adyen cross references its PSP-wide data for extra insight into the refusal reason. If an inferred refusal reason is available, the `inferredRefusalReason`, field is populated and the `refusalReason`, is set to \"Not Supported\".\n\nPossible values:\n\n* 3D Secure Mandated\n* Closed Account\n* ContAuth Not Supported\n* CVC Mandated\n* Ecommerce Not Allowed\n* Crossborder Not Supported\n* Card Updated\n\n* Low Authrate Bin\n* Non-reloadable prepaid card",
                   "type" : "string"
                },
+               "isCardCommercial" : {
+                  "description" : "Indicates if the card is used for business purposes only.",
+                  "type" : "string"
+               },
                "issuerCountry" : {
                   "description" : "The issuing country of the card based on the BIN list that Adyen maintains.\n\nExample: JP",
                   "type" : "string"
                },
+               "liabilityShift" : {
+                  "description" : "A Boolean value indicating whether a liability shift was offered for this payment.",
+                  "type" : "string"
+               },
                "mcBankNetReferenceNumber" : {
                   "description" : "The `mcBankNetReferenceNumber`, is a minimum of six characters and a maximum of nine characters long.\n\n> Contact Support Team to enable this field.",
+                  "type" : "string"
+               },
+               "merchantReference" : {
+                  "description" : "The reference provided for the transaction.",
                   "type" : "string"
                },
                "networkTxReference" : {
@@ -2475,6 +2542,10 @@
                },
                "paymentAccountReference" : {
                   "description" : "The Payment Account Reference (PAR) value links a network token with the underlying primary account number (PAN). The PAR value consists of 29 uppercase alphanumeric characters.",
+                  "type" : "string"
+               },
+               "paymentMethod" : {
+                  "description" : "The payment method used in the transaction.",
                   "type" : "string"
                },
                "paymentMethodVariant" : {
@@ -3183,6 +3254,83 @@
                "response" : "[payout-decline-received]"
             }
          },
+         "post-payout-payout-b2c" : {
+            "summary" : "Instant card payout (B2C)",
+            "description" : "Pay out to your sellers, customers, freelancers, etc",
+            "value" : {
+               "amount" : {
+                  "value" : 2500,
+                  "currency" : "USD"
+               },
+               "card" : {
+                  "number" : "4111111111111111",
+                  "expiryMonth" : "03",
+                  "expiryYear" : "2030",
+                  "holderName" : "John Smith"
+               },
+               "billingAddress" : {
+                  "houseNumberOrName" : "121",
+                  "street" : "Populierenlaan",
+                  "city" : "Beverly Hills",
+                  "postalCode" : "90210",
+                  "stateOrProvince" : "CA",
+                  "country" : "US"
+               },
+               "merchantAccount" : "YOUR_MERCHANT_ACCOUNT",
+               "reference" : "P9999999999999999",
+               "shopperName" : {
+                  "firstName" : "John",
+                  "lastName" : "Smith"
+               },
+               "dateOfBirth" : "1990-01-01",
+               "nationality" : "NL"
+            }
+         },
+         "post-payout-payout-p2p" : {
+            "summary" : "Instant card payout (P2P)",
+            "description" : "Facilitate the transfer of money between two individuals",
+            "value" : {
+               "amount" : {
+                  "value" : 2500,
+                  "currency" : "USD"
+               },
+               "card" : {
+                  "number" : "4111111111111111",
+                  "expiryMonth" : "03",
+                  "expiryYear" : "2030",
+                  "holderName" : "John Smith"
+               },
+               "fundSource" : {
+                  "additionalData" : {
+                     "fundingSource" : "DEBIT"
+                  },
+                  "billingAddress" : {
+                     "country" : "US",
+                     "postalCode" : "90210",
+                     "city" : "Beverly Hills"
+                  },
+                  "card" : {
+                     "expiryMonth" : "03",
+                     "expiryYear" : "2030",
+                     "holderName" : "Payer Name",
+                     "number" : "4400000000000008"
+                  },
+                  "shopperName" : {
+                     "firstName" : "Payer",
+                     "lastName" : "Name"
+                  }
+               },
+               "merchantAccount" : "YOUR_MERCHANT_ACCOUNT",
+               "reference" : "P9999999999999999",
+               "shopperName" : {
+                  "firstName" : "John",
+                  "lastName" : "Smith"
+               },
+               "shopperStatement" : "Payer Name",
+               "dateOfBirth" : "1990-01-01",
+               "nationality" : "NL"
+            }
+         },
          "post-storeDetail-storeDetail" : {
             "summary" : "Store payout details",
             "description" : "Store payment details under the PAYOUT recurring contract",
@@ -3272,6 +3420,97 @@
                "additionalData" : {
                   "tokenDataType" : "Neteller",
                   "account" : "myNetellerAccount"
+               },
+               "shopperName" : {
+                  "firstName" : "Test",
+                  "gender" : "FEMALE",
+                  "lastName" : "Test2"
+               },
+               "dateOfBirth" : "1982-07-17",
+               "entityType" : "NaturalPerson",
+               "nationality" : "NL",
+               "merchantAccount" : "YOUR_MERCHANT_ACCOUNT",
+               "recurring" : {
+                  "contract" : "PAYOUT"
+               },
+               "reference" : "Test Payout",
+               "shopperEmail" : "test@company.com",
+               "shopperReference" : "YOUR_UNIQUE_SHOPPER_ID_IOfW3k9G2PvXFu2j"
+            }
+         },
+         "post-storeDetailAndSubmitThirdParty-storeDetailAndSubmitThirdParty-PayPal" : {
+            "summary" : "Submit a payout to PayPal",
+            "description" : "Submit a payout to PayPal and stores its details for subsequent payouts",
+            "value" : {
+               "amount" : {
+                  "currency" : "EUR",
+                  "value" : 1750
+               },
+               "selectedBrand" : "paypal",
+               "additionalData" : {
+                  "tokenDataType" : "PayPal",
+                  "emailId" : "EmailUsedForPayPalAccount@example.com",
+                  "paypal.payerId" : "AK5HCWWRUV2KL"
+               },
+               "shopperName" : {
+                  "firstName" : "Test",
+                  "gender" : "FEMALE",
+                  "lastName" : "Test2"
+               },
+               "dateOfBirth" : "1982-07-17",
+               "entityType" : "NaturalPerson",
+               "nationality" : "NL",
+               "merchantAccount" : "YOUR_MERCHANT_ACCOUNT",
+               "recurring" : {
+                  "contract" : "PAYOUT"
+               },
+               "reference" : "Test Payout",
+               "shopperEmail" : "test@company.com",
+               "shopperReference" : "YOUR_UNIQUE_SHOPPER_ID_IOfW3k9G2PvXFu2j"
+            }
+         },
+         "post-storeDetailAndSubmitThirdParty-storeDetailAndSubmitThirdParty-Paysafecard" : {
+            "summary" : "Submit a payout to Paysafecard",
+            "description" : "Submit a payout to Paysafecard and stores its details for subsequent payouts",
+            "value" : {
+               "amount" : {
+                  "currency" : "EUR",
+                  "value" : 1000
+               },
+               "selectedBrand" : "paysafecard",
+               "additionalData" : {
+                  "emailId" : "EmailUsedForPaysafecardAccount@example.com"
+               },
+               "shopperName" : {
+                  "firstName" : "Test",
+                  "gender" : "MALE",
+                  "lastName" : "Test2"
+               },
+               "dateOfBirth" : "1982-07-17",
+               "entityType" : "NaturalPerson",
+               "nationality" : "NL",
+               "merchantAccount" : "YOUR_MERCHANT_ACCOUNT",
+               "recurring" : {
+                  "contract" : "PAYOUT"
+               },
+               "reference" : "Test Payout",
+               "shopperEmail" : "test@company.com",
+               "shopperReference" : "YOUR_UNIQUE_SHOPPER_ID_IOfW3k9G2PvXFu2j",
+               "shopperIP" : "61.294.12.12"
+            }
+         },
+         "post-storeDetailAndSubmitThirdParty-storeDetailAndSubmitThirdParty-Skrill" : {
+            "summary" : "Submit a payout to Skrill",
+            "description" : "Submit a payout to Skrill and stores its details for subsequent payouts",
+            "value" : {
+               "amount" : {
+                  "currency" : "EUR",
+                  "value" : 100
+               },
+               "selectedBrand" : "moneybookers",
+               "additionalData" : {
+                  "tokenDataType" : "MoneyBookers",
+                  "email" : "name@adyen.com"
                },
                "shopperName" : {
                   "firstName" : "Test",

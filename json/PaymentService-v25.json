@@ -32,6 +32,23 @@
             "requestBody" : {
                "content" : {
                   "application/json" : {
+                     "examples" : {
+                        "authorise-recurringcontauth" : {
+                           "$ref" : "#/components/examples/post-authorise-authorise-recurringcontauth"
+                        },
+                        "authorise-card" : {
+                           "$ref" : "#/components/examples/post-authorise-authorise-card"
+                        },
+                        "authorise-3dsecure" : {
+                           "$ref" : "#/components/examples/post-authorise-authorise-3dsecure"
+                        },
+                        "authorise-recurringstore" : {
+                           "$ref" : "#/components/examples/post-authorise-authorise-recurringstore"
+                        },
+                        "authorise-recurringoneclick" : {
+                           "$ref" : "#/components/examples/post-authorise-authorise-recurringoneclick"
+                        }
+                     },
                      "schema" : {
                         "$ref" : "#/components/schemas/PaymentRequest"
                      }
@@ -42,6 +59,11 @@
                "200" : {
                   "content" : {
                      "application/json" : {
+                        "examples" : {
+                           "authorise-recurringcontauth-200" : {
+                              "$ref" : "#/components/examples/post-authorise-authorise-recurringcontauth-200"
+                           }
+                        },
                         "schema" : {
                            "$ref" : "#/components/schemas/PaymentResult"
                         }
@@ -52,6 +74,11 @@
                "400" : {
                   "content" : {
                      "application/json" : {
+                        "examples" : {
+                           "generic-400" : {
+                              "$ref" : "#/components/examples/generic-400"
+                           }
+                        },
                         "schema" : {
                            "$ref" : "#/components/schemas/ServiceError"
                         }
@@ -62,6 +89,11 @@
                "401" : {
                   "content" : {
                      "application/json" : {
+                        "examples" : {
+                           "generic-401" : {
+                              "$ref" : "#/components/examples/generic-401"
+                           }
+                        },
                         "schema" : {
                            "$ref" : "#/components/schemas/ServiceError"
                         }
@@ -92,6 +124,11 @@
                "500" : {
                   "content" : {
                      "application/json" : {
+                        "examples" : {
+                           "generic-500" : {
+                              "$ref" : "#/components/examples/generic-500"
+                           }
+                        },
                         "schema" : {
                            "$ref" : "#/components/schemas/ServiceError"
                         }
@@ -305,7 +342,7 @@
       "/cancelOrRefund" : {
          "post" : {
             "summary" : "Cancels or refunds a payment.",
-            "description" : "Cancels a payment if it has not been captured yet, or refunds it if it has already been captured. This is useful when it is not certain if the payment has been captured or not (for example, when using auto-capture).\n\n> Do not use this request for payments that involve (multiple) partial captures.\n\nFor more information, refer to [Cancel or refund](https://docs.adyen.com/online-payments/cancel-or-refund).",
+            "description" : "Cancels a payment if it has not been captured yet, or refunds it if it has already been captured. This is useful when it is not certain if the payment has been captured or not (for example, when using auto-capture).\n\n> Do not use this endpoint for payments that involve:\n> * [Multiple partial captures](https://docs.adyen.com/online-payments/capture).\n> * [Split data](https://docs.adyen.com/platforms/processing-payments#providing-split-information) either at time of payment or capture for Adyen for Platforms.\n>\n> Instead, check if the payment has been captured and make a corresponding [`/refund`](https://docs.adyen.com/api-explorer/#/Payment/refund) or [`/cancel`](https://docs.adyen.com/api-explorer/#/Payment/cancel) call.\n\nFor more information, refer to [Cancel or refund](https://docs.adyen.com/online-payments/cancel-or-refund).",
             "operationId" : "post-cancelOrRefund",
             "x-groupName" : "Modifications",
             "x-sortIndex" : 4,
@@ -2501,7 +2538,7 @@
                   "type" : "string"
                },
                "shopperStatement" : {
-                  "description" : "The text to be shown on the shopper's bank statement. To enable this field, contact our [Support Team](https://support.adyen.com/hc/en-us/requests/new).\n We recommend sending a maximum of 25 characters, otherwise banks might truncate the string.",
+                  "description" : "The text to be shown on the shopper's bank statement. To enable this field, contact our [Support Team](https://support.adyen.com/hc/en-us/requests/new).\n We recommend sending a maximum of 22 characters, otherwise banks might truncate the string.",
                   "type" : "string"
                },
                "socialSecurityNumber" : {
@@ -2737,7 +2774,7 @@
                   "type" : "string"
                },
                "shopperStatement" : {
-                  "description" : "The text to be shown on the shopper's bank statement. To enable this field, contact our [Support Team](https://support.adyen.com/hc/en-us/requests/new).\n We recommend sending a maximum of 25 characters, otherwise banks might truncate the string.",
+                  "description" : "The text to be shown on the shopper's bank statement. To enable this field, contact our [Support Team](https://support.adyen.com/hc/en-us/requests/new).\n We recommend sending a maximum of 22 characters, otherwise banks might truncate the string.",
                   "type" : "string"
                },
                "socialSecurityNumber" : {
@@ -2993,6 +3030,14 @@
                   "description" : "Information provided by the issuer to the cardholder. If this field is present, you need to display this information to the cardholder. ",
                   "type" : "string"
                },
+               "cavv" : {
+                  "description" : "The Cardholder Authentication Verification Value (CAVV) for the 3D Secure authentication session, as a Base64-encoded 20-byte array.",
+                  "type" : "string"
+               },
+               "cavvAlgorithm" : {
+                  "description" : "The CAVV algorithm used.",
+                  "type" : "string"
+               },
                "scaExemptionRequested" : {
                   "description" : "Shows the [exemption type](https://docs.adyen.com/payments-fundamentals/psd2-sca-compliance-and-implementation-guide#specifypreferenceinyourapirequest) that Adyen requested for the payment.\n\n Possible values:\n* **lowValue** \n* **secureCorporate** \n* **trustedBeneficiary** \n* **transactionRiskAnalysis** ",
                   "type" : "string"
@@ -3085,6 +3130,10 @@
                   "description" : "Authorisation code:\n* When the payment is authorised successfully, this field holds the authorisation code for the payment.\n* When the payment is not authorised, this field is empty.\n\nExample: 58747",
                   "type" : "string"
                },
+               "authorisationMid" : {
+                  "description" : "Merchant ID known by the acquirer.",
+                  "type" : "string"
+               },
                "authorisedAmountCurrency" : {
                   "description" : "The currency of the authorised amount, as a three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).",
                   "type" : "string"
@@ -3103,6 +3152,10 @@
                },
                "bic" : {
                   "description" : "BIC of a bank account.\n\nExample: TESTNL01\n\n> Only relevant for SEPA Direct Debit transactions.",
+                  "type" : "string"
+               },
+               "coBrandedWith" : {
+                  "description" : "Includes the co-branded card information.",
                   "type" : "string"
                },
                "cvcResult" : {
@@ -3139,6 +3192,18 @@
                   "description" : "The fraud score due to a particular fraud check. The fraud check name is found in the key of the key-value pair.",
                   "type" : "string"
                },
+               "fraudManualReview" : {
+                  "description" : "Indicates if the payment is sent to manual review.",
+                  "type" : "string"
+               },
+               "fraudResultType" : {
+                  "description" : "The fraud result properties of the payment.",
+                  "enum" : [
+                     "GREEN",
+                     "FRAUD"
+                  ],
+                  "type" : "string"
+               },
                "fundingSource" : {
                   "description" : "Information regarding the funding type of the card. The possible return values are:\n* CHARGE\n* CREDIT\n* DEBIT\n* PREPAID\n* PREPAID_RELOADABLE\n\n* PREPAID_NONRELOADABLE\n* DEFFERED_DEBIT\n\n> This functionality requires additional configuration on Adyen's end. To enable it, contact the Support Team.\n\nFor receiving this field in the notification, enable **Include Funding Source** in **Notifications** > **Additional settings**.",
                   "type" : "string"
@@ -3151,12 +3216,24 @@
                   "description" : "Provides the more granular indication of why a transaction was refused. When a transaction fails with either \"Refused\", \"Restricted Card\", \"Transaction Not Permitted\", \"Not supported\" or \"DeclinedNon Generic\" refusalReason from the issuer, Adyen cross references its PSP-wide data for extra insight into the refusal reason. If an inferred refusal reason is available, the `inferredRefusalReason`, field is populated and the `refusalReason`, is set to \"Not Supported\".\n\nPossible values:\n\n* 3D Secure Mandated\n* Closed Account\n* ContAuth Not Supported\n* CVC Mandated\n* Ecommerce Not Allowed\n* Crossborder Not Supported\n* Card Updated\n\n* Low Authrate Bin\n* Non-reloadable prepaid card",
                   "type" : "string"
                },
+               "isCardCommercial" : {
+                  "description" : "Indicates if the card is used for business purposes only.",
+                  "type" : "string"
+               },
                "issuerCountry" : {
                   "description" : "The issuing country of the card based on the BIN list that Adyen maintains.\n\nExample: JP",
                   "type" : "string"
                },
+               "liabilityShift" : {
+                  "description" : "A Boolean value indicating whether a liability shift was offered for this payment.",
+                  "type" : "string"
+               },
                "mcBankNetReferenceNumber" : {
                   "description" : "The `mcBankNetReferenceNumber`, is a minimum of six characters and a maximum of nine characters long.\n\n> Contact Support Team to enable this field.",
+                  "type" : "string"
+               },
+               "merchantReference" : {
+                  "description" : "The reference provided for the transaction.",
                   "type" : "string"
                },
                "networkTxReference" : {
@@ -3177,6 +3254,10 @@
                },
                "paymentAccountReference" : {
                   "description" : "The Payment Account Reference (PAR) value links a network token with the underlying primary account number (PAN). The PAR value consists of 29 uppercase alphanumeric characters.",
+                  "type" : "string"
+               },
+               "paymentMethod" : {
+                  "description" : "The payment method used in the transaction.",
                   "type" : "string"
                },
                "paymentMethodVariant" : {
@@ -3597,6 +3678,124 @@
                "message" : "Payment details are not supported",
                "errorType" : "configuration",
                "pspReference" : "8516091485743033"
+            }
+         },
+         "post-authorise-authorise-3dsecure" : {
+            "summary" : "Initiate a 3D Secure payment",
+            "value" : {
+               "amount" : {
+                  "value" : 1500,
+                  "currency" : "EUR"
+               },
+               "browserInfo" : {
+                  "userAgent" : "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9) Gecko/2008052912 Firefox/3.0",
+                  "acceptHeader" : "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+               },
+               "card" : {
+                  "number" : "5212345678901234",
+                  "expiryMonth" : "03",
+                  "expiryYear" : "2030",
+                  "cvc" : "737",
+                  "holderName" : "John Smith"
+               },
+               "reference" : "YOUR_REFERENCE",
+               "merchantAccount" : "YOUR_MERCHANT_ACCOUNT"
+            }
+         },
+         "post-authorise-authorise-card" : {
+            "summary" : "Authorise a card payment",
+            "value" : {
+               "card" : {
+                  "number" : "4111111111111111",
+                  "expiryMonth" : "03",
+                  "expiryYear" : "2030",
+                  "cvc" : "737",
+                  "holderName" : "John Smith"
+               },
+               "amount" : {
+                  "value" : 1500,
+                  "currency" : "EUR"
+               },
+               "reference" : "YOUR_REFERENCE",
+               "merchantAccount" : "YOUR_MERCHANT_ACCOUNT"
+            }
+         },
+         "post-authorise-authorise-recurringcontauth" : {
+            "summary" : "Authorise a recurring payment",
+            "value" : {
+               "amount" : {
+                  "value" : 2000,
+                  "currency" : "EUR"
+               },
+               "reference" : "YOUR_REFERENCE",
+               "shopperEmail" : "s.hopper@test.com",
+               "shopperIP" : "61.294.12.12",
+               "shopperReference" : "YOUR_UNIQUE_SHOPPER_ID_IOfW3k9G2PvXFu2j",
+               "selectedRecurringDetailReference" : "LATEST",
+               "recurring" : {
+                  "contract" : "RECURRING"
+               },
+               "shopperInteraction" : "ContAuth",
+               "merchantAccount" : "YOUR_MERCHANT_ACCOUNT"
+            }
+         },
+         "post-authorise-authorise-recurringcontauth-200" : {
+            "summary" : "Example response for request 'authorise-recurringcontauth'",
+            "value" : {
+               "additionalData" : {
+                  "recurringProcessingModel" : "CardOnFile",
+                  "recurring.recurringDetailReference" : "8316172010100170",
+                  "recurring.shopperReference" : "YOUR_UNIQUE_SHOPPER_ID_IOfW3k9G2PvXFu2j"
+               },
+               "pspReference" : "852617895343904C",
+               "resultCode" : "Authorised",
+               "authCode" : "065914"
+            }
+         },
+         "post-authorise-authorise-recurringoneclick" : {
+            "summary" : "Authorise a one-click payment",
+            "value" : {
+               "amount" : {
+                  "value" : 2000,
+                  "currency" : "EUR"
+               },
+               "card" : {
+                  "cvc" : "737"
+               },
+               "reference" : "YOUR_REFERENCE",
+               "shopperEmail" : "s.hopper@test.com",
+               "shopperIP" : "61.294.12.12",
+               "shopperReference" : "YOUR_UNIQUE_SHOPPER_ID_IOfW3k9G2PvXFu2j",
+               "selectedRecurringDetailReference" : "LATEST",
+               "recurring" : {
+                  "contract" : "ONECLICK"
+               },
+               "shopperInteraction" : "Ecommerce",
+               "merchantAccount" : "YOUR_MERCHANT_ACCOUNT"
+            }
+         },
+         "post-authorise-authorise-recurringstore" : {
+            "summary" : "Store card details for recurring payments",
+            "value" : {
+               "amount" : {
+                  "value" : 2000,
+                  "currency" : "EUR"
+               },
+               "card" : {
+                  "number" : "4111111111111111",
+                  "expiryMonth" : "03",
+                  "expiryYear" : "2030",
+                  "cvc" : "737",
+                  "holderName" : "John Smith"
+               },
+               "reference" : "YOUR_REFERENCE",
+               "shopperEmail" : "s.hopper@test.com",
+               "shopperIP" : "61.294.12.12",
+               "shopperReference" : "YOUR_UNIQUE_SHOPPER_ID_IOfW3k9G2PvXFu2j",
+               "recurring" : {
+                  "contract" : "RECURRING,ONECLICK"
+               },
+               "merchantAccount" : "YOUR_MERCHANT_ACCOUNT"
             }
          },
          "post-authorise3d-authorise3d" : {
