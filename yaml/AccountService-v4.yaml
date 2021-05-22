@@ -279,6 +279,8 @@ paths:
             examples:
               business:
                 $ref: '#/components/examples/post-createAccountHolder-business'
+              individual:
+                $ref: '#/components/examples/post-createAccountHolder-individual'
             schema:
               $ref: '#/components/schemas/CreateAccountHolderRequest'
       responses:
@@ -291,6 +293,9 @@ paths:
         '400':
           content:
             application/json:
+              examples:
+                generic-400:
+                  $ref: '#/components/examples/generic-400'
               schema:
                 $ref: '#/components/schemas/ServiceError'
           description: Bad Request - a problem reading or understanding the request.
@@ -327,7 +332,7 @@ paths:
       description: 'Deletes one or more bank accounts of an account holder. '
       operationId: post-deleteBankAccounts
       x-groupName: Verification
-      x-sortIndex: 3
+      x-sortIndex: 4
       requestBody:
         content:
           application/json:
@@ -392,7 +397,7 @@ paths:
       description: Deletes one or more shareholders from an account holder.
       operationId: post-deleteShareholders
       x-groupName: Verification
-      x-sortIndex: 4
+      x-sortIndex: 6
       requestBody:
         content:
           application/json:
@@ -401,6 +406,68 @@ paths:
                 $ref: '#/components/examples/post-deleteShareholders-basic'
             schema:
               $ref: '#/components/schemas/DeleteShareholderRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+          description: OK - the request has succeeded.
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+          description: Accepted - the request has been accepted for processing, but
+            the processing has not been completed.
+        '400':
+          content:
+            application/json:
+              examples:
+                generic-400:
+                  $ref: '#/components/examples/generic-400'
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Bad Request - a problem reading or understanding the request.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Unauthorized - authentication required.
+        '403':
+          content:
+            application/json:
+              examples:
+                generic-403:
+                  $ref: '#/components/examples/generic-403'
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Forbidden - insufficient permissions to process the request.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Unprocessable Entity - a request validation error.
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Internal Server Error - the server could not process the request.
+  /deleteSignatories:
+    post:
+      summary: Delete signatories of an existing account holder.
+      description: Deletes one or more signatories from an account holder.
+      operationId: post-deleteSignatories
+      x-groupName: Verification
+      x-sortIndex: 7
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteSignatoriesRequest'
       responses:
         '200':
           content:
@@ -867,6 +934,10 @@ paths:
             examples:
               general:
                 $ref: '#/components/examples/post-updateAccountHolder-general'
+              bankAccountDetails:
+                $ref: '#/components/examples/post-updateAccountHolder-bankAccountDetails'
+              addShareholders:
+                $ref: '#/components/examples/post-updateAccountHolder-addShareholders'
               businessDetails:
                 $ref: '#/components/examples/post-updateAccountHolder-businessDetails'
             schema:
@@ -888,6 +959,9 @@ paths:
         '400':
           content:
             application/json:
+              examples:
+                generic-400:
+                  $ref: '#/components/examples/generic-400'
               schema:
                 $ref: '#/components/schemas/ServiceError'
           description: Bad Request - a problem reading or understanding the request.
@@ -1716,6 +1790,7 @@ components:
           - EVERY_6_HOURS_FROM_MIDNIGHT
           - HOLD
           - MONTHLY
+          - MONTHLY_ON_15TH_AT_MIDNIGHT
           - WEEKLY
           - WEEKLY_ON_TUE_FRI_MIDNIGHT
           - YEARLY
@@ -1802,6 +1877,19 @@ components:
       required:
       - accountHolderCode
       - shareholderCodes
+    DeleteSignatoriesRequest:
+      properties:
+        accountHolderCode:
+          description: The code of the account holder from which to delete the signatories.
+          type: string
+        signatoryCodes:
+          description: Array of codes of the signatories to be deleted.
+          items:
+            type: string
+          type: array
+      required:
+      - accountHolderCode
+      - signatoryCodes
     DocumentDetail:
       properties:
         accountHolderCode:
@@ -2010,9 +2098,12 @@ components:
           - schedule
           - shareholder
           - shareholderCode
+          - shareholderCodeAndSignatoryCode
+          - shareholderCodeOrSignatoryCode
           - shareholderType
           - shopperInteraction
           - signatory
+          - signatoryCode
           - socialSecurityNumber
           - sourceAccountCode
           - splitAccount
@@ -2295,8 +2386,9 @@ components:
         status:
           description: 'The status of the check.
 
-            >Permitted Values: `DATA_PROVIDED`, `PASSED`, `PENDING`, `AWAITING_DATA`,
-            `RETRY_LIMIT_REACHED`, `INVALID_DATA`, `FAILED`.'
+
+            Possible values: **AWAITING_DATA** , **DATA_PROVIDED**, **FAILED**, **INVALID_DATA**,
+            **PASSED**, **PENDING**, **RETRY_LIMIT_REACHED**.'
           enum:
           - AWAITING_DATA
           - DATA_PROVIDED
@@ -2312,10 +2404,11 @@ components:
           description: A summary of the execution of the check.
           $ref: '#/components/schemas/KYCCheckSummary'
         type:
-          description: 'The type of check.
-
-            >Permitted Values: `COMPANY_VERIFICATION`, `IDENTITY_VERIFICATION`, `PASSPORT_VERIFICATION`,
-            `BANK_ACCOUNT_VERIFICATION`, `NONPROFIT_VERIFICATION`, `CARD_VERIFICATION`.'
+          description: "The type of check.\n\nPossible values:\n\n * **BANK_ACCOUNT_VERIFICATION**:\
+            \ Used in v5 and earlier. Replaced by **PAYOUT_METHOD_VERIFICATION** in\
+            \ v6 and later.\n\n * **COMPANY_VERIFICATION**\n\n  * **CARD_VERIFICATION**\n\
+            \n* **IDENTITY_VERIFICATION**\n\n* **PASSPORT_VERIFICATION**\n\n* **PAYOUT_METHOD_VERIFICATION**:\
+            \ Used in v6 and later.\n\n* **NONPROFIT_VERIFICATION**\n\n "
           enum:
           - BANK_ACCOUNT_VERIFICATION
           - CARD_VERIFICATION
@@ -2359,15 +2452,15 @@ components:
     KYCVerificationResult2:
       properties:
         accountHolder:
-          description: The result(s) of the checks on the account holder.
+          description: The results of the checks on the account holder.
           $ref: '#/components/schemas/KYCCheckResult2'
         bankAccounts:
-          description: The result(s) of the checks on the bank account(s).
+          description: The results of the checks on the bank accounts.
           items:
             $ref: '#/components/schemas/KYCBankAccountCheckResult'
           type: array
         shareholders:
-          description: The result(s) of the checks on the shareholder(s).
+          description: The results of the checks on the shareholders.
           items:
             $ref: '#/components/schemas/KYCShareholderCheckResult'
           type: array
@@ -2394,6 +2487,7 @@ components:
           - EVERY_6_HOURS_FROM_MIDNIGHT
           - HOLD
           - MONTHLY
+          - MONTHLY_ON_15TH_AT_MIDNIGHT
           - WEEKLY
           - WEEKLY_ON_TUE_FRI_MIDNIGHT
           - YEARLY
@@ -2871,6 +2965,7 @@ components:
           - EVERY_6_HOURS_FROM_MIDNIGHT
           - HOLD
           - MONTHLY
+          - MONTHLY_ON_15TH_AT_MIDNIGHT
           - WEEKLY
           - WEEKLY_ON_TUE_FRI_MIDNIGHT
           - YEARLY
@@ -3089,6 +3184,21 @@ components:
           email: test@adyen.com
           webAddress: https://www.your-website.com
         legalEntity: Business
+    post-createAccountHolder-individual:
+      summary: Create an individual account holder
+      value:
+        accountHolderCode: GENERATE_CODE
+        accountHolderDetails:
+          email: tim@green.com
+          individualDetails:
+            name:
+              firstName: Tim
+              gender: MALE
+              lastName: Green
+          address:
+            country: US
+          webAddress: https://www.your-website.com
+        legalEntity: Individual
     post-deleteBankAccounts-basic:
       summary: Delete bank accounts
       value:
@@ -3135,6 +3245,44 @@ components:
         payoutSchedule:
           schedule: WEEKLY
           action: CLOSE
+    post-updateAccountHolder-addShareholders:
+      summary: Add shareholders
+      value:
+        accountHolderCode: CODE_OF_ACCOUNT_HOLDER
+        accountHolderDetails:
+          bankAccountDetails: []
+          businessDetails:
+            legalBusinessName: legalBusinessName
+            shareholders:
+            - ShareholderContact:
+                email: testEmail@gmail.com
+                personalData:
+                  idNumber: '12345'
+            taxId: taxid
+    post-updateAccountHolder-bankAccountDetails:
+      summary: Update bank account details
+      value:
+        accountHolderCode: CODE_OF_ACCOUNT_HOLDER
+        accountHolderDetails:
+          email: tim@green.com
+          individualDetails:
+            name:
+              firstName: Tim
+              gender: MALE
+              lastName: Green
+          bankAccountDetails:
+          - BankAccountDetail:
+              accountNumber: '1678116852'
+              branchCode: '053101273'
+              countryCode: US
+              currencyCode: USD
+              ownerName: Tim Green
+              ownerHouseNumberOrName: '100'
+              ownerStreet: Main Street
+              ownerPostalCode: 02894
+              ownerCity: Springfield
+              ownerState: AZ
+              ownerCountryCode: US
     post-updateAccountHolder-businessDetails:
       summary: Update business details
       value:
