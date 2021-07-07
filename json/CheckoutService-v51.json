@@ -1851,7 +1851,7 @@
       "/payments/{paymentPspReference}/amountUpdates" : {
          "post" : {
             "summary" : "Increases or decreases the authorised amount.",
-            "description" : "Increases or decreases the authorised payment amount and returns a unique reference for this request. You get the outcome of the request asynchronosly, in an [**AUTHORISATION_ADJUSTMENT** webhook](https://docs.adyen.com/development-resources/webhooks/understand-notifications#event-codes).\n\nYou can only update authorised amounts that have not yet been [captured](https://docs.adyen.com/api-explorer/#/CheckoutService/latest/post/payments/{paymentPspReference}/captures).\n\nThe amount you specify in the request is the updated amount, which is larger or smaller than the initial authorised amount.\n\nFor more information, refer to [Authorisation adjustment](https://docs.adyen.com/online-payments/adjust-authorisation#use-cases).",
+            "description" : "Increases or decreases the authorised payment amount and returns a unique reference for this request. You get the outcome of the request asynchronously, in an [**AUTHORISATION_ADJUSTMENT** webhook](https://docs.adyen.com/development-resources/webhooks/understand-notifications#event-codes).\n\nYou can only update authorised amounts that have not yet been [captured](https://docs.adyen.com/api-explorer/#/CheckoutService/latest/post/payments/{paymentPspReference}/captures).\n\nThe amount you specify in the request is the updated amount, which is larger or smaller than the initial authorised amount.\n\nFor more information, refer to [Authorisation adjustment](https://docs.adyen.com/online-payments/adjust-authorisation#use-cases).",
             "operationId" : "post-payments-paymentPspReference-amountUpdates",
             "x-groupName" : "Modifications",
             "x-sortIndex" : 6,
@@ -2139,7 +2139,7 @@
       "/payments/{paymentPspReference}/captures" : {
          "post" : {
             "summary" : "Captures an authorised payment.",
-            "description" : " Captures an authorised payment and returns a unique reference for this request. You get the outcome of the request asynchronosly, in a [**CAPTURE** webhook](https://docs.adyen.com/online-payments/capture#capture-notification).\n\nYou can capture either the full authorised amount or a part of the authorised amount. By default, any unclaimed amount after a partial capture gets cancelled. This does not apply if you enabled multiple partial captures on your account and the payment method supports multiple partial captures. \n\n[Automatic capture](https://docs.adyen.com/online-payments/capture#automatic-capture) is the default setting for most payment methods. In these cases, you don't need to make capture requests. However, making capture requests for payments that are captured automatically does not result in double charges.\n\nFor more information, refer to [Capture](https://docs.adyen.com/online-payments/capture).",
+            "description" : " Captures an authorised payment and returns a unique reference for this request. You get the outcome of the request asynchronously, in a [**CAPTURE** webhook](https://docs.adyen.com/online-payments/capture#capture-notification).\n\nYou can capture either the full authorised amount or a part of the authorised amount. By default, any unclaimed amount after a partial capture gets cancelled. This does not apply if you enabled multiple partial captures on your account and the payment method supports multiple partial captures. \n\n[Automatic capture](https://docs.adyen.com/online-payments/capture#automatic-capture) is the default setting for most payment methods. In these cases, you don't need to make capture requests. However, making capture requests for payments that are captured automatically does not result in double charges.\n\nFor more information, refer to [Capture](https://docs.adyen.com/online-payments/capture).",
             "operationId" : "post-payments-paymentPspReference-captures",
             "x-groupName" : "Modifications",
             "x-sortIndex" : 1,
@@ -3622,7 +3622,7 @@
          "Address" : {
             "properties" : {
                "city" : {
-                  "description" : "The name of the city.",
+                  "description" : "The name of the city. Maximum length: 3000 characters.",
                   "type" : "string"
                },
                "country" : {
@@ -3630,7 +3630,7 @@
                   "type" : "string"
                },
                "houseNumberOrName" : {
-                  "description" : "The number or name of the house.",
+                  "description" : "The number or name of the house. Maximum length: 3000 characters.",
                   "type" : "string"
                },
                "postalCode" : {
@@ -3642,7 +3642,7 @@
                   "type" : "string"
                },
                "street" : {
-                  "description" : "The name of the street.\n> The house number should not be included in this field; it should be separately provided via `houseNumberOrName`.",
+                  "description" : "The name of the street. Maximum length: 3000 characters.\n> The house number should not be included in this field; it should be separately provided via `houseNumberOrName`.",
                   "type" : "string"
                }
             },
@@ -4166,6 +4166,7 @@
                      "alipay_hk_wap",
                      "alipay_hk_web",
                      "alipay_wap",
+                     "kcp_naverpay",
                      "upi",
                      "primeiropay_boleto",
                      "gopay_wallet",
@@ -5270,7 +5271,7 @@
                   "type" : "string"
                },
                "reason" : {
-                  "description" : "The reason for the amount update. Possible values: \n* **DelayedCharge** \n* **NoShow**",
+                  "description" : "The reason for the amount update. Possible values: \n* **delayedCharge** \n* **noShow**",
                   "enum" : [
                      "delayedCharge",
                      "noShow"
@@ -5284,8 +5285,7 @@
             },
             "required" : [
                "merchantAccount",
-               "amount",
-               "reason"
+               "amount"
             ]
          },
          "CreatePaymentCancelRequest" : {
@@ -5530,7 +5530,7 @@
                   "$ref" : "#/components/schemas/PaymentCompletionDetails"
                },
                "paymentData" : {
-                  "description" : "The `paymentData` value from the `/payments` response. Required if the `/payments` response returns this value. In v67 and later, you will always get this value from the Component.",
+                  "description" : "The `paymentData` value from the `/payments` response. Required if the `/payments` response returns this value. ",
                   "maxLength" : 100000,
                   "type" : "string"
                },
@@ -5924,10 +5924,10 @@
                   "type" : "string"
                },
                "type" : {
-                  "default" : "paywithgoogle",
-                  "description" : "**paywithgoogle**",
+                  "default" : "googlepay",
+                  "description" : "**googlepay**, **paywithgoogle**",
                   "enum" : [
-                     "paywithgoogle"
+                     "googlepay"
                   ],
                   "type" : "string"
                }
@@ -6422,10 +6422,6 @@
                   "description" : "The first name.",
                   "type" : "string"
                },
-               "infix" : {
-                  "description" : "The name's infix, if applicable.\n>A maximum length of twenty (20) characters is imposed.",
-                  "type" : "string"
-               },
                "lastName" : {
                   "description" : "The last name.",
                   "type" : "string"
@@ -6556,6 +6552,46 @@
             ],
             "title" : "PayU"
          },
+         "PayWithGoogleDetails" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "fundingSource" : {
+                  "description" : "The funding source that should be used when multiple sources are available. For Brazilian combo cards, by default the funding source is credit. To use debit, set this value to **debit**.",
+                  "enum" : [
+                     "debit"
+                  ],
+                  "type" : "string"
+               },
+               "googlePayToken" : {
+                  "description" : "The `token` that you obtained from the [Google Pay API](https://developers.google.com/pay/api/web/reference/response-objects#PaymentData) `PaymentData` response.",
+                  "type" : "string"
+               },
+               "recurringDetailReference" : {
+                  "deprecated" : true,
+                  "x-deprecatedInVersion" : 49,
+                  "x-deprecatedMessage" : "Use `storedPaymentMethodId` instead.",
+                  "description" : "This is the `recurringDetailReference` returned in the response when you created the token.",
+                  "type" : "string"
+               },
+               "storedPaymentMethodId" : {
+                  "x-addedInVersion" : 49,
+                  "description" : "This is the `recurringDetailReference` returned in the response when you created the token.",
+                  "type" : "string"
+               },
+               "type" : {
+                  "default" : "paywithgoogle",
+                  "description" : "**paywithgoogle**",
+                  "enum" : [
+                     "paywithgoogle"
+                  ],
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "googlePayToken"
+            ],
+            "title" : "Google Pay"
+         },
          "PaymentAmountUpdateResource" : {
             "properties" : {
                "amount" : {
@@ -6598,9 +6634,9 @@
                "status",
                "merchantAccount",
                "amount",
+               "reference",
                "pspReference",
-               "paymentPspReference",
-               "reason"
+               "paymentPspReference"
             ]
          },
          "PaymentCancelResource" : {
@@ -7690,6 +7726,9 @@
                      },
                      {
                         "$ref" : "#/components/schemas/PayUUpiDetails"
+                     },
+                     {
+                        "$ref" : "#/components/schemas/PayWithGoogleDetails"
                      },
                      {
                         "$ref" : "#/components/schemas/PaymentDetails"
@@ -12248,6 +12287,10 @@
                      "type" : "kcp_payco"
                   },
                   {
+                     "name" : "Naver Pay",
+                     "type" : "kcp_naverpay"
+                  },
+                  {
                      "name" : "Virtual Account via KCP",
                      "type" : "kcp_va"
                   },
@@ -12699,7 +12742,7 @@
                      "type" : "onetwothree"
                   },
                   {
-                     "name" : "Local Polish Payment Methods",
+                     "name" : "Local Polish Payment Methods (P24)",
                      "type" : "onlineBanking_PL"
                   },
                   {
