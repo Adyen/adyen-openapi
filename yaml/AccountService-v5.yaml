@@ -62,7 +62,7 @@ x-groups:
 paths:
   /checkAccountHolder:
     post:
-      summary: Perform verification for an account holder.
+      summary: Trigger verification.
       description: Triggers the KYC verification for an account holder even if the
         checks are not yet required for the volume that they currently process.
       x-addedInVersion: 5
@@ -263,6 +263,62 @@ paths:
               schema:
                 $ref: '#/components/schemas/ServiceError'
           description: Internal Server Error - the server could not process the request.
+  /closeStores:
+    post:
+      summary: Close stores.
+      description: Close one or more stores of the account holder.
+      x-addedInVersion: 5
+      operationId: post-closeStores
+      x-groupName: Account holders
+      x-sortIndex: 9
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CloseStoresRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+          description: OK - the request has succeeded.
+        '400':
+          content:
+            application/json:
+              examples:
+                generic-400:
+                  $ref: '#/components/examples/generic-400'
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Bad Request - a problem reading or understanding the request.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Unauthorized - authentication required.
+        '403':
+          content:
+            application/json:
+              examples:
+                generic-403:
+                  $ref: '#/components/examples/generic-403'
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Forbidden - insufficient permissions to process the request.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Unprocessable Entity - a request validation error.
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Internal Server Error - the server could not process the request.
   /createAccount:
     post:
       summary: Create a new account.
@@ -395,7 +451,7 @@ paths:
           description: Internal Server Error - the server could not process the request.
   /deleteBankAccounts:
     post:
-      summary: Delete bank accounts of an account holder.
+      summary: Delete bank accounts.
       description: 'Deletes one or more bank accounts of an account holder. '
       operationId: post-deleteBankAccounts
       x-groupName: Verification
@@ -460,7 +516,7 @@ paths:
           description: Internal Server Error - the server could not process the request.
   /deletePayoutMethods:
     post:
-      summary: Delete payout methods of an account holder.
+      summary: Delete payout methods.
       description: Deletes one or more payout methods of an account holder.
       x-addedInVersion: 5
       operationId: post-deletePayoutMethods
@@ -526,7 +582,7 @@ paths:
           description: Internal Server Error - the server could not process the request.
   /deleteShareholders:
     post:
-      summary: Delete shareholders of an existing account holder.
+      summary: Delete shareholders.
       description: Deletes one or more shareholders from an account holder.
       operationId: post-deleteShareholders
       x-groupName: Verification
@@ -591,7 +647,7 @@ paths:
           description: Internal Server Error - the server could not process the request.
   /deleteSignatories:
     post:
-      summary: Delete signatories of an existing account holder.
+      summary: Delete signatories.
       description: Deletes one or more signatories from an account holder.
       operationId: post-deleteSignatories
       x-groupName: Verification
@@ -653,7 +709,7 @@ paths:
           description: Internal Server Error - the server could not process the request.
   /getAccountHolder:
     post:
-      summary: Retrieve the details of an account holder.
+      summary: Get an account holder.
       description: Retrieves the details of an account holder.
       operationId: post-getAccountHolder
       x-groupName: Account holders
@@ -720,7 +776,7 @@ paths:
           description: Internal Server Error - the server could not process the request.
   /getTaxForm:
     post:
-      summary: Request a tax form for an account holder.
+      summary: Get a tax form.
       description: Generates a tax form for account holders operating in the US. For
         more information, refer to [Providing tax forms](https://docs.adyen.com/platforms/tax-forms).
       operationId: post-getTaxForm
@@ -779,7 +835,7 @@ paths:
           description: Internal Server Error - the server could not process the request.
   /getUploadedDocuments:
     post:
-      summary: Retrieve the uploaded documents of an existing account holder.
+      summary: Get documents.
       description: 'Retrieves documents that were previously uploaded for an account
         holder. Adyen uses the documents in the [KYC verification checks](https://docs.adyen.com/platforms/verification-checks).
 
@@ -1127,7 +1183,7 @@ paths:
           description: Internal Server Error - the server could not process the request.
   /updateAccountHolderState:
     post:
-      summary: Update the payout or processing state of an account holder.
+      summary: Update payout or processing state.
       description: Disables or enables the processing or payout state of an account
         holder.
       operationId: post-updateAccountHolderState
@@ -1193,7 +1249,7 @@ paths:
           description: Internal Server Error - the server could not process the request.
   /uploadDocument:
     post:
-      summary: Upload a document for an account holder.
+      summary: Upload a document.
       description: Uploads a document for an account holder. Adyen uses the documents
         in the [KYC verification checks](https://docs.adyen.com/platforms/verification-checks).
       operationId: post-uploadDocument
@@ -1833,6 +1889,19 @@ components:
           type: string
       required:
       - status
+    CloseStoresRequest:
+      properties:
+        accountHolderCode:
+          description: The code of the account holder.
+          type: string
+        stores:
+          description: List of stores to be closed.
+          items:
+            type: string
+          type: array
+      required:
+      - accountHolderCode
+      - stores
     CreateAccountHolderRequest:
       properties:
         accountHolderCode:

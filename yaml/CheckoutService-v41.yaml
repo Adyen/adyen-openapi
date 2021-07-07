@@ -1232,7 +1232,7 @@ paths:
     post:
       summary: Increases or decreases the authorised amount.
       description: 'Increases or decreases the authorised payment amount and returns
-        a unique reference for this request. You get the outcome of the request asynchronosly,
+        a unique reference for this request. You get the outcome of the request asynchronously,
         in an [**AUTHORISATION_ADJUSTMENT** webhook](https://docs.adyen.com/development-resources/webhooks/understand-notifications#event-codes).
 
 
@@ -1437,8 +1437,8 @@ paths:
     post:
       summary: Captures an authorised payment.
       description: " Captures an authorised payment and returns a unique reference\
-        \ for this request. You get the outcome of the request asynchronosly, in a\
-        \ [**CAPTURE** webhook](https://docs.adyen.com/online-payments/capture#capture-notification).\n\
+        \ for this request. You get the outcome of the request asynchronously, in\
+        \ a [**CAPTURE** webhook](https://docs.adyen.com/online-payments/capture#capture-notification).\n\
         \nYou can capture either the full authorised amount or a part of the authorised\
         \ amount. By default, any unclaimed amount after a partial capture gets cancelled.\
         \ This does not apply if you enabled multiple partial captures on your account\
@@ -3378,7 +3378,7 @@ components:
     Address:
       properties:
         city:
-          description: The name of the city.
+          description: 'The name of the city. Maximum length: 3000 characters.'
           type: string
         country:
           description: 'The two-character country code as defined in ISO-3166-1 alpha-2.
@@ -3388,7 +3388,7 @@ components:
             the shopper, provide `country` as `ZZ`.'
           type: string
         houseNumberOrName:
-          description: The number or name of the house.
+          description: 'The number or name of the house. Maximum length: 3000 characters.'
           type: string
         postalCode:
           description: A maximum of five digits for an address in the US, or a maximum
@@ -3401,7 +3401,7 @@ components:
             > Required for the US and Canada.'
           type: string
         street:
-          description: 'The name of the street.
+          description: 'The name of the street. Maximum length: 3000 characters.
 
             > The house number should not be included in this field; it should be
             separately provided via `houseNumberOrName`.'
@@ -3848,6 +3848,7 @@ components:
           - alipay_hk_wap
           - alipay_hk_web
           - alipay_wap
+          - kcp_naverpay
           - upi
           - primeiropay_boleto
           - gopay_wallet
@@ -4498,8 +4499,8 @@ components:
           description: The merchant account that is used to process the payment.
           type: string
         reason:
-          description: "The reason for the amount update. Possible values: \n* **DelayedCharge**\
-            \ \n* **NoShow**"
+          description: "The reason for the amount update. Possible values: \n* **delayedCharge**\
+            \ \n* **noShow**"
           enum:
           - delayedCharge
           - noShow
@@ -4511,7 +4512,6 @@ components:
       required:
       - merchantAccount
       - amount
-      - reason
     CreatePaymentCancelRequest:
       properties:
         merchantAccount:
@@ -4761,9 +4761,8 @@ components:
             as a result of the `/payments` call.
           $ref: '#/components/schemas/PaymentCompletionDetails'
         paymentData:
-          description: The `paymentData` value from the `/payments` response. Required
-            if the `/payments` response returns this value. In v67 and later, you
-            will always get this value from the Component.
+          description: 'The `paymentData` value from the `/payments` response. Required
+            if the `/payments` response returns this value. '
           maxLength: 100000
           type: string
         threeDSAuthenticationOnly:
@@ -5068,10 +5067,10 @@ components:
             when you created the token.
           type: string
         type:
-          default: paywithgoogle
-          description: '**paywithgoogle**'
+          default: googlepay
+          description: '**googlepay**, **paywithgoogle**'
           enum:
-          - paywithgoogle
+          - googlepay
           type: string
       required:
       - googlePayToken
@@ -5484,11 +5483,6 @@ components:
         firstName:
           description: The first name.
           type: string
-        infix:
-          description: 'The name''s infix, if applicable.
-
-            >A maximum length of twenty (20) characters is imposed.'
-          type: string
         lastName:
           description: The last name.
           type: string
@@ -5569,6 +5563,33 @@ components:
       required:
       - type
       title: PayU
+    PayWithGoogleDetails:
+      additionalProperties: false
+      properties:
+        fundingSource:
+          description: The funding source that should be used when multiple sources
+            are available. For Brazilian combo cards, by default the funding source
+            is credit. To use debit, set this value to **debit**.
+          enum:
+          - debit
+          type: string
+        googlePayToken:
+          description: The `token` that you obtained from the [Google Pay API](https://developers.google.com/pay/api/web/reference/response-objects#PaymentData)
+            `PaymentData` response.
+          type: string
+        recurringDetailReference:
+          description: This is the `recurringDetailReference` returned in the response
+            when you created the token.
+          type: string
+        type:
+          default: paywithgoogle
+          description: '**paywithgoogle**'
+          enum:
+          - paywithgoogle
+          type: string
+      required:
+      - googlePayToken
+      title: Google Pay
     PaymentAmountUpdateResource:
       properties:
         amount:
@@ -5606,9 +5627,9 @@ components:
       - status
       - merchantAccount
       - amount
+      - reference
       - pspReference
       - paymentPspReference
-      - reason
     PaymentCancelResource:
       properties:
         merchantAccount:
@@ -6550,6 +6571,7 @@ components:
           - $ref: '#/components/schemas/OpenInvoiceDetails'
           - $ref: '#/components/schemas/PayPalDetails'
           - $ref: '#/components/schemas/PayUUpiDetails'
+          - $ref: '#/components/schemas/PayWithGoogleDetails'
           - $ref: '#/components/schemas/PaymentDetails'
           - $ref: '#/components/schemas/QiwiWalletDetails'
           - $ref: '#/components/schemas/RatepayDetails'
@@ -10075,6 +10097,8 @@ components:
           type: kcp_creditcard
         - name: PayCo
           type: kcp_payco
+        - name: Naver Pay
+          type: kcp_naverpay
         - name: Virtual Account via KCP
           type: kcp_va
         - name: Pay later with Klarna.
@@ -10301,7 +10325,7 @@ components:
           type: onebip
         - name: One Two Three
           type: onetwothree
-        - name: Local Polish Payment Methods
+        - name: Local Polish Payment Methods (P24)
           type: onlineBanking_PL
         - details:
           - items:
