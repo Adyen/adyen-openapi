@@ -60,6 +60,8 @@ x-groups:
 paths:
   /createNotificationConfiguration:
     post:
+      tags:
+      - General
       summary: Subscribe to notifications.
       description: Creates a subscription to notifications informing you of events
         on your platform. After the subscription is created, the events specified
@@ -88,8 +90,8 @@ paths:
           content:
             application/json:
               examples:
-                basic-200:
-                  $ref: '#/components/examples/post-createNotificationConfiguration-basic-200'
+                basic:
+                  $ref: '#/components/examples/post-createNotificationConfiguration-basic'
               schema:
                 $ref: '#/components/schemas/GetNotificationConfigurationResponse'
           description: OK - the request has succeeded.
@@ -125,6 +127,8 @@ paths:
           description: Internal Server Error - the server could not process the request.
   /deleteNotificationConfigurations:
     post:
+      tags:
+      - General
       summary: Delete an existing notification subscription configuration.
       description: This endpoint is used to delete an existing notification subscription
         configuration. After the subscription is deleted, no further event notifications
@@ -179,6 +183,8 @@ paths:
           description: Internal Server Error - the server could not process the request.
   /getNotificationConfiguration:
     post:
+      tags:
+      - General
       summary: Retrieve an existing notification subscription configuration.
       description: This endpoint is used to retrieve the details of the configuration
         of a notification subscription.
@@ -232,6 +238,8 @@ paths:
           description: Internal Server Error - the server could not process the request.
   /getNotificationConfigurationList:
     post:
+      tags:
+      - General
       summary: Retrieve a list of existing notification subscription configurations.
       description: This endpoint is used to retrieve the details of the configurations
         of all of the notification subscriptions in the marketplace of the executing
@@ -286,6 +294,8 @@ paths:
           description: Internal Server Error - the server could not process the request.
   /testNotificationConfiguration:
     post:
+      tags:
+      - General
       summary: Test an existing notification configuration.
       description: This endpoint is used to test an existing notification subscription
         configuration. For each event type specified, a test notification will be
@@ -340,6 +350,8 @@ paths:
           description: Internal Server Error - the server could not process the request.
   /updateNotificationConfiguration:
     post:
+      tags:
+      - General
       summary: Update an existing notification subscription configuration.
       description: This endpoint is used to update an existing notification subscription
         configuration. If updating the event types, all event types desired must be
@@ -363,8 +375,8 @@ paths:
           content:
             application/json:
               examples:
-                basic-200:
-                  $ref: '#/components/examples/post-updateNotificationConfiguration-basic-200'
+                basic:
+                  $ref: '#/components/examples/post-updateNotificationConfiguration-basic'
               schema:
                 $ref: '#/components/schemas/GetNotificationConfigurationResponse'
           description: OK - the request has succeeded.
@@ -535,6 +547,7 @@ components:
           - passport
           - passportNumber
           - payoutMethodCode
+          - payoutSchedule
           - personalData
           - phoneCountryCode
           - phoneNumber
@@ -555,6 +568,7 @@ components:
           - socialSecurityNumber
           - sourceAccountCode
           - splitAccount
+          - splitConfigurationUUID
           - splitCurrency
           - splitValue
           - splits
@@ -598,7 +612,7 @@ components:
     GenericResponse:
       properties:
         invalidFields:
-          x-addedInVersion: 5
+          x-addedInVersion: '5'
           description: Contains field validation errors that would prevent requests
             from being processed.
           items:
@@ -619,7 +633,7 @@ components:
             $ref: '#/components/schemas/NotificationConfigurationDetails'
           type: array
         invalidFields:
-          x-addedInVersion: 5
+          x-addedInVersion: '5'
           description: Contains field validation errors that would prevent requests
             from being processed.
           items:
@@ -649,7 +663,7 @@ components:
           description: Details of the notification subscription configuration.
           $ref: '#/components/schemas/NotificationConfigurationDetails'
         invalidFields:
-          x-addedInVersion: 5
+          x-addedInVersion: '5'
           description: Contains field validation errors that would prevent requests
             from being processed.
           items:
@@ -677,12 +691,13 @@ components:
           description: A description of the notification subscription configuration.
           type: string
         eventConfigs:
-          description: The types of events whose notifications apply to this configuration.
+          description: Contains objects that define event types and their subscription
+            settings.
           items:
             $ref: '#/components/schemas/NotificationEventConfiguration'
           type: array
         hmacSignatureKey:
-          x-addedInVersion: 5
+          x-addedInVersion: '5'
           description: 'A string with which to salt the notification(s) before hashing.
             If this field is provided, a hash value will be included under the notification
             header `HmacSignature` and the hash protocol will be included under the
@@ -700,10 +715,9 @@ components:
             and `Protocol` headers in notification(s).'
           type: string
         notificationId:
-          description: 'The ID of the configuration.
-
-            >Required if updating an existing configuration, ignored during the creation
-            of a configuration.'
+          description: Adyen-generated ID for the entry, returned in the response
+            when you create a notification configuration. Required when updating an
+            existing configuration using [`/updateNotificationConfiguration`](https://docs.adyen.com/api-explorer/#/NotificationConfigurationService/latest/post/updateNotificationConfiguration).
           format: int64
           type: integer
         notifyPassword:
@@ -736,13 +750,16 @@ components:
     NotificationEventConfiguration:
       properties:
         eventType:
-          description: 'The type of event triggering the notification.
+          description: 'The type of event.
 
-            >Permitted values: `ACCOUNT_HOLDER_CREATED`, `ACCOUNT_CREATED`, `ACCOUNT_UPDATED`,
-            `ACCOUNT_HOLDER_UPDATED`, `ACCOUNT_HOLDER_STATUS_CHANGE`, `ACCOUNT_HOLDER_STORE_STATUS_CHANGE`,
-            `ACCOUNT_HOLDER_VERIFICATION`, `ACCOUNT_HOLDER_LIMIT_REACHED`, `ACCOUNT_HOLDER_PAYOUT`,
-            `PAYMENT_FAILURE`, `SCHEDULED_REFUNDS`, `REPORT_AVAILABLE`, `TRANSFER_FUNDS`,
-            `BENEFICIARY_SETUP`, `COMPENSATE_NEGATIVE_BALANCE`.'
+
+            Possible values: **ACCOUNT_CLOSED**, **ACCOUNT_CREATED**, **ACCOUNT_FUNDS_BELOW_THRESHOLD**,
+            **ACCOUNT_HOLDER_CREATED**, **ACCOUNT_HOLDER_LIMIT_REACHED**, **ACCOUNT_HOLDER_PAYOUT**,
+            **ACCOUNT_HOLDER_STATUS_CHANGE**, **ACCOUNT_HOLDER_STORE_STATUS_CHANGE**,
+            **ACCOUNT_HOLDER_UPCOMING_DEADLINE**, **ACCOUNT_HOLDER_UPDATED**, **ACCOUNT_HOLDER_VERIFICATION**,
+            **ACCOUNT_UPDATED**, **BENEFICIARY_SETUP**, **COMPENSATE_NEGATIVE_BALANCE**,
+            **DIRECT_DEBIT_INITIATED**, **PAYMENT_FAILURE**, **REFUND_FUNDS_TRANSFER**,
+            **REPORT_AVAILABLE**, **SCHEDULED_REFUNDS**, **TRANSFER_FUNDS**.'
           enum:
           - ACCOUNT_CLOSED
           - ACCOUNT_CREATED
@@ -767,16 +784,15 @@ components:
           - TRANSFER_NOT_PAIDOUT_TRANSFERS
           type: string
         includeMode:
-          description: 'Indicates whether the specified eventType is to be sent to
-            the endpoint or all events other than the specified eventType (and other
-            specified eventTypes) are to be sent.
+          description: 'Indicates whether the specified `eventType` is sent to your
+            webhook endpoint.
 
-            >Permitted values: `INCLUDE`, `EXCLUDE`.
+            Possible values:
 
-            >- `INCLUDE`: send the specified eventType.
+            * **INCLUDE**: Send the specified `eventType`.
 
-            >- `EXCLUDE`: send all eventTypes other than the specified eventType (and
-            other eventTypes marked with `EXCLUDE`).'
+            * **EXCLUDE**: Send all event types except the specified `eventType` and
+            other event types with the `includeMode` set to **EXCLUDE**.'
           enum:
           - EXCLUDE
           - INCLUDE
@@ -891,7 +907,7 @@ components:
             $ref: '#/components/schemas/ExchangeMessage'
           type: array
         invalidFields:
-          x-addedInVersion: 5
+          x-addedInVersion: '5'
           description: Contains field validation errors that would prevent requests
             from being processed.
           items:
@@ -948,19 +964,6 @@ components:
           notifyUsername: testUserName
           notifyPassword: testPassword
           sslProtocol: SSL
-    post-createNotificationConfiguration-basic-200:
-      summary: Example response for request 'basic'
-      value:
-        pspReference: '8516178952380553'
-        configurationDetails:
-          active: true
-          description: Unique description 123
-          eventConfigs:
-          - eventType: ACCOUNT_HOLDER_VERIFICATION
-            includeMode: INCLUDE
-          notificationId: 28468
-          notifyURL: https://www.adyen.com/notification-handler
-          sslProtocol: SSLInsecureCiphers
     post-updateNotificationConfiguration-basic:
       summary: Update notification configurations
       value:
@@ -976,19 +979,4 @@ components:
           notifyPassword: testPassword2
           notifyURL: https://www.adyen.com/notification-handler
           notifyUsername: testUserName2
-          sslProtocol: TLSv10
-    post-updateNotificationConfiguration-basic-200:
-      summary: Example response for request 'basic'
-      value:
-        pspReference: '8516178952580574'
-        configurationDetails:
-          active: false
-          description: Test notif config 756
-          eventConfigs:
-          - eventType: ACCOUNT_CREATED
-            includeMode: INCLUDE
-          - eventType: ACCOUNT_HOLDER_CREATED
-            includeMode: EXCLUDE
-          notificationId: 21259
-          notifyURL: https://www.adyen.com/notification-handler
           sslProtocol: TLSv10

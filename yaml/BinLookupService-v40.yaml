@@ -1,4 +1,4 @@
-openapi: 3.0.3
+openapi: 3.1.0
 servers:
 - url: https://pal-test.adyen.com/pal/servlet/BinLookup/v40
 info:
@@ -17,6 +17,8 @@ x-groups:
 paths:
   /get3dsAvailability:
     post:
+      tags:
+      - General
       summary: Checks 3D Secure availability.
       description: 'Verifies whether 3D Secure is available for the specified BIN
         or card brand. For 3D Secure 2, this endpoint also returns device fingerprinting
@@ -24,10 +26,13 @@ paths:
 
 
         For more information, refer to [3D Secure 2](https://docs.adyen.com/online-payments/3d-secure/native-3ds2).'
-      x-addedInVersion: 1
+      x-addedInVersion: '1'
       operationId: post-get3dsAvailability
       x-groupName: General
       x-sortIndex: 0
+      security:
+      - BasicAuth: []
+      - ApiKeyAuth: []
       requestBody:
         content:
           application/json:
@@ -41,8 +46,8 @@ paths:
           content:
             application/json:
               examples:
-                get3dsAvailability-200:
-                  $ref: '#/components/examples/post-get3dsAvailability-get3dsAvailability-200'
+                get3dsAvailability:
+                  $ref: '#/components/examples/post-get3dsAvailability-get3dsAvailability'
               schema:
                 $ref: '#/components/schemas/ThreeDSAvailabilityResponse'
           description: OK - the request has succeeded.
@@ -50,8 +55,8 @@ paths:
           content:
             application/json:
               examples:
-                generic-400:
-                  $ref: '#/components/examples/generic-400'
+                generic:
+                  $ref: '#/components/examples/generic'
               schema:
                 $ref: '#/components/schemas/ServiceError'
           description: Bad Request - a problem reading or understanding the request.
@@ -81,6 +86,8 @@ paths:
           description: Internal Server Error - the server could not process the request.
   /getCostEstimate:
     post:
+      tags:
+      - General
       summary: Gets a cost estimate.
       description: 'Use the Adyen Cost Estimation API to pre-calculate interchange
         and scheme fee costs. Knowing these costs prior actual payment authorisation
@@ -100,6 +107,9 @@ paths:
       operationId: post-getCostEstimate
       x-groupName: General
       x-sortIndex: 0
+      security:
+      - BasicAuth: []
+      - ApiKeyAuth: []
       requestBody:
         content:
           application/json:
@@ -121,14 +131,14 @@ paths:
           content:
             application/json:
               examples:
-                getCostEstimate-200:
-                  $ref: '#/components/examples/post-getCostEstimate-getCostEstimate-200'
-                getCostEstimateEncryptedCard-200:
-                  $ref: '#/components/examples/post-getCostEstimate-getCostEstimateEncryptedCard-200'
-                getCostEstimateMinimal-200:
-                  $ref: '#/components/examples/post-getCostEstimate-getCostEstimateMinimal-200'
-                getCostEstimateMinimal3DS-200:
-                  $ref: '#/components/examples/post-getCostEstimate-getCostEstimateMinimal3DS-200'
+                getCostEstimate:
+                  $ref: '#/components/examples/post-getCostEstimate-getCostEstimate'
+                getCostEstimateEncryptedCard:
+                  $ref: '#/components/examples/post-getCostEstimate-getCostEstimateEncryptedCard'
+                getCostEstimateMinimal:
+                  $ref: '#/components/examples/post-getCostEstimate-getCostEstimateMinimal'
+                getCostEstimateMinimal3DS:
+                  $ref: '#/components/examples/post-getCostEstimate-getCostEstimateMinimal3DS'
               schema:
                 $ref: '#/components/schemas/CostEstimateResponse'
           description: OK - the request has succeeded.
@@ -136,8 +146,8 @@ paths:
           content:
             application/json:
               examples:
-                generic-400:
-                  $ref: '#/components/examples/generic-400'
+                generic:
+                  $ref: '#/components/examples/generic'
               schema:
                 $ref: '#/components/schemas/ServiceError'
           description: Bad Request - a problem reading or understanding the request.
@@ -401,6 +411,11 @@ components:
         directoryServerId:
           description: Directory Server (DS) identifier.
           type: string
+        fromSDKVersion:
+          description: The version of the mobile 3D Secure 2 SDK. For the possible
+            values, refer to the versions in [Adyen 3DS2 Android](https://github.com/Adyen/adyen-3ds2-android/releases)
+            and [Adyen 3DS2 iOS](https://github.com/Adyen/adyen-3ds2-ios/releases).
+          type: string
         publicKey:
           description: Public key. The 3D Secure 2 SDK encrypts the device information
             by using the DS public key.
@@ -448,18 +463,18 @@ components:
           description: A descriptive name for this detail.
           type: string
         recurringExpiry:
-          x-addedInVersion: 40
+          x-addedInVersion: '40'
           description: Date after which no further authorisations shall be performed.
             Only for 3D Secure 2.
           format: date-time
           type: string
         recurringFrequency:
-          x-addedInVersion: 40
+          x-addedInVersion: '40'
           description: Minimum number of days between authorisations. Only for 3D
             Secure 2.
           type: string
         tokenService:
-          x-addedInVersion: 25
+          x-addedInVersion: '25'
           description: The name of the token service.
           enum:
           - VISATOKENSERVICE
@@ -560,7 +575,7 @@ components:
       scheme: basic
       type: http
   examples:
-    generic-400:
+    generic:
       summary: Response code 400. Bad Request.
       value:
         status: 400
@@ -573,12 +588,6 @@ components:
       value:
         merchantAccount: YOUR_MERCHANT_ACCOUNT
         cardNumber: '4111111111111111'
-    post-get3dsAvailability-get3dsAvailability-200:
-      summary: Example response for request 'get3dsAvailability'
-      value:
-        threeDS1Supported: 'true'
-        threeDS2CardRangeDetails: []
-        threeDS2supported: 'false'
     post-getCostEstimate-getCostEstimate:
       summary: Estimate the transaction cost
       description: Example request to get the estimated cost of a transaction
@@ -596,14 +605,6 @@ components:
           mcc: '7411'
           enrolledIn3DSecure: true
         shopperInteraction: Ecommerce
-    post-getCostEstimate-getCostEstimate-200:
-      summary: Example response for request 'getCostEstimate'
-      value:
-        costEstimateAmount:
-          currency: EUR
-          value: 12
-        resultCode: Success
-        surchargeType: PASSTHROUGH
     post-getCostEstimate-getCostEstimateEncryptedCard:
       summary: Estimate the transaction cost using an encrypted card number
       description: Example request to get the estimated cost of a transaction
@@ -621,25 +622,7 @@ components:
           mcc: '7411'
           enrolledIn3DSecure: true
         shopperInteraction: Ecommerce
-    post-getCostEstimate-getCostEstimateEncryptedCard-200:
-      summary: Example response for request 'getCostEstimateEncryptedCard'
-      value:
-        costEstimateAmount:
-          currency: EUR
-          value: 12
-        resultCode: Success
-        surchargeType: PASSTHROUGH
     post-getCostEstimate-getCostEstimateMinimal:
-      summary: Estimate the transaction cost (minimal)
-      description: Example request to get the estimated cost of a transaction with
-        minimum details
-      value:
-        amount:
-          value: 1234
-          currency: EUR
-        cardNumber: '5101180000000007'
-        merchantAccount: YOUR_MERCHANT_ACCOUNT
-    post-getCostEstimate-getCostEstimateMinimal-200:
       summary: Example response for request 'getCostEstimateMinimal'
       value:
         costEstimateAmount:
@@ -660,14 +643,6 @@ components:
           assume3DSecureAuthenticated: true
         cardNumber: '5101180000000007'
         merchantAccount: YOUR_MERCHANT_ACCOUNT
-    post-getCostEstimate-getCostEstimateMinimal3DS-200:
-      summary: Example response for request 'getCostEstimateMinimal3DS'
-      value:
-        costEstimateAmount:
-          currency: EUR
-          value: 12
-        resultCode: Success
-        surchargeType: PASSTHROUGH
     post-getCostEstimate-getCostEstimateRecurringContract:
       summary: Estimate the transaction cost (recurring contract)
       description: Example request to get the estimated cost of a recurring transaction
