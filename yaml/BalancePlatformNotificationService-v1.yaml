@@ -27,13 +27,14 @@ x-groups:
 - Payment Instrument
 - Authorisation, refund, or transfer requests
 - Fund movements
+- Reports
 x-staticResponse: response.json
 webhooks:
   balancePlatform.accountHolder.created:
     post:
       tags:
       - Account holder and balance account
-      summary: Sent when an account holder has been created.
+      summary: An account holder was created.
       description: Adyen sends this webhook after you successfully [create an account
         holder](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/accountHolders).
       operationId: post-alancePlatform.accountHolder.created
@@ -57,7 +58,7 @@ webhooks:
     post:
       tags:
       - Account holder and balance account
-      summary: Sent when an account holder has been updated.
+      summary: An account holder was updated.
       description: Adyen sends this webhook after you successfully [update an account
         holder](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/patch/accountHolders/{id}).
       operationId: post-alancePlatform.accountHolder.updated
@@ -81,7 +82,7 @@ webhooks:
     post:
       tags:
       - Account holder and balance account
-      summary: Sent when a balance account has been created.
+      summary: A balance account was created.
       description: Adyen sends this webhook after you successfully [create a balance
         account](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts).
       operationId: post-alancePlatform.balanceAccount.created
@@ -287,7 +288,7 @@ webhooks:
     post:
       tags:
       - Payment Instrument
-      summary: Sent when a payment instrument has been created.
+      summary: A payment instrument was created.
       description: Adyen sends this webhook after you successfully [create a payment
         instrument](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/paymentInstruments).
         When creating a virtual card, note that the notification does not include
@@ -313,7 +314,7 @@ webhooks:
     post:
       tags:
       - Payment Instrument
-      summary: Sent when a payment instrument has been updated.
+      summary: A payment instrument was updated.
       description: 'Adyen sends this webhook after you successfully [update a payment
         instrument](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/patch/paymentInstruments/{id}). '
       operationId: post-alancePlatform.paymentInstrument.updated
@@ -326,6 +327,31 @@ webhooks:
           application/json:
             schema:
               $ref: '#/components/schemas/PaymentNotificationRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BalancePlatformNotificationResponse'
+          description: OK - the request has succeeded.
+  balancePlatform.report.created:
+    post:
+      tags:
+      - Reports
+      summary: A report was generated.
+      description: Adyen sends this webhook after a report was generated and is ready
+        to be downloaded. The webhook contains a URL at which the report can be downloaded.
+        To download, you must authenticate your GET request with your [API credentials](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/overview).
+      operationId: post-alancePlatform.report.created
+      x-groupName: Reports
+      x-sortIndex: 6
+      security:
+      - ApiKeyAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportNotificationRequest'
       responses:
         '200':
           content:
@@ -359,6 +385,12 @@ components:
 
 
             To create a legal entity, refer to [Onboard and verify account holders](https://docs.adyen.com/issuing/kyc-verification).'
+          type: string
+        primaryBalanceAccount:
+          description: The ID of the account holder's primary balance account. By
+            default, this is set to the first balance account that you create for
+            the account holder. To assign a different balance account, send a PATCH
+            request.
           type: string
         reference:
           description: Your reference to the account holder, maximum 150 characters.
@@ -396,14 +428,18 @@ components:
     AccountHolderNotificationData:
       properties:
         accountHolder:
+          description: Contains information about the account holder resource that
+            triggered the event.
           $ref: '#/components/schemas/AccountHolder'
         balancePlatform:
           description: The ID of the balance platform.
           type: string
+      required:
+      - balancePlatform
     AccountHolderNotificationRequest:
       properties:
         data:
-          description: Contains the event details.
+          description: Contains event details.
           $ref: '#/components/schemas/AccountHolderNotificationData'
         environment:
           description: 'The environment from where the webhook originated.
@@ -412,11 +448,15 @@ components:
             Possible values: **test**, **live**.'
           type: string
         type:
-          description: The type of the notification.
+          description: Type of notification.
           enum:
           - balancePlatform.accountHolder.updated
           - balancePlatform.accountHolder.created
           type: string
+      required:
+      - environment
+      - type
+      - data
     Address2:
       properties:
         city:
@@ -587,10 +627,12 @@ components:
         balancePlatform:
           description: The ID of the balance platform.
           type: string
+      required:
+      - balancePlatform
     BalanceAccountNotificationRequest:
       properties:
         data:
-          description: Contains the event details.
+          description: Contains event details.
           $ref: '#/components/schemas/BalanceAccountNotificationData'
         environment:
           description: 'The environment from where the webhook originated.
@@ -599,24 +641,32 @@ components:
             Possible values: **test**, **live**.'
           type: string
         type:
-          description: The type of the notification.
+          description: Type of notification.
           enum:
           - balancePlatform.balanceAccount.updated
           - balancePlatform.balanceAccount.created
           type: string
+      required:
+      - environment
+      - type
+      - data
     BalancePlatformNotificationData:
       properties:
         balancePlatform:
           description: The ID of the balance platform.
           type: string
         creationDate:
-          description: Date and time when the resource was created, in ISO 8601 extended
-            offset date-time format. For example, `2020-12-18T10:15:30+01:00`.
+          description: Date and time when the event was triggered, in ISO 8601 extended
+            format. For example, **2020-12-18T10:15:30+01:00**.
           format: date-time
           type: string
         id:
           description: The ID of the resource.
           type: string
+      required:
+      - balancePlatform
+      - id
+      - creationDate
     BalancePlatformNotificationResponse:
       properties:
         notificationResponse:
@@ -769,10 +819,9 @@ components:
           $ref: '#/components/schemas/ResourceReference'
         amount:
           description: "The amount converted to the balance account's currency, in\
-            \ case the original transaction currency is different.\n\n * A _positive_\
-            \ value means an addition to the balance account, as a result of a refund\
-            \ or an incoming transfer.\n\n * A _negative_ value means a deduction\
-            \ from the balance account, as a result of a payment or an outgoing transfer. "
+            \ case the original transaction currency is different.\n\n* A _positive_\
+            \ value means the amount is added to the balance account.\n\n * A _negative_\
+            \ value means the amount is deducted from the balance account. "
           $ref: '#/components/schemas/Amount'
         balanceAccount:
           description: Contains information about the balance account.
@@ -781,19 +830,27 @@ components:
           description: The ID of the balance platform.
           type: string
         creationDate:
-          description: Date and time when the resource was created, in ISO 8601 extended
-            offset date-time format. For example, `2020-12-18T10:15:30+01:00`.
+          description: Date and time when the event was triggered, in ISO 8601 extended
+            format. For example, **2020-12-18T10:15:30+01:00**.
           format: date-time
+          type: string
+        description:
+          description: The description for the transfer. If you sent a description
+            longer than 140 characters, the text is truncated.
           type: string
         id:
           description: The ID of the resource.
           type: string
+        modification:
+          description: Contains the amount and type of modification that triggered
+            the notification. For example, this object contains the amount of a partial
+            cancellation or partial expired authorisation.
+          $ref: '#/components/schemas/NotificationModificationData'
         originalAmount:
           description: "The amount in the original currency of the transaction.\n\n\
-            * A _positive_ value means an addition to the balance account, as a result\
-            \ of a refund or an incoming transfer.\n\n * A _negative_ value means\
-            \ a deduction from the balance account, as a result of a payment or an\
-            \ outgoing transfer. "
+            * A _positive_ value means the amount is added to the balance account.\n\
+            \n * A _negative_ value means the amount is deducted from the balance\
+            \ account. "
           $ref: '#/components/schemas/Amount'
         paymentId:
           description: The ID of the original payment authorisation, refund, or funds
@@ -806,6 +863,10 @@ components:
         platformPayment:
           description: Contains information about the related platform payment.
           $ref: '#/components/schemas/PlatformPayment'
+        reference:
+          description: An Adyen-generated unique reference for the transfer.
+          maxLength: 80
+          type: string
         status:
           description: "The event status. The possible values depend on the `type`.\n\
             \n* **Authorised**, **Refused**, or **Error** for type `balancePlatform.payment.created`\n\
@@ -817,13 +878,18 @@ components:
             \ for type `balancePlatform.outgoingTransfer.updated`\n\n  "
           type: string
         valueDate:
-          description: Indicates the expected settlement date of this transaction.
+          description: Indicates the expected settlement date of this transaction,
+            in ISO 8601 extended format. For example, **2021-08-17T15:34:37+02:00**.
           format: date-time
           type: string
+      required:
+      - balancePlatform
+      - id
+      - creationDate
     IncomingTransferNotificationRequest:
       properties:
         data:
-          description: Contains details about the event.
+          description: Contains event details.
           $ref: '#/components/schemas/IncomingTransferNotificationData'
         environment:
           description: 'The environment from where the webhook originated.
@@ -832,11 +898,15 @@ components:
             Possible values: **test**, **live**.'
           type: string
         type:
-          description: The type of the notification.
+          description: Type of notification.
           enum:
           - balancePlatform.incomingTransfer.updated
           - balancePlatform.incomingTransfer.created
           type: string
+      required:
+      - environment
+      - type
+      - data
     MerchantData:
       properties:
         mcc:
@@ -884,15 +954,20 @@ components:
     NotificationModificationData:
       properties:
         amount:
-          description: "The modification amount converted to the balance account's\
-            \ currency, in case the original transaction currency is different.\n\n\
-            \ * A _positive_ value means an addition to the balance account, as a\
-            \ result of a refund or an incoming transfer.\n\n * A _negative_ value\
-            \ means a deduction from the balance account, as a result of a payment\
-            \ or an outgoing transfer. "
+          description: "The amount of the modification converted to the balance account's\
+            \ currency, in case the original transaction currency is different. For\
+            \ example, if a part of an authorised amount was cancelled, the value\
+            \ shows the amount that was cancelled.\n\n * A _positive_ value means\
+            \ the amount is added to the balance account.\n\n * A _negative_ value\
+            \ means the amount is deducted from the balance account. "
           $ref: '#/components/schemas/Amount'
         type:
-          description: The type of the modification that generates this notification.
+          description: 'The type of modification.
+
+
+            Possible values: **Authorised**, **Cancelled**, **Captured**, **Error**,
+            **Expired**, **OutgoingTransfer**, **PendingIncomingTransfer**, **PendingRefund**,
+            **IncomingTransfer**, **Refunded**, **Refused**'
           type: string
     OutgoingTransferNotificationData:
       properties:
@@ -901,10 +976,9 @@ components:
           $ref: '#/components/schemas/ResourceReference'
         amount:
           description: "The amount converted to the balance account's currency, in\
-            \ case the original transaction currency is different.\n\n * A _positive_\
-            \ value means an addition to the balance account, as a result of a refund\
-            \ or an incoming transfer.\n\n * A _negative_ value means a deduction\
-            \ from the balance account, as a result of a payment or an outgoing transfer. "
+            \ case the original transaction currency is different.\n\n* A _positive_\
+            \ value means the amount is added to the balance account.\n\n * A _negative_\
+            \ value means the amount is deducted from the balance account. "
           $ref: '#/components/schemas/Amount'
         balanceAccount:
           description: Contains information about the balance account.
@@ -913,9 +987,13 @@ components:
           description: The ID of the balance platform.
           type: string
         creationDate:
-          description: Date and time when the resource was created, in ISO 8601 extended
-            offset date-time format. For example, `2020-12-18T10:15:30+01:00`.
+          description: Date and time when the event was triggered, in ISO 8601 extended
+            format. For example, **2020-12-18T10:15:30+01:00**.
           format: date-time
+          type: string
+        description:
+          description: The description for the transfer. If you sent a description
+            longer than 140 characters, the text is truncated.
           type: string
         id:
           description: The ID of the resource.
@@ -925,12 +1003,16 @@ components:
             payment. This object is only included for payment authorisation requests
             and captures.
           $ref: '#/components/schemas/MerchantData'
+        modification:
+          description: Contains the amount and type of modification that triggered
+            the notification. For example, this object contains the amount of a partial
+            cancellation or partial expired authorisation.
+          $ref: '#/components/schemas/NotificationModificationData'
         originalAmount:
           description: "The amount in the original currency of the transaction.\n\n\
-            * A _positive_ value means an addition to the balance account, as a result\
-            \ of a refund or an incoming transfer.\n\n * A _negative_ value means\
-            \ a deduction from the balance account, as a result of a payment or an\
-            \ outgoing transfer. "
+            * A _positive_ value means the amount is added to the balance account.\n\
+            \n * A _negative_ value means the amount is deducted from the balance\
+            \ account. "
           $ref: '#/components/schemas/Amount'
         paymentId:
           description: The ID of the original payment authorisation, refund, or funds
@@ -951,6 +1033,10 @@ components:
           description: Indicates the purpose of the transaction. Adyen sets this to
             **payout** when transferring funds out of the balance platform.
           type: string
+        reference:
+          description: The reference for the transfer.
+          maxLength: 80
+          type: string
         relayedAuthorisationData:
           description: If you're using [relayed authorisation](https://docs.adyen.com/issuing/processing-payments-for-cards#relayed-authorisation),
             this object contains information from the relayed authorisation response
@@ -970,9 +1056,14 @@ components:
           description: Contains results from the evaluation of [transaction rules](https://docs.adyen.com/issuing/transaction-rules).
           $ref: '#/components/schemas/TransactionRulesResult'
         valueDate:
-          description: Indicates the expected settlement date of this transaction.
+          description: Indicates the expected settlement date of this transaction,
+            in ISO 8601 extended format. For example, **2021-08-17T15:34:37+02:00**.
           format: date-time
           type: string
+      required:
+      - balancePlatform
+      - id
+      - creationDate
     OutgoingTransferNotificationRequest:
       properties:
         data:
@@ -985,11 +1076,15 @@ components:
             Possible values: **test**, **live**.'
           type: string
         type:
-          description: The type of the notification.
+          description: The type of notification.
           enum:
           - balancePlatform.outgoingTransfer.created
           - balancePlatform.outgoingTransfer.updated
           type: string
+      required:
+      - environment
+      - type
+      - data
     PaymentInstrument:
       properties:
         balanceAccountId:
@@ -1079,7 +1174,11 @@ components:
           description: The ID of the balance platform.
           type: string
         paymentInstrument:
+          description: Contains information about the payment instrument resource
+            that triggered the event.
           $ref: '#/components/schemas/PaymentInstrument'
+      required:
+      - balancePlatform
     PaymentInstrumentReference:
       properties:
         id:
@@ -1094,10 +1193,9 @@ components:
           $ref: '#/components/schemas/ResourceReference'
         amount:
           description: "The amount converted to the balance account's currency, in\
-            \ case the original transaction currency is different.\n\n * A _positive_\
-            \ value means an addition to the balance account, as a result of a refund\
-            \ or an incoming transfer.\n\n * A _negative_ value means a deduction\
-            \ from the balance account, as a result of a payment or an outgoing transfer. "
+            \ case the original transaction currency is different.\n\n* A _positive_\
+            \ value means the amount is added to the balance account.\n\n * A _negative_\
+            \ value means the amount is deducted from the balance account. "
           $ref: '#/components/schemas/Amount'
         authCode:
           description: The authorisation code for the payment.
@@ -1109,9 +1207,13 @@ components:
           description: The ID of the balance platform.
           type: string
         creationDate:
-          description: Date and time when the resource was created, in ISO 8601 extended
-            offset date-time format. For example, `2020-12-18T10:15:30+01:00`.
+          description: Date and time when the event was triggered, in ISO 8601 extended
+            format. For example, **2020-12-18T10:15:30+01:00**.
           format: date-time
+          type: string
+        description:
+          description: The description for the transfer. If you sent a description
+            longer than 140 characters, the text is truncated.
           type: string
         id:
           description: The ID of the resource.
@@ -1121,12 +1223,16 @@ components:
             payment. This object is only included for payment authorisation requests
             and captures.
           $ref: '#/components/schemas/MerchantData'
+        modification:
+          description: Contains the amount and type of modification that triggered
+            the notification. For example, this object contains the amount of a partial
+            cancellation or partial expired authorisation.
+          $ref: '#/components/schemas/NotificationModificationData'
         originalAmount:
           description: "The amount in the original currency of the transaction.\n\n\
-            * A _positive_ value means an addition to the balance account, as a result\
-            \ of a refund or an incoming transfer.\n\n * A _negative_ value means\
-            \ a deduction from the balance account, as a result of a payment or an\
-            \ outgoing transfer. "
+            * A _positive_ value means the amount is added to the balance account.\n\
+            \n * A _negative_ value means the amount is deducted from the balance\
+            \ account. "
           $ref: '#/components/schemas/Amount'
         paymentInstrument:
           description: Contains information about the payment instrument.
@@ -1137,6 +1243,10 @@ components:
         processingType:
           description: Contains information about how the payment was processed. For
             example, **ecommerce** for online or **pos** for point-of-sale payments.
+          type: string
+        reference:
+          description: The reference for the transfer.
+          maxLength: 80
           type: string
         relayedAuthorisationData:
           description: If you're using [relayed authorisation](https://docs.adyen.com/issuing/processing-payments-for-cards#relayed-authorisation),
@@ -1162,10 +1272,14 @@ components:
           items:
             $ref: '#/components/schemas/ValidationResult'
           type: array
+      required:
+      - balancePlatform
+      - id
+      - creationDate
     PaymentNotificationRequest:
       properties:
         data:
-          description: Contains the event details.
+          description: Contains event details.
           $ref: '#/components/schemas/PaymentInstrumentNotificationData'
         environment:
           description: 'The environment from where the webhook originated.
@@ -1174,15 +1288,19 @@ components:
             Possible values: **test**, **live**.'
           type: string
         type:
-          description: The type of the notification.
+          description: Type of notification.
           enum:
           - balancePlatform.paymentInstrument.created
           - balancePlatform.paymentInstrument.updated
           type: string
+      required:
+      - environment
+      - type
+      - data
     PaymentNotificationRequest2:
       properties:
         data:
-          description: Contains details about the event.
+          description: Contains event details.
           $ref: '#/components/schemas/PaymentNotificationData'
         environment:
           description: 'The environment from where the webhook originated.
@@ -1191,11 +1309,15 @@ components:
             Possible values: **test**, **live**.'
           type: string
         type:
-          description: The type of the notification.
+          description: Type of notification.
           enum:
           - balancePlatform.payment.created
           - balancePlatform.payment.updated
           type: string
+      required:
+      - environment
+      - type
+      - data
     PersonalData:
       properties:
         dateOfBirth:
@@ -1305,6 +1427,58 @@ components:
             on the `authorisationDecision.status` in the relayed authorisation response
             from your server.
           type: string
+    ReportNotificationData:
+      properties:
+        accountHolder:
+          description: The account holder related to the report.
+          $ref: '#/components/schemas/ResourceReference'
+        balanceAccount:
+          description: The balance account related to the report.
+          $ref: '#/components/schemas/ResourceReference'
+        balancePlatform:
+          description: The ID of the balance platform.
+          type: string
+        creationDate:
+          description: Date and time when the event was triggered, in ISO 8601 extended
+            format. For example, **2020-12-18T10:15:30+01:00**.
+          format: date-time
+          type: string
+        downloadUrl:
+          description: The URL at which you can download the report. To download,
+            you must authenticate your GET request with your [API credentials](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/overview).
+          type: string
+        fileName:
+          description: The filename of the report.
+          type: string
+        reportType:
+          description: The type of report.
+          type: string
+      required:
+      - balancePlatform
+      - creationDate
+      - fileName
+      - reportType
+      - downloadUrl
+    ReportNotificationRequest:
+      properties:
+        data:
+          description: Contains event details.
+          $ref: '#/components/schemas/ReportNotificationData'
+        environment:
+          description: 'The environment from where the webhook originated.
+
+
+            Possible values: **test**, **live**.'
+          type: string
+        type:
+          description: Type of notification.
+          enum:
+          - balancePlatform.report.created
+          type: string
+      required:
+      - environment
+      - type
+      - data
     ResourceReference:
       properties:
         description:
@@ -1420,10 +1594,9 @@ components:
           $ref: '#/components/schemas/ResourceReference'
         amount:
           description: "The amount converted to the balance account's currency, in\
-            \ case the original transaction currency is different.\n\n * A _positive_\
-            \ value means an addition to the balance account, as a result of a refund\
-            \ or an incoming transfer.\n\n * A _negative_ value means a deduction\
-            \ from the balance account, as a result of a payment or an outgoing transfer. "
+            \ case the original transaction currency is different.\n\n* A _positive_\
+            \ value means the amount is added to the balance account.\n\n * A _negative_\
+            \ value means the amount is deducted from the balance account. "
           $ref: '#/components/schemas/Amount'
         authCode:
           description: The authorisation code for the payment.
@@ -1435,9 +1608,13 @@ components:
           description: The ID of the balance platform.
           type: string
         creationDate:
-          description: Date and time when the resource was created, in ISO 8601 extended
-            offset date-time format. For example, `2020-12-18T10:15:30+01:00`.
+          description: Date and time when the event was triggered, in ISO 8601 extended
+            format. For example, **2020-12-18T10:15:30+01:00**.
           format: date-time
+          type: string
+        description:
+          description: The description for the transfer. If you sent a description
+            longer than 140 characters, the text is truncated.
           type: string
         id:
           description: The ID of the resource.
@@ -1447,12 +1624,16 @@ components:
             payment. This object is only included for payment authorisation requests
             and captures.
           $ref: '#/components/schemas/MerchantData'
+        modification:
+          description: Contains the amount and type of modification that triggered
+            the notification. For example, this object contains the amount of a partial
+            cancellation or partial expired authorisation.
+          $ref: '#/components/schemas/NotificationModificationData'
         originalAmount:
           description: "The amount in the original currency of the transaction.\n\n\
-            * A _positive_ value means an addition to the balance account, as a result\
-            \ of a refund or an incoming transfer.\n\n * A _negative_ value means\
-            \ a deduction from the balance account, as a result of a payment or an\
-            \ outgoing transfer. "
+            * A _positive_ value means the amount is added to the balance account.\n\
+            \n * A _negative_ value means the amount is deducted from the balance\
+            \ account. "
           $ref: '#/components/schemas/Amount'
         paymentId:
           description: The ID of the original payment authorisation, refund, or funds
@@ -1472,6 +1653,10 @@ components:
         purposeCode:
           description: Indicates the purpose of the transaction. Adyen sets this to
             **payout** when transferring funds out of the balance platform.
+          type: string
+        reference:
+          description: The reference for the transfer.
+          maxLength: 80
           type: string
         relayedAuthorisationData:
           description: If you're using [relayed authorisation](https://docs.adyen.com/issuing/processing-payments-for-cards#relayed-authorisation),
@@ -1498,9 +1683,14 @@ components:
             $ref: '#/components/schemas/ValidationResult'
           type: array
         valueDate:
-          description: Indicates the expected settlement date of this transaction.
+          description: Indicates the expected settlement date of this transaction,
+            in ISO 8601 extended format. For example, **2021-08-17T15:34:37+02:00**.
           format: date-time
           type: string
+      required:
+      - balancePlatform
+      - id
+      - creationDate
     TransactionRuleSource:
       properties:
         id:
