@@ -3648,6 +3648,10 @@
                "riskdata.riskProfileReference" : {
                   "description" : "Reference number of the risk profile that you want to apply to the payment. If not provided or left blank, the merchant-level account's default risk profile will be applied to the payment. For more information, see [dynamically assign a risk profile to a payment](https://docs.adyen.com/risk-management/create-and-use-risk-profiles#dynamically-assign-a-risk-profile-to-a-payment).",
                   "type" : "string"
+               },
+               "riskdata.skipRisk" : {
+                  "description" : "If this parameter is provided with the value **true**, risk checks for the payment request are skipped and the transaction will not get a risk score.",
+                  "type" : "string"
                }
             }
          },
@@ -4122,7 +4126,8 @@
                   "enum" : [
                      "billdesk_online",
                      "billdesk_wallet",
-                     "onlinebanking_IN"
+                     "onlinebanking_IN",
+                     "wallet_IN"
                   ],
                   "type" : "string"
                }
@@ -4379,6 +4384,7 @@
                      "kcp_naverpay",
                      "upi",
                      "onlinebanking_IN",
+                     "wallet_IN",
                      "entercash",
                      "primeiropay_boleto",
                      "gopay_wallet",
@@ -4673,7 +4679,7 @@
                   "$ref" : "#/components/schemas/Name"
                },
                "shopperReference" : {
-                  "description" : "Your reference to uniquely identify this shopper (for example, user ID or account ID). Minimum length: 3 characters.\n> This field is required for recurring payments.",
+                  "description" : "Required for recurring payments. \nYour reference to uniquely identify this shopper, for example user ID or account ID. Minimum length: 3 characters.\n> Your reference must not include personally identifiable information (PII), for example name or email address.",
                   "type" : "string"
                },
                "shopperStatement" : {
@@ -5655,7 +5661,7 @@
                   "$ref" : "#/components/schemas/Name"
                },
                "shopperReference" : {
-                  "description" : "Your reference to uniquely identify this shopper (for example, user ID or account ID). Minimum length: 3 characters.",
+                  "description" : "Your reference to uniquely identify this shopper, for example user ID or account ID. Minimum length: 3 characters.\n> Your reference must not include personally identifiable information (PII), for example name or email address.",
                   "type" : "string"
                },
                "splits" : {
@@ -6424,7 +6430,7 @@
          "Mandate" : {
             "properties" : {
                "amount" : {
-                  "description" : "The billing amount of the recurring transactions.",
+                  "description" : "The billing amount(in minor units) of the recurring transactions.",
                   "type" : "string"
                },
                "amountRule" : {
@@ -7351,7 +7357,7 @@
                   "type" : "array"
                },
                "status" : {
-                  "description" : "Status of the payment link. Possible values:\n* **active** \n* **expired**\n* **completed** (v66 and above) \n* **paid** (v65 and below)",
+                  "description" : "Status of the payment link. Possible values:\n* **active**\n* **expired**\n* **paymentPending** (v68 and later)\n* **completed** (v66 and later)\n* **paid** (v65 and earlier)",
                   "enum" : [
                      "active",
                      "completed",
@@ -7587,7 +7593,7 @@
                   "type" : "string"
                },
                "shopperReference" : {
-                  "description" : "Your reference to uniquely identify this shopper (for example, user ID or account ID). Minimum length: 3 characters.\n> This field is required for recurring payments.",
+                  "description" : "Required for recurring payments. \nYour reference to uniquely identify this shopper, for example user ID or account ID. Minimum length: 3 characters.\n> Your reference must not include personally identifiable information (PII), for example name or email address.",
                   "type" : "string"
                },
                "splitCardFundingSources" : {
@@ -7900,7 +7906,7 @@
                   "type" : "object"
                },
                "mpiData" : {
-                  "description" : "Authentication data produced by an MPI (Mastercard SecureCode or Visa Secure).",
+                  "description" : "Authentication data produced by an MPI (Mastercard SecureCode, Visa Secure, or Cartes Bancaires).",
                   "$ref" : "#/components/schemas/ThreeDSecureData"
                },
                "order" : {
@@ -8113,7 +8119,7 @@
                   "$ref" : "#/components/schemas/Name"
                },
                "shopperReference" : {
-                  "description" : "Your reference to uniquely identify this shopper (for example, user ID or account ID). Minimum length: 3 characters.\n> This field is required for recurring payments.",
+                  "description" : "Required for recurring payments. \nYour reference to uniquely identify this shopper, for example user ID or account ID. Minimum length: 3 characters.\n> Your reference must not include personally identifiable information (PII), for example name or email address.",
                   "type" : "string"
                },
                "shopperStatement" : {
@@ -8662,7 +8668,7 @@
                   "$ref" : "#/components/schemas/Name"
                },
                "shopperReference" : {
-                  "description" : "Your reference to uniquely identify this shopper (for example, user ID or account ID). Minimum length: 3 characters.\n> This field is required for recurring payments.",
+                  "description" : "Required for recurring payments. \nYour reference to uniquely identify this shopper, for example user ID or account ID. Minimum length: 3 characters.\n> Your reference must not include personally identifiable information (PII), for example name or email address.",
                   "type" : "string"
                },
                "shopperStatement" : {
@@ -8743,7 +8749,7 @@
             "properties" : {
                "payload" : {
                   "description" : "Encrypted and signed payment result data. You should receive this value from the Checkout SDK after the shopper completes the payment.",
-                  "maxLength" : 10000,
+                  "maxLength" : 40000,
                   "type" : "string"
                }
             },
@@ -10049,7 +10055,7 @@
                },
                "cavvAlgorithm" : {
                   "x-addedInVersion" : "50",
-                  "description" : "The algorithm used by the ACS to calculate the authentication value, only for CartesBancaires integrations.",
+                  "description" : "The algorithm used by the ACS to calculate the authentication value, only for Cartes Bancaires integrations.",
                   "type" : "string"
                },
                "dsTransID" : {
@@ -10078,7 +10084,7 @@
                   "type" : "string"
                },
                "transStatusReason" : {
-                  "description" : "The `transStatusReason` value as defined in the 3D Secure 2 specification.",
+                  "description" : "Provides information on why the `transStatus` field has the specified value. For possible values, refer to [our docs](https://docs.adyen.com/online-payments/3d-secure/api-reference#possible-transstatusreason-values).",
                   "type" : "string"
                },
                "whiteListStatus" : {
@@ -13012,7 +13018,7 @@
                      "type" : "onetwothree"
                   },
                   {
-                     "name" : "Local Polish Payment Methods (P24)",
+                     "name" : "Online Banking PL",
                      "type" : "onlineBanking_PL"
                   },
                   {
