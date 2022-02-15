@@ -9,7 +9,7 @@
       "version" : "68",
       "x-publicVersion" : true,
       "title" : "Adyen Recurring API",
-      "description" : "The Recurring APIs allow you to manage and remove your tokens or saved payment details. Tokens should be created with validation during a payment request.\n\nFor more information, refer to our [Tokenization documentation](https://docs.adyen.com/online-payments/tokenization).\n## Authentication\nTo connect to the Recurring API, you must use your basic authentication credentials. For this, create your web service user, as described in [How to get the WS user password](https://docs.adyen.com/development-resources/api-credentials). Then use its credentials to authenticate your request, for example:\n\n```\ncurl\n-U \"ws@Company.YourCompany\":\"YourWsPassword\" \\\n-H \"Content-Type: application/json\" \\\n...\n```\nNote that when going live, you need to generate new web service user credentials to access the [live endpoints](https://docs.adyen.com/development-resources/live-endpoints).\n\n## Versioning\nRecurring API supports versioning of its endpoints through a version suffix in the endpoint URL. This suffix has the following format: \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://pal-test.adyen.com/pal/servlet/Recurring/v68/disable\n```",
+      "description" : "The Recurring APIs allow you to manage and remove your tokens or saved payment details. Tokens should be created with validation during a payment request.\n\nFor more information, refer to our [Tokenization documentation](https://docs.adyen.com/online-payments/tokenization).\n## Authentication\nTo connect to the Recurring API, you must use your basic authentication credentials. For this, create your web service user, as described in [How to get the WS user password](https://docs.adyen.com/development-resources/api-credentials). Then use its credentials to authenticate your request, for example:\n\n```\ncurl\n-U \"ws@Company.YourCompany\":\"YourWsPassword\" \\\n-H \"Content-Type: application/json\" \\\n...\n```\nNote that when going live, you need to generate new web service user credentials to access the [live endpoints](https://docs.adyen.com/development-resources/live-endpoints).\n\n## Versioning\nRecurring API supports [versioning](https://docs.adyen.com/development-resources/versioning) using a version suffix in the endpoint URL. This suffix has the following format: \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://pal-test.adyen.com/pal/servlet/Recurring/v68/disable\n```",
       "termsOfService" : "https://www.adyen.com/legal/terms-and-conditions",
       "contact" : {
          "name" : "Adyen Developer Experience team",
@@ -19,6 +19,11 @@
    },
    "x-groups" : [
       "General"
+   ],
+   "tags" : [
+      {
+         "name" : "General"
+      }
    ],
    "paths" : {
       "/disable" : {
@@ -222,11 +227,11 @@
             "tags" : [
                "General"
             ],
-            "summary" : "Notify the shopper for upcoming recurring payment",
-            "description" : "Trigger notification to inform the shopper about the upcoming recurring payment.",
+            "summary" : "Ask the issuer to inform shopper of upcoming payment",
+            "description" : "Sends a request to the issuer so they can inform the shopper about the upcoming recurring payment. This endpoint is used only for local acquiring in India. For more information, refer to [Recurring card payments in India](https://docs.adyen.com/payment-methods/cards/cards-recurring-india).",
             "operationId" : "post-notifyShopper",
             "x-groupName" : "General",
-            "x-sortIndex" : 0,
+            "x-sortIndex" : 4,
             "security" : [
                {
                   "BasicAuth" : [
@@ -419,14 +424,16 @@
             "properties" : {
                "city" : {
                   "description" : "The name of the city. Maximum length: 3000 characters.",
+                  "maxLength" : 3000,
                   "type" : "string"
                },
                "country" : {
-                  "description" : "The two-character country code as defined in ISO-3166-1 alpha-2. For example, **US**.\n> If you don't know the country or are not collecting the country from the shopper, provide `country` as `ZZ`.",
+                  "description" : "The two-character ISO-3166-1 alpha-2 country code. For example, **US**.\n> If you don't know the country or are not collecting the country from the shopper, provide `country` as `ZZ`.",
                   "type" : "string"
                },
                "houseNumberOrName" : {
                   "description" : "The number or name of the house. Maximum length: 3000 characters.",
+                  "maxLength" : 3000,
                   "type" : "string"
                },
                "postalCode" : {
@@ -434,11 +441,12 @@
                   "type" : "string"
                },
                "stateOrProvince" : {
-                  "description" : "State or province codes as defined in ISO 3166-2. For example, **CA** in the US or **ON** in Canada.\n> Required for the US and Canada.",
+                  "description" : "The two-character ISO 3166-2 state or province code. For example, **CA** in the US or **ON** in Canada.\n> Required for the US and Canada.",
                   "type" : "string"
                },
                "street" : {
                   "description" : "The name of the street. Maximum length: 3000 characters.\n> The house number should not be included in this field; it should be separately provided via `houseNumberOrName`.",
+                  "maxLength" : 3000,
                   "type" : "string"
                }
             },
@@ -812,6 +820,10 @@
                   "description" : "A shopper's social security number (only in countries where it is legal to collect).",
                   "type" : "string"
                },
+               "tokenDetails" : {
+                  "x-addedInVersion" : "2",
+                  "$ref" : "#/components/schemas/TokenDetails"
+               },
                "variant" : {
                   "description" : "The payment method, such as “mc\", \"visa\", \"ideal\", \"paypal\".",
                   "type" : "string"
@@ -876,7 +888,7 @@
                   "type" : "object"
                },
                "card" : {
-                  "description" : "A container for credit card data.\n\nOptional if `shopperReference` and `selectedRecurringDetailReference` are provided.",
+                  "description" : "Credit card data.\n\nOptional if `shopperReference` and `selectedRecurringDetailReference` are provided.",
                   "$ref" : "#/components/schemas/Card"
                },
                "merchantAccount" : {
@@ -947,6 +959,19 @@
                   "description" : "The HTTP response status.",
                   "format" : "int32",
                   "type" : "integer"
+               }
+            }
+         },
+         "TokenDetails" : {
+            "properties" : {
+               "tokenData" : {
+                  "additionalProperties" : {
+                     "type" : "string"
+                  },
+                  "type" : "object"
+               },
+               "tokenDataType" : {
+                  "type" : "string"
                }
             }
          }

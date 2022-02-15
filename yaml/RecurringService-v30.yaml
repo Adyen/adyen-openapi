@@ -37,9 +37,9 @@ info:
 
     ## Versioning
 
-    Recurring API supports versioning of its endpoints through a version suffix in
-    the endpoint URL. This suffix has the following format: "vXX", where XX is the
-    version number.
+    Recurring API supports [versioning](https://docs.adyen.com/development-resources/versioning)
+    using a version suffix in the endpoint URL. This suffix has the following format:
+    "vXX", where XX is the version number.
 
 
     For example:
@@ -56,6 +56,8 @@ info:
     email: developer-experience@adyen.com
 x-groups:
 - General
+tags:
+- name: General
 paths:
   /disable:
     post:
@@ -181,6 +183,62 @@ paths:
               schema:
                 $ref: '#/components/schemas/ServiceError'
           description: Internal Server Error - the server could not process the request.
+  /notifyShopper:
+    post:
+      tags:
+      - General
+      summary: Ask the issuer to inform shopper of upcoming payment
+      description: Sends a request to the issuer so they can inform the shopper about
+        the upcoming recurring payment. This endpoint is used only for local acquiring
+        in India. For more information, refer to [Recurring card payments in India](https://docs.adyen.com/payment-methods/cards/cards-recurring-india).
+      operationId: post-notifyShopper
+      x-groupName: General
+      x-sortIndex: 4
+      security:
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotifyShopperRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotifyShopperResult'
+          description: OK - the request has succeeded.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Bad Request - a problem reading or understanding the request.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Unauthorized - authentication required.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Forbidden - insufficient permissions to process the request.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Unprocessable Entity - a request validation error.
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Internal Server Error - the server could not process the request.
   /scheduleAccountUpdater:
     post:
       tags:
@@ -253,23 +311,25 @@ components:
       properties:
         city:
           description: 'The name of the city. Maximum length: 3000 characters.'
+          maxLength: 3000
           type: string
         country:
-          description: 'The two-character country code as defined in ISO-3166-1 alpha-2.
-            For example, **US**.
+          description: 'The two-character ISO-3166-1 alpha-2 country code. For example,
+            **US**.
 
             > If you don''t know the country or are not collecting the country from
             the shopper, provide `country` as `ZZ`.'
           type: string
         houseNumberOrName:
           description: 'The number or name of the house. Maximum length: 3000 characters.'
+          maxLength: 3000
           type: string
         postalCode:
           description: A maximum of five digits for an address in the US, or a maximum
             of ten characters for an address in all other countries.
           type: string
         stateOrProvince:
-          description: 'State or province codes as defined in ISO 3166-2. For example,
+          description: 'The two-character ISO 3166-2 state or province code. For example,
             **CA** in the US or **ON** in Canada.
 
             > Required for the US and Canada.'
@@ -279,6 +339,7 @@ components:
 
             > The house number should not be included in this field; it should be
             separately provided via `houseNumberOrName`.'
+          maxLength: 3000
           type: string
       required:
       - street
@@ -471,6 +532,76 @@ components:
       required:
       - firstName
       - lastName
+    NotifyShopperRequest:
+      properties:
+        amount:
+          description: The amount of the upcoming payment.
+          $ref: '#/components/schemas/Amount'
+        billingDate:
+          description: Date on which the subscription amount will be debited from
+            the shopper. In YYYY-MM-DD format
+          type: string
+        billingSequenceNumber:
+          description: Sequence of the debit. Depends on Frequency and Billing Attempts
+            Rule.
+          type: string
+        displayedReference:
+          description: Reference of Pre-debit notification that is displayed to the
+            shopper. Optional field. Maps to reference if missing
+          type: string
+        merchantAccount:
+          description: The merchant account identifier with which you want to process
+            the transaction.
+          type: string
+        recurringDetailReference:
+          description: This is the `recurringDetailReference` returned in the response
+            when you created the token.
+          type: string
+        reference:
+          description: Pre-debit notification reference sent by the merchant. This
+            is a mandatory field
+          type: string
+        shopperReference:
+          description: 'The ID that uniquely identifies the shopper.
+
+
+            This `shopperReference` must be the same as the `shopperReference` used
+            in the initial payment.'
+          type: string
+        storedPaymentMethodId:
+          description: This is the `recurringDetailReference` returned in the response
+            when you created the token.
+          type: string
+      required:
+      - merchantAccount
+      - shopperReference
+      - amount
+      - reference
+    NotifyShopperResult:
+      properties:
+        displayedReference:
+          description: Reference of Pre-debit notification that is displayed to the
+            shopper
+          type: string
+        message:
+          description: A simple description of the `resultCode`.
+          type: string
+        pspReference:
+          description: The unique reference that is associated with the request.
+          type: string
+        reference:
+          description: Reference of Pre-debit notification sent in my the merchant
+          type: string
+        resultCode:
+          description: The code indicating the status of notification.
+          type: string
+        shopperNotificationReference:
+          description: The unique reference for the request sent downstream.
+          type: string
+        storedPaymentMethodId:
+          description: This is the recurringDetailReference returned in the response
+            when token was created
+          type: string
     Recurring:
       properties:
         contract:
@@ -569,6 +700,9 @@ components:
           description: A shopper's social security number (only in countries where
             it is legal to collect).
           type: string
+        tokenDetails:
+          x-addedInVersion: '2'
+          $ref: '#/components/schemas/TokenDetails'
         variant:
           description: "The payment method, such as \u201Cmc\", \"visa\", \"ideal\"\
             , \"paypal\"."
@@ -628,7 +762,7 @@ components:
             for a particular request.
           type: object
         card:
-          description: 'A container for credit card data.
+          description: 'Credit card data.
 
 
             Optional if `shopperReference` and `selectedRecurringDetailReference`
@@ -688,6 +822,14 @@ components:
           description: The HTTP response status.
           format: int32
           type: integer
+    TokenDetails:
+      properties:
+        tokenData:
+          additionalProperties:
+            type: string
+          type: object
+        tokenDataType:
+          type: string
   securitySchemes:
     ApiKeyAuth:
       in: header

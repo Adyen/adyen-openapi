@@ -9,7 +9,7 @@
       "version" : "68",
       "x-publicVersion" : true,
       "title" : "Adyen Payment API",
-      "description" : "A set of API endpoints that allow you to initiate, settle, and modify payments on the Adyen payments platform. You can use the API to accept card payments (including One-Click and 3D Secure), bank transfers, ewallets, and many other payment methods.\n\nTo learn more about the API, visit [Classic integration](https://docs.adyen.com/classic-integration).\n\n## Authentication\nTo connect to the Payments API, you must use your basic authentication credentials. For this, create your web service user, as described in [How to get the WS user password](https://docs.adyen.com/development-resources/api-credentials). Then use its credentials to authenticate your request, for example:\n\n```\ncurl\n-U \"ws@Company.YourCompany\":\"YourWsPassword\" \\\n-H \"Content-Type: application/json\" \\\n...\n```\nNote that when going live, you need to generate new web service user credentials to access the [live endpoints](https://docs.adyen.com/development-resources/live-endpoints).\n\n## Versioning\nPayments API supports versioning of its endpoints through a version suffix in the endpoint URL. This suffix has the following format: \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://pal-test.adyen.com/pal/servlet/Payment/v68/authorise\n```",
+      "description" : "A set of API endpoints that allow you to initiate, settle, and modify payments on the Adyen payments platform. You can use the API to accept card payments (including One-Click and 3D Secure), bank transfers, ewallets, and many other payment methods.\n\nTo learn more about the API, visit [Classic integration](https://docs.adyen.com/classic-integration).\n\n## Authentication\nTo connect to the Payments API, you must use your basic authentication credentials. For this, create your web service user, as described in [How to get the WS user password](https://docs.adyen.com/development-resources/api-credentials). Then use its credentials to authenticate your request, for example:\n\n```\ncurl\n-U \"ws@Company.YourCompany\":\"YourWsPassword\" \\\n-H \"Content-Type: application/json\" \\\n...\n```\nNote that when going live, you need to generate new web service user credentials to access the [live endpoints](https://docs.adyen.com/development-resources/live-endpoints).\n\n## Versioning\nPayments API supports [versioning](https://docs.adyen.com/development-resources/versioning) using a version suffix in the endpoint URL. This suffix has the following format: \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://pal-test.adyen.com/pal/servlet/Payment/v68/authorise\n```",
       "termsOfService" : "https://www.adyen.com/legal/terms-and-conditions",
       "contact" : {
          "name" : "Adyen Developer Experience team",
@@ -20,6 +20,14 @@
    "x-groups" : [
       "General",
       "Modifications"
+   ],
+   "tags" : [
+      {
+         "name" : "Modifications"
+      },
+      {
+         "name" : "General"
+      }
    ],
    "paths" : {
       "/adjustAuthorisation" : {
@@ -2678,14 +2686,16 @@
             "properties" : {
                "city" : {
                   "description" : "The name of the city. Maximum length: 3000 characters.",
+                  "maxLength" : 3000,
                   "type" : "string"
                },
                "country" : {
-                  "description" : "The two-character country code as defined in ISO-3166-1 alpha-2. For example, **US**.\n> If you don't know the country or are not collecting the country from the shopper, provide `country` as `ZZ`.",
+                  "description" : "The two-character ISO-3166-1 alpha-2 country code. For example, **US**.\n> If you don't know the country or are not collecting the country from the shopper, provide `country` as `ZZ`.",
                   "type" : "string"
                },
                "houseNumberOrName" : {
                   "description" : "The number or name of the house. Maximum length: 3000 characters.",
+                  "maxLength" : 3000,
                   "type" : "string"
                },
                "postalCode" : {
@@ -2693,11 +2703,12 @@
                   "type" : "string"
                },
                "stateOrProvince" : {
-                  "description" : "State or province codes as defined in ISO 3166-2. For example, **CA** in the US or **ON** in Canada.\n> Required for the US and Canada.",
+                  "description" : "The two-character ISO 3166-2 state or province code. For example, **CA** in the US or **ON** in Canada.\n> Required for the US and Canada.",
                   "type" : "string"
                },
                "street" : {
                   "description" : "The name of the street. Maximum length: 3000 characters.\n> The house number should not be included in this field; it should be separately provided via `houseNumberOrName`.",
+                  "maxLength" : 3000,
                   "type" : "string"
                }
             },
@@ -3397,9 +3408,6 @@
                   "type" : "string"
                },
                "sdkUiType" : {
-                  "default" : [
-                     "<all available types>"
-                  ],
                   "description" : "UI types supported for displaying specific challenges.\nAllowed values:\n* text\n* singleSelect\n* outOfBand\n* otherHtml\n* multiSelect",
                   "items" : {
                      "enum" : [
@@ -3564,7 +3572,7 @@
             "properties" : {
                "plan" : {
                   "x-addedInVersion" : "64",
-                  "description" : "Defines the type of installment plan. If not set, defaults to **regular**.\n\nPossible values:\n* **regular**\n* **revolving**",
+                  "description" : "The installment plan, used for [card installments in Japan](https://docs.adyen.com/payment-methods/cards/credit-card-installments#make-a-payment-japan). By default, this is set to **regular**. Possible values:\n* **regular**\n* **revolving**\n",
                   "enum" : [
                      "regular",
                      "revolving"
@@ -5830,7 +5838,36 @@
                },
                "threeDSRequestorChallengeInd" : {
                   "x-addedInVersion" : "68",
-                  "description" : "Indicates whether a challenge is requested for this transaction.",
+                  "x-enum" : [
+                     {
+                        "description" : "No preference",
+                        "value" : "01"
+                     },
+                     {
+                        "description" : "No challenge requested",
+                        "value" : "02"
+                     },
+                     {
+                        "description" : "Challenge requested (3DS Requestor preference)",
+                        "value" : "03"
+                     },
+                     {
+                        "description" : "Challenge requested (Mandate)",
+                        "value" : "04"
+                     },
+                     {
+                        "description" : "No challenge (transactional risk analysis is already performed)",
+                        "value" : "05"
+                     }
+                  ],
+                  "description" : "Indicates whether a challenge is requested for this transaction.Possible values:\n* **01** — No preference\n* **02** — No challenge requested\n* **03** — Challenge requested (3DS Requestor preference)\n* **04** — Challenge requested (Mandate)\n* **05** — No challenge (transactional risk analysis is already performed)",
+                  "enum" : [
+                     "01",
+                     "02",
+                     "03",
+                     "04",
+                     "05"
+                  ],
                   "type" : "string"
                },
                "threeDSRequestorID" : {

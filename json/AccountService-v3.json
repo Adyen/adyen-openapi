@@ -9,7 +9,7 @@
       "version" : "3",
       "x-publicVersion" : true,
       "title" : "Adyen for Platforms: Account API",
-      "description" : "The Account API provides endpoints for managing account-related entities on your platform. These related entities include account holders, accounts, bank accounts, shareholders, and KYC-related documents. The management operations include actions such as creation, retrieval, updating, and deletion of them.\n\nFor more information, refer to our [documentation](https://docs.adyen.com/platforms).\n## Authentication\nTo connect to the Account API, you must use basic authentication credentials of your web service user. If you don't have one, contact the [Adyen Support Team](https://support.adyen.com/hc/en-us/requests/new). Then use its credentials to authenticate your request, for example:\n\n```\ncurl\n-U \"ws@MarketPlace.YourMarketPlace\":\"YourWsPassword\" \\\n-H \"Content-Type: application/json\" \\\n...\n```\nNote that when going live, you need to generate new web service user credentials to access the [live endpoints](https://docs.adyen.com/development-resources/live-endpoints).\n\n## Versioning\nThe Account API supports versioning of its endpoints through a version suffix in the endpoint URL. This suffix has the following format: \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://cal-test.adyen.com/cal/services/Account/v3/createAccountHolder\n```",
+      "description" : "The Account API provides endpoints for managing account-related entities on your platform. These related entities include account holders, accounts, bank accounts, shareholders, and KYC-related documents. The management operations include actions such as creation, retrieval, updating, and deletion of them.\n\nFor more information, refer to our [documentation](https://docs.adyen.com/platforms).\n## Authentication\nTo connect to the Account API, you must use basic authentication credentials of your web service user. If you don't have one, contact the [Adyen Support Team](https://support.adyen.com/hc/en-us/requests/new). Then use its credentials to authenticate your request, for example:\n\n```\ncurl\n-U \"ws@MarketPlace.YourMarketPlace\":\"YourWsPassword\" \\\n-H \"Content-Type: application/json\" \\\n...\n```\nNote that when going live, you need to generate new web service user credentials to access the [live endpoints](https://docs.adyen.com/development-resources/live-endpoints).\n\n## Versioning\nThe Account API supports [versioning](https://docs.adyen.com/development-resources/versioning) using a version suffix in the endpoint URL. This suffix has the following format: \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://cal-test.adyen.com/cal/services/Account/v3/createAccountHolder\n```",
       "termsOfService" : "https://www.adyen.com/legal/terms-and-conditions",
       "contact" : {
          "name" : "Adyen Developer Experience team",
@@ -21,6 +21,17 @@
       "Account holders",
       "Accounts",
       "Verification"
+   ],
+   "tags" : [
+      {
+         "name" : "Account holders"
+      },
+      {
+         "name" : "Verification"
+      },
+      {
+         "name" : "Accounts"
+      }
    ],
    "paths" : {
       "/closeAccount" : {
@@ -1995,6 +2006,10 @@
                   "description" : "Details about the individual account holder.\nRequired when creating an account holder with `legalEntity` **Individual**.\n",
                   "$ref" : "#/components/schemas/IndividualDetails"
                },
+               "lastReviewDate" : {
+                  "description" : "Date when you last reviewed the account holder's information, in ISO-8601 YYYY-MM-DD format. For example, **2020-01-31**.",
+                  "type" : "string"
+               },
                "merchantCategoryCode" : {
                   "description" : "The Merchant Category Code of the account holder.\n> If not specified in the request, this will be derived from the platform account (which is configured by Adyen).",
                   "type" : "string"
@@ -2462,6 +2477,8 @@
                      "WEEKLY_MON_TO_FRI_EU",
                      "WEEKLY_MON_TO_FRI_US",
                      "WEEKLY_ON_TUE_FRI_MIDNIGHT",
+                     "WEEKLY_SUN_TO_THU_AU",
+                     "WEEKLY_SUN_TO_THU_US",
                      "YEARLY"
                   ],
                   "type" : "string"
@@ -2604,6 +2621,7 @@
                      "ID_CARD_BACK",
                      "ID_CARD_FRONT",
                      "PASSPORT",
+                     "PROOF_OF_RESIDENCY",
                      "SSN"
                   ],
                   "type" : "string"
@@ -2685,6 +2703,7 @@
                      "dateOfBirth",
                      "destinationAccountCode",
                      "document",
+                     "documentContent",
                      "documentExpirationDate",
                      "documentIssuerCountry",
                      "documentIssuerState",
@@ -2707,8 +2726,10 @@
                      "idNumber",
                      "identityDocument",
                      "individualDetails",
+                     "infix",
                      "jobTitle",
                      "lastName",
+                     "lastReviewDate",
                      "legalArrangement",
                      "legalArrangementCode",
                      "legalArrangementEntity",
@@ -2733,6 +2754,7 @@
                      "originalReference",
                      "ownerCity",
                      "ownerCountryCode",
+                     "ownerDateOfBirth",
                      "ownerHouseNumberOrName",
                      "ownerName",
                      "ownerPostalCode",
@@ -3204,6 +3226,8 @@
                      "WEEKLY_MON_TO_FRI_EU",
                      "WEEKLY_MON_TO_FRI_US",
                      "WEEKLY_ON_TUE_FRI_MIDNIGHT",
+                     "WEEKLY_SUN_TO_THU_AU",
+                     "WEEKLY_SUN_TO_THU_US",
                      "YEARLY"
                   ],
                   "type" : "string"
@@ -3664,6 +3688,8 @@
                      "WEEKLY_MON_TO_FRI_EU",
                      "WEEKLY_MON_TO_FRI_US",
                      "WEEKLY_ON_TUE_FRI_MIDNIGHT",
+                     "WEEKLY_SUN_TO_THU_AU",
+                     "WEEKLY_SUN_TO_THU_US",
                      "YEARLY"
                   ],
                   "type" : "string"
@@ -3740,6 +3766,7 @@
             "properties" : {
                "firstName" : {
                   "description" : "The first name.",
+                  "maxLength" : 80,
                   "type" : "string"
                },
                "gender" : {
@@ -3754,10 +3781,12 @@
                },
                "infix" : {
                   "description" : "The name's infix, if applicable.\n>A maximum length of twenty (20) characters is imposed.",
+                  "maxLength" : 20,
                   "type" : "string"
                },
                "lastName" : {
                   "description" : "The last name.",
+                  "maxLength" : 80,
                   "type" : "string"
                }
             },

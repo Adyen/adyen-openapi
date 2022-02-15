@@ -40,9 +40,9 @@ info:
 
     ## Versioning
 
-    Payments API supports versioning of its endpoints through a version suffix in
-    the endpoint URL. This suffix has the following format: "vXX", where XX is the
-    version number.
+    Payments API supports [versioning](https://docs.adyen.com/development-resources/versioning)
+    using a version suffix in the endpoint URL. This suffix has the following format:
+    "vXX", where XX is the version number.
 
 
     For example:
@@ -60,6 +60,9 @@ info:
 x-groups:
 - General
 - Modifications
+tags:
+- name: Modifications
+- name: General
 paths:
   /adjustAuthorisation:
     post:
@@ -2804,23 +2807,25 @@ components:
       properties:
         city:
           description: 'The name of the city. Maximum length: 3000 characters.'
+          maxLength: 3000
           type: string
         country:
-          description: 'The two-character country code as defined in ISO-3166-1 alpha-2.
-            For example, **US**.
+          description: 'The two-character ISO-3166-1 alpha-2 country code. For example,
+            **US**.
 
             > If you don''t know the country or are not collecting the country from
             the shopper, provide `country` as `ZZ`.'
           type: string
         houseNumberOrName:
           description: 'The number or name of the house. Maximum length: 3000 characters.'
+          maxLength: 3000
           type: string
         postalCode:
           description: A maximum of five digits for an address in the US, or a maximum
             of ten characters for an address in all other countries.
           type: string
         stateOrProvince:
-          description: 'State or province codes as defined in ISO 3166-2. For example,
+          description: 'The two-character ISO 3166-2 state or province code. For example,
             **CA** in the US or **ON** in Canada.
 
             > Required for the US and Canada.'
@@ -2830,6 +2835,7 @@ components:
 
             > The house number should not be included in this field; it should be
             separately provided via `houseNumberOrName`.'
+          maxLength: 3000
           type: string
       required:
       - street
@@ -3425,8 +3431,6 @@ components:
           - both
           type: string
         sdkUiType:
-          default:
-          - <all available types>
           description: 'UI types supported for displaying specific challenges.
 
             Allowed values:
@@ -3572,15 +3576,14 @@ components:
       properties:
         plan:
           x-addedInVersion: '64'
-          description: 'Defines the type of installment plan. If not set, defaults
-            to **regular**.
-
-
-            Possible values:
+          description: 'The installment plan, used for [card installments in Japan](https://docs.adyen.com/payment-methods/cards/credit-card-installments#make-a-payment-japan).
+            By default, this is set to **regular**. Possible values:
 
             * **regular**
 
-            * **revolving**'
+            * **revolving**
+
+            '
           enum:
           - regular
           - revolving
@@ -6249,7 +6252,28 @@ components:
           $ref: '#/components/schemas/ThreeDSRequestorAuthenticationInfo'
         threeDSRequestorChallengeInd:
           x-addedInVersion: '68'
-          description: Indicates whether a challenge is requested for this transaction.
+          x-enum:
+          - description: No preference
+            value: '01'
+          - description: No challenge requested
+            value: '02'
+          - description: Challenge requested (3DS Requestor preference)
+            value: '03'
+          - description: Challenge requested (Mandate)
+            value: '04'
+          - description: No challenge (transactional risk analysis is already performed)
+            value: '05'
+          description: "Indicates whether a challenge is requested for this transaction.Possible\
+            \ values:\n* **01** \u2014 No preference\n* **02** \u2014 No challenge\
+            \ requested\n* **03** \u2014 Challenge requested (3DS Requestor preference)\n\
+            * **04** \u2014 Challenge requested (Mandate)\n* **05** \u2014 No challenge\
+            \ (transactional risk analysis is already performed)"
+          enum:
+          - '01'
+          - '02'
+          - '03'
+          - '04'
+          - '05'
           type: string
         threeDSRequestorID:
           description: Required for [authentication-only integration](https://docs.adyen.com/online-payments/3d-secure/other-3ds-flows/authentication-only)
