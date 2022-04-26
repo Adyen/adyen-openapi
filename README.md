@@ -13,7 +13,7 @@ API definitions in this repository are organized into two sub-folders:
    /yaml – Definition files in the yaml format.
 ```
 
-We support the OpenAPI version 3.0.3.
+We support the OpenAPI version 3.1.0.
 
 ## Usage
   
