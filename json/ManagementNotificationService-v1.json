@@ -1,0 +1,176 @@
+{
+   "openapi" : "3.1.0",
+   "info" : {
+      "version" : "1",
+      "x-publicVersion" : true,
+      "title" : "Management Notification Webhooks",
+      "description" : "Adyen sends notifications through webhooks to inform your system about events that happen with your Adyen company and merchant accounts, stores, payment terminals, and payment methods.\n\nWhen an event occurs, Adyen makes an HTTP POST request to a URL on your server and includes the details of the event in the request body.\n\nYou can use our webhooks to build your implementation.\n\nRefer to [Notification webhooks](https://docs.adyen.com/development-resources/webhooks) for more information.",
+      "x-timestamp" : "2022-05-10T19:08:19Z",
+      "termsOfService" : "https://www.adyen.com/legal/terms-and-conditions",
+      "contact" : {
+         "name" : "Adyen Developer Experience team",
+         "url" : "https://www.adyen.help/hc/en-us/community/topics",
+         "email" : "developer-experience@adyen.com"
+      }
+   },
+   "x-groups" : [
+      "Payment method"
+   ],
+   "tags" : [
+      ],
+   "x-staticResponse" : "response.json",
+   "webhooks" : {
+      "paymentMethod.created" : {
+         "post" : {
+            "tags" : [
+               "Payment method"
+            ],
+            "summary" : "Payment method created",
+            "description" : "Adyen sends this webhook as soon as the request to [add a payment method](https://docs.adyen.com/api-explorer/#/ManagementService/latest/post/merchants/{id}/paymentMethodSettings) has been completed.",
+            "operationId" : "post-paymentMethod.created",
+            "x-groupName" : "Payment method",
+            "x-sortIndex" : 1,
+            "security" : [
+               {
+                  "ApiKeyAuth" : [
+                     ]
+               }
+            ],
+            "requestBody" : {
+               "content" : {
+                  "application/json" : {
+                     "examples" : {
+                        "paymentMethod.created" : {
+                           "$ref" : "#/components/examples/post-paymentMethod.created-paymentMethod.created"
+                        }
+                     },
+                     "schema" : {
+                        "$ref" : "#/components/schemas/NotificationDataMessage"
+                     }
+                  }
+               }
+            },
+            "responses" : {
+               "200" : {
+                  "content" : {
+                     "application/json" : {
+                        "examples" : {
+                           "paymentMethod.created" : {
+                              "$ref" : "#/components/examples/WebhookAck"
+                           }
+                        },
+                        "schema" : {
+                           "$ref" : "#/components/schemas/PaymentMethodNotificationResponse"
+                        }
+                     }
+                  },
+                  "description" : "OK - the request has succeeded."
+               }
+            }
+         }
+      }
+   },
+   "components" : {
+      "schemas" : {
+         "MidServiceNotificationData" : {
+            "properties" : {
+               "id" : {
+                  "description" : "The identifier of the resource.",
+                  "type" : "string"
+               },
+               "merchantId" : {
+                  "description" : "The identifier of the merchant account.",
+                  "type" : "string"
+               },
+               "result" : {
+                  "description" : "The result of the request to create a payment method.",
+                  "type" : "string"
+               },
+               "storeId" : {
+                  "description" : "The identifier of the [store](https://docs.adyen.com/api-explorer/#/ManagementService/latest/post/merchants/{id}/paymentMethodSettings__reqParam_storeId), if any.",
+                  "type" : "string"
+               },
+               "type" : {
+                  "description" : "Payment method [variant](https://docs.adyen.com/development-resources/paymentmethodvariant#management-api).",
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "result",
+               "merchantId",
+               "id",
+               "type"
+            ]
+         },
+         "NotificationDataMessage" : {
+            "properties" : {
+               "createdAt" : {
+                  "description" : "Timestamp for when the webhook was created.",
+                  "format" : "date-time",
+                  "type" : "string"
+               },
+               "data" : {
+                  "description" : "Contains event details.",
+                  "$ref" : "#/components/schemas/MidServiceNotificationData"
+               },
+               "environment" : {
+                  "description" : "The environment from which the webhook originated.\n\nPossible values: **test**, **live**.",
+                  "type" : "string"
+               },
+               "type" : {
+                  "description" : "Type of notification.",
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "type",
+               "environment",
+               "createdAt",
+               "data"
+            ]
+         },
+         "PaymentMethodNotificationResponse" : {
+            "properties" : {
+               "notificationResponse" : {
+                  "description" : "Respond with **HTTP 200 OK** and `[accepted]` in the response body to [accept the webhook](https://docs.adyen.com/development-resources/webhooks#accept-notifications).",
+                  "type" : "string"
+               }
+            }
+         }
+      },
+      "securitySchemes" : {
+         "ApiKeyAuth" : {
+            "in" : "header",
+            "name" : "X-API-Key",
+            "type" : "apiKey"
+         },
+         "BasicAuth" : {
+            "scheme" : "basic",
+            "type" : "http"
+         }
+      },
+      "examples" : {
+         "WebhookAck" : {
+            "summary" : "Acknowledge Webhook",
+            "value" : {
+               "notificationResponse" : "[accepted]"
+            }
+         },
+         "post-paymentMethod.created-paymentMethod.created" : {
+            "summary" : "Payment method Visa created",
+            "value" : {
+               "createdAt" : "2022-01-24T14:59:11+01:00",
+               "data" : {
+                  "id" : "PM3224R223224K5FH4M2K9B86",
+                  "merchantId" : "MERCHANT_ACCOUNT",
+                  "result" : "SUCCESS",
+                  "storeId" : "ST322LJ223223K5F4SQNR9XL5",
+                  "type" : "visa"
+               },
+               "environment" : "test",
+               "type" : "paymentMethod.created"
+            }
+         }
+      }
+   }
+}

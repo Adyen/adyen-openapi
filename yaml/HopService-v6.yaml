@@ -5,50 +5,23 @@ info:
   version: '6'
   x-publicVersion: true
   title: 'Adyen for Platforms: Hosted Onboarding'
-  description: 'The Hosted onboarding API provides endpoints that you can use to generate
-    links to Adyen-hosted pages, such as an [onboarding page](https://docs.adyen.com/platforms/hosted-onboarding-page)
-    or a [PCI compliance questionnaire](https://docs.adyen.com/platforms/platforms-for-partners).
-    Then you can provide the link to your account holder so they can complete their
-    onboarding.
-
-
-    ## Authentication
-
-    To connect to the Hosted onboarding API, you must use basic authentication credentials
-    of your web service user. If you don''t have one, contact our [Support Team](https://support.adyen.com/hc/en-us/requests/new).
-    Then use your credentials to authenticate your request, for example:
-
-
-    ```
-
-    curl
-
-    -U "ws@MarketPlace.YourMarketPlace":"YourWsPassword" \
-
-    -H "Content-Type: application/json" \
-
-    ...
-
-    ```
-
-    When going live, you need to generate new web service user credentials to access
-    the [live endpoints](https://docs.adyen.com/development-resources/live-endpoints).
-
-
-    ## Versioning
-
-    The Hosted onboarding API supports [versioning](https://docs.adyen.com/development-resources/versioning)
-    using a version suffix in the endpoint URL. This suffix has the following format:
-    "vXX", where XX is the version number.
-
-
-    For example:
-
-    ```
-
-    https://cal-test.adyen.com/cal/services/Hop/v6/getOnboardingUrl
-
-    ```'
+  description: "The Hosted onboarding API provides endpoints that you can use to generate\
+    \ links to Adyen-hosted pages, such as an [onboarding page](https://docs.adyen.com/platforms/hosted-onboarding-page)\
+    \ or a [PCI compliance questionnaire](https://docs.adyen.com/platforms/platforms-for-partners).\
+    \ You can provide these links to your account holders so that they can complete\
+    \ their onboarding.\n\n## Authentication\nYour Adyen contact will provide your\
+    \ API credential and an API key. To connect to the API, add an `X-API-Key` header\
+    \ with the API key as the value, for example:\n\n ```\ncurl\n-H \"Content-Type:\
+    \ application/json\" \\\n-H \"X-API-Key: YOUR_API_KEY\" \\\n...\n```\n\nAlternatively,\
+    \ you can use the username and password to connect to the API using basic authentication.\
+    \ For example:\n\n```\ncurl\n-U \"ws@MarketPlace.YOUR_PLATFORM_ACCOUNT\":\"YOUR_WS_PASSWORD\"\
+    \ \\\n-H \"Content-Type: application/json\" \\\n...\n```\nWhen going live, you\
+    \ need to generate new web service user credentials to access the [live endpoints](https://docs.adyen.com/development-resources/live-endpoints).\n\
+    \n## Versioning\nThe Hosted onboarding API supports [versioning](https://docs.adyen.com/development-resources/versioning)\
+    \ using a version suffix in the endpoint URL. This suffix has the following format:\
+    \ \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://cal-test.adyen.com/cal/services/Hop/v6/getOnboardingUrl\n\
+    ```"
+  x-timestamp: '2022-05-03T09:24:14Z'
   termsOfService: https://www.adyen.com/legal/terms-and-conditions
   contact:
     name: Adyen Developer Experience team
@@ -65,10 +38,10 @@ paths:
     post:
       tags:
       - Hosted Onboarding Page
-      summary: Get a link to a Adyen-hosted onboarding page.
+      summary: Get a link to a Adyen-hosted onboarding page
       description: 'Returns a link to an Adyen-hosted onboarding page (HOP) that you
         can send to your account holder. For more information on how to use HOP, refer
-        to [Hosted onboarding](https://docs.adyen.com/platforms/hosted-onboarding-page). '
+        to [Hosted onboarding](https://docs.adyen.com/platforms/collect-verification-details/hosted-onboarding-page). '
       operationId: post-getOnboardingUrl
       x-groupName: Hosted Onboarding Page
       x-sortIndex: 1
@@ -78,12 +51,18 @@ paths:
       requestBody:
         content:
           application/json:
+            examples:
+              get-onboarding-url:
+                $ref: '#/components/examples/post-getOnboardingUrl-get-onboarding-url'
             schema:
               $ref: '#/components/schemas/GetOnboardingUrlRequest'
       responses:
         '200':
           content:
             application/json:
+              examples:
+                get-onboarding-url:
+                  $ref: '#/components/examples/post-getOnboardingUrl-get-onboarding-url-200'
               schema:
                 $ref: '#/components/schemas/GetOnboardingUrlResponse'
           description: OK - the request has succeeded.
@@ -121,7 +100,7 @@ paths:
     post:
       tags:
       - PCI Compliance Questionnaire Page
-      summary: Get a link to a PCI compliance questionnaire.
+      summary: Get a link to a PCI compliance questionnaire
       description: "Returns a link to a PCI compliance questionnaire that you can\
         \ send to your account holder.\n > You should only use this endpoint if you\
         \ have a [partner platform setup](https://docs.adyen.com/platforms/platforms-for-partners)."
@@ -134,12 +113,18 @@ paths:
       requestBody:
         content:
           application/json:
+            examples:
+              get-pci-questionnaire-url:
+                $ref: '#/components/examples/post-getPciQuestionnaireUrl-get-pci-questionnaire-url'
             schema:
               $ref: '#/components/schemas/GetPciUrlRequest'
       responses:
         '200':
           content:
             application/json:
+              examples:
+                get-pci-questionnaire-url:
+                  $ref: '#/components/examples/post-getPciQuestionnaireUrl-get-pci-questionnaire-url-200'
               schema:
                 $ref: '#/components/schemas/GetPciUrlResponse'
           description: OK - the request has succeeded.
@@ -229,6 +214,10 @@ components:
           - accountStatus
           - accountType
           - address
+          - balanceAccount
+          - balanceAccountActive
+          - balanceAccountCode
+          - balanceAccountId
           - bankAccount
           - bankAccountCode
           - bankAccountName
@@ -449,14 +438,6 @@ components:
             after they fill out the questionnaire, or if their session times out.
             Maximum length of 500 characters.
           type: string
-        shopperLocale:
-          description: "The language to be used in the page, specified by a combination\
-            \ of a language and country code. For example, **pt-BR**. \n\nIf not specified\
-            \ in the request or if the language is not supported, the page uses the\
-            \ browser language. If the browser language is not supported, the page\
-            \ uses **en-US** by default.\n\nFor a list supported languages, refer\
-            \ to [Change the page language](https://docs.adyen.com/platforms/hosted-onboarding-page/customize-experience#change-page-language)."
-          type: string
       required:
       - accountHolderCode
     GetPciUrlResponse:
@@ -543,4 +524,34 @@ components:
     BasicAuth:
       scheme: basic
       type: http
-  examples: {}
+  examples:
+    post-getOnboardingUrl-get-onboarding-url:
+      summary: Get a hosted onboarding page link
+      description: Returns a link to an Adyen-hosted onboarding page (HOP) that you
+        can send to your account holder.
+      value:
+        accountHolderCode: CODE_OF_ACCOUNT_HOLDER
+        returnUrl: https://your.return-url.com/?submerchant=123
+    post-getOnboardingUrl-get-onboarding-url-200:
+      summary: Hosted onboarding page link
+      description: Example response for requesting a hosted onboarding page link
+      value:
+        invalidFields: []
+        pspReference: '9115677600500127'
+        resultCode: Success
+        redirectUrl: https://hop-test.adyen.com/hop/view/?token=<token>
+    post-getPciQuestionnaireUrl-get-pci-questionnaire-url:
+      summary: Get a PCI questionnaire link
+      description: Returns a link to an Adyen-hosted PCI compliance questionnaire
+        that you can send to your account holder.
+      value:
+        accountHolderCode: CODE_OF_ACCOUNT_HOLDER
+        returnUrl: https://your.return-url.com/?submerchant=123
+    post-getPciQuestionnaireUrl-get-pci-questionnaire-url-200:
+      summary: Hosted onboarding page link
+      description: Example response for requesting a hosted onboarding page link
+      value:
+        invalidFields: []
+        pspReference: '8315748692943050'
+        resultCode: Success
+        redirectUrl: https://hop-test.adyen.com/hop/pci/?token=<token>

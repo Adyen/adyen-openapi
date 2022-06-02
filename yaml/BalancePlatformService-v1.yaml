@@ -23,6 +23,7 @@ info:
     \ credential for the live environment. You can then use the API key or the username\
     \ and password to send requests to `https://balanceplatform-api-live.adyen.com/bcl/v1`.\n\
     \nFor more information, refer to our [Going live documentation](https://docs.adyen.com/issuing/integration-checklist#going-live)."
+  x-timestamp: '2022-03-22T19:59:08Z'
   termsOfService: https://www.adyen.com/legal/terms-and-conditions
   contact:
     name: Adyen Developer Experience team
@@ -1845,14 +1846,14 @@ paths:
       tags:
       - Transaction rules
       summary: Create a transaction rule
-      description: 'Creates a transaction rule to define conditions for automatically
-        approving or denying transactions. You can apply transaction rules to a specific
-        payment instrument, a group of payment instruments, or to all the payment
-        instruments in your balance platform.
+      description: 'Creates a [transaction rule](https://docs.adyen.com/issuing/transaction-rules).
+        When your user makes a transaction with their Adyen-issued card, the transaction
+        is allowed or declined based on the conditions and outcome defined in the
+        transaction rule. You can apply the transaction rule to several cards, such
+        as all the cards in your balance platform, or to a specific card.
 
 
-        For more information on how you can set conditions, refer to [Transaction
-        rules](https://docs.adyen.com/issuing/transaction-rules).'
+        For use cases, see [examples](https://docs.adyen.com/issuing/transaction-rules/examples).'
       x-addedInVersion: '1'
       operationId: post-transactionRules
       x-groupName: Transaction rules
@@ -2407,7 +2408,7 @@ components:
             $ref: '#/components/schemas/AccountHolderCapability'
           description: Contains key-value pairs that specify the actions that an account
             holder can do in your platform. The key is a capability required for your
-            integration. For example, **issueCard** for Issuing.The value is an object
+            integration. For example, **issueCard** for Issuing. The value is an object
             containing the settings for the capability.
           type: object
         contactDetails:
@@ -2419,6 +2420,7 @@ components:
           type: string
         id:
           description: The unique identifier of the account holder.
+          readOnly: true
           type: string
         legalEntityId:
           description: 'The unique identifier of the [legal entity](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/legalEntities__resParam_id)
@@ -2441,7 +2443,7 @@ components:
           type: string
         status:
           description: "The status of the account holder.\n\nPossible values: \n\n\
-            \ * **Active**: The account holder is active. This the default status\
+            \ * **Active**: The account holder is active. This is the default status\
             \ when creating an account holder. \n\n * **Suspended**: The account holder\
             \ is temporarily suspended. You can set the account back to active or\
             \ close it permanently. \n\n* **Closed**: The account holder is permanently\
@@ -2452,19 +2454,13 @@ components:
           - Inactive
           - Suspended
           type: string
-        sweepConfigurations:
-          additionalProperties:
-            $ref: '#/components/schemas/SweepConfiguration'
-          description: "Contains key-value pairs that specify configurations for balance\
-            \ sweeps per currency code. A sweep pulls in or pushes out funds based\
-            \ on a defined schedule, amount, and a source (for pulling funds) or a\
-            \ destination (for pushing funds).\n\n Sweep configurations on the account\
-            \ holder level applies to all of the account holder's balance accounts.\n\
-            \n The key must be a three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes)\
-            \ in uppercase. For example, **EUR**. The value must be an object containing\
-            \ the sweep configuration.\n\nEither `balanceAccountId`, `transferInstrumentId`,\
-            \ or `merchantAccount` must be specified in the request."
-          type: object
+        timeZone:
+          description: 'The [time zone](https://www.iana.org/time-zones) of the account
+            holder. For example, **Europe/Amsterdam**.
+
+            If not set, the time zone of the balance account will be used. For possible
+            values, see the [list of time zone codes](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones).'
+          type: string
       required:
       - legalEntityId
       - id
@@ -2563,6 +2559,14 @@ components:
             to which the account holder belongs. Required in the request if your API
             credentials can be used for multiple balance platforms.
           type: string
+        capabilities:
+          additionalProperties:
+            $ref: '#/components/schemas/AccountHolderCapability'
+          description: Contains key-value pairs that specify the actions that an account
+            holder can do in your platform. The key is a capability required for your
+            integration. For example, **issueCard** for Issuing. The value is an object
+            containing the settings for the capability.
+          type: object
         contactDetails:
           description: Contact details of the account holder.
           $ref: '#/components/schemas/ContactDetails'
@@ -2583,51 +2587,15 @@ components:
           description: Your reference for the account holder, maximum 150 characters.
           maxLength: 150
           type: string
-        sweepConfigurations:
-          additionalProperties:
-            $ref: '#/components/schemas/SweepConfiguration'
-          description: "Contains key-value pairs that specify configurations for balance\
-            \ sweeps per currency code. A sweep pulls in or pushes out funds based\
-            \ on a defined schedule, amount, and a source (for pulling funds) or a\
-            \ destination (for pushing funds).\n\n Sweep configurations on the account\
-            \ holder level applies to all of the account holder's balance accounts.\n\
-            \n The key must be a three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes)\
-            \ in uppercase. For example, **EUR**. The value must be an object containing\
-            \ the sweep configuration.\n\nEither `balanceAccountId`, `transferInstrumentId`,\
-            \ or `merchantAccount` must be specified in the request."
-          type: object
+        timeZone:
+          description: 'The [time zone](https://www.iana.org/time-zones) of the account
+            holder. For example, **Europe/Amsterdam**.
+
+            If not set, the time zone of the balance account will be used. For possible
+            values, see the [list of time zone codes](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones).'
+          type: string
       required:
       - legalEntityId
-    Address:
-      properties:
-        city:
-          description: 'The name of the city. Required if `stateOrProvince` is provided.
-
-
-            If you specify the city, you must also send `postalCode` and `street`.'
-          type: string
-        country:
-          description: The two-letter [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)
-            country code.
-          type: string
-        postalCode:
-          description: Postal code. Required if `stateOrProvince` and/or `city` is
-            provided.
-          type: string
-        stateOrProvince:
-          description: "The two-letter ISO 3166-2 state or province code. For example,\
-            \ **CA** in the US. \n\nIf you specify the state or province, you must\
-            \ also send `city`, `postalCode`, and `street`."
-          type: string
-        street:
-          description: The name of the street, and the house or building number. Required
-            if `stateOrProvince` and/or `city` is provided.
-          type: string
-        street2:
-          description: The apartment, unit, or suite number.
-          type: string
-      required:
-      - country
     Address2:
       properties:
         city:
@@ -2797,6 +2765,11 @@ components:
         status:
           description: "The status of the balance account, set to **Active** by default.\
             \ \n"
+          enum:
+          - Active
+          - Closed
+          - Inactive
+          - Suspended
           type: string
         sweepConfigurations:
           additionalProperties:
@@ -2807,14 +2780,17 @@ components:
             (for pushing funds).
 
 
-            Sweep configurations on the balance account override [account holder](https://docs.adyen.com/api-explorer/#/balanceplatform/v1/post/accountHolders__reqParam_sweepConfigurations)
-            configurations.
-
-
             The key must be a three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes)
             in uppercase. For example, **EUR**. The value must be an object containing
             the sweep configuration.'
           type: object
+        timeZone:
+          description: 'The [time zone](https://www.iana.org/time-zones) of the balance
+            account. For example, **Europe/Amsterdam**.
+
+            If not set, the time zone of the account holder will be used. For possible
+            values, see the [list of time zone codes](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones).'
+          type: string
       required:
       - accountHolderId
       - id
@@ -2849,14 +2825,17 @@ components:
             (for pushing funds).
 
 
-            Sweep configurations on the balance account override [account holder](https://docs.adyen.com/api-explorer/#/balanceplatform/v1/post/accountHolders__reqParam_sweepConfigurations)
-            configurations.
-
-
             The key must be a three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes)
             in uppercase. For example, **EUR**. The value must be an object containing
             the sweep configuration.'
           type: object
+        timeZone:
+          description: 'The [time zone](https://www.iana.org/time-zones) of the balance
+            account. For example, **Europe/Amsterdam**.
+
+            If not set, the time zone of the account holder will be used. For possible
+            values, see the [list of time zone codes](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones).'
+          type: string
       required:
       - accountHolderId
     BalanceAccountUpdateRequest:
@@ -2865,11 +2844,20 @@ components:
           description: The unique identifier of the [account holder](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/accountHolders__resParam_id)
             associated with the balance account.
           type: string
+        defaultCurrencyCode:
+          description: "The default currency code of this balance account, in three-character\
+            \ [ISO currency code](https://docs.adyen.com/development-resources/currency-codes)\
+            \ format. \nThe default value is **EUR**."
+          type: string
         description:
           description: A human-readable description of the balance account, maximum
             300 characters. You can use this parameter to distinguish between multiple
             balance accounts under an account holder.
           maxLength: 300
+          type: string
+        reference:
+          description: Your reference to the balance account, maximum 150 characters.
+          maxLength: 150
           type: string
         status:
           description: 'The status of the balance account. Payment instruments linked
@@ -2887,14 +2875,21 @@ components:
         sweepConfigurations:
           additionalProperties:
             $ref: '#/components/schemas/SweepConfiguration'
-          description: "Contains key-value pairs that specify [balance sweep configuration\
-            \ per currency code](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__reqParam_sweepConfigurations).\n\
-            \nYou can update the balance account to add, update, or delete configurations.\n\
-            \n* To add a configuration, send the currency code as a key and the configuration\
-            \ as the object.\n\n * To update a configuration, send the whole configuration\
-            \ with your updates.\n\n* To delete a configuration, set the value to\
-            \ **null**. For example, `\"EUR\": null`."
+          description: "Contains key-value pairs that specify [balance sweep per currency\
+            \ code](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__reqParam_sweepConfigurations).\n\
+            \nYou can update the balance account to add, update, or delete sweeps.\n\
+            \n* To add a sweep, send the currency code as a key and the configuration\
+            \ as the object.\n\n * To update a sweep, send the whole configuration\
+            \ with your updates.\n\n* To delete a sweep, set the value to **null**.\
+            \ For example, `\"EUR\": null`."
           type: object
+        timeZone:
+          description: 'The [time zone](https://www.iana.org/time-zones) of the balance
+            account. For example, **Europe/Amsterdam**.
+
+            If not set, the time zone of the account holder will be used. For possible
+            values, see the [list of time zone codes](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones).'
+          type: string
     BalancePlatform:
       properties:
         description:
@@ -4289,11 +4284,11 @@ components:
           type: string
         endDate:
           description: 'The date when the rule will stop being evaluated, in ISO 8601
-            extended offset date-time format.  For example, **2020-12-18T10:15:30+01:00**.
+            extended offset date-time format. For example, **2020-12-18T10:15:30+01:00**.
 
 
-            If not provided when creating a transaction rule, the rule will be evaluated
-            until the rule status is set to **inactive**.'
+            If not provided, the rule will be evaluated until the rule status is set
+            to **inactive**.'
           type: string
         entryModes:
           description: 'List of point-of-sale entry modes to which the rule applies.
@@ -4319,7 +4314,8 @@ components:
           description: The unique identifier of the transaction rule.
           type: string
         interval:
-          description: The interval when the rule conditions must be applied.
+          description: The [time interval](https://docs.adyen.com/issuing/transaction-rules#time-intervals)
+            when the rule conditions apply.
           $ref: '#/components/schemas/TransactionRuleInterval'
         maxTransactions:
           description: The maximum number of transactions that a payment instrument
@@ -4431,11 +4427,11 @@ components:
           type: string
         endDate:
           description: 'The date when the rule will stop being evaluated, in ISO 8601
-            extended offset date-time format.  For example, **2020-12-18T10:15:30+01:00**.
+            extended offset date-time format. For example, **2020-12-18T10:15:30+01:00**.
 
 
-            If not provided when creating a transaction rule, the rule will be evaluated
-            until the rule status is set to **inactive**.'
+            If not provided, the rule will be evaluated until the rule status is set
+            to **inactive**.'
           type: string
         entryModes:
           description: 'List of point-of-sale entry modes to which the rule applies.
@@ -4458,7 +4454,8 @@ components:
             type: string
           type: array
         interval:
-          description: The interval when the rule conditions must be applied.
+          description: The [time interval](https://docs.adyen.com/issuing/transaction-rules#time-intervals)
+            when the rule conditions apply.
           $ref: '#/components/schemas/TransactionRuleInterval'
         maxTransactions:
           description: The maximum number of transactions that a payment instrument
@@ -4551,14 +4548,14 @@ components:
     TransactionRuleInterval:
       properties:
         type:
-          description: "Defines the period during which the rule conditions and limits\
-            \ apply, and how often the amount and transaction counters are reset.\n\
-            \nPossible values:\n  * **perTransaction**: The conditions are evaluated\
-            \ and the counters are reset for every transaction.\n * **daily**: The\
-            \ counters are reset daily at 00:00:00 UTC.\n * **weekly**: The counters\
-            \ are reset every Monday at 00:00:00 UTC. \n * **monthly**: The counters\
-            \ reset every 1st day of the month at 00:00:00 UTC. \n * **lifetime**:\
-            \ The conditions and limits apply to the lifetime of the payment instrument."
+          description: "The [type of interval](https://docs.adyen.com/issuing/transaction-rules#time-intervals)\
+            \ during which the rule conditions and limits apply, and how often counters\
+            \ are reset.\n\nPossible values:\n  * **perTransaction**: conditions are\
+            \ evaluated and the counters are reset for every transaction.\n * **daily**:\
+            \ the counters are reset daily at 00:00:00 UTC.\n * **weekly**: the counters\
+            \ are reset every Monday at 00:00:00 UTC. \n * **monthly**: the counters\
+            \ reset every first day of the month at 00:00:00 UTC. \n * **lifetime**:\
+            \ conditions are applied to the lifetime of the payment instrument.\n"
           enum:
           - daily
           - lifetime
@@ -4649,6 +4646,7 @@ components:
           enum:
           - dataMissing
           - invalidInput
+          - pendingStatus
           type: string
     VerificationError-recursive:
       properties:
@@ -4664,6 +4662,7 @@ components:
           enum:
           - dataMissing
           - invalidInput
+          - pendingStatus
           type: string
         remediatingActions:
           description: Contains the actions that you can take to resolve the verification

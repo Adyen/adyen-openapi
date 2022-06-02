@@ -5,51 +5,24 @@ info:
   version: '5'
   x-publicVersion: true
   title: 'Adyen for Platforms: Fund API'
-  description: 'The Fund API provides endpoints for managing the funds in the accounts
-    on your platform. These management operations include actions such as the transfer
-    of funds from one account to another, the payout of funds to an account holder,
-    and the retrieval of balances in an account.
-
-
-    For more information, refer to our [documentation](https://docs.adyen.com/platforms).
-
-    ## Authentication
-
-    To connect to the Fund API, you must use basic authentication credentials of your
-    web service user. If you don''t have one, please contact the [Adyen Support Team](https://support.adyen.com/hc/en-us/requests/new).
-    Then use its credentials to authenticate your request, for example:
-
-
-    ```
-
-    curl
-
-    -U "ws@MarketPlace.YourMarketPlace":"YourWsPassword" \
-
-    -H "Content-Type: application/json" \
-
-    ...
-
-    ```
-
-    Note that when going live, you need to generate new web service user credentials
-    to access the [live endpoints](https://docs.adyen.com/development-resources/live-endpoints).
-
-
-    ## Versioning
-
-    The Fund API supports [versioning](https://docs.adyen.com/development-resources/versioning)
-    using a version suffix in the endpoint URL. This suffix has the following format:
-    "vXX", where XX is the version number.
-
-
-    For example:
-
-    ```
-
-    https://cal-test.adyen.com/cal/services/Fund/v5/accountHolderBalance
-
-    ```'
+  description: "The Fund API provides endpoints for managing the funds in the accounts\
+    \ on your platform. These management operations include, for example, the transfer\
+    \ of funds from one account to another, the payout of funds to an account holder,\
+    \ and the retrieval of balances in an account.\n\nFor more information, refer\
+    \ to our [documentation](https://docs.adyen.com/platforms).\n## Authentication\n\
+    Your Adyen contact will provide your API credential and an API key. To connect\
+    \ to the API, add an `X-API-Key` header with the API key as the value, for example:\n\
+    \n ```\ncurl\n-H \"Content-Type: application/json\" \\\n-H \"X-API-Key: YOUR_API_KEY\"\
+    \ \\\n...\n```\n\nAlternatively, you can use the username and password to connect\
+    \ to the API using basic authentication. For example:\n\n```\ncurl\n-U \"ws@MarketPlace.YOUR_PLATFORM_ACCOUNT\"\
+    :\"YOUR_WS_PASSWORD\" \\\n-H \"Content-Type: application/json\" \\\n...\n```\n\
+    When going live, you need to generate new web service user credentials to access\
+    \ the [live endpoints](https://docs.adyen.com/development-resources/live-endpoints).\n\
+    \n## Versioning\nThe Fund API supports [versioning](https://docs.adyen.com/development-resources/versioning)\
+    \ using a version suffix in the endpoint URL. This suffix has the following format:\
+    \ \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://cal-test.adyen.com/cal/services/Fund/v5/accountHolderBalance\n\
+    ```"
+  x-timestamp: '2022-04-21T16:24:56Z'
   termsOfService: https://www.adyen.com/legal/terms-and-conditions
   contact:
     name: Adyen Developer Experience team
@@ -64,10 +37,10 @@ paths:
     post:
       tags:
       - General
-      summary: Retrieve the balance(s) of an account holder.
-      description: 'This endpoint is used to retrieve the balance(s) of the accounts
-        of an account holder. An account''s balances are on a per-currency basis (i.e.,
-        an account may have multiple balances: one per currency).'
+      summary: Get the balances of an account holder
+      description: 'Returns the account balances of an account holder. An account''s
+        balances are organized according by currencies. This mean that an account
+        may have multiple balances: one for each currency.'
       operationId: post-accountHolderBalance
       x-groupName: General
       x-sortIndex: 1
@@ -123,13 +96,13 @@ paths:
     post:
       tags:
       - General
-      summary: Retrieve a list of transactions.
-      description: This endpoint is used to retrieve a list of Transactions for an
-        account holder's accounts. The accounts and Transaction Statuses to be included
-        on the list can be specified. Each call will return a maximum of fifty (50)
-        Transactions per account; in order to retrieve the following set of Transactions
-        another call should be made with the 'page' value incremented. Note that Transactions
-        are ordered with most recent first.
+      summary: Get a list of transactions
+      description: Returns a list of transactions for an account holder's accounts.
+        You can specify the accounts and transaction statuses to be included on the
+        list. The call returns a maximum of 50 transactions for each account. To retrieve
+        all transactions, you must make another call with the 'page' value incremented.
+        Transactions are listed in chronological order, with the most recent transaction
+        first.
       operationId: post-accountHolderTransactionList
       x-groupName: General
       x-sortIndex: 2
@@ -187,12 +160,12 @@ paths:
     post:
       tags:
       - General
-      summary: Send a direct debit request.
+      summary: Send a direct debit request
       description: "Sends a direct debit request to an account holder's bank account.\
         \ If the direct debit is successful, the funds are settled in the accounts\
         \ specified in the split instructions. Adyen sends the result of the direct\
         \ debit in a [`DIRECT_DEBIT_INITIATED`](https://docs.adyen.com/api-explorer/#/NotificationService/latest/post/DIRECT_DEBIT_INITIATED)\
-        \ notification webhook.\n\n To learn more about use cases, refer to [Top up\
+        \ notification webhook.\n\n To learn more about direct debits, see [Top up\
         \ accounts](https://docs.adyen.com/platforms/top-up-accounts)."
       operationId: post-debitAccountHolder
       x-groupName: General
@@ -203,12 +176,18 @@ paths:
       requestBody:
         content:
           application/json:
+            examples:
+              debit-account-holder:
+                $ref: '#/components/examples/post-debitAccountHolder-debit-account-holder'
             schema:
               $ref: '#/components/schemas/DebitAccountHolderRequest'
       responses:
         '200':
           content:
             application/json:
+              examples:
+                debit-account-holder:
+                  $ref: '#/components/examples/post-debitAccountHolder-debit-account-holder-200'
               schema:
                 $ref: '#/components/schemas/DebitAccountHolderResponse'
           description: OK - the request has succeeded.
@@ -253,9 +232,9 @@ paths:
     post:
       tags:
       - General
-      summary: Disburse a specified amount from an account to the account holder.
-      description: This endpoint is used to pay out a specified amount from an account
-        to the bank account of the account's account holder.
+      summary: Pay out from an account to the account holder
+      description: Pays out a specified amount from an account to the bank account
+        of account holder.
       operationId: post-payoutAccountHolder
       x-groupName: General
       x-sortIndex: 3
@@ -318,10 +297,9 @@ paths:
     post:
       tags:
       - General
-      summary: Make a refund of the existing transfer funds transfer.
-      description: 'This endpoint is used to refund funds transferred from one account
-        to another. Both accounts must be in the same marketplace, but can have different
-        account holders. '
+      summary: Refund a funds transfer
+      description: 'Refunds funds transferred from one account to another. Both accounts
+        must be in the same platform, but can have different account holders. '
       operationId: post-refundFundsTransfer
       x-groupName: General
       x-sortIndex: 5
@@ -384,14 +362,13 @@ paths:
     post:
       tags:
       - General
-      summary: Refund all transactions of an account since the most recent payout.
-      description: This endpoint is used to refund all the transactions of an account
-        which have taken place since the most recent payout. This request is on a
-        per-account basis (as opposed to a per-payment basis), so only the portion
-        of the payment which was made to the specified account will be refunded. The
-        commission(s), fee(s), and payment(s) to other account(s), will remain in
-        the accounts to which they were sent as designated by the original payment's
-        split details.
+      summary: Refund all transactions of an account since the most recent payout
+      description: Refunds all the transactions of an account that have taken place
+        since the most recent payout. This request is on a account basis (as opposed
+        to a payment basis), so only the portion of the payment that was made to the
+        specified account is refunded. The commissions, fees, and payments to other
+        accounts remain in the accounts to which they were sent as designated by the
+        original payment's split details.
       operationId: post-refundNotPaidOutTransfers
       x-groupName: General
       x-sortIndex: 7
@@ -454,14 +431,14 @@ paths:
     post:
       tags:
       - General
-      summary: Designate an account to be the beneficiary of a separate account and
-        transfer the benefactor's current balance to the beneficiary.
-      description: This endpoint is used to define a benefactor and a beneficiary
-        relationship between two accounts. At the time of benefactor/beneficiary setup,
-        the funds in the benefactor account are transferred to the beneficiary account,
-        and any further payments to the benefactor account are automatically sent
-        to the beneficiary account. Note that a series of benefactor/beneficiaries
-        may not exceed four (4) beneficiaries and may not have a cycle in it.
+      summary: Designate a beneficiary account and transfer the benefactor's current
+        balance
+      description: Defines a benefactor and a beneficiary relationship between two
+        accounts. At the time of benefactor/beneficiary setup, the funds in the benefactor
+        account are transferred to the beneficiary account, and any further payments
+        to the benefactor account are automatically sent to the beneficiary account.
+        A series of benefactor/beneficiaries may not exceed four beneficiaries and
+        may not have a cycle in it.
       operationId: post-setupBeneficiary
       x-groupName: General
       x-sortIndex: 6
@@ -524,11 +501,11 @@ paths:
     post:
       tags:
       - General
-      summary: Transfer funds from one platform account to another.
-      description: This endpoint is used to transfer funds from one account to another
-        account. Both accounts must be in the same marketplace, but can have different
-        account holders. The transfer must include a transfer code, which should be
-        determined by the marketplace, in compliance with local regulations.
+      summary: Transfer funds between platform accounts
+      description: Transfers funds from one account to another account. Both accounts
+        must be in the same platform, but can have different account holders. The
+        transfer must include a transfer code, which should be determined by the platform,
+        in compliance with local regulations.
       operationId: post-transferFunds
       x-groupName: General
       x-sortIndex: 4
@@ -930,9 +907,10 @@ components:
             section for details on field requirements.'
           type: string
         ownerDateOfBirth:
+          deprecated: true
           description: 'The date of birth of the bank account owner.
 
-            '
+            The date should be in ISO-8601 format yyyy-mm-dd (e.g. 2000-01-31).'
           type: string
         ownerHouseNumberOrName:
           description: 'The house name or number of the residence of the bank account
@@ -1104,6 +1082,10 @@ components:
           - accountStatus
           - accountType
           - address
+          - balanceAccount
+          - balanceAccountActive
+          - balanceAccountCode
+          - balanceAccountId
           - bankAccount
           - bankAccountCode
           - bankAccountName
@@ -1305,7 +1287,6 @@ components:
       required:
       - accountHolderCode
       - accountCode
-      - amount
     PayoutAccountHolderResponse:
       properties:
         bankAccountUUID:
@@ -1489,13 +1470,14 @@ components:
           description: 'The type of split.
 
             Possible values: **Default**, **PaymentFee**, **VAT**, **Commission**,
-            **MarketPlace**, **BalanceAccount**.'
+            **MarketPlace**, **BalanceAccount**, **Remainder**.'
           enum:
           - BalanceAccount
           - Commission
           - Default
           - MarketPlace
           - PaymentFee
+          - Remainder
           - VAT
           - Verification
           type: string
@@ -1723,6 +1705,33 @@ components:
         transactionListsPerAccount:
         - accountCode: 2e64b396-1200-4474-b848-0cb06b52b3c7
           page: 2
+    post-debitAccountHolder-debit-account-holder:
+      summary: Send a bank account direct debit
+      description: Example request to send a direct debit from a bank account
+      value:
+        accountHolderCode: ACCOUNT_HOLDER_CODE
+        description: YOUR_DESCRIPTION
+        bankAccountUUID: 000b81aa-ae7e-4492-aa7e-72b2129dce0c
+        amount:
+          value: 6200
+          currency: USD
+        merchantAccount: YOUR_MERCHANT_ACCOUNT
+        splits:
+        - amount:
+            value: 6000
+          type: MarketPlace
+          account: '8535516988037431'
+          reference: YOUR_SPLIT_REFERENCE_1
+        - amount:
+            value: 200
+          type: Commission
+          reference: YOUR_SPLIT_REFERENCE_2
+    post-debitAccountHolder-debit-account-holder-200:
+      summary: Direct debit request sent
+      description: Example response for requesting a direct debit from a bank account
+      value:
+        pspReference: '8816480354727275'
+        submittedAsync: 'false'
     post-payoutAccountHolder-oneOff:
       summary: One-off payout
       value:

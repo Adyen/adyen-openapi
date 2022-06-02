@@ -10,6 +10,7 @@
       "x-publicVersion" : true,
       "title" : "Balance Platform Transfers API",
       "description" : "The Balance Platform Transfers API provides an endpoint that you can use to move funds within your balance platform, or to send funds from your balance platform to a [transfer instrument](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/transferInstruments).\n\nFor information on how the API is used in Adyen Issuing, refer to [Manage funds](https://docs.adyen.com/issuing/manage-funds#transfer).\n\n## Authentication\nYour Adyen contact will provide your API credential and an API key. To connect to the API, add an `X-API-Key` header with the API key as the value, for example:\n\n ```\ncurl\n-H \"Content-Type: application/json\" \\\n-H \"X-API-Key: YOUR_API_KEY\" \\\n...\n```\n\nAlternatively, you can use the username and password to connect to the API using basic authentication. For example:\n\n```\ncurl\n-H \"Content-Type: application/json\" \\\n-U \"ws@BalancePlatform.YOUR_BALANCE_PLATFORM\":\"YOUR_WS_PASSWORD\" \\\n...\n```\n## Roles and permissions\nTo use the Balance Platforms Transfers API, you need an additional role for your API credential. Transfers must also be enabled for the source balance account. Your Adyen contact will set up the roles and permissions for you.\n## Versioning\nThe Balance Platform Transfers API supports [versioning](https://docs.adyen.com/development-resources/versioning) using a version suffix in the endpoint URL. This suffix has the following format: \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://balanceplatform-api-test.adyen.com/btl/v1\n```\n## Going live\nWhen going live, your Adyen contact will provide your API credential for the live environment. You can then use the username and password to send requests to `https://balanceplatform-api-live.adyen.com/btl/v1`.\n\nFor more information, refer to our [Going live documentation](https://docs.adyen.com/issuing/integration-checklist#going-live).",
+      "x-timestamp" : "2022-03-21T17:38:03Z",
       "termsOfService" : "https://www.adyen.com/legal/terms-and-conditions",
       "contact" : {
          "name" : "Adyen Developer Experience team",
@@ -18,25 +19,25 @@
       }
    },
    "x-groups" : [
-      "General"
+      "Transfers"
    ],
    "tags" : [
       {
-         "name" : "General"
+         "name" : "Transfers"
       }
    ],
    "paths" : {
       "/transfers" : {
          "post" : {
             "tags" : [
-               "General"
+               "Transfers"
             ],
             "summary" : "Transfer funds",
-            "description" : "Starts a transfer request to move funds within your balance platform, or send funds to a [transfer instrument](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/transferInstruments). Adyen sends the outcome of the transfer request through webhooks.\n\nTo use this endpoint, you need an additional role for your API credential and transfers must be enabled for the source balance account. Your Adyen contact will set these up for you.",
+            "description" : "Starts a transfer request to move funds within your balance platform, or send funds to a [transfer instrument](https://docs.adyen.com/api-explorer/#/balanceplatform/v1/post/transferInstruments). Adyen sends the outcome of the transfer request through webhooks.\n\nTo use this endpoint, you need an additional role for your API credential and transfers must be enabled for the source balance account. Your Adyen contact will set these up for you.",
             "x-addedInVersion" : "1",
             "operationId" : "post-transfers",
-            "x-groupName" : "General",
-            "x-sortIndex" : 0,
+            "x-groupName" : "Transfers",
+            "x-sortIndex" : 1,
             "security" : [
                {
                   "ApiKeyAuth" : [
@@ -46,6 +47,14 @@
             "requestBody" : {
                "content" : {
                   "application/json" : {
+                     "examples" : {
+                        "payout-to-balance-account" : {
+                           "$ref" : "#/components/examples/post-transfers-payout-to-balance-account"
+                        },
+                        "payout-to-transfer-instrument" : {
+                           "$ref" : "#/components/examples/post-transfers-payout-to-transfer-instrument"
+                        }
+                     },
                      "schema" : {
                         "$ref" : "#/components/schemas/TransferInfoOld"
                      }
@@ -56,6 +65,14 @@
                "200" : {
                   "content" : {
                      "application/json" : {
+                        "examples" : {
+                           "payout-to-balance-account" : {
+                              "$ref" : "#/components/examples/post-transfers-payout-to-balance-account-200"
+                           },
+                           "payout-to-transfer-instrument" : {
+                              "$ref" : "#/components/examples/post-transfers-payout-to-transfer-instrument-200"
+                           }
+                        },
                         "schema" : {
                            "$ref" : "#/components/schemas/TransferOld"
                         }
@@ -116,7 +133,7 @@
                   "type" : "string"
                },
                "country" : {
-                  "description" : "The two-character country code as defined in ISO-3166-1 alpha-2. For example, **US**.\n> If you don't know the country or are not collecting the country from the shopper, provide `country` as `ZZ`.",
+                  "description" : "The two-character ISO-3166-1 alpha-2 country code. For example, **US**.\n> If you don't know the country or are not collecting the country from the shopper, provide `country` as `ZZ`.",
                   "type" : "string"
                },
                "houseNumberOrName" : {
@@ -128,7 +145,7 @@
                   "type" : "string"
                },
                "stateOrProvince" : {
-                  "description" : "State or province codes as defined in ISO 3166-2. For example, **CA** in the US or **ON** in Canada.\n> Required for the US and Canada.",
+                  "description" : "The two-character ISO 3166-2 state or province code. For example, **CA** in the US or **ON** in Canada.\n> Required for the US and Canada.",
                   "type" : "string"
                },
                "street" : {
@@ -445,6 +462,7 @@
                   "type" : "string"
                },
                "counterparty" : {
+                  "x-addedInVersion" : "1",
                   "description" : "Contains information about the other party in the transaction.",
                   "$ref" : "#/components/schemas/Counterparty"
                },
@@ -519,6 +537,7 @@
                      "paymentCost",
                      "refund",
                      "refundReversal",
+                     "reserveAdjustment",
                      "secondChargeback"
                   ],
                   "type" : "string"
@@ -663,7 +682,58 @@
          }
       },
       "examples" : {
-         
+         "post-transfers-payout-to-balance-account" : {
+            "summary" : "Transfer funds to another balance account",
+            "description" : "Example request to transfer funds to another balance account",
+            "value" : {
+               "source" : {
+                  "balanceAccountId" : "BAB8B2C3D4E5F6G7H8D9J6GD4"
+               },
+               "destination" : {
+                  "balanceAccountId" : "BAB1234567890ABC123456789"
+               },
+               "amount" : {
+                  "value" : 10000,
+                  "currency" : "EUR"
+               },
+               "reference" : "Your internal reference for the transfer",
+               "description" : "Your description"
+            }
+         },
+         "post-transfers-payout-to-balance-account-200" : {
+            "summary" : "Response code - 200 OK",
+            "description" : "Example response for a transfers request",
+            "value" : {
+               "id" : "1W1UG35U8A9J5ZLG",
+               "resultCode" : "Authorised"
+            }
+         },
+         "post-transfers-payout-to-transfer-instrument" : {
+            "summary" : "Pay out to a transfer instrument",
+            "description" : "Example request to pay out to a transfer instrument",
+            "value" : {
+               "source" : {
+                  "balanceAccountId" : "BAB8B2C3D4E5F6G7H8D9J6GD4"
+               },
+               "destination" : {
+                  "transferInstrumentId" : "SE1234567890ABC1234567890"
+               },
+               "amount" : {
+                  "value" : 10000,
+                  "currency" : "EUR"
+               },
+               "reference" : "Your internal reference for the transfer",
+               "description" : "Your description"
+            }
+         },
+         "post-transfers-payout-to-transfer-instrument-200" : {
+            "summary" : "Response code - 200 OK",
+            "description" : "Example response for a transfers request",
+            "value" : {
+               "id" : "1W1UG35U8A9J5ZLG",
+               "resultCode" : "Authorised"
+            }
+         }
       }
    }
 }

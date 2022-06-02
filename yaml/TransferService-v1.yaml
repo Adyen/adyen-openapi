@@ -26,23 +26,24 @@ info:
     \ credential for the live environment. You can then use the username and password\
     \ to send requests to `https://balanceplatform-api-live.adyen.com/btl/v1`.\n\n\
     For more information, refer to our [Going live documentation](https://docs.adyen.com/issuing/integration-checklist#going-live)."
+  x-timestamp: '2022-03-21T17:38:03Z'
   termsOfService: https://www.adyen.com/legal/terms-and-conditions
   contact:
     name: Adyen Developer Experience team
     url: https://www.adyen.help/hc/en-us/community/topics
     email: developer-experience@adyen.com
 x-groups:
-- General
+- Transfers
 tags:
-- name: General
+- name: Transfers
 paths:
   /transfers:
     post:
       tags:
-      - General
+      - Transfers
       summary: Transfer funds
       description: 'Starts a transfer request to move funds within your balance platform,
-        or send funds to a [transfer instrument](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/transferInstruments).
+        or send funds to a [transfer instrument](https://docs.adyen.com/api-explorer/#/balanceplatform/v1/post/transferInstruments).
         Adyen sends the outcome of the transfer request through webhooks.
 
 
@@ -51,19 +52,29 @@ paths:
         will set these up for you.'
       x-addedInVersion: '1'
       operationId: post-transfers
-      x-groupName: General
-      x-sortIndex: 0
+      x-groupName: Transfers
+      x-sortIndex: 1
       security:
       - ApiKeyAuth: []
       requestBody:
         content:
           application/json:
+            examples:
+              payout-to-balance-account:
+                $ref: '#/components/examples/post-transfers-payout-to-balance-account'
+              payout-to-transfer-instrument:
+                $ref: '#/components/examples/post-transfers-payout-to-transfer-instrument'
             schema:
               $ref: '#/components/schemas/TransferInfoOld'
       responses:
         '200':
           content:
             application/json:
+              examples:
+                payout-to-balance-account:
+                  $ref: '#/components/examples/post-transfers-payout-to-balance-account-200'
+                payout-to-transfer-instrument:
+                  $ref: '#/components/examples/post-transfers-payout-to-transfer-instrument-200'
               schema:
                 $ref: '#/components/schemas/TransferOld'
           description: OK - the request has succeeded.
@@ -99,8 +110,8 @@ components:
           description: 'The name of the city. Maximum length: 3000 characters.'
           type: string
         country:
-          description: 'The two-character country code as defined in ISO-3166-1 alpha-2.
-            For example, **US**.
+          description: 'The two-character ISO-3166-1 alpha-2 country code. For example,
+            **US**.
 
             > If you don''t know the country or are not collecting the country from
             the shopper, provide `country` as `ZZ`.'
@@ -113,7 +124,7 @@ components:
             of ten characters for an address in all other countries.
           type: string
         stateOrProvince:
-          description: 'State or province codes as defined in ISO 3166-2. For example,
+          description: 'The two-character ISO 3166-2 state or province code. For example,
             **CA** in the US or **ON** in Canada.
 
             > Required for the US and Canada.'
@@ -359,6 +370,7 @@ components:
           - platformPayment
           type: string
         counterparty:
+          x-addedInVersion: '1'
           description: Contains information about the other party in the transaction.
           $ref: '#/components/schemas/Counterparty'
         createdAt:
@@ -436,6 +448,7 @@ components:
           - paymentCost
           - refund
           - refundReversal
+          - reserveAdjustment
           - secondChargeback
           type: string
         valueDate:
@@ -559,4 +572,42 @@ components:
     BasicAuth:
       scheme: basic
       type: http
-  examples: {}
+  examples:
+    post-transfers-payout-to-balance-account:
+      summary: Transfer funds to another balance account
+      description: Example request to transfer funds to another balance account
+      value:
+        source:
+          balanceAccountId: BAB8B2C3D4E5F6G7H8D9J6GD4
+        destination:
+          balanceAccountId: BAB1234567890ABC123456789
+        amount:
+          value: 10000
+          currency: EUR
+        reference: Your internal reference for the transfer
+        description: Your description
+    post-transfers-payout-to-balance-account-200:
+      summary: Response code - 200 OK
+      description: Example response for a transfers request
+      value:
+        id: 1W1UG35U8A9J5ZLG
+        resultCode: Authorised
+    post-transfers-payout-to-transfer-instrument:
+      summary: Pay out to a transfer instrument
+      description: Example request to pay out to a transfer instrument
+      value:
+        source:
+          balanceAccountId: BAB8B2C3D4E5F6G7H8D9J6GD4
+        destination:
+          transferInstrumentId: SE1234567890ABC1234567890
+        amount:
+          value: 10000
+          currency: EUR
+        reference: Your internal reference for the transfer
+        description: Your description
+    post-transfers-payout-to-transfer-instrument-200:
+      summary: Response code - 200 OK
+      description: Example response for a transfers request
+      value:
+        id: 1W1UG35U8A9J5ZLG
+        resultCode: Authorised
