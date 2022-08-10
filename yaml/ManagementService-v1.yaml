@@ -31,7 +31,7 @@ info:
     https://management-test.adyen.com/v1/companies/{companyId}/webhooks
 
     ```'
-  x-timestamp: '2022-05-06T09:18:33Z'
+  x-timestamp: '2022-08-09T15:26:01Z'
   termsOfService: https://www.adyen.com/legal/terms-and-conditions
   contact:
     name: Adyen Developer Experience team
@@ -41,6 +41,7 @@ x-groups:
 - Account - company level
 - Account - merchant level
 - Account - store level
+- Payout settings - merchant level
 - Users - company level
 - Users - merchant level
 - My API credential
@@ -73,6 +74,7 @@ tags:
 - name: Users - company level
 - name: Terminal actions - terminal level
 - name: Terminal settings - terminal level
+- name: Payout settings - merchant level
 - name: Webhooks - merchant level
 - name: Client key - merchant level
 - name: Terminal orders - company level
@@ -491,6 +493,9 @@ paths:
       requestBody:
         content:
           application/json:
+            examples:
+              post-company-credential:
+                $ref: '#/components/examples/post-companies-companyId-apiCredentials-post-company-credential'
             schema:
               $ref: '#/components/schemas/CreateCompanyApiCredentialRequest'
       parameters:
@@ -504,6 +509,9 @@ paths:
         '200':
           content:
             application/json:
+              examples:
+                post-company-credential:
+                  $ref: '#/components/examples/post-companies-companyId-apiCredentials-post-company-credential-200'
               schema:
                 $ref: '#/components/schemas/CreateCompanyApiCredentialResponse'
           description: OK - the request has succeeded.
@@ -1446,6 +1454,75 @@ paths:
                   $ref: '#/components/examples/get-companies-companyId-terminalActions-success-200'
               schema:
                 $ref: '#/components/schemas/ListExternalTerminalActionsResponse'
+          description: OK - the request has succeeded.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Bad Request - a problem reading or understanding the request.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unauthorized - authentication required.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Forbidden - insufficient permissions to process the request.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unprocessable Entity - a request validation error.
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Internal Server Error - the server could not process the request.
+  /companies/{companyId}/terminalActions/{actionId}:
+    get:
+      tags:
+      - Terminal actions - company level
+      summary: Get terminal action
+      description: "Returns the details of the [terminal action](https://docs.adyen.com/point-of-sale/automating-terminal-management/terminal-actions-api)\
+        \ identified in the path.\nTo make this request, your API credential must\
+        \ have one of the following [roles](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
+        * Management API\u2014Terminal actions read\n* Management API\u2014Terminal\
+        \ actions read and write"
+      operationId: get-companies-companyId-terminalActions-actionId
+      x-groupName: Terminal actions - company level
+      x-sortIndex: 4
+      security:
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      parameters:
+      - description: The unique identifier of the company account.
+        name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+      - description: The unique identifier of the terminal action.
+        name: actionId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: '#/components/examples/get-companies-companyId-terminalActions-actionId-success-200'
+              schema:
+                $ref: '#/components/schemas/ExternalTerminalAction'
           description: OK - the request has succeeded.
         '400':
           content:
@@ -3379,7 +3456,7 @@ paths:
         * Management API\u2014Account read"
       operationId: get-merchants
       x-groupName: Account - merchant level
-      x-sortIndex: 0
+      x-sortIndex: 4
       security:
       - BasicAuth: []
       - ApiKeyAuth: []
@@ -3442,7 +3519,73 @@ paths:
               schema:
                 $ref: '#/components/schemas/RestServiceError'
           description: Internal Server Error - the server could not process the request.
-  /merchants/{id}:
+    post:
+      tags:
+      - Account - merchant level
+      summary: Create a merchant account
+      description: "Creates a merchant account for the company account specified in\
+        \ the request.\n\nUse this endpoint if your integration requires it, such\
+        \ as Adyen for Platforms Manage. Your Adyen contact will set up your access.\n\
+        \nTo make this request, your API credential must have the following [roles](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
+        * Management API\u2014Accounts read and write"
+      operationId: post-merchants
+      x-groupName: Account - merchant level
+      x-sortIndex: 1
+      security:
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      requestBody:
+        content:
+          application/json:
+            examples:
+              post-merchants:
+                $ref: '#/components/examples/post-merchants-post-merchants'
+            schema:
+              $ref: '#/components/schemas/CreateMerchantRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              examples:
+                post-merchants:
+                  $ref: '#/components/examples/post-merchants-post-merchants-200'
+              schema:
+                $ref: '#/components/schemas/CreateMerchantResponse'
+          description: OK - the request has succeeded.
+        '204':
+          description: No Content - the request has been successfully processed, but
+            there is no additional content.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Bad Request - a problem reading or understanding the request.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unauthorized - authentication required.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Forbidden - insufficient permissions to process the request.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unprocessable Entity - a request validation error.
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Internal Server Error - the server could not process the request.
+  /merchants/{merchantId}:
     get:
       tags:
       - Account - merchant level
@@ -3451,15 +3594,15 @@ paths:
         \ must have access to the merchant account.\n\nTo make this request, your\
         \ API credential must have the following [roles](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
         * Management API\u2014Account read"
-      operationId: get-merchants-id
+      operationId: get-merchants-merchantId
       x-groupName: Account - merchant level
-      x-sortIndex: 0
+      x-sortIndex: 3
       security:
       - BasicAuth: []
       - ApiKeyAuth: []
       parameters:
       - description: The unique identifier of the merchant account.
-        name: id
+        name: merchantId
         in: path
         required: true
         schema:
@@ -3468,6 +3611,9 @@ paths:
         '200':
           content:
             application/json:
+              examples:
+                success:
+                  $ref: '#/components/examples/get-merchants-merchantId-success-200'
               schema:
                 $ref: '#/components/schemas/Merchant'
           description: OK - the request has succeeded.
@@ -3504,7 +3650,73 @@ paths:
               schema:
                 $ref: '#/components/schemas/RestServiceError'
           description: Internal Server Error - the server could not process the request.
-  /merchants/{id}/apiCredentials:
+  /merchants/{merchantId}/activate:
+    post:
+      tags:
+      - Account - merchant level
+      summary: Request to activate a merchant account
+      description: "Sends a request to activate the merchant account identified in\
+        \ the path.\n\nYou get the result of the activation asychronously through\
+        \ a webhook. Once the merchant account is activated, you can start using it\
+        \ to accept payments and payouts.\n\nUse this endpoint if your integration\
+        \ requires it, such as Adyen for Platforms Manage. Your Adyen contact will\
+        \ set up your access.\n\nTo make this request, your API credential must have\
+        \ the following [roles](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
+        * Management API\u2014Accounts read and write"
+      operationId: post-merchants-merchantId-activate
+      x-groupName: Account - merchant level
+      x-sortIndex: 2
+      security:
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      parameters:
+      - description: The unique identifier of the merchant account.
+        name: merchantId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestActivationResponse'
+          description: OK - the request has succeeded.
+        '204':
+          description: No Content - the request has been successfully processed, but
+            there is no additional content.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Bad Request - a problem reading or understanding the request.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unauthorized - authentication required.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Forbidden - insufficient permissions to process the request.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unprocessable Entity - a request validation error.
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Internal Server Error - the server could not process the request.
+  /merchants/{merchantId}/apiCredentials:
     get:
       tags:
       - API credentials - merchant level
@@ -3514,7 +3726,7 @@ paths:
         \ query parameters.\n\nTo make this request, your API credential must have\
         \ the following [roles](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
         * Management API\u2014API credentials read and write"
-      operationId: get-merchants-id-apiCredentials
+      operationId: get-merchants-merchantId-apiCredentials
       x-groupName: API credentials - merchant level
       x-sortIndex: 0
       security:
@@ -3522,7 +3734,7 @@ paths:
       - ApiKeyAuth: []
       parameters:
       - description: The unique identifier of the merchant account.
-        name: id
+        name: merchantId
         in: path
         required: true
         schema:
@@ -3546,6 +3758,9 @@ paths:
         '200':
           content:
             application/json:
+              examples:
+                success:
+                  $ref: '#/components/examples/get-merchants-merchantId-apiCredentials-success-200'
               schema:
                 $ref: '#/components/schemas/ListMerchantApiCredentialsResponse'
           description: OK - the request has succeeded.
@@ -3594,10 +3809,10 @@ paths:
         \ public key used for client-side authentication.\n* [Username and password](https://docs.adyen.com/development-resources/api-authentication#using-basic-authentication):\
         \ used for basic authentication.\n\n> Make sure you store the API key securely\
         \ in your system. You won't be able to retrieve it later.\n\nIf your API key\
-        \ is lost or compromised, you need to [generate a new API key](https://docs.adyen.com/api-explorer/#/ManagementService/v1/post/merchants/{id}/apiCredentials/{apiCredentialId}/generateApiKey).\n\
+        \ is lost or compromised, you need to [generate a new API key](https://docs.adyen.com/api-explorer/#/ManagementService/v1/post/merchants/{merchantId}/apiCredentials/{apiCredentialId}/generateApiKey).\n\
         \nTo make this request, your API credential must have the following [roles](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
         * Management API\u2014API credentials read and write"
-      operationId: post-merchants-id-apiCredentials
+      operationId: post-merchants-merchantId-apiCredentials
       x-groupName: API credentials - merchant level
       x-sortIndex: 0
       security:
@@ -3606,11 +3821,14 @@ paths:
       requestBody:
         content:
           application/json:
+            examples:
+              post-merchant-credential:
+                $ref: '#/components/examples/post-merchants-merchantId-apiCredentials-post-merchant-credential'
             schema:
               $ref: '#/components/schemas/CreateMerchantApiCredentialRequest'
       parameters:
       - description: The unique identifier of the merchant account.
-        name: id
+        name: merchantId
         in: path
         required: true
         schema:
@@ -3619,6 +3837,9 @@ paths:
         '200':
           content:
             application/json:
+              examples:
+                post-merchant-credential:
+                  $ref: '#/components/examples/post-merchants-merchantId-apiCredentials-post-merchant-credential-200'
               schema:
                 $ref: '#/components/schemas/CreateApiCredentialResponse'
           description: OK - the request has succeeded.
@@ -3655,7 +3876,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/RestServiceError'
           description: Internal Server Error - the server could not process the request.
-  /merchants/{id}/apiCredentials/{apiCredentialId}:
+  /merchants/{merchantId}/apiCredentials/{apiCredentialId}:
     get:
       tags:
       - API credentials - merchant level
@@ -3664,7 +3885,7 @@ paths:
         \ identified in the path.\n\nTo make this request, your API credential must\
         \ have the following [roles](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
         * Management API\u2014API credentials read and write"
-      operationId: get-merchants-id-apiCredentials-apiCredentialId
+      operationId: get-merchants-merchantId-apiCredentials-apiCredentialId
       x-groupName: API credentials - merchant level
       x-sortIndex: 0
       security:
@@ -3672,7 +3893,7 @@ paths:
       - ApiKeyAuth: []
       parameters:
       - description: The unique identifier of the merchant account.
-        name: id
+        name: merchantId
         in: path
         required: true
         schema:
@@ -3732,7 +3953,7 @@ paths:
         \ the full updated API credential, including the new values from the request.\
         \ \n\nTo make this request, your API credential must have the following [roles](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
         * Management API\u2014API credentials read and write"
-      operationId: patch-merchants-id-apiCredentials-apiCredentialId
+      operationId: patch-merchants-merchantId-apiCredentials-apiCredentialId
       x-groupName: API credentials - merchant level
       x-sortIndex: 0
       security:
@@ -3745,7 +3966,7 @@ paths:
               $ref: '#/components/schemas/UpdateMerchantApiCredentialRequest'
       parameters:
       - description: The unique identifier of the merchant account.
-        name: id
+        name: merchantId
         in: path
         required: true
         schema:
@@ -3796,7 +4017,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/RestServiceError'
           description: Internal Server Error - the server could not process the request.
-  /merchants/{id}/apiCredentials/{apiCredentialId}/allowedOrigins:
+  /merchants/{merchantId}/apiCredentials/{apiCredentialId}/allowedOrigins:
     get:
       tags:
       - Allowed origins - merchant level
@@ -3805,7 +4026,7 @@ paths:
         \ for the API credential identified in the path.\n\nTo make this request,\
         \ your API credential must have the following [roles](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
         * Management API\u2014API credentials read and write"
-      operationId: get-merchants-id-apiCredentials-apiCredentialId-allowedOrigins
+      operationId: get-merchants-merchantId-apiCredentials-apiCredentialId-allowedOrigins
       x-groupName: Allowed origins - merchant level
       x-sortIndex: 0
       security:
@@ -3813,7 +4034,7 @@ paths:
       - ApiKeyAuth: []
       parameters:
       - description: The unique identifier of the merchant account.
-        name: id
+        name: merchantId
         in: path
         required: true
         schema:
@@ -3872,7 +4093,7 @@ paths:
         \ to the API credential's list of allowed origins.\n\nTo make this request,\
         \ your API credential must have the following [roles](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
         * Management API\u2014API credentials read and write"
-      operationId: post-merchants-id-apiCredentials-apiCredentialId-allowedOrigins
+      operationId: post-merchants-merchantId-apiCredentials-apiCredentialId-allowedOrigins
       x-groupName: Allowed origins - merchant level
       x-sortIndex: 0
       security:
@@ -3885,7 +4106,7 @@ paths:
               $ref: '#/components/schemas/AllowedOrigin'
       parameters:
       - description: The unique identifier of the merchant account.
-        name: id
+        name: merchantId
         in: path
         required: true
         schema:
@@ -3936,7 +4157,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/RestServiceError'
           description: Internal Server Error - the server could not process the request.
-  /merchants/{id}/apiCredentials/{apiCredentialId}/allowedOrigins/{originId}:
+  /merchants/{merchantId}/apiCredentials/{apiCredentialId}/allowedOrigins/{originId}:
     delete:
       tags:
       - Allowed origins - merchant level
@@ -3946,7 +4167,7 @@ paths:
         \ accept client-side requests from that domain.\n\nTo make this request, your\
         \ API credential must have the following [roles](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
         * Management API\u2014API credentials read and write"
-      operationId: delete-merchants-id-apiCredentials-apiCredentialId-allowedOrigins-originId
+      operationId: delete-merchants-merchantId-apiCredentials-apiCredentialId-allowedOrigins-originId
       x-groupName: Allowed origins - merchant level
       x-sortIndex: 0
       security:
@@ -3954,7 +4175,7 @@ paths:
       - ApiKeyAuth: []
       parameters:
       - description: The unique identifier of the merchant account.
-        name: id
+        name: merchantId
         in: path
         required: true
         schema:
@@ -4013,7 +4234,7 @@ paths:
         \ identified in the path.\n\nTo make this request, your API credential must\
         \ have the following [roles](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
         * Management API\u2014API credentials read and write"
-      operationId: get-merchants-id-apiCredentials-apiCredentialId-allowedOrigins-originId
+      operationId: get-merchants-merchantId-apiCredentials-apiCredentialId-allowedOrigins-originId
       x-groupName: Allowed origins - merchant level
       x-sortIndex: 0
       security:
@@ -4021,7 +4242,7 @@ paths:
       - ApiKeyAuth: []
       parameters:
       - description: The unique identifier of the merchant account.
-        name: id
+        name: merchantId
         in: path
         required: true
         schema:
@@ -4078,7 +4299,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/RestServiceError'
           description: Internal Server Error - the server could not process the request.
-  /merchants/{id}/apiCredentials/{apiCredentialId}/generateApiKey:
+  /merchants/{merchantId}/apiCredentials/{apiCredentialId}/generateApiKey:
     post:
       tags:
       - API key - merchant level
@@ -4088,7 +4309,7 @@ paths:
         \ 24 hours after generating a new one.\n\nTo make this request, your API credential\
         \ must have the following [roles](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
         * Management API\u2014API credentials read and write"
-      operationId: post-merchants-id-apiCredentials-apiCredentialId-generateApiKey
+      operationId: post-merchants-merchantId-apiCredentials-apiCredentialId-generateApiKey
       x-groupName: API key - merchant level
       x-sortIndex: 0
       security:
@@ -4096,7 +4317,7 @@ paths:
       - ApiKeyAuth: []
       parameters:
       - description: The unique identifier of the merchant account.
-        name: id
+        name: merchantId
         in: path
         required: true
         schema:
@@ -4147,7 +4368,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/RestServiceError'
           description: Internal Server Error - the server could not process the request.
-  /merchants/{id}/apiCredentials/{apiCredentialId}/generateClientKey:
+  /merchants/{merchantId}/apiCredentials/{apiCredentialId}/generateClientKey:
     post:
       tags:
       - Client key - merchant level
@@ -4158,7 +4379,7 @@ paths:
         \ 24 hours after generating a new one.\n\nTo make this request, your API credential\
         \ must have the following [roles](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
         * Management API\u2014API credentials read and write"
-      operationId: post-merchants-id-apiCredentials-apiCredentialId-generateClientKey
+      operationId: post-merchants-merchantId-apiCredentials-apiCredentialId-generateClientKey
       x-groupName: Client key - merchant level
       x-sortIndex: 0
       security:
@@ -4166,7 +4387,7 @@ paths:
       - ApiKeyAuth: []
       parameters:
       - description: The unique identifier of the merchant account.
-        name: id
+        name: merchantId
         in: path
         required: true
         schema:
@@ -4217,7 +4438,81 @@ paths:
               schema:
                 $ref: '#/components/schemas/RestServiceError'
           description: Internal Server Error - the server could not process the request.
-  /merchants/{id}/paymentMethodSettings:
+  /merchants/{merchantId}/billingEntities:
+    get:
+      tags:
+      - Terminal orders - merchant level
+      summary: Get a list of billing entities
+      description: "Returns the billing entities of the merchant account identified\
+        \ in the path.\nA billing entity is a legal entity where we charge orders\
+        \ to. An order for terminal products must contain the ID of a billing entity.\n\
+        \nTo make this request, your API credential must have one of the following\
+        \ [roles](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
+        * Management API\u2014Terminal ordering read\n* Management API\u2014Terminal\
+        \ ordering read and write"
+      operationId: get-merchants-merchantId-billingEntities
+      x-groupName: Terminal orders - merchant level
+      x-sortIndex: 3
+      security:
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      parameters:
+      - description: The unique identifier of the merchant account.
+        name: merchantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - description: The name of the billing entity.
+        name: name
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: '#/components/examples/get-merchants-merchantId-billingEntities-success-200'
+              schema:
+                $ref: '#/components/schemas/BillingEntitiesResponse'
+          description: OK - the request has succeeded.
+        '204':
+          description: No Content - the request has been successfully processed, but
+            there is no additional content.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Bad Request - a problem reading or understanding the request.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unauthorized - authentication required.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Forbidden - insufficient permissions to process the request.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unprocessable Entity - a request validation error.
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Internal Server Error - the server could not process the request.
+  /merchants/{merchantId}/paymentMethodSettings:
     get:
       tags:
       - Payment methods - merchant level
@@ -4226,7 +4521,7 @@ paths:
         \ identified in the path.\n\nTo make this request, your API credential must\
         \ have the following [role](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
         * Management API\u2014Payment methods read\n"
-      operationId: get-merchants-id-paymentMethodSettings
+      operationId: get-merchants-merchantId-paymentMethodSettings
       x-groupName: Payment methods - merchant level
       x-sortIndex: 2
       security:
@@ -4234,7 +4529,7 @@ paths:
       - ApiKeyAuth: []
       parameters:
       - description: The unique identifier of the merchant account.
-        name: id
+        name: merchantId
         in: path
         required: true
         schema:
@@ -4316,7 +4611,7 @@ paths:
         \ identified in the path.\n\nTo make this request, your API credential must\
         \ have the following [role](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
         * Management API\u2014Payment methods read and write\n"
-      operationId: post-merchants-id-paymentMethodSettings
+      operationId: post-merchants-merchantId-paymentMethodSettings
       x-groupName: Payment methods - merchant level
       x-sortIndex: 1
       security:
@@ -4325,11 +4620,16 @@ paths:
       requestBody:
         content:
           application/json:
+            examples:
+              add-payment-method:
+                $ref: '#/components/examples/post-merchants-merchantId-paymentMethodSettings-add-payment-method'
+              add-payment-method-partner-model:
+                $ref: '#/components/examples/post-merchants-merchantId-paymentMethodSettings-add-payment-method-partner-model'
             schema:
               $ref: '#/components/schemas/PaymentMethodSetupInfo'
       parameters:
       - description: The unique identifier of the merchant account.
-        name: id
+        name: merchantId
         in: path
         required: true
         schema:
@@ -4338,6 +4638,11 @@ paths:
         '200':
           content:
             application/json:
+              examples:
+                add-payment-method:
+                  $ref: '#/components/examples/post-merchants-merchantId-paymentMethodSettings-add-payment-method-200'
+                add-payment-method-partner-model:
+                  $ref: '#/components/examples/post-merchants-merchantId-paymentMethodSettings-add-payment-method-partner-model-200'
               schema:
                 $ref: '#/components/schemas/PaymentMethod'
           description: OK - the request has succeeded.
@@ -4374,7 +4679,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/RestServiceError'
           description: Internal Server Error - the server could not process the request.
-  /merchants/{id}/paymentMethodSettings/{paymentMethodId}:
+  /merchants/{merchantId}/paymentMethodSettings/{paymentMethodId}:
     get:
       tags:
       - Payment methods - merchant level
@@ -4383,7 +4688,7 @@ paths:
         \ identified in the path.\n\nTo make this request, your API credential must\
         \ have the following [role](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
         * Management API\u2014Payment methods read\n"
-      operationId: get-merchants-id-paymentMethodSettings-paymentMethodId
+      operationId: get-merchants-merchantId-paymentMethodSettings-paymentMethodId
       x-groupName: Payment methods - merchant level
       x-sortIndex: 3
       security:
@@ -4391,7 +4696,7 @@ paths:
       - ApiKeyAuth: []
       parameters:
       - description: The unique identifier of the merchant account.
-        name: id
+        name: merchantId
         in: path
         required: true
         schema:
@@ -4450,7 +4755,7 @@ paths:
         \ payment method identified in the path.\n\nTo make this request, your API\
         \ credential must have the following [role](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
         * Management API\u2014Payment methods read and write\n"
-      operationId: patch-merchants-id-paymentMethodSettings-paymentMethodId
+      operationId: patch-merchants-merchantId-paymentMethodSettings-paymentMethodId
       x-groupName: Payment methods - merchant level
       x-sortIndex: 4
       security:
@@ -4463,7 +4768,7 @@ paths:
               $ref: '#/components/schemas/UpdatePaymentMethodInfo'
       parameters:
       - description: The unique identifier of the merchant account.
-        name: id
+        name: merchantId
         in: path
         required: true
         schema:
@@ -4514,798 +4819,18 @@ paths:
               schema:
                 $ref: '#/components/schemas/RestServiceError'
           description: Internal Server Error - the server could not process the request.
-  /merchants/{id}/users:
+  /merchants/{merchantId}/payoutSettings:
     get:
       tags:
-      - Users - merchant level
-      summary: Get a list of users
-      description: "Returns a list of users associated with the `id` specified in\
-        \ the path.\n\nTo make this request, your API credential must have the following\
-        \ [role](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
-        * Management API\u2014Users read and write\n"
-      operationId: get-merchants-id-users
-      x-groupName: Users - merchant level
-      x-sortIndex: 0
-      security:
-      - BasicAuth: []
-      - ApiKeyAuth: []
-      parameters:
-      - description: Unique identifier of the merchant.
-        name: id
-        in: path
-        required: true
-        schema:
-          type: string
-      - description: The number of the page to fetch.
-        name: pageNumber
-        in: query
-        required: false
-        schema:
-          format: int32
-          type: integer
-      - description: The number of items to have on a page. Maximum value is **100**.
-          The default is **10** items on a page.
-        name: pageSize
-        in: query
-        required: false
-        schema:
-          format: int32
-          type: integer
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ListMerchantUsersResponse'
-          description: OK - the request has succeeded.
-        '204':
-          description: No Content - the request has been successfully processed, but
-            there is no additional content.
-        '400':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Bad Request - a problem reading or understanding the request.
-        '401':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Unauthorized - authentication required.
-        '403':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Forbidden - insufficient permissions to process the request.
-        '422':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Unprocessable Entity - a request validation error.
-        '500':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Internal Server Error - the server could not process the request.
-    post:
-      tags:
-      - Users - merchant level
-      summary: Create a new user
-      description: "Creates a user for the `id` specified in the path.\n\nTo make\
-        \ this request, your API credential must have the following [role](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
-        * Management API\u2014Users read and write\n"
-      operationId: post-merchants-id-users
-      x-groupName: Users - merchant level
-      x-sortIndex: 0
-      security:
-      - BasicAuth: []
-      - ApiKeyAuth: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateMerchantUserRequest'
-      parameters:
-      - description: Unique identifier of the merchant.
-        name: id
-        in: path
-        required: true
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CreateUserResponse'
-          description: OK - the request has succeeded.
-        '204':
-          description: No Content - the request has been successfully processed, but
-            there is no additional content.
-        '400':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Bad Request - a problem reading or understanding the request.
-        '401':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Unauthorized - authentication required.
-        '403':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Forbidden - insufficient permissions to process the request.
-        '422':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Unprocessable Entity - a request validation error.
-        '500':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Internal Server Error - the server could not process the request.
-  /merchants/{id}/users/{userId}:
-    get:
-      tags:
-      - Users - merchant level
-      summary: Get user details
-      description: "Returns user details for the `userId` and the `id` specified in\
-        \ the path.\n\nTo make this request, your API credential must have the following\
-        \ [role](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
-        * Management API\u2014Users read and write\n"
-      operationId: get-merchants-id-users-userId
-      x-groupName: Users - merchant level
-      x-sortIndex: 0
-      security:
-      - BasicAuth: []
-      - ApiKeyAuth: []
-      parameters:
-      - description: Unique identifier of the merchant.
-        name: id
-        in: path
-        required: true
-        schema:
-          type: string
-      - description: Unique identifier of the user.
-        name: userId
-        in: path
-        required: true
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-          description: OK - the request has succeeded.
-        '204':
-          description: No Content - the request has been successfully processed, but
-            there is no additional content.
-        '400':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Bad Request - a problem reading or understanding the request.
-        '401':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Unauthorized - authentication required.
-        '403':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Forbidden - insufficient permissions to process the request.
-        '422':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Unprocessable Entity - a request validation error.
-        '500':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Internal Server Error - the server could not process the request.
-    patch:
-      tags:
-      - Users - merchant level
-      summary: Update a user
-      description: "Updates user details for the `userId` and the `id` specified in\
-        \ the path.\n\nTo make this request, your API credential must have the following\
-        \ [role](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
-        * Management API\u2014Users read and write\n"
-      operationId: patch-merchants-id-users-userId
-      x-groupName: Users - merchant level
-      x-sortIndex: 0
-      security:
-      - BasicAuth: []
-      - ApiKeyAuth: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateMerchantUserRequest'
-      parameters:
-      - description: Unique identifier of the merchant.
-        name: id
-        in: path
-        required: true
-        schema:
-          type: string
-      - description: Unique identifier of the user.
-        name: userId
-        in: path
-        required: true
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-          description: OK - the request has succeeded.
-        '204':
-          description: No Content - the request has been successfully processed, but
-            there is no additional content.
-        '400':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Bad Request - a problem reading or understanding the request.
-        '401':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Unauthorized - authentication required.
-        '403':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Forbidden - insufficient permissions to process the request.
-        '422':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Unprocessable Entity - a request validation error.
-        '500':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Internal Server Error - the server could not process the request.
-  /merchants/{id}/webhooks:
-    get:
-      tags:
-      - Webhooks - merchant level
-      summary: List all webhooks
-      description: "Lists all webhook configurations for the merchant account.\n\n\
-        To make this request, your API credential must have one of the following [roles](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
-        * Management API\u2014Webhooks read\n* Management API\u2014Webhooks read and\
-        \ write"
-      operationId: get-merchants-id-webhooks
-      x-groupName: Webhooks - merchant level
-      x-sortIndex: 2
-      security:
-      - BasicAuth: []
-      - ApiKeyAuth: []
-      parameters:
-      - description: The unique identifier of the merchant account.
-        name: id
-        in: path
-        required: true
-        schema:
-          type: string
-      - description: The number of the page to fetch.
-        name: pageNumber
-        in: query
-        required: false
-        schema:
-          format: int32
-          type: integer
-      - description: The number of items to have on a page, maximum 100. The default
-          is 10 items on a page.
-        name: pageSize
-        in: query
-        required: false
-        schema:
-          format: int32
-          type: integer
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ListWebhooksResponse'
-          description: OK - the request has succeeded.
-        '204':
-          description: No Content - the request has been successfully processed, but
-            there is no additional content.
-        '400':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Bad Request - a problem reading or understanding the request.
-        '401':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Unauthorized - authentication required.
-        '403':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Forbidden - insufficient permissions to process the request.
-        '422':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Unprocessable Entity - a request validation error.
-        '500':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Internal Server Error - the server could not process the request.
-    post:
-      tags:
-      - Webhooks - merchant level
-      summary: Set up a webhook
-      description: "Subscribe to receive webhook notifications about events related\
-        \ to your merchant account. You can add basic authentication to make sure\
-        \ the data is secure.\n\nTo make this request, your API credential must have\
-        \ the following [roles](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
-        * Management API\u2014Webhooks read and write"
-      operationId: post-merchants-id-webhooks
-      x-groupName: Webhooks - merchant level
-      x-sortIndex: 1
-      security:
-      - BasicAuth: []
-      - ApiKeyAuth: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateMerchantWebhookRequest'
-      parameters:
-      - description: The unique identifier of the merchant account.
-        name: id
-        in: path
-        required: true
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Webhook'
-          description: OK - the request has succeeded.
-        '204':
-          description: No Content - the request has been successfully processed, but
-            there is no additional content.
-        '400':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Bad Request - a problem reading or understanding the request.
-        '401':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Unauthorized - authentication required.
-        '403':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Forbidden - insufficient permissions to process the request.
-        '422':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Unprocessable Entity - a request validation error.
-        '500':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Internal Server Error - the server could not process the request.
-  /merchants/{id}/webhooks/{webhookId}:
-    delete:
-      tags:
-      - Webhooks - merchant level
-      summary: Remove a webhook
-      description: "Remove the configuration for the webhook identified in the path.\n\
+      - Payout settings - merchant level
+      summary: Get a list of payout settings
+      description: "Returns the list of payout settings for the merchant account identified\
+        \ in the path.\n\nUse this endpoint if your integration requires it, such\
+        \ as Adyen for Platforms Manage. Your Adyen contact will set up your access.\n\
         \nTo make this request, your API credential must have the following [roles](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
-        * Management API\u2014Webhooks read and write"
-      operationId: delete-merchants-id-webhooks-webhookId
-      x-groupName: Webhooks - merchant level
-      x-sortIndex: 5
-      security:
-      - BasicAuth: []
-      - ApiKeyAuth: []
-      parameters:
-      - description: The unique identifier of the merchant account.
-        name: id
-        in: path
-        required: true
-        schema:
-          type: string
-      - description: Unique identifier of the webhook configuration.
-        name: webhookId
-        in: path
-        required: true
-        schema:
-          type: string
-      responses:
-        '204':
-          description: No Content - the request has been successfully processed, but
-            there is no additional content.
-        '400':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Bad Request - a problem reading or understanding the request.
-        '401':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Unauthorized - authentication required.
-        '403':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Forbidden - insufficient permissions to process the request.
-        '422':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Unprocessable Entity - a request validation error.
-        '500':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Internal Server Error - the server could not process the request.
-    get:
-      tags:
-      - Webhooks - merchant level
-      summary: Get a webhook
-      description: "Returns the configuration for the webhook identified in the path.\n\
-        \nTo make this request, your API credential must have one of the following\
-        \ [roles](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
-        * Management API\u2014Webhooks read\n* Management API\u2014Webhooks read and\
-        \ write"
-      operationId: get-merchants-id-webhooks-webhookId
-      x-groupName: Webhooks - merchant level
-      x-sortIndex: 3
-      security:
-      - BasicAuth: []
-      - ApiKeyAuth: []
-      parameters:
-      - description: The unique identifier of the merchant account.
-        name: id
-        in: path
-        required: true
-        schema:
-          type: string
-      - description: Unique identifier of the webhook configuration.
-        name: webhookId
-        in: path
-        required: true
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Webhook'
-          description: OK - the request has succeeded.
-        '204':
-          description: No Content - the request has been successfully processed, but
-            there is no additional content.
-        '400':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Bad Request - a problem reading or understanding the request.
-        '401':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Unauthorized - authentication required.
-        '403':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Forbidden - insufficient permissions to process the request.
-        '422':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Unprocessable Entity - a request validation error.
-        '500':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Internal Server Error - the server could not process the request.
-    patch:
-      tags:
-      - Webhooks - merchant level
-      summary: Update a webhook
-      description: "Make changes to the configuration of the webhook identified in\
-        \ the path. The request contains the new values you want to have in the webhook\
-        \ configuration. The response contains the full configuration for the webhook,\
-        \ which includes the new values from the request.\n\nTo make this request,\
-        \ your API credential must have the following [roles](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
-        * Management API\u2014Webhooks read and write"
-      operationId: patch-merchants-id-webhooks-webhookId
-      x-groupName: Webhooks - merchant level
-      x-sortIndex: 4
-      security:
-      - BasicAuth: []
-      - ApiKeyAuth: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateMerchantWebhookRequest'
-      parameters:
-      - description: The unique identifier of the merchant account.
-        name: id
-        in: path
-        required: true
-        schema:
-          type: string
-      - description: Unique identifier of the webhook configuration.
-        name: webhookId
-        in: path
-        required: true
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Webhook'
-          description: OK - the request has succeeded.
-        '204':
-          description: No Content - the request has been successfully processed, but
-            there is no additional content.
-        '400':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Bad Request - a problem reading or understanding the request.
-        '401':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Unauthorized - authentication required.
-        '403':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Forbidden - insufficient permissions to process the request.
-        '422':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Unprocessable Entity - a request validation error.
-        '500':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Internal Server Error - the server could not process the request.
-  /merchants/{id}/webhooks/{webhookId}/generateHmac:
-    post:
-      tags:
-      - Webhooks - merchant level
-      summary: Generate an HMAC key
-      description: "Returns an [HMAC key](https://en.wikipedia.org/wiki/HMAC) for\
-        \ the webhook identified in the path. This key allows you to check the integrity\
-        \ and the origin of the notifications you receive.By creating an HMAC key,\
-        \ you start receiving [HMAC-signed notifications](https://docs.adyen.com/development-resources/webhooks/verify-hmac-signatures#enable-hmac-signatures)\
-        \ from Adyen. Find out more about how to [verify HMAC signatures](https://docs.adyen.com/development-resources/webhooks/verify-hmac-signatures).\n\
-        \nTo make this request, your API credential must have the following [roles](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
-        * Management API\u2014Webhooks read and write"
-      operationId: post-merchants-id-webhooks-webhookId-generateHmac
-      x-groupName: Webhooks - merchant level
-      x-sortIndex: 6
-      security:
-      - BasicAuth: []
-      - ApiKeyAuth: []
-      parameters:
-      - description: The unique identifier of the merchant account.
-        name: id
-        in: path
-        required: true
-        schema:
-          type: string
-      - name: webhookId
-        in: path
-        required: true
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenerateHmacKeyResponse'
-          description: OK - the request has succeeded.
-        '204':
-          description: No Content - the request has been successfully processed, but
-            there is no additional content.
-        '400':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Bad Request - a problem reading or understanding the request.
-        '401':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Unauthorized - authentication required.
-        '403':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Forbidden - insufficient permissions to process the request.
-        '422':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Unprocessable Entity - a request validation error.
-        '500':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Internal Server Error - the server could not process the request.
-  /merchants/{id}/webhooks/{webhookId}/test:
-    post:
-      tags:
-      - Webhooks - merchant level
-      summary: Test a webhook
-      description: "Sends sample notifications to test if the webhook is set up correctly.\n\
-        \nWe send four test notifications for each event code you choose. They cover\
-        \ success and failure scenarios for the hard-coded currencies EUR and GBP,\
-        \ regardless of the currencies configured in the merchant accounts. For custom\
-        \ notifications, we only send the specified custom notification.\n\nThe response\
-        \ describes the result of the test. The `status` field tells you if the test\
-        \ was successful or not. You can use the other fields to troubleshoot unsuccessful\
-        \ tests.\n\nTo make this request, your API credential must have the following\
-        \ [roles](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
-        * Management API\u2014Webhooks read and write"
-      operationId: post-merchants-id-webhooks-webhookId-test
-      x-groupName: Webhooks - merchant level
-      x-sortIndex: 7
-      security:
-      - BasicAuth: []
-      - ApiKeyAuth: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TestWebhookRequest'
-      parameters:
-      - description: The unique identifier of the merchant account.
-        name: id
-        in: path
-        required: true
-        schema:
-          type: string
-      - description: Unique identifier of the webhook configuration.
-        name: webhookId
-        in: path
-        required: true
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TestWebhookResponse'
-          description: OK - the request has succeeded.
-        '204':
-          description: No Content - the request has been successfully processed, but
-            there is no additional content.
-        '400':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Bad Request - a problem reading or understanding the request.
-        '401':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Unauthorized - authentication required.
-        '403':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Forbidden - insufficient permissions to process the request.
-        '422':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Unprocessable Entity - a request validation error.
-        '500':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Internal Server Error - the server could not process the request.
-  /merchants/{merchantId}/billingEntities:
-    get:
-      tags:
-      - Terminal orders - merchant level
-      summary: Get a list of billing entities
-      description: "Returns the billing entities of the merchant account identified\
-        \ in the path.\nA billing entity is a legal entity where we charge orders\
-        \ to. An order for terminal products must contain the ID of a billing entity.\n\
-        \nTo make this request, your API credential must have one of the following\
-        \ [roles](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
-        * Management API\u2014Terminal ordering read\n* Management API\u2014Terminal\
-        \ ordering read and write"
-      operationId: get-merchants-merchantId-billingEntities
-      x-groupName: Terminal orders - merchant level
+        * Management API\u2014Payout account settings read"
+      operationId: get-merchants-merchantId-payoutSettings
+      x-groupName: Payout settings - merchant level
       x-sortIndex: 3
       security:
       - BasicAuth: []
@@ -5317,21 +4842,296 @@ paths:
         required: true
         schema:
           type: string
-      - description: The name of the billing entity.
-        name: name
-        in: query
-        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayoutSettingsResponse'
+          description: OK - the request has succeeded.
+        '204':
+          description: No Content - the request has been successfully processed, but
+            there is no additional content.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Bad Request - a problem reading or understanding the request.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unauthorized - authentication required.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Forbidden - insufficient permissions to process the request.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unprocessable Entity - a request validation error.
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Internal Server Error - the server could not process the request.
+    post:
+      tags:
+      - Payout settings - merchant level
+      summary: Add a payout setting
+      description: "Sends a request to add a payout setting for the merchant account\
+        \ specified in the path. A payout setting links the merchant account to the\
+        \ [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments)\
+        \ that contains the details of the payout bank account. Adyen verifies the\
+        \ bank account before allowing and enabling the payout setting.\n\nIf you're\
+        \ accepting payments in multiple currencies, you may add multiple payout settings\
+        \ for the merchant account.\n\nUse this endpoint if your integration requires\
+        \ it, such as Adyen for Platforms Manage. Your Adyen contact will set up your\
+        \ access.\n\nTo make this request, your API credential must have the following\
+        \ [roles](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
+        \n* Management API\u2014Payout account settings read and write"
+      operationId: post-merchants-merchantId-payoutSettings
+      x-groupName: Payout settings - merchant level
+      x-sortIndex: 1
+      security:
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PayoutSettingsRequest'
+      parameters:
+      - description: The unique identifier of the merchant account.
+        name: merchantId
+        in: path
+        required: true
         schema:
           type: string
       responses:
         '200':
           content:
             application/json:
-              examples:
-                success:
-                  $ref: '#/components/examples/get-merchants-merchantId-billingEntities-success-200'
               schema:
-                $ref: '#/components/schemas/BillingEntitiesResponse'
+                $ref: '#/components/schemas/PayoutSettings'
+          description: OK - the request has succeeded.
+        '204':
+          description: No Content - the request has been successfully processed, but
+            there is no additional content.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Bad Request - a problem reading or understanding the request.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unauthorized - authentication required.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Forbidden - insufficient permissions to process the request.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unprocessable Entity - a request validation error.
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Internal Server Error - the server could not process the request.
+  /merchants/{merchantId}/payoutSettings/{payoutSettingsId}:
+    delete:
+      tags:
+      - Payout settings - merchant level
+      summary: Delete a payout setting
+      description: "Deletes the payout setting identified in the path.\n\nUse this\
+        \ endpoint if your integration requires it, such as Adyen for Platforms Manage.\
+        \ Your Adyen contact will set up your access.\n\nTo make this request, your\
+        \ API credential must have the following [roles](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
+        \n* Management API\u2014Payout account settings read and write"
+      operationId: delete-merchants-merchantId-payoutSettings-payoutSettingsId
+      x-groupName: Payout settings - merchant level
+      x-sortIndex: 5
+      security:
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      parameters:
+      - description: The unique identifier of the merchant account.
+        name: merchantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - description: The unique identifier of the payout setting.
+        name: payoutSettingsId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Void'
+          description: OK - the request has succeeded.
+        '204':
+          description: No Content - the request has been successfully processed, but
+            there is no additional content.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Bad Request - a problem reading or understanding the request.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unauthorized - authentication required.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Forbidden - insufficient permissions to process the request.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unprocessable Entity - a request validation error.
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Internal Server Error - the server could not process the request.
+    get:
+      tags:
+      - Payout settings - merchant level
+      summary: Get a payout setting
+      description: "Returns the payout setting identified in the path.\n\nUse this\
+        \ endpoint if your integration requires it, such as Adyen for Platforms Manage.\
+        \ Your Adyen contact will set up your access.\n\nTo make this request, your\
+        \ API credential must have the following [roles](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
+        * Management API\u2014Payout account settings read"
+      operationId: get-merchants-merchantId-payoutSettings-payoutSettingsId
+      x-groupName: Payout settings - merchant level
+      x-sortIndex: 4
+      security:
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      parameters:
+      - description: The unique identifier of the merchant account.
+        name: merchantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - description: The unique identifier of the payout setting.
+        name: payoutSettingsId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayoutSettings'
+          description: OK - the request has succeeded.
+        '204':
+          description: No Content - the request has been successfully processed, but
+            there is no additional content.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Bad Request - a problem reading or understanding the request.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unauthorized - authentication required.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Forbidden - insufficient permissions to process the request.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unprocessable Entity - a request validation error.
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Internal Server Error - the server could not process the request.
+    patch:
+      tags:
+      - Payout settings - merchant level
+      summary: Update a payout setting
+      description: "Updates the payout setting identified in the path. You can enable\
+        \ or disable the payout setting.\n\nUse this endpoint if your integration\
+        \ requires it, such as Adyen for Platforms Manage. Your Adyen contact will\
+        \ set up your access.\n\nTo make this request, your API credential must have\
+        \ the following [roles](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
+        \n* Management API\u2014Payout account settings read and write"
+      operationId: patch-merchants-merchantId-payoutSettings-payoutSettingsId
+      x-groupName: Payout settings - merchant level
+      x-sortIndex: 2
+      security:
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePayoutSettingsRequest'
+      parameters:
+      - description: The unique identifier of the merchant account.
+        name: merchantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - description: The unique identifier of the payout setting.
+        name: payoutSettingsId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayoutSettings'
           description: OK - the request has succeeded.
         '204':
           description: No Content - the request has been successfully processed, but
@@ -7053,6 +6853,790 @@ paths:
               schema:
                 $ref: '#/components/schemas/RestServiceError'
           description: Internal Server Error - the server could not process the request.
+  /merchants/{merchantId}/users:
+    get:
+      tags:
+      - Users - merchant level
+      summary: Get a list of users
+      description: "Returns a list of users associated with the `merchantId` specified\
+        \ in the path.\n\nTo make this request, your API credential must have the\
+        \ following [role](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
+        * Management API\u2014Users read and write\n"
+      operationId: get-merchants-merchantId-users
+      x-groupName: Users - merchant level
+      x-sortIndex: 0
+      security:
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      parameters:
+      - description: Unique identifier of the merchant.
+        name: merchantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - description: The number of the page to fetch.
+        name: pageNumber
+        in: query
+        required: false
+        schema:
+          format: int32
+          type: integer
+      - description: The number of items to have on a page. Maximum value is **100**.
+          The default is **10** items on a page.
+        name: pageSize
+        in: query
+        required: false
+        schema:
+          format: int32
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListMerchantUsersResponse'
+          description: OK - the request has succeeded.
+        '204':
+          description: No Content - the request has been successfully processed, but
+            there is no additional content.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Bad Request - a problem reading or understanding the request.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unauthorized - authentication required.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Forbidden - insufficient permissions to process the request.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unprocessable Entity - a request validation error.
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Internal Server Error - the server could not process the request.
+    post:
+      tags:
+      - Users - merchant level
+      summary: Create a new user
+      description: "Creates a user for the `merchantId` specified in the path.\n\n\
+        To make this request, your API credential must have the following [role](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
+        * Management API\u2014Users read and write\n"
+      operationId: post-merchants-merchantId-users
+      x-groupName: Users - merchant level
+      x-sortIndex: 0
+      security:
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      requestBody:
+        content:
+          application/json:
+            examples:
+              create-user:
+                $ref: '#/components/examples/post-merchants-merchantId-users-create-user'
+            schema:
+              $ref: '#/components/schemas/CreateMerchantUserRequest'
+      parameters:
+      - description: Unique identifier of the merchant.
+        name: merchantId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              examples:
+                create-user:
+                  $ref: '#/components/examples/post-merchants-merchantId-users-create-user-200'
+              schema:
+                $ref: '#/components/schemas/CreateUserResponse'
+          description: OK - the request has succeeded.
+        '204':
+          description: No Content - the request has been successfully processed, but
+            there is no additional content.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Bad Request - a problem reading or understanding the request.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unauthorized - authentication required.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Forbidden - insufficient permissions to process the request.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unprocessable Entity - a request validation error.
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Internal Server Error - the server could not process the request.
+  /merchants/{merchantId}/users/{userId}:
+    get:
+      tags:
+      - Users - merchant level
+      summary: Get user details
+      description: "Returns user details for the `userId` and the `merchantId` specified\
+        \ in the path.\n\nTo make this request, your API credential must have the\
+        \ following [role](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
+        * Management API\u2014Users read and write\n"
+      operationId: get-merchants-merchantId-users-userId
+      x-groupName: Users - merchant level
+      x-sortIndex: 0
+      security:
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      parameters:
+      - description: Unique identifier of the merchant.
+        name: merchantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - description: Unique identifier of the user.
+        name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: OK - the request has succeeded.
+        '204':
+          description: No Content - the request has been successfully processed, but
+            there is no additional content.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Bad Request - a problem reading or understanding the request.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unauthorized - authentication required.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Forbidden - insufficient permissions to process the request.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unprocessable Entity - a request validation error.
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Internal Server Error - the server could not process the request.
+    patch:
+      tags:
+      - Users - merchant level
+      summary: Update a user
+      description: "Updates user details for the `userId` and the `merchantId` specified\
+        \ in the path.\n\nTo make this request, your API credential must have the\
+        \ following [role](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
+        * Management API\u2014Users read and write\n"
+      operationId: patch-merchants-merchantId-users-userId
+      x-groupName: Users - merchant level
+      x-sortIndex: 0
+      security:
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMerchantUserRequest'
+      parameters:
+      - description: Unique identifier of the merchant.
+        name: merchantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - description: Unique identifier of the user.
+        name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: OK - the request has succeeded.
+        '204':
+          description: No Content - the request has been successfully processed, but
+            there is no additional content.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Bad Request - a problem reading or understanding the request.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unauthorized - authentication required.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Forbidden - insufficient permissions to process the request.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unprocessable Entity - a request validation error.
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Internal Server Error - the server could not process the request.
+  /merchants/{merchantId}/webhooks:
+    get:
+      tags:
+      - Webhooks - merchant level
+      summary: List all webhooks
+      description: "Lists all webhook configurations for the merchant account.\n\n\
+        To make this request, your API credential must have one of the following [roles](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
+        * Management API\u2014Webhooks read\n* Management API\u2014Webhooks read and\
+        \ write"
+      operationId: get-merchants-merchantId-webhooks
+      x-groupName: Webhooks - merchant level
+      x-sortIndex: 2
+      security:
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      parameters:
+      - description: The unique identifier of the merchant account.
+        name: merchantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - description: The number of the page to fetch.
+        name: pageNumber
+        in: query
+        required: false
+        schema:
+          format: int32
+          type: integer
+      - description: The number of items to have on a page, maximum 100. The default
+          is 10 items on a page.
+        name: pageSize
+        in: query
+        required: false
+        schema:
+          format: int32
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListWebhooksResponse'
+          description: OK - the request has succeeded.
+        '204':
+          description: No Content - the request has been successfully processed, but
+            there is no additional content.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Bad Request - a problem reading or understanding the request.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unauthorized - authentication required.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Forbidden - insufficient permissions to process the request.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unprocessable Entity - a request validation error.
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Internal Server Error - the server could not process the request.
+    post:
+      tags:
+      - Webhooks - merchant level
+      summary: Set up a webhook
+      description: "Subscribe to receive webhook notifications about events related\
+        \ to your merchant account. You can add basic authentication to make sure\
+        \ the data is secure.\n\nTo make this request, your API credential must have\
+        \ the following [roles](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
+        * Management API\u2014Webhooks read and write"
+      operationId: post-merchants-merchantId-webhooks
+      x-groupName: Webhooks - merchant level
+      x-sortIndex: 1
+      security:
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMerchantWebhookRequest'
+      parameters:
+      - description: The unique identifier of the merchant account.
+        name: merchantId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Webhook'
+          description: OK - the request has succeeded.
+        '204':
+          description: No Content - the request has been successfully processed, but
+            there is no additional content.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Bad Request - a problem reading or understanding the request.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unauthorized - authentication required.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Forbidden - insufficient permissions to process the request.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unprocessable Entity - a request validation error.
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Internal Server Error - the server could not process the request.
+  /merchants/{merchantId}/webhooks/{webhookId}:
+    delete:
+      tags:
+      - Webhooks - merchant level
+      summary: Remove a webhook
+      description: "Remove the configuration for the webhook identified in the path.\n\
+        \nTo make this request, your API credential must have the following [roles](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
+        * Management API\u2014Webhooks read and write"
+      operationId: delete-merchants-merchantId-webhooks-webhookId
+      x-groupName: Webhooks - merchant level
+      x-sortIndex: 5
+      security:
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      parameters:
+      - description: The unique identifier of the merchant account.
+        name: merchantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - description: Unique identifier of the webhook configuration.
+        name: webhookId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: No Content - the request has been successfully processed, but
+            there is no additional content.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Bad Request - a problem reading or understanding the request.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unauthorized - authentication required.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Forbidden - insufficient permissions to process the request.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unprocessable Entity - a request validation error.
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Internal Server Error - the server could not process the request.
+    get:
+      tags:
+      - Webhooks - merchant level
+      summary: Get a webhook
+      description: "Returns the configuration for the webhook identified in the path.\n\
+        \nTo make this request, your API credential must have one of the following\
+        \ [roles](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
+        * Management API\u2014Webhooks read\n* Management API\u2014Webhooks read and\
+        \ write"
+      operationId: get-merchants-merchantId-webhooks-webhookId
+      x-groupName: Webhooks - merchant level
+      x-sortIndex: 3
+      security:
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      parameters:
+      - description: The unique identifier of the merchant account.
+        name: merchantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - description: Unique identifier of the webhook configuration.
+        name: webhookId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Webhook'
+          description: OK - the request has succeeded.
+        '204':
+          description: No Content - the request has been successfully processed, but
+            there is no additional content.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Bad Request - a problem reading or understanding the request.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unauthorized - authentication required.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Forbidden - insufficient permissions to process the request.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unprocessable Entity - a request validation error.
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Internal Server Error - the server could not process the request.
+    patch:
+      tags:
+      - Webhooks - merchant level
+      summary: Update a webhook
+      description: "Make changes to the configuration of the webhook identified in\
+        \ the path. The request contains the new values you want to have in the webhook\
+        \ configuration. The response contains the full configuration for the webhook,\
+        \ which includes the new values from the request.\n\nTo make this request,\
+        \ your API credential must have the following [roles](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
+        * Management API\u2014Webhooks read and write"
+      operationId: patch-merchants-merchantId-webhooks-webhookId
+      x-groupName: Webhooks - merchant level
+      x-sortIndex: 4
+      security:
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMerchantWebhookRequest'
+      parameters:
+      - description: The unique identifier of the merchant account.
+        name: merchantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - description: Unique identifier of the webhook configuration.
+        name: webhookId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Webhook'
+          description: OK - the request has succeeded.
+        '204':
+          description: No Content - the request has been successfully processed, but
+            there is no additional content.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Bad Request - a problem reading or understanding the request.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unauthorized - authentication required.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Forbidden - insufficient permissions to process the request.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unprocessable Entity - a request validation error.
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Internal Server Error - the server could not process the request.
+  /merchants/{merchantId}/webhooks/{webhookId}/generateHmac:
+    post:
+      tags:
+      - Webhooks - merchant level
+      summary: Generate an HMAC key
+      description: "Returns an [HMAC key](https://en.wikipedia.org/wiki/HMAC) for\
+        \ the webhook identified in the path. This key allows you to check the integrity\
+        \ and the origin of the notifications you receive.By creating an HMAC key,\
+        \ you start receiving [HMAC-signed notifications](https://docs.adyen.com/development-resources/webhooks/verify-hmac-signatures#enable-hmac-signatures)\
+        \ from Adyen. Find out more about how to [verify HMAC signatures](https://docs.adyen.com/development-resources/webhooks/verify-hmac-signatures).\n\
+        \nTo make this request, your API credential must have the following [roles](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
+        * Management API\u2014Webhooks read and write"
+      operationId: post-merchants-merchantId-webhooks-webhookId-generateHmac
+      x-groupName: Webhooks - merchant level
+      x-sortIndex: 6
+      security:
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      parameters:
+      - description: The unique identifier of the merchant account.
+        name: merchantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: webhookId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerateHmacKeyResponse'
+          description: OK - the request has succeeded.
+        '204':
+          description: No Content - the request has been successfully processed, but
+            there is no additional content.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Bad Request - a problem reading or understanding the request.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unauthorized - authentication required.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Forbidden - insufficient permissions to process the request.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unprocessable Entity - a request validation error.
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Internal Server Error - the server could not process the request.
+  /merchants/{merchantId}/webhooks/{webhookId}/test:
+    post:
+      tags:
+      - Webhooks - merchant level
+      summary: Test a webhook
+      description: "Sends sample notifications to test if the webhook is set up correctly.\n\
+        \nWe send four test notifications for each event code you choose. They cover\
+        \ success and failure scenarios for the hard-coded currencies EUR and GBP,\
+        \ regardless of the currencies configured in the merchant accounts. For custom\
+        \ notifications, we only send the specified custom notification.\n\nThe response\
+        \ describes the result of the test. The `status` field tells you if the test\
+        \ was successful or not. You can use the other fields to troubleshoot unsuccessful\
+        \ tests.\n\nTo make this request, your API credential must have the following\
+        \ [roles](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
+        * Management API\u2014Webhooks read and write"
+      operationId: post-merchants-merchantId-webhooks-webhookId-test
+      x-groupName: Webhooks - merchant level
+      x-sortIndex: 7
+      security:
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TestWebhookRequest'
+      parameters:
+      - description: The unique identifier of the merchant account.
+        name: merchantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - description: Unique identifier of the webhook configuration.
+        name: webhookId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestWebhookResponse'
+          description: OK - the request has succeeded.
+        '204':
+          description: No Content - the request has been successfully processed, but
+            there is no additional content.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Bad Request - a problem reading or understanding the request.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unauthorized - authentication required.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Forbidden - insufficient permissions to process the request.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unprocessable Entity - a request validation error.
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Internal Server Error - the server could not process the request.
   /stores:
     get:
       tags:
@@ -8171,7 +8755,7 @@ components:
         streetAddress2:
           description: Additional address details, if any.
           type: string
-    Address2:
+    Address-2:
       properties:
         city:
           description: The name of the city.
@@ -8229,7 +8813,7 @@ components:
         value:
           description: The price of the item.
           $ref: '#/components/schemas/BigDecimal'
-    Amount2:
+    Amount-2:
       properties:
         currency:
           description: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).
@@ -8450,6 +9034,13 @@ components:
             transaction. Allows one or two comma-separated header lines, and blank
             lines. For example, `header,header,filler`
           type: string
+    CartesBancairesInfo:
+      properties:
+        siret:
+          description: 'Cartes Bancaires SIRET. Format: 14 digits.'
+          type: string
+      required:
+      - siret
     Company:
       properties:
         _links:
@@ -8465,11 +9056,17 @@ components:
           items:
             $ref: '#/components/schemas/DataCenter'
           type: array
+        description:
+          description: Your description for the company account, maximum 300 characters
+          type: string
         id:
           description: The unique identifier of the company account.
           type: string
         name:
           description: The legal or trading name of the company.
+          type: string
+        reference:
+          description: Your reference to the account
           type: string
         status:
           description: 'The status of the company account.
@@ -9036,15 +9633,7 @@ components:
 
             * **TLSv1.2**
 
-            * **SSL**
-
-            * **SSLv3**
-
-            * **TLS**
-
-            * **TLSv1**
-
-            * **TLSv1.1**
+            * **HTTP** - Only allowed on Test environment.
 
 
             If not specified, the webhook will use `sslVersion`: **TLSv1.2**.'
@@ -9058,7 +9647,7 @@ components:
           - TLSV1_1
           - TLSV1_2
           - TLSV1_INSECURE_CIPHERS
-          example: SSL
+          example: TLSv1.2
           type: string
         type:
           description: 'The type of webhook that is being created. Possible values
@@ -9121,6 +9710,66 @@ components:
           items:
             type: string
           type: array
+    CreateMerchantRequest:
+      properties:
+        businessLineId:
+          description: The unique identifier of the [business line](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/businessLines).
+            Required for an Adyen for Platforms Manage integration.
+          type: string
+        companyId:
+          description: The unique identifier of the company account.
+          type: string
+        description:
+          description: Your description for the merchant account, maximum 300 characters.
+          maxLength: 300
+          type: string
+        legalEntityId:
+          description: The unique identifier of the [legal entity](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/legalEntities).
+            Required for an Adyen for Platforms Manage integration.
+          type: string
+        pricingPlan:
+          description: Sets the pricing plan for the merchant account. Required for
+            an Adyen for Platforms Manage integration. Your Adyen contact will provide
+            the values that you can use.
+          type: string
+        reference:
+          description: Your reference for the merchant account. To make this reference
+            the unique identifier of the merchant account, your Adyen contact can
+            set up a template on your company account. The template can have 6 to
+            255 characters with upper- and lower-case letters, underscores, and numbers.
+            When your company account has a template, then the `reference` is required
+            and must be unique within the company account.
+          type: string
+      required:
+      - companyId
+    CreateMerchantResponse:
+      properties:
+        businessLineId:
+          description: The unique identifier of the [business line](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/businessLines).
+          type: string
+        companyId:
+          description: The unique identifier of the company account.
+          type: string
+        description:
+          description: Your description for the merchant account, maximum 300 characters.
+          maxLength: 300
+          type: string
+        id:
+          description: The unique identifier of the merchant account. If Adyen set
+            up a template for the `reference`, then the `id` will have the same value
+            as the `reference` that you sent in the request. Otherwise, the value
+            is generated by Adyen.
+          type: string
+        legalEntityId:
+          description: The unique identifier of the [legal entity](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/legalEntities).
+          type: string
+        pricingPlan:
+          description: Partner pricing plan for the merchant, applicable for merchants
+            under AfP managed company accounts.
+          type: string
+        reference:
+          description: Your reference for the merchant account.
+          type: string
     CreateMerchantUserRequest:
       properties:
         accountGroups:
@@ -9227,15 +9876,7 @@ components:
 
             * **TLSv1.2**
 
-            * **SSL**
-
-            * **SSLv3**
-
-            * **TLS**
-
-            * **TLSv1**
-
-            * **TLSv1.1**
+            * **HTTP** - Only allowed on Test environment.
 
 
             If not specified, the webhook will use `sslVersion`: **TLSv1.2**.'
@@ -9249,7 +9890,7 @@ components:
           - TLSV1_1
           - TLSV1_2
           - TLSV1_INSECURE_CIPHERS
-          example: SSL
+          example: TLSv1.2
           type: string
         type:
           description: 'The type of webhook that is being created. Possible values
@@ -9359,7 +10000,7 @@ components:
         amount:
           description: The amount of the payment that the notification is about. Set
             the value in [minor units](https://docs.adyen.com/development-resources/currency-codes).
-          $ref: '#/components/schemas/Amount2'
+          $ref: '#/components/schemas/Amount-2'
         eventCode:
           description: 'The event that caused the notification to be sent.Currently
             supported values:
@@ -9812,6 +10453,9 @@ components:
         _links:
           description: Pagination references.
           $ref: '#/components/schemas/PaginationLinks'
+        accountReference:
+          description: Reference to the account.
+          type: string
         data:
           description: The list of webhooks configured for this account.
           items:
@@ -9916,9 +10560,26 @@ components:
 
             * Number of days from **1** to **29**'
           type: string
+        companyId:
+          description: The unique identifier of the company account this merchant
+            belongs to
+          type: string
+        dataCenters:
+          description: 'List of available data centers.
+
+
+            Adyen has several data centers around the world.In the URL that you use
+            for making API requests, we recommend you use the live URL prefix from
+            the data center closest to your shoppers.'
+          items:
+            $ref: '#/components/schemas/DataCenter'
+          type: array
         defaultShopperInteraction:
           description: The default [`shopperInteraction`](https://docs.adyen.com/api-explorer/#/CheckoutService/v68/post/payments__reqParam_shopperInteraction)
             value used when processing payments through this merchant account.
+          type: string
+        description:
+          description: Your description for the merchant account, maximum 300 characters
           type: string
         id:
           description: The unique identifier of the merchant account.
@@ -9939,6 +10600,9 @@ components:
             merchant account is registered. Format: [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).
             For example, a legal entity based in the United States has USD as the
             primary settlement currency.'
+          type: string
+        reference:
+          description: Reference of the merchant account.
           type: string
         shopWebAddress:
           description: The URL for the ecommerce website used with this merchant account.
@@ -9981,6 +10645,15 @@ components:
           $ref: '#/components/schemas/LinksElement'
       required:
       - self
+    MinorUnitsMonetaryValue:
+      properties:
+        amount:
+          description: ' Amount of this monetary value, in minor units'
+          format: int32
+          type: integer
+        currencyCode:
+          description: ' Currency of this monetary value, Format: [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).'
+          type: string
     Name:
       properties:
         firstName:
@@ -10012,6 +10685,19 @@ components:
             using Terminal API.'
           items:
             type: string
+          type: array
+    OfflineProcessing:
+      properties:
+        chipFloorLimit:
+          description: The (inclusive) limit for accepting chip cards offline, in
+            the processing currency, in minor units
+          format: int32
+          type: integer
+        offlineSwipeLimits:
+          description: The maximum amount up to which swiped credit cards can be accepted
+            offline, in the specified currency
+          items:
+            $ref: '#/components/schemas/MinorUnitsMonetaryValue'
           type: array
     Opi:
       properties:
@@ -10093,6 +10779,9 @@ components:
         businessLineId:
           description: The unique identifier of the business line.
           type: string
+        cartesBancaires:
+          description: Cartes Bancaires details.
+          $ref: '#/components/schemas/CartesBancairesInfo'
         countries:
           description: The list of countries where a payment method is available.
             By default, all countries supported by the payment method.
@@ -10168,6 +10857,9 @@ components:
         businessLineId:
           description: The unique identifier of the business line.
           type: string
+        cartesBancaires:
+          description: Cartes Bancaires details.
+          $ref: '#/components/schemas/CartesBancairesInfo'
         countries:
           description: The list of countries where a payment method is available.
             By default, all countries supported by the payment method.
@@ -10189,6 +10881,19 @@ components:
         paypal:
           description: PayPal details.
           $ref: '#/components/schemas/PayPalInfo'
+        shopperInteraction:
+          description: 'The sales channel. Required if the merchant account does not
+            have a sales channel. When you provide this field, it overrides the default
+            sales channel set on the merchant account.
+
+
+            Possible values: **eCommerce**, **pos**, **contAuth**, and **moto**. '
+          enum:
+          - eCommerce
+          - pos
+          - moto
+          - contAuth
+          type: string
         sofort:
           description: Sofort details.
           $ref: '#/components/schemas/SofortInfo'
@@ -10211,7 +10916,9 @@ components:
           - cup
           - diners
           - directEbanking
+          - directdebit_GB
           - discover
+          - ebanking_FI
           - eftpos_australia
           - girocard
           - giropay
@@ -10222,15 +10929,146 @@ components:
           - klarna_account
           - klarna_paynow
           - maestro
+          - mbway
           - mc
           - mobilepay
+          - multibanco
           - paypal
+          - payshop
           - swish
+          - trustly
           - visa
+          - wechatpay
           - wechatpay_pos
           type: string
       required:
       - type
+    PayoutSettings:
+      properties:
+        allowed:
+          description: 'Indicates if payouts to the bank account are allowed. This
+            value is set automatically based on the status of the verification process.
+            The value is:
+
+
+            * **true** if `verificationStatus` is **valid**.
+
+            * **false** for all other values.'
+          type: boolean
+        enabled:
+          description: 'Indicates if payouts to this bank account are enabled. Default:
+            **true**.
+
+
+            To receive payouts into this bank account, both `enabled` and `allowed`
+            must be **true**.'
+          type: boolean
+        enabledFromDate:
+          description: 'The date when Adyen starts paying out to this bank account.
+
+
+            Format: [ISO 8601](https://www.w3.org/TR/NOTE-datetime), for example,
+            **2019-11-23T12:25:28Z** or **2020-05-27T20:25:28+08:00**.
+
+
+            If not specified, the `enabled` field indicates if payouts are enabled
+            for this bank account.
+
+
+            If a date is specified and:
+
+
+            * `enabled`: **true**, payouts are enabled starting the specified date.
+
+            * `enabled`: **false**, payouts are disabled until the specified date.
+            On the specified date, `enabled` changes to **true** and this field is
+            reset to **null**.'
+          type: string
+        id:
+          description: The unique identifier of the payout setting.
+          type: string
+        priority:
+          description: "Determines how long it takes for the funds to reach the bank\
+            \ account. Adyen pays out based on the [payout frequency](https://docs.adyen.com/account/getting-paid#payout-frequency).\
+            \ Depending on the currencies and banks involved in transferring the money,\
+            \ it may take up to three days for the payout funds to arrive in the bank\
+            \ account.\n\n Possible values:\n* **first**: same day.\n* **urgent**:\
+            \ the next day.\n* **normal**: between 1 and 3 days."
+          enum:
+          - first
+          - normal
+          - urgent
+          type: string
+        transferInstrumentId:
+          description: The unique identifier of the [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments)
+            that contains the details of the bank account.
+          type: string
+        verificationStatus:
+          description: 'The status of the verification process for the bank account.
+
+
+            Possible values:
+
+            * **valid**: the verification was successful.
+
+            * **pending**: the verification is in progress.
+
+            * **invalid**: the information provided is not complete.
+
+            * **rejected**:  there are reasons to refuse working with this entity.'
+          enum:
+          - invalid
+          - pending
+          - rejected
+          - valid
+          type: string
+      required:
+      - transferInstrumentId
+      - id
+    PayoutSettingsRequest:
+      properties:
+        enabled:
+          description: 'Indicates if payouts to this bank account are enabled. Default:
+            **true**.
+
+
+            To receive payouts into this bank account, both `enabled` and `allowed`
+            must be **true**.'
+          type: boolean
+        enabledFromDate:
+          description: 'The date when Adyen starts paying out to this bank account.
+
+
+            Format: [ISO 8601](https://www.w3.org/TR/NOTE-datetime), for example,
+            **2019-11-23T12:25:28Z** or **2020-05-27T20:25:28+08:00**.
+
+
+            If not specified, the `enabled` field indicates if payouts are enabled
+            for this bank account.
+
+
+            If a date is specified and:
+
+
+            * `enabled`: **true**, payouts are enabled starting the specified date.
+
+            * `enabled`: **false**, payouts are disabled until the specified date.
+            On the specified date, `enabled` changes to **true** and this field is
+            reset to **null**.'
+          type: string
+        transferInstrumentId:
+          description: The unique identifier of the [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments)
+            that contains the details of the bank account.
+          type: string
+      required:
+      - transferInstrumentId
+    PayoutSettingsResponse:
+      properties:
+        data:
+          description: The list of payout accounts.
+          items:
+            $ref: '#/components/schemas/PayoutSettings'
+          type: array
     Profile:
       properties:
         authType:
@@ -10289,8 +11127,9 @@ components:
             account. Must match the configuration of your RADIUS server.
           type: string
         hiddenSsid:
-          description: Indicates if a network does not broadcast its SSID, so an SSID-specific
-            probe request must be used for scans.
+          description: Indicates if the network doesn't broadcast its SSID. Mandatory
+            for Android terminals, because these terminals rely on this setting to
+            be able to connect to any network.
           type: boolean
         name:
           description: Your name for the Wi-Fi profile.
@@ -10317,6 +11156,12 @@ components:
           description: The receipt logo converted to a Base64-encoded string. The
             image must be a .bmp file of < 256 KB, dimensions 240 (H) x 384 (W) px.
           maxLength: 350000
+          type: string
+        qrCodeData:
+          description: "Data to print on the receipt as a QR code. This can include\
+            \ static text and the following variables:\n\n- `${merchantreference}`:\
+            \ the merchant reference of the transaction.\n- `${pspreference}`: the\
+            \ PSP reference of the transaction.\n\n For example, **http://www.example.com/order/${pspreference}/${merchantreference}**."
           type: string
     ReceiptPrinting:
       properties:
@@ -10368,6 +11213,29 @@ components:
         shopperVoid:
           description: Print a shopper receipt when a previous transaction is voided.
           type: boolean
+    ReleaseUpdateDetails:
+      additionalProperties: false
+      properties:
+        type:
+          default: ReleaseUpdate
+          description: 'Type of terminal action: Update Release.'
+          enum:
+          - ReleaseUpdate
+          type: string
+        updateAtFirstMaintenanceCall:
+          description: Boolean flag that tells if the terminal should update at the
+            first next maintenance call. If false, terminal will update on its configured
+            reboot time.
+          type: boolean
+    RequestActivationResponse:
+      properties:
+        companyId:
+          description: The unique identifier of the company account.
+          type: string
+        merchantId:
+          description: The unique identifier of the merchant account you requested
+            to activate.
+          type: string
     RestServiceError:
       properties:
         detail:
@@ -10376,10 +11244,6 @@ components:
           type: string
         errorCode:
           description: A code that identifies the problem type.
-          type: string
-        errorType:
-          description: A URI that identifies the problem type, pointing to human-readable
-            documentation on this problem type.
           type: string
         instance:
           description: A unique URI that identifies the specific occurrence of the
@@ -10404,8 +11268,12 @@ components:
         title:
           description: A short, human-readable summary of the problem type.
           type: string
+        type:
+          description: A URI that identifies the problem type, pointing to human-readable
+            documentation on this problem type.
+          type: string
       required:
-      - errorType
+      - type
       - errorCode
       - title
       - detail
@@ -10417,6 +11285,7 @@ components:
           oneOf:
           - $ref: '#/components/schemas/InstallAndroidAppDetails'
           - $ref: '#/components/schemas/InstallAndroidCertificateDetails'
+          - $ref: '#/components/schemas/ReleaseUpdateDetails'
           - $ref: '#/components/schemas/UninstallAndroidAppDetails'
           - $ref: '#/components/schemas/UninstallAndroidCertificateDetails'
         scheduledAt:
@@ -10447,8 +11316,14 @@ components:
           oneOf:
           - $ref: '#/components/schemas/InstallAndroidAppDetails'
           - $ref: '#/components/schemas/InstallAndroidCertificateDetails'
+          - $ref: '#/components/schemas/ReleaseUpdateDetails'
           - $ref: '#/components/schemas/UninstallAndroidAppDetails'
           - $ref: '#/components/schemas/UninstallAndroidCertificateDetails'
+        items:
+          x-addedInVersion: '1'
+          items:
+            $ref: '#/components/schemas/TerminalActionScheduleDetail'
+          type: array
         scheduledAt:
           description: "The date and time when the action should happen. \nFormat:\
             \ [RFC 3339](https://www.rfc-editor.org/rfc/rfc3339), but without the\
@@ -10464,6 +11339,9 @@ components:
             this store.
           type: string
         terminalIds:
+          deprecated: true
+          x-deprecatedInVersion: '1'
+          x-deprecatedMessage: Use `items.terminalId` instead
           description: 'A list of unique IDs of the terminals to apply the action
             to. You can extract the IDs from the [GET `/terminals`](https://docs.adyen.com/api-explorer/#/ManagementService/latest/get/terminals)
             response. Maximum length: 100 IDs.'
@@ -10555,7 +11433,7 @@ components:
           $ref: '#/components/schemas/Links'
         address:
           description: The address of the store.
-          $ref: '#/components/schemas/Address2'
+          $ref: '#/components/schemas/Address-2'
         businessLineIds:
           description: "The unique identifiers of the [business lines](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/businesslines__resParam_id)\
             \ that the store is associated with.\n If not specified, the business\
@@ -10611,7 +11489,7 @@ components:
       properties:
         address:
           description: The address of the store.
-          $ref: '#/components/schemas/Address2'
+          $ref: '#/components/schemas/Address-2'
         businessLineIds:
           description: 'The unique identifiers of the [business lines](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/businesslines__resParam_id)
             that the store is associated with.
@@ -10653,7 +11531,7 @@ components:
       properties:
         address:
           description: The address of the store.
-          $ref: '#/components/schemas/Address2'
+          $ref: '#/components/schemas/Address-2'
         businessLineIds:
           description: 'The unique identifiers of the [business lines](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/businesslines__resParam_id)
             that the store is associated with.
@@ -10735,13 +11613,79 @@ components:
             of the terminal. If true, the terminal is assigned. If false, the terminal
             is in inventory and can't be boarded.
           type: boolean
+        bluetoothIp:
+          description: The Bluetooth IP address of the terminal.
+          type: string
+        bluetoothMac:
+          description: The Bluetooth MAC address of the terminal.
+          type: string
+        city:
+          description: The city where the terminal is located.
+          type: string
+        companyAccount:
+          description: The company account of the terminal.
+          type: string
+        countryCode:
+          description: The country code where the terminal is located.
+          type: string
+        deviceModel:
+          description: The terminal model of the device.
+          type: string
+        ethernetIp:
+          description: The ethernet IP address of the terminal.
+          type: string
+        ethernetMac:
+          description: The ethernet MAC address of the terminal.
+          type: string
+        firmwareVersion:
+          description: The firmware Version of the terminal.
+          type: string
+        iccid:
+          description: The ICCID number of the cellular communications card.
+          type: string
         id:
           description: The unique identifier of the terminal.
+          type: string
+        lastActivityDateTime:
+          description: The last Activity Date and Time of the terminal.
+          format: date-time
+          type: string
+        lastTransactionDateTime:
+          description: The last Transaction Date and Time of the terminal.
+          format: date-time
+          type: string
+        linkNegotiation:
+          description: The ethernet link speed of the terminal that was negotiated.
+          type: string
+        serialNumber:
+          description: The serial number of the terminal.
+          type: string
+        simStatus:
+          description: 'On a terminal that supports 3G or 4G connectivity, indicates
+            the status of the SIM card in the terminal: ACTIVE or INVENTORY.'
           type: string
         status:
           description: Indicates when the terminal was last online, whether the terminal
             is being reassigned, or whether the terminal is turned off. If the terminal
             was last online more that a week ago, it is also shown as turned off.
+          type: string
+        storeStatus:
+          description: The Status of store where the terminal is located.
+          type: string
+        wifiIp:
+          description: The WiFi IP address of the terminal.
+          type: string
+        wifiMac:
+          description: The WiFi MAC address of the terminal.
+          type: string
+        wifiSsid:
+          description: The WIFI SSID of the terminal.
+          type: string
+    TerminalActionScheduleDetail:
+      properties:
+        id:
+          type: string
+        terminalId:
           type: string
     TerminalModelsResponse:
       properties:
@@ -10855,6 +11799,10 @@ components:
         nexo:
           description: Settings for a Terminal API integration.
           $ref: '#/components/schemas/Nexo'
+        offlineProcessing:
+          description: Settings for [offline payment](https://docs.adyen.com/point-of-sale/offline-payments)
+            features.
+          $ref: '#/components/schemas/OfflineProcessing'
         opi:
           description: Settings for an Oracle Payment Interface (OPI) integration.
           $ref: '#/components/schemas/Opi'
@@ -11211,15 +12159,7 @@ components:
 
             * **TLSv1.2**
 
-            * **SSL**
-
-            * **SSLv3**
-
-            * **TLS**
-
-            * **TLSv1**
-
-            * **TLSv1.1**
+            * **HTTP** - Only allowed on Test environment.
 
 
             If not specified, the webhook will use `sslVersion`: **TLSv1.2**.'
@@ -11233,7 +12173,7 @@ components:
           - TLSV1_1
           - TLSV1_2
           - TLSV1_INSECURE_CIPHERS
-          example: SSL
+          example: TLSv1.2
           type: string
         url:
           description: Public URL where webhooks will be sent, for example **https://www.domain.com/webhook-endpoint**.
@@ -11365,15 +12305,7 @@ components:
 
             * **TLSv1.2**
 
-            * **SSL**
-
-            * **SSLv3**
-
-            * **TLS**
-
-            * **TLSv1**
-
-            * **TLSv1.1**
+            * **HTTP** - Only allowed on Test environment.
 
 
             If not specified, the webhook will use `sslVersion`: **TLSv1.2**.'
@@ -11387,7 +12319,7 @@ components:
           - TLSV1_1
           - TLSV1_2
           - TLSV1_INSECURE_CIPHERS
-          example: SSL
+          example: TLSv1.2
           type: string
         url:
           description: Public URL where webhooks will be sent, for example **https://www.domain.com/webhook-endpoint**.
@@ -11418,6 +12350,16 @@ components:
         enabled:
           description: Indicates whether the payment method is enabled (**true**)
             or disabled (**false**).
+          type: boolean
+    UpdatePayoutSettingsRequest:
+      properties:
+        enabled:
+          description: 'Indicates if payouts to this bank account are enabled. Default:
+            **true**.
+
+
+            To receive payouts into this bank account, both `enabled` and `allowed`
+            must be **true**.'
           type: boolean
     UpdateStoreRequest:
       properties:
@@ -11529,6 +12471,9 @@ components:
           description: 'Indicates if untrusted SSL certificates are accepted. Default
             value: **false**.'
           type: boolean
+        accountReference:
+          description: Reference to the account the webook is set on.
+          type: string
         active:
           description: Indicates if the webhook configuration is active. The field
             must be **true** for you to receive webhooks about events related an account.
@@ -11626,15 +12571,7 @@ components:
 
             * **TLSv1.2**
 
-            * **SSL**
-
-            * **SSLv3**
-
-            * **TLS**
-
-            * **TLSv1**
-
-            * **TLSv1.1**
+            * **HTTP** - Only allowed on Test environment.
 
 
             If not specified, the webhook will use `sslVersion`: **TLSv1.2**.'
@@ -11648,7 +12585,7 @@ components:
           - TLSV1_1
           - TLSV1_2
           - TLSV1_INSECURE_CIPHERS
-          example: SSL
+          example: TLSv1.2
           type: string
         type:
           description: 'The type of webhook. Possible values are:
@@ -12257,6 +13194,18 @@ components:
             href: https://management-test.adyen.com/v1/companies/YOUR_COMPANY_ACCOUNT/users
           webhooks:
             href: https://management-test.adyen.com/v1/companies/YOUR_COMPANY_ACCOUNT/webhooks
+    get-companies-companyId-terminalActions-actionId-success-200:
+      summary: Response code - 200 OK
+      description: Example response with the details of the specified terminal action
+      value:
+        data:
+        - actionType: InstallAndroidCertificate
+          config: '{"certificates":"5dff6b..."}'
+          confirmedAt: '2022-06-27T17:44:54+02:00'
+          result: Ok
+          scheduledAt: '2022-06-27T15:44:07+02:00'
+          status: successful
+          terminalId: S1F2-000150183300034
     get-companies-companyId-terminalActions-success-200:
       summary: Response code - 200 OK
       description: Example response when getting a list of scheduled terminal actions
@@ -12540,6 +13489,7 @@ components:
             bssType: infra
             channel: 0
             defaultProfile: true
+            hiddenSsid: false
             name: Guest Wi-Fi
             psk: 4R8R2R3V456X
             ssid: G470P37660D4G
@@ -12581,6 +13531,269 @@ components:
               href: https://management-test.adyen.com/v1/companies/YOUR_COMPANY_ACCOUNT/users
             webhooks:
               href: https://management-test.adyen.com/v1/companies/YOUR_COMPANY_ACCOUNT/webhooks
+    get-merchants-merchantId-apiCredentials-success-200:
+      summary: List of API credentials at the merchant level
+      description: Example response when your API credential has access to 11 API
+        credentials at the merchant level
+      value:
+        _links:
+          first:
+            href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials?pageNumber=1&pageSize=10
+          last:
+            href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials?pageNumber=2&pageSize=10
+          next:
+            href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials?pageNumber=2&pageSize=10
+          self:
+            href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials?pageNumber=1&pageSize=10
+        itemsTotal: 11
+        pagesTotal: 2
+        data:
+        - id: YOUR_API_CREDENTIAL_1
+          username: YOUR_USERNAME_1
+          allowedIpAddresses: []
+          roles:
+          - Merchant Report Download role
+          active: true
+          _links:
+            self:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials/YOUR_CREDENTIAL_1
+            allowedOrigins:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials/YOUR_CREDENTIAL_1/allowedOrigins
+            generateApiKey:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials/YOUR_CREDENTIAL_1/generateApiKey
+            generateClientKey:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials/YOUR_CREDENTIAL_1/generateClientKey
+            merchant:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT
+        - id: YOUR_API_CREDENTIAL_2
+          username: YOUR_USERNAME_2
+          allowedIpAddresses: []
+          roles:
+          - Merchant Rss feed role
+          active: true
+          _links:
+            self:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL_2
+            allowedOrigins:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL_2/allowedOrigins
+            generateApiKey:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL_2/generateApiKey
+            generateClientKey:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL_2/generateClientKey
+            merchant:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT
+        - id: YOUR_API_CREDENTIAL_3
+          username: YOUR_USERNAME_3
+          clientKey: YOUR_CLIENT_KEY_3
+          allowedIpAddresses: []
+          roles:
+          - Merchant iDeal-API Webservice role
+          - Management API - Accounts read
+          - Management API - API credentials read and write
+          - "Management API \u2014 Payment methods read"
+          - Merchant PAL Donation role
+          - Merchant PAL Charity role
+          - Checkout encrypted cardholder data
+          - Checkout webservice role
+          - Store payout detail and submit payout - withdrawal
+          - Management API - Accounts read and write
+          - Management API - Webhooks read
+          - Merchant Payout role
+          - API tokenise payment details
+          - General API Payments role
+          - API Supply MPI data with Payments
+          - API Authorise Referred Payments
+          - API PCI Payments role
+          - CSC Tokenization Webservice role
+          - Management API - Stores read
+          - API Payment RefundWithData
+          - API Clientside Encryption Payments role
+          - API to retrieve authentication data
+          - Management API - Stores read and write
+          - Management API - Webhooks read and write
+          - Mastercard inControl service
+          - Merchant Recurring role
+          - Management API - Payout Account Settings Read
+          - API surcharge cost estimation and regulatory information
+          - Store payout detail
+          - Merchant PAL Webservice role
+          active: true
+          allowedOrigins:
+          - id: YOUR_ALLOWED_ORIGIN_1
+            domain: YOUR_DOMAIN_1
+            _links:
+              self:
+                href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL_3/allowedOrigins/YOUR_ALLOWED_ORIGIN_1
+          - id: YOUR_ALLOWED_ORIGIN_2
+            domain: YOUR_DOMAIN_2
+            _links:
+              self:
+                href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL_3/allowedOrigins/YOUR_ALLOWED_ORIGIN_2
+          _links:
+            self:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL_3
+            allowedOrigins:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL_3/allowedOrigins
+            generateApiKey:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL_3/generateApiKey
+            generateClientKey:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL_3/generateClientKey
+            merchant:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT
+        - id: YOUR_API_CREDENTIAL_4
+          username: YOUR_USERNAME_4
+          clientKey: YOUR_CLIENT_KEY_4
+          allowedIpAddresses: []
+          roles:
+          - API Clientside Encryption Payments role
+          - API tokenise payment details
+          - General API Payments role
+          - Checkout encrypted cardholder data
+          - Merchant Recurring role
+          - API PCI Payments role
+          - CSC Tokenization Webservice role
+          - Checkout webservice role
+          - ThreeDSecure WebService Role
+          - Merchant PAL Webservice role
+          active: true
+          _links:
+            self:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL_4
+            allowedOrigins:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL_4/allowedOrigins
+            generateApiKey:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL_4/generateApiKey
+            generateClientKey:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL_4/generateClientKey
+            merchant:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT
+        - id: YOUR_API_CREDENTIAL_5
+          username: YOUR_USERNAME_5
+          clientKey: YOUR_CLIENT_KEY_5
+          allowedIpAddresses: []
+          roles:
+          - Merchant iDeal-API Webservice role
+          - General API Payments role
+          - Checkout encrypted cardholder data
+          - Merchant Recurring role
+          - Checkout webservice role
+          - Merchant PAL Webservice role
+          active: true
+          _links:
+            self:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL_5
+            allowedOrigins:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL_5/allowedOrigins
+            generateApiKey:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL_5/generateApiKey
+            generateClientKey:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL_5/generateClientKey
+            merchant:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT
+        - id: YOUR_API_CREDENTIAL_6
+          username: YOUR_USERNAME_6
+          allowedIpAddresses: []
+          roles:
+          - Checkout encrypted cardholder data
+          - Merchant Recurring role
+          - API PCI Payments role
+          - Checkout webservice role
+          - Merchant PAL Webservice role
+          active: true
+          _links:
+            self:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL_6
+            allowedOrigins:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL_6/allowedOrigins
+            generateApiKey:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL_6/generateApiKey
+            generateClientKey:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL_6/generateClientKey
+            merchant:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT
+        - id: YOUR_API_CREDENTIAL_7
+          username: YOUR_USERNAME_7
+          allowedIpAddresses: []
+          roles:
+          - Checkout encrypted cardholder data
+          - Checkout webservice role
+          - Merchant PAL Webservice role
+          active: true
+          _links:
+            self:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL_7
+            allowedOrigins:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL_7/allowedOrigins
+            generateApiKey:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL_7/generateApiKey
+            generateClientKey:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL_7/generateClientKey
+            merchant:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT
+        - id: YOUR_API_CREDENTIAL_8
+          username: YOUR_USERNAME_8
+          clientKey: YOUR_CLIENT_KEY_8
+          allowedIpAddresses: []
+          roles:
+          - Checkout encrypted cardholder data
+          - Merchant Recurring role
+          - Checkout webservice role
+          - Merchant PAL Webservice role
+          active: true
+          _links:
+            self:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL_8
+            allowedOrigins:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL_8/allowedOrigins
+            generateApiKey:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL_8/generateApiKey
+            generateClientKey:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL_8/generateClientKey
+            merchant:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT
+        - id: YOUR_API_CREDENTIAL_9
+          username: YOUR_USERNAME_9
+          clientKey: YOUR_CLIENT_KEY_9
+          allowedIpAddresses: []
+          roles:
+          - Checkout encrypted cardholder data
+          - Merchant Recurring role
+          - API PCI Payments role
+          - Checkout webservice role
+          - Merchant PAL Webservice role
+          active: true
+          _links:
+            self:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL_9
+            allowedOrigins:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL_9/allowedOrigins
+            generateApiKey:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL_9/generateApiKey
+            generateClientKey:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL_9/generateClientKey
+            merchant:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT
+        - id: YOUR_API_CREDENTIAL_10
+          username: YOUR_USERNAME_10
+          clientKey: YOUR_CLIENT_KEY_10
+          allowedIpAddresses: []
+          roles:
+          - Checkout encrypted cardholder data
+          - Merchant Recurring role
+          - Checkout webservice role
+          - Merchant PAL Webservice role
+          active: true
+          _links:
+            self:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL_10
+            allowedOrigins:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL_10/allowedOrigins
+            generateApiKey:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL_10/generateApiKey
+            generateClientKey:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL_10/generateClientKey
+            merchant:
+              href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT
     get-merchants-merchantId-billingEntities-success-200:
       summary: Response code - 200 OK
       description: Example response with billing entities for a merchant account
@@ -12739,6 +13952,27 @@ components:
           _links:
             self:
               href: https://management-test.adyen.com/v1/stores/ST322LJ223223K5F4SQNR9XL6
+    get-merchants-merchantId-success-200:
+      summary: Details of the merchant account
+      description: Example response with details of the merchant account
+      value:
+        id: YOUR_MERCHANT_ACCOUNT
+        name: YOUR_MERCHANT_NAME
+        captureDelay: manual
+        defaultShopperInteraction: Ecommerce
+        status: Active
+        shopWebAddress: YOUR_SHOP_URL
+        merchantCity: Amsterdam
+        primarySettlementCurrency: EUR
+        _links:
+          self:
+            href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT
+          apiCredentials:
+            href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/apiCredentials
+          users:
+            href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/users
+          webhooks:
+            href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/webhooks
     get-merchants-merchantId-terminalLogos-success-200:
       summary: Response code - 200 OK
       description: Example response when getting the logo of a payment terminal
@@ -13016,6 +14250,7 @@ components:
             bssType: infra
             channel: 0
             defaultProfile: true
+            hiddenSsid: false
             name: Guest Wi-Fi
             psk: 4R8R2R3V456X
             ssid: G470P37660D4G
@@ -13275,6 +14510,7 @@ components:
             bssType: infra
             channel: 0
             defaultProfile: true
+            hiddenSsid: false
             name: Guest Wi-Fi
             psk: 4R8R2R3V456X
             ssid: G470P37660D4G
@@ -13380,6 +14616,7 @@ components:
             bssType: infra
             channel: 0
             defaultProfile: true
+            hiddenSsid: false
             name: Guest Wi-Fi
             psk: 4R8R2R3V456X
             ssid: G470P37660D4G
@@ -13494,6 +14731,7 @@ components:
               data: PD3tUS1CRDdJTiGDR...EFoLS0tLQg=
               name: eap-peap-client.pem
             eapPwd: EAP_PEAP_PASSWORD
+            hiddenSsid: false
             name: Profile-eap-peap-1
             ssid: your-network
             wsec: ccmp
@@ -13502,6 +14740,7 @@ components:
             bssType: infra
             channel: 0
             defaultProfile: false
+            hiddenSsid: false
             name: Profile-guest-wifi
             psk: WIFI_PASSWORD
             ssid: your-network
@@ -13560,6 +14799,7 @@ components:
               data: PD3tUS1CRDdJTiGDR...EFoLS0tLQg=
               name: eap-peap-client.pem
             eapPwd: EAP_PEAP_PASSWORD
+            hiddenSsid: false
             name: Profile-eap-peap-1
             ssid: your-network
             wsec: ccmp
@@ -13568,6 +14808,7 @@ components:
             bssType: infra
             channel: 0
             defaultProfile: false
+            hiddenSsid: false
             name: Profile-guest-wifi
             psk: WIFI_PASSWORD
             ssid: your-network
@@ -13603,6 +14844,7 @@ components:
               name: rsa-private.key
             eapClientPwd: ''
             eapIdentity: admin
+            hiddenSsid: false
             name: Profile-eap-tls-1
             ssid: your-network
             wsec: ccmp
@@ -13662,6 +14904,7 @@ components:
               name: rsa-private.key
             eapClientPwd: ''
             eapIdentity: admin
+            hiddenSsid: false
             name: Profile-eap-tls-1
             ssid: your-network
             wsec: ccmp
@@ -14027,6 +15270,7 @@ components:
               data: PD3tUS1CRDdJTiGDR...EFoLS0tLQg=
               name: eap-peap-client.pem
             eapPwd: EAP_PEAP_PASSWORD
+            hiddenSsid: false
             name: Profile-eap-peap-1
             ssid: your-network
             wsec: ccmp
@@ -14035,6 +15279,7 @@ components:
             bssType: infra
             channel: 0
             defaultProfile: false
+            hiddenSsid: false
             name: Profile-guest-wifi
             psk: WIFI_PASSWORD
             ssid: your-network
@@ -14093,6 +15338,7 @@ components:
               data: PD3tUS1CRDdJTiGDR...EFoLS0tLQg=
               name: eap-peap-client.pem
             eapPwd: EAP_PEAP_PASSWORD
+            hiddenSsid: false
             name: Profile-eap-peap-1
             ssid: your-network
             wsec: ccmp
@@ -14101,6 +15347,7 @@ components:
             bssType: infra
             channel: 0
             defaultProfile: false
+            hiddenSsid: false
             name: Profile-guest-wifi
             psk: WIFI_PASSWORD
             ssid: your-network
@@ -14136,6 +15383,7 @@ components:
               name: rsa-private.key
             eapClientPwd: ''
             eapIdentity: admin
+            hiddenSsid: false
             name: Profile-eap-tls-1
             ssid: your-network
             wsec: ccmp
@@ -14195,6 +15443,7 @@ components:
               name: rsa-private.key
             eapClientPwd: ''
             eapIdentity: admin
+            hiddenSsid: false
             name: Profile-eap-tls-1
             ssid: your-network
             wsec: ccmp
@@ -14280,6 +15529,7 @@ components:
               data: PD3tUS1CRDdJTiGDR...EFoLS0tLQg=
               name: eap-peap-client.pem
             eapPwd: EAP_PEAP_PASSWORD
+            hiddenSsid: false
             name: Profile-eap-peap-1
             ssid: your-network
             wsec: ccmp
@@ -14288,6 +15538,7 @@ components:
             bssType: infra
             channel: 0
             defaultProfile: false
+            hiddenSsid: false
             name: Profile-guest-wifi
             psk: WIFI_PASSWORD
             ssid: your-network
@@ -14346,6 +15597,7 @@ components:
               data: PD3tUS1CRDdJTiGDR...EFoLS0tLQg=
               name: eap-peap-client.pem
             eapPwd: EAP_PEAP_PASSWORD
+            hiddenSsid: false
             name: Profile-eap-peap-1
             ssid: your-network
             wsec: ccmp
@@ -14354,6 +15606,7 @@ components:
             bssType: infra
             channel: 0
             defaultProfile: false
+            hiddenSsid: false
             name: Profile-guest-wifi
             psk: WIFI_PASSWORD
             ssid: your-network
@@ -14389,6 +15642,7 @@ components:
               name: rsa-private.key
             eapClientPwd: ''
             eapIdentity: admin
+            hiddenSsid: false
             name: Profile-eap-tls-1
             ssid: your-network
             wsec: ccmp
@@ -14448,6 +15702,7 @@ components:
               name: rsa-private.key
             eapClientPwd: ''
             eapIdentity: admin
+            hiddenSsid: false
             name: Profile-eap-tls-1
             ssid: your-network
             wsec: ccmp
@@ -14502,6 +15757,7 @@ components:
               data: PD3tUS1CRDdJTiGDR...EFoLS0tLQg=
               name: eap-peap-client.pem
             eapPwd: EAP_PEAP_PASSWORD
+            hiddenSsid: false
             name: Profile-eap-peap-1
             ssid: your-network
             wsec: ccmp
@@ -14510,6 +15766,7 @@ components:
             bssType: infra
             channel: 0
             defaultProfile: false
+            hiddenSsid: false
             name: Profile-guest-wifi
             psk: WIFI_PASSWORD
             ssid: your-network
@@ -14568,6 +15825,7 @@ components:
               data: PD3tUS1CRDdJTiGDR...EFoLS0tLQg=
               name: eap-peap-client.pem
             eapPwd: EAP_PEAP_PASSWORD
+            hiddenSsid: false
             name: Profile-eap-peap-1
             ssid: your-network
             wsec: ccmp
@@ -14576,6 +15834,7 @@ components:
             bssType: infra
             channel: 0
             defaultProfile: false
+            hiddenSsid: false
             name: Profile-guest-wifi
             psk: WIFI_PASSWORD
             ssid: your-network
@@ -14613,6 +15872,7 @@ components:
               name: rsa-private.key
             eapClientPwd: ''
             eapIdentity: admin
+            hiddenSsid: false
             name: Profile-eap-tls-1
             ssid: your-network
             wsec: ccmp
@@ -14672,6 +15932,7 @@ components:
               name: rsa-private.key
             eapClientPwd: ''
             eapIdentity: admin
+            hiddenSsid: false
             name: Profile-eap-tls-1
             ssid: your-network
             wsec: ccmp
@@ -14685,6 +15946,52 @@ components:
           displayMaximumBackLight: 75
         connectivity:
           simcardStatus: INVENTORY
+    post-companies-companyId-apiCredentials-post-company-credential:
+      summary: Add an API credential
+      description: Example request for adding an API credential.
+      value:
+        roles:
+        - Checkout webservice role
+        allowedOrigins:
+        - https://www.mystore.com
+        associatedMerchantAccounts:
+        - YOUR_MERCHANT_ACCOUNT_AU
+        - YOUR_MERCHANT_ACCOUNT_EU
+        - YOUR_MERCHANT_ACCOUNT_US
+    post-companies-companyId-apiCredentials-post-company-credential-200:
+      summary: OK 200 - Add an API credential
+      description: Example response for adding an API credential.
+      value:
+        id: YOUR_API_CREDENTIAL
+        username: YOUR_USERNAME
+        clientKey: YOUR_CLIENT_KEY
+        allowedIpAddresses: []
+        roles:
+        - Checkout webservice role
+        active: true
+        allowedOrigins:
+        - id: YOUR_ALLOWED_ORIGIN
+          domain: https://www.mystore.com
+          _links:
+            self:
+              href: https://management-test.adyen.com/v1/companies/YOUR_COMPANY_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL/allowedOrigins/YOUR_ALLOWED_ORIGIN
+        _links:
+          self:
+            href: https://management-test.adyen.com/v1/companies/YOUR_COMPANY_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL
+          allowedOrigins:
+            href: https://management-test.adyen.com/v1/companies/YOUR_COMPANY_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL/allowedOrigins
+          company:
+            href: https://management-test.adyen.com/v1/companies/YOUR_COMPANY_ACCOUNT
+          generateApiKey:
+            href: https://management-test.adyen.com/v1/companies/YOUR_COMPANY_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL/generateApiKey
+          generateClientKey:
+            href: https://management-test.adyen.com/v1/companies/YOUR_COMPANY_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL/generateClientKey
+        apiKey: YOUR_API_KEY
+        password: YOUR_PASSWORD
+        associatedMerchantAccounts:
+        - YOUR_MERCHANT_ACCOUNT_AU
+        - YOUR_MERCHANT_ACCOUNT_EU
+        - YOUR_MERCHANT_ACCOUNT_US
     post-companies-companyId-shippingLocations-create-shipping-location:
       summary: Create a shipping location
       description: Example request to create a shipping location
@@ -14845,6 +16152,91 @@ components:
             href: https://management-test.adyen.com/v1/companies/YOUR_COMPANY_ACCOUNT/users/S2-5C334C6770
         associatedMerchantAccounts:
         - YOUR_MERCHANT_ACCOUNT
+    post-merchants-merchantId-apiCredentials-post-merchant-credential:
+      summary: Add an API credential
+      description: Example request for adding an API credential.
+      value:
+        roles:
+        - Checkout webservice role
+        allowedOrigins:
+        - https://www.mystore.com
+    post-merchants-merchantId-apiCredentials-post-merchant-credential-200:
+      summary: OK 200 - Add an API credential
+      description: Example response for adding an API credential.
+      value:
+        id: YOUR_API_CREDENTIAL
+        username: YOUR_USERNAME
+        clientKey: YOUR_CLIENT_KEY
+        allowedIpAddresses: []
+        roles:
+        - Checkout webservice role
+        active: true
+        allowedOrigins:
+        - id: YOUR_ALLOWED_ORIGIN
+          domain: https://www.mystore.com
+          _links:
+            self:
+              href: https://management-test.adyen.com/v1/companies/YOUR_COMPANY_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL/allowedOrigins/YOUR_ALLOWED_ORIGIN
+        _links:
+          self:
+            href: https://management-test.adyen.com/v1/companies/YOUR_COMPANY_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL
+          allowedOrigins:
+            href: https://management-test.adyen.com/v1/companies/YOUR_COMPANY_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL/allowedOrigins
+          generateApiKey:
+            href: https://management-test.adyen.com/v1/companies/YOUR_COMPANY_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL/generateApiKey
+          generateClientKey:
+            href: https://management-test.adyen.com/v1/companies/YOUR_COMPANY_ACCOUNT/apiCredentials/YOUR_API_CREDENTIAL/generateClientKey
+          merchant:
+            href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT
+        apiKey: YOUR_API_KEY
+        password: YOUR_PASSWORD
+    post-merchants-merchantId-paymentMethodSettings-add-payment-method:
+      summary: Request a payment method
+      description: Example request to add a payment method
+      value:
+        type: visa
+        currencies:
+        - USD
+        countries:
+        - US
+    post-merchants-merchantId-paymentMethodSettings-add-payment-method-200:
+      summary: Response code - 200 OK
+      description: Example response after sending a request to add a payment method
+      value:
+        id: PM3227C223224K5FH84M8CBNH
+        type: visa
+        countries:
+        - US
+        currencies:
+        - USD
+    post-merchants-merchantId-paymentMethodSettings-add-payment-method-partner-model:
+      summary: Request to add Swish
+      description: Example request to add Swish with a partner model setup
+      value:
+        businessLineId: BL322KV223222D5F8H2J4BQ6C
+        storeId: ST322LJ223223K5F4SQNR9XL5
+        type: swish
+        swish:
+          swishNumber: '1231111111'
+        currencies:
+        - SEK
+        countries:
+        - SE
+    post-merchants-merchantId-paymentMethodSettings-add-payment-method-partner-model-200:
+      summary: Response code - 200 OK
+      description: Example response after sending a request to add Swish in a partner
+        model setup
+      value:
+        id: PM3227C223224K5FH84M8CBNH
+        businessLineId: BL322KV223222D5F8H2J4BQ6C
+        storeId: ST322LJ223223K5F4SQNR9XL5
+        type: swish
+        countries:
+        - SE
+        currencies:
+        - SEK
+        swish:
+          swishNumber: '1231111111'
     post-merchants-merchantId-shippingLocations-create-shipping-location:
       summary: Create a shipping location
       description: Example request to create a shipping location
@@ -15009,6 +16401,59 @@ components:
         - id: PART-620222-EU
           name: Receipt Roll
           quantity: 20
+    post-merchants-merchantId-users-create-user:
+      summary: Create a user
+      description: Example request to create a user on the merchant level
+      value:
+        name:
+          firstName: John
+          lastName: Smith
+        username: johnsmith
+        email: john.smith@example.com
+        timeZoneCode: Europe/Amsterdam
+        roles:
+        - Merchant standard role
+        associatedMerchantAccounts:
+        - YOUR_MERCHANT_ACCOUNT
+    post-merchants-merchantId-users-create-user-200:
+      summary: Response code - 200 OK
+      description: Example response after creating a user on the merchant level
+      value:
+        id: S2-3B3C3C3B22
+        name:
+          firstName: John
+          gender: UNKNOWN
+          lastName: Smith
+        email: john.smith@example.com
+        timeZoneCode: Europe/Amsterdam
+        username: johnsmith
+        roles:
+        - Merchant standard role
+        active: 'true'
+        _links:
+          self:
+            href: https://management-test.adyen.com/v1/merchants/YOUR_MERCHANT_ACCOUNT/users/S2-3B3C3C3B22
+        associatedMerchantAccounts:
+        - YOUR_MERCHANT_ACCOUNT
+    post-merchants-post-merchants:
+      summary: Create a merchant account for an Adyen for Platforms Manage integration
+      description: Example request for creating a merchant account
+      value:
+        companyId: YOUR_COMPANY_ACCOUNT
+        legalEntityId: YOUR_LEGAL_ENTITY_ID
+        businessLineId: YOUR_BUSINESS_LINE_ID
+        description: YOUR_DESCRIPTION
+        reference: YOUR_OWN_REFERENCE
+    post-merchants-post-merchants-200:
+      summary: Merchant account created
+      description: Example response for creating a merchant account
+      value:
+        companyId: YOUR_COMPANY_ACCOUNT
+        legalEntityId: YOUR_LEGAL_ENTITY_ID
+        businessLineId: YOUR_BUSINESS_LINE_ID
+        description: YOUR_DESCRIPTION
+        reference: YOUR_OWN_REFERENCE
+        id: YOUR_OWN_REFERENCE
     post-stores-post-stores:
       summary: Create a store
       description: Example request to create a store
