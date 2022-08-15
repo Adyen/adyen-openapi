@@ -10,7 +10,7 @@
       "x-publicVersion" : true,
       "title" : "Adyen Checkout API",
       "description" : "Adyen Checkout API provides a simple and flexible way to initiate and authorise online payments. You can use the same integration for payments made with cards (including 3D Secure), mobile wallets, and local payment methods (for example, iDEAL and Sofort).\n\nThis API reference provides information on available endpoints and how to interact with them. To learn more about the API, visit [Checkout documentation](https://docs.adyen.com/online-payments).\n\n## Authentication\nEach request to the Checkout API must be signed with an API key. For this, obtain an API Key from your Customer Area, as described in [How to get the API key](https://docs.adyen.com/development-resources/api-credentials#generate-api-key). Then set this key to the `X-API-Key` header value, for example:\n\n```\ncurl\n-H \"Content-Type: application/json\" \\\n-H \"X-API-Key: Your_Checkout_API_key\" \\\n...\n```\nNote that when going live, you need to generate a new API Key to access the [live endpoints](https://docs.adyen.com/development-resources/live-endpoints).\n\n## Versioning\nCheckout API supports [versioning](https://docs.adyen.com/development-resources/versioning) using a version suffix in the endpoint URL. This suffix has the following format: \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://checkout-test.adyen.com/v40/payments\n```\n\n## Release notes\nHave a look at the [release notes](https://docs.adyen.com/online-payments/release-notes?integration_type=api&version=40) to find out what changed in this version!",
-      "x-timestamp" : "2022-05-24T09:15:08Z",
+      "x-timestamp" : "2022-08-08T16:23:54Z",
       "termsOfService" : "https://www.adyen.com/legal/terms-and-conditions",
       "contact" : {
          "name" : "Adyen Developer Experience team",
@@ -47,6 +47,69 @@
       }
    ],
    "paths" : {
+      "/applePay/sessions" : {
+         "post" : {
+            "tags" : [
+               "Utility"
+            ],
+            "summary" : "Get an Apple Pay session",
+            "description" : "You need to use this endpoint if you have an API-only integration with Apple Pay which uses Adyen's Apple Pay certificate.\n\nThe endpoint returns the Apple Pay session data which you need to complete the [Apple Pay session validation](https://docs.adyen.com/payment-methods/apple-pay/api-only?tab=adyen-certificate-validation_1#complete-apple-pay-session-validation).",
+            "operationId" : "post-applePay-sessions",
+            "x-groupName" : "Utility",
+            "x-sortIndex" : 2,
+            "security" : [
+               {
+                  "BasicAuth" : [
+                     ]
+               },
+               {
+                  "ApiKeyAuth" : [
+                     ]
+               }
+            ],
+            "requestBody" : {
+               "content" : {
+                  "application/json" : {
+                     "examples" : {
+                        "basic" : {
+                           "$ref" : "#/components/examples/post-applePay-sessions-basic"
+                        }
+                     },
+                     "schema" : {
+                        "$ref" : "#/components/schemas/CreateApplePaySessionRequest"
+                     }
+                  }
+               }
+            },
+            "parameters" : [
+               {
+                  "$ref" : "#/components/parameters/Idempotency-Key"
+               }
+            ],
+            "responses" : {
+               "200" : {
+                  "content" : {
+                     "application/json" : {
+                        "examples" : {
+                           "basic" : {
+                              "$ref" : "#/components/examples/post-applePay-sessions-basic-200"
+                           }
+                        },
+                        "schema" : {
+                           "$ref" : "#/components/schemas/ApplePaySessionResponse"
+                        }
+                     }
+                  },
+                  "description" : "OK - the request has succeeded.",
+                  "headers" : {
+                     "Idempotency-Key" : {
+                        "$ref" : "#/components/headers/Idempotency-Key"
+                     }
+                  }
+               }
+            }
+         }
+      },
       "/cancels" : {
          "post" : {
             "tags" : [
@@ -1026,9 +1089,6 @@
                   "schema" : {
                      "type" : "string"
                   }
-               },
-               {
-                  "$ref" : "#/components/parameters/Idempotency-Key"
                }
             ],
             "responses" : {
@@ -1045,12 +1105,7 @@
                         }
                      }
                   },
-                  "description" : "OK - the request has succeeded.",
-                  "headers" : {
-                     "Idempotency-Key" : {
-                        "$ref" : "#/components/headers/Idempotency-Key"
-                     }
-                  }
+                  "description" : "OK - the request has succeeded."
                },
                "400" : {
                   "content" : {
@@ -1110,12 +1165,7 @@
                         }
                      }
                   },
-                  "description" : "Unprocessable Entity - a request validation error.",
-                  "headers" : {
-                     "Idempotency-Key" : {
-                        "$ref" : "#/components/headers/Idempotency-Key"
-                     }
-                  }
+                  "description" : "Unprocessable Entity - a request validation error."
                },
                "500" : {
                   "content" : {
@@ -1176,9 +1226,6 @@
                   "schema" : {
                      "type" : "string"
                   }
-               },
-               {
-                  "$ref" : "#/components/parameters/Idempotency-Key"
                }
             ],
             "responses" : {
@@ -1195,12 +1242,7 @@
                         }
                      }
                   },
-                  "description" : "OK - the request has succeeded.",
-                  "headers" : {
-                     "Idempotency-Key" : {
-                        "$ref" : "#/components/headers/Idempotency-Key"
-                     }
-                  }
+                  "description" : "OK - the request has succeeded."
                },
                "400" : {
                   "content" : {
@@ -1260,12 +1302,7 @@
                         }
                      }
                   },
-                  "description" : "Unprocessable Entity - a request validation error.",
-                  "headers" : {
-                     "Idempotency-Key" : {
-                        "$ref" : "#/components/headers/Idempotency-Key"
-                     }
-                  }
+                  "description" : "Unprocessable Entity - a request validation error."
                },
                "500" : {
                   "content" : {
@@ -3182,6 +3219,17 @@
                   "description" : "Indicates if you are able to process 3D Secure 2 transactions natively on your payment page. Send this parameter when you are using `/payments` endpoint with any of our [native 3D Secure 2 solutions](https://docs.adyen.com/online-payments/3d-secure/native-3ds2).\n\n > This parameter only indicates readiness to support native 3D Secure 2 authentication. To specify if you _want_ to perform 3D Secure, use [Dynamic 3D Secure](/risk-management/dynamic-3d-secure) or send the `executeThreeD` parameter.\n\nPossible values:\n* **true** - Ready to support native 3D Secure 2 authentication. Setting this to true does not mean always applying 3D Secure 2. Adyen still selects the version of 3D Secure based on configuration to optimize authorisation rates and improve the shopper's experience.\n* **false** – Not ready to support native 3D Secure 2 authentication. Adyen will not offer 3D Secure 2 to your shopper regardless of your configuration.\n",
                   "type" : "string"
                },
+               "challengeWindowSize" : {
+                  "description" : "Dimensions of the 3DS2 challenge window to be displayed to the cardholder.\n\nPossible values:\n\n* **01** - size of 250x400 \n* **02** - size of 390x400\n* **03** - size of 500x600\n* **04** - size of 600x400\n* **05** - Fullscreen",
+                  "enum" : [
+                     "01",
+                     "02",
+                     "03",
+                     "04",
+                     "05"
+                  ],
+                  "type" : "string"
+               },
                "executeThreeD" : {
                   "description" : "Indicates if you want to perform 3D Secure authentication on a transaction.\n\n > Alternatively, you can use [Dynamic 3D Secure](/risk-management/dynamic-3d-secure) to configure rules for applying 3D Secure.\n\nPossible values:\n* **true** – Perform 3D Secure authentication.\n* **false** – Don't perform 3D Secure authentication. Note that this setting results in refusals if the issuer mandates 3D Secure because of the PSD2 directive  or other, national regulations. \n",
                   "type" : "string"
@@ -3641,6 +3689,14 @@
                },
                "openinvoicedata.numberOfLines" : {
                   "description" : "The number of invoice lines included in `openinvoicedata`.\n\nThere needs to be at least one line, so `numberOfLines` needs to be at least 1.",
+                  "type" : "string"
+               },
+               "openinvoicedata.recipientFirstName" : {
+                  "description" : "First name of the recipient. If the delivery address and the billing address are different, specify the `recipientFirstName` and `recipientLastName` to share the delivery address with Klarna. Otherwise, only the billing address is shared with Klarna.",
+                  "type" : "string"
+               },
+               "openinvoicedata.recipientLastName" : {
+                  "description" : "Last name of the recipient. If the delivery address and the billing address are different, specify the `recipientFirstName` and `recipientLastName` to share the delivery address with Klarna. Otherwise, only the billing address is shared with Klarna.",
                   "type" : "string"
                },
                "openinvoicedataLine[itemNr].currencyCode" : {
@@ -4181,6 +4237,17 @@
                "applePayToken"
             ],
             "title" : "Apple Pay"
+         },
+         "ApplePaySessionResponse" : {
+            "properties" : {
+               "data" : {
+                  "description" : "Base64 encoded data you need to [complete the Apple Pay merchant vlaidation](https://docs.adyen.com/payment-methods/apple-pay/api-only?tab=adyen-certificate-validation_1#complete-apple-pay-session-validation).",
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "data"
+            ]
          },
          "ApplicationInfo" : {
             "properties" : {
@@ -5246,6 +5313,27 @@
                   "$ref" : "#/components/schemas/ShopperInput"
                }
             }
+         },
+         "CreateApplePaySessionRequest" : {
+            "properties" : {
+               "displayName" : {
+                  "description" : "This is the name that your shoppers will see in the Apple Pay interface.\n\nThe value returned as `configuration.merchantName` field from the [`/paymentMethods`](https://docs.adyen.com/api-explorer/#/CheckoutService/latest/post/paymentMethods) response.",
+                  "type" : "string"
+               },
+               "domainName" : {
+                  "description" : "The domain name you provided when you added Apple Pay in your Customer Area.\n\nThis must match the `window.location.hostname` of the web shop.",
+                  "type" : "string"
+               },
+               "merchantIdentifier" : {
+                  "description" : "Your merchant identifier registered with Apple Pay.\n\nUse the value of the `configuration.merchantId` field from the [`/paymentMethods`](https://docs.adyen.com/api-explorer/#/CheckoutService/latest/post/paymentMethods) response.",
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "domainName",
+               "merchantIdentifier",
+               "displayName"
+            ]
          },
          "CreatePaymentAmountUpdateRequest" : {
             "properties" : {
@@ -6741,6 +6829,7 @@
                      "multibanco",
                      "bankTransfer_IBAN",
                      "paybright",
+                     "paynow",
                      "affirm",
                      "affirm_pos",
                      "trustlyvector",
@@ -6758,12 +6847,14 @@
                      "wechatpaySDK",
                      "wechatpayQR",
                      "wechatpayWeb",
+                     "molpay_boost",
                      "wallet_IN",
                      "payu_IN_cashcard",
                      "payu_IN_nb",
                      "upi_qr",
                      "paytm",
                      "molpay_ebanking_VN",
+                     "onlineBanking_PL",
                      "openbanking_UK",
                      "ebanking_FI",
                      "molpay_ebanking_MY",
@@ -6773,6 +6864,7 @@
                      "pix",
                      "walley",
                      "walley_b2b",
+                     "alma",
                      "molpay_fpx",
                      "konbini",
                      "directEbanking",
@@ -6817,11 +6909,13 @@
                      "touchngo",
                      "maybank2u_mae",
                      "duitnow",
+                     "promptpay",
                      "twint_pos",
                      "alipay_hk",
                      "alipay_hk_web",
                      "alipay_hk_wap",
-                     "alipay_wap"
+                     "alipay_wap",
+                     "balanceplatform"
                   ],
                   "type" : "string"
                }
@@ -8901,7 +8995,7 @@
                },
                "serviceError" : {
                   "description" : "The type of the error.",
-                  "$ref" : "#/components/schemas/ServiceError2"
+                  "$ref" : "#/components/schemas/ServiceError-2"
                },
                "shopperLocale" : {
                   "description" : "The shopperLocale value provided in the payment request.",
@@ -9623,7 +9717,7 @@
                }
             }
          },
-         "ServiceError2" : {
+         "ServiceError-2" : {
             "properties" : {
                "errorCode" : {
                   "type" : "string"
@@ -10313,6 +10407,20 @@
                "shopperReference" : "shopper-reference-LZfdWZ",
                "status" : "expired",
                "url" : "https://test.adyen.link/PL61C53A8B97E6915A"
+            }
+         },
+         "post-applePay-sessions-basic" : {
+            "summary" : "Get payment session for Apple Pay",
+            "value" : {
+               "displayName" : "YOUR_MERCHANT_NAME",
+               "domainName" : "YOUR_DOMAIN_NAME",
+               "merchantIdentifier" : "YOUR_MERCHANT_ID"
+            }
+         },
+         "post-applePay-sessions-basic-200" : {
+            "summary" : "Payment session data for Apple Pay",
+            "value" : {
+               "data" : "eyJ2Z..."
             }
          },
          "post-cardDetails-basic" : {
@@ -13031,7 +13139,7 @@
                      "type" : "paybright"
                   },
                   {
-                     "name" : "PayMaya Wallet",
+                     "name" : "Maya Wallet",
                      "type" : "paymaya_wallet"
                   },
                   {

@@ -58,7 +58,7 @@ info:
 
     Have a look at the [release notes](https://docs.adyen.com/online-payments/release-notes?integration_type=api&version=65)
     to find out what changed in this version!'
-  x-timestamp: '2022-05-24T09:15:10Z'
+  x-timestamp: '2022-08-08T16:23:57Z'
   termsOfService: https://www.adyen.com/legal/terms-and-conditions
   contact:
     name: Adyen Developer Experience team
@@ -79,6 +79,46 @@ tags:
 - name: Payments
 - name: Payment links
 paths:
+  /applePay/sessions:
+    post:
+      tags:
+      - Utility
+      summary: Get an Apple Pay session
+      description: 'You need to use this endpoint if you have an API-only integration
+        with Apple Pay which uses Adyen''s Apple Pay certificate.
+
+
+        The endpoint returns the Apple Pay session data which you need to complete
+        the [Apple Pay session validation](https://docs.adyen.com/payment-methods/apple-pay/api-only?tab=adyen-certificate-validation_1#complete-apple-pay-session-validation).'
+      operationId: post-applePay-sessions
+      x-groupName: Utility
+      x-sortIndex: 2
+      security:
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                $ref: '#/components/examples/post-applePay-sessions-basic'
+            schema:
+              $ref: '#/components/schemas/CreateApplePaySessionRequest'
+      parameters:
+      - $ref: '#/components/parameters/Idempotency-Key'
+      responses:
+        '200':
+          content:
+            application/json:
+              examples:
+                basic:
+                  $ref: '#/components/examples/post-applePay-sessions-basic-200'
+              schema:
+                $ref: '#/components/schemas/ApplePaySessionResponse'
+          description: OK - the request has succeeded.
+          headers:
+            Idempotency-Key:
+              $ref: '#/components/headers/Idempotency-Key'
   /cancels:
     post:
       tags:
@@ -697,7 +737,6 @@ paths:
         required: true
         schema:
           type: string
-      - $ref: '#/components/parameters/Idempotency-Key'
       responses:
         '200':
           content:
@@ -708,9 +747,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaymentLinkResponse'
           description: OK - the request has succeeded.
-          headers:
-            Idempotency-Key:
-              $ref: '#/components/headers/Idempotency-Key'
         '400':
           content:
             application/json:
@@ -747,9 +783,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ServiceError'
           description: Unprocessable Entity - a request validation error.
-          headers:
-            Idempotency-Key:
-              $ref: '#/components/headers/Idempotency-Key'
         '500':
           content:
             application/json:
@@ -786,7 +819,6 @@ paths:
         required: true
         schema:
           type: string
-      - $ref: '#/components/parameters/Idempotency-Key'
       responses:
         '200':
           content:
@@ -797,9 +829,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaymentLinkResponse'
           description: OK - the request has succeeded.
-          headers:
-            Idempotency-Key:
-              $ref: '#/components/headers/Idempotency-Key'
         '400':
           content:
             application/json:
@@ -836,9 +865,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ServiceError'
           description: Unprocessable Entity - a request validation error.
-          headers:
-            Idempotency-Key:
-              $ref: '#/components/headers/Idempotency-Key'
         '500':
           content:
             application/json:
@@ -2229,6 +2255,18 @@ components:
             \ to support native 3D Secure 2 authentication. Adyen will not offer 3D\
             \ Secure 2 to your shopper regardless of your configuration.\n"
           type: string
+        challengeWindowSize:
+          description: "Dimensions of the 3DS2 challenge window to be displayed to\
+            \ the cardholder.\n\nPossible values:\n\n* **01** - size of 250x400 \n\
+            * **02** - size of 390x400\n* **03** - size of 500x600\n* **04** - size\
+            \ of 600x400\n* **05** - Fullscreen"
+          enum:
+          - '01'
+          - '02'
+          - '03'
+          - '04'
+          - '05'
+          type: string
         executeThreeD:
           description: "Indicates if you want to perform 3D Secure authentication\
             \ on a transaction.\n\n > Alternatively, you can use [Dynamic 3D Secure](/risk-management/dynamic-3d-secure)\
@@ -3175,6 +3213,18 @@ components:
             There needs to be at least one line, so `numberOfLines` needs to be at
             least 1.'
           type: string
+        openinvoicedata.recipientFirstName:
+          description: First name of the recipient. If the delivery address and the
+            billing address are different, specify the `recipientFirstName` and `recipientLastName`
+            to share the delivery address with Klarna. Otherwise, only the billing
+            address is shared with Klarna.
+          type: string
+        openinvoicedata.recipientLastName:
+          description: Last name of the recipient. If the delivery address and the
+            billing address are different, specify the `recipientFirstName` and `recipientLastName`
+            to share the delivery address with Klarna. Otherwise, only the billing
+            address is shared with Klarna.
+          type: string
         openinvoicedataLine[itemNr].currencyCode:
           description: The three-character ISO currency code.
           type: string
@@ -3741,6 +3791,14 @@ components:
       required:
       - applePayToken
       title: Apple Pay
+    ApplePaySessionResponse:
+      properties:
+        data:
+          description: Base64 encoded data you need to [complete the Apple Pay merchant
+            vlaidation](https://docs.adyen.com/payment-methods/apple-pay/api-only?tab=adyen-certificate-validation_1#complete-apple-pay-session-validation).
+          type: string
+      required:
+      - data
     ApplicationInfo:
       properties:
         adyenLibrary:
@@ -5123,6 +5181,34 @@ components:
           x-addedInVersion: '37'
           description: Determines how to display the details fields.
           $ref: '#/components/schemas/ShopperInput'
+    CreateApplePaySessionRequest:
+      properties:
+        displayName:
+          description: 'This is the name that your shoppers will see in the Apple
+            Pay interface.
+
+
+            The value returned as `configuration.merchantName` field from the [`/paymentMethods`](https://docs.adyen.com/api-explorer/#/CheckoutService/latest/post/paymentMethods)
+            response.'
+          type: string
+        domainName:
+          description: 'The domain name you provided when you added Apple Pay in your
+            Customer Area.
+
+
+            This must match the `window.location.hostname` of the web shop.'
+          type: string
+        merchantIdentifier:
+          description: 'Your merchant identifier registered with Apple Pay.
+
+
+            Use the value of the `configuration.merchantId` field from the [`/paymentMethods`](https://docs.adyen.com/api-explorer/#/CheckoutService/latest/post/paymentMethods)
+            response.'
+          type: string
+      required:
+      - domainName
+      - merchantIdentifier
+      - displayName
     CreatePaymentAmountUpdateRequest:
       properties:
         amount:
@@ -6594,6 +6680,7 @@ components:
           - multibanco
           - bankTransfer_IBAN
           - paybright
+          - paynow
           - affirm
           - affirm_pos
           - trustlyvector
@@ -6611,12 +6698,14 @@ components:
           - wechatpaySDK
           - wechatpayQR
           - wechatpayWeb
+          - molpay_boost
           - wallet_IN
           - payu_IN_cashcard
           - payu_IN_nb
           - upi_qr
           - paytm
           - molpay_ebanking_VN
+          - onlineBanking_PL
           - openbanking_UK
           - ebanking_FI
           - molpay_ebanking_MY
@@ -6626,6 +6715,7 @@ components:
           - pix
           - walley
           - walley_b2b
+          - alma
           - molpay_fpx
           - konbini
           - directEbanking
@@ -6670,11 +6760,13 @@ components:
           - touchngo
           - maybank2u_mae
           - duitnow
+          - promptpay
           - twint_pos
           - alipay_hk
           - alipay_hk_web
           - alipay_hk_wap
           - alipay_wap
+          - balanceplatform
           type: string
       title: Payment Details
     PaymentDetailsResponse:
@@ -9019,7 +9111,7 @@ components:
           type: string
         serviceError:
           description: The type of the error.
-          $ref: '#/components/schemas/ServiceError2'
+          $ref: '#/components/schemas/ServiceError-2'
         shopperLocale:
           description: The shopperLocale value provided in the payment request.
           type: string
@@ -9968,7 +10060,7 @@ components:
           description: The HTTP response status.
           format: int32
           type: integer
-    ServiceError2:
+    ServiceError-2:
       properties:
         errorCode:
           type: string
@@ -10769,6 +10861,16 @@ components:
         shopperReference: shopper-reference-LZfdWZ
         status: expired
         url: https://test.adyen.link/PL61C53A8B97E6915A
+    post-applePay-sessions-basic:
+      summary: Get payment session for Apple Pay
+      value:
+        displayName: YOUR_MERCHANT_NAME
+        domainName: YOUR_DOMAIN_NAME
+        merchantIdentifier: YOUR_MERCHANT_ID
+    post-applePay-sessions-basic-200:
+      summary: Payment session data for Apple Pay
+      value:
+        data: eyJ2Z...
     post-cardDetails-basic:
       summary: Get a list of brands on a card
       description: Example request for getting a list of brands on a card using the
@@ -12208,7 +12310,7 @@ components:
           type: pathegiftcard
         - name: PayBright
           type: paybright
-        - name: PayMaya Wallet
+        - name: Maya Wallet
           type: paymaya_wallet
         - name: PayPal
           type: paypal
