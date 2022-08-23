@@ -1,8 +1,8 @@
 openapi: 3.1.0
 servers:
-- url: https://kyc-test.adyen.com/lem/v1
+- url: https://kyc-test.adyen.com/lem/v2
 info:
-  version: '1'
+  version: '2'
   x-publicVersion: true
   title: Legal Entity Management API
   description: "The Legal Entity Management API enables you to manage legal entities\
@@ -21,7 +21,7 @@ info:
     ```\n## Going live\nWhen going live, your Adyen contact will provide your API\
     \ credential for the live environment. You can then use the username and password\
     \ to send requests to `https://kyc-live.adyen.com/lem/v1`.\n\n"
-  x-timestamp: '2022-08-18T15:23:37Z'
+  x-timestamp: '2022-08-18T15:23:39Z'
   termsOfService: https://www.adyen.com/legal/terms-and-conditions
   contact:
     name: Adyen Developer Experience team
@@ -122,6 +122,67 @@ paths:
       security:
       - BasicAuth: []
       - ApiKeyAuth: []
+      parameters:
+      - description: The unique identifier of the business line.
+        name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BusinessLine'
+          description: OK - the request has succeeded.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Bad Request - a problem reading or understanding the request.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Unauthorized - authentication required.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Forbidden - insufficient permissions to process the request.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Unprocessable Entity - a request validation error.
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Internal Server Error - the server could not process the request.
+    patch:
+      tags:
+      - Business lines
+      summary: Update a business line
+      description: Updates a business line.
+      x-addedInVersion: '2'
+      operationId: patch-businessLines-id
+      x-groupName: Business lines
+      x-sortIndex: 15
+      security:
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BusinessLineInfoUpdate'
       parameters:
       - description: The unique identifier of the business line.
         name: id
@@ -420,6 +481,14 @@ paths:
         content:
           application/json:
             examples:
+              createLegalEntityIndividual:
+                $ref: '#/components/examples/post-legalEntities-createLegalEntityIndividual'
+              createLegalEntityOrganization:
+                $ref: '#/components/examples/post-legalEntities-createLegalEntityOrganization'
+              createLegalEntitySoleProp:
+                $ref: '#/components/examples/post-legalEntities-createLegalEntitySoleProp'
+              createLegalEntityTrust:
+                $ref: '#/components/examples/post-legalEntities-createLegalEntityTrust'
               post-createLegalEntityIndividual:
                 $ref: '#/components/examples/post-legalEntities-post-createLegalEntityIndividual'
               post-createLegalEntityOrganization:
@@ -432,6 +501,13 @@ paths:
         '200':
           content:
             application/json:
+              examples:
+                post-createLegalEntityIndividual:
+                  $ref: '#/components/examples/post-legalEntities-post-createLegalEntityIndividual-200'
+                post-createLegalEntityOrganization:
+                  $ref: '#/components/examples/post-legalEntities-post-createLegalEntityOrganization-200'
+                post-createLegalEntitySoleProp:
+                  $ref: '#/components/examples/post-legalEntities-post-createLegalEntitySoleProp-200'
               schema:
                 $ref: '#/components/schemas/LegalEntity'
           description: OK - the request has succeeded.
@@ -1097,6 +1173,10 @@ components:
           x-deprecatedInVersion: '1'
           description: The name of the file including the file extension.
           type: string
+        pageName:
+          x-addedInVersion: '2'
+          description: The name of the file including the file extension.
+          type: string
         pageType:
           description: 'Specifies which side of the ID card is uploaded.
 
@@ -1115,6 +1195,8 @@ components:
             \ is provided, the `branchCode` is also required."
           type: string
         accountType:
+          deprecated: true
+          x-deprecatedInVersion: '2'
           description: The type of bank account.
           type: string
         bankBicSwift:
@@ -1273,6 +1355,56 @@ components:
       - capability
       - industryCode
       - legalEntityId
+    BusinessLineInfoUpdate:
+      properties:
+        capability:
+          description: The capability for which you are creating the business line.
+            For example, **receivePayments**.
+          type: string
+        industryCode:
+          description: A code that represents the industry of your legal entity. For
+            example, **4431A** for computer software stores.
+          type: string
+        legalEntityId:
+          description: Unique identifier of the [legal entity](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/legalEntities__resParam_id)
+            that owns the business line.
+          type: string
+        salesChannels:
+          description: 'A list of channels where goods or services are sold. You cannot
+            combine point of sale and ecommerce in one business line.
+
+
+            Possible values and combinations:
+
+
+            - For point of sale: **pos** and **posMoto**
+
+
+            - For ecommerce: **eCommerce** and **ecomMoto**
+
+
+            - For Pay by Link: **payByLink**
+
+
+            Required only in combination with the `capability` to **receivePayments**
+            or **receiveFromPlatformPayments**.'
+          items:
+            type: string
+          type: array
+        sourceOfFunds:
+          description: Contains information about the source of your user's funds.
+            Required only for the `capability` to **issueBankAccount**.
+          $ref: '#/components/schemas/SourceOfFunds'
+        webData:
+          description: List of website URLs where your user's goods or services are
+            sold. When this is required for a capability but your user does not have
+            an online presence, provide the reason in the `webDataExemption` object.
+          items:
+            $ref: '#/components/schemas/WebData'
+          type: array
+        webDataExemption:
+          description: The reason why the web data is not provided.
+          $ref: '#/components/schemas/WebDataExemption'
     BusinessLines:
       properties:
         businessLines:
@@ -1334,11 +1466,14 @@ components:
             When providing ID numbers:\n* For **individual**, the `type` values can\
             \ be **driversLicense**, **identityCard**, **nationalIdNumber**, or **passport**.\n\
             \nWhen uploading documents:\n* For **organization**, the `type` values\
-            \ can be **proofOfAddress**, **registrationDocument**, **taxDocument**,\
-            \ or **proofOfIndustry**. \n\n* For **individual**, the `type` values\
-            \ can be **identityCard**, **driversLicense**, **proofOfNationalIdNumber**,\
-            \ **proofOfResidency**, or **proofOfIndustry**.\n\n* Use **bankStatement**\
-            \ to upload documents for a [transfer instrument](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/transferInstruments__resParam_id)."
+            \ can be **proofOfAddress**, **registrationDocument**, **vatDocument**,\
+            \ **proofOfOrganizationTaxInfo**, or **proofOfIndustry**. \n\n* For **individual**,\
+            \ the `type` values can be **identityCard**, **driversLicense**, **passport**,\
+            \ **proofOfNationalIdNumber**, **proofOfResidency**, **proofOfIndustry**,\
+            \ or **proofOfIndividualTaxId**.\n\n* For **soleProprietorship**, the\
+            \ `type` values can be **constitutionalDocument**, **proofOfAddress**,\
+            \ or **proofOfIndustry**.\n\n* Use **bankStatement** to upload documents\
+            \ for a [transfer instrument](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/transferInstruments__resParam_id)."
           enum:
           - bankStatement
           - driversLicense
@@ -1349,8 +1484,10 @@ components:
           - proofOfNationalIdNumber
           - proofOfResidency
           - registrationDocument
-          - taxDocument
+          - vatDocument
+          - proofOfOrganizationTaxInfo
           - proofOfIndustry
+          - constitutionalDocument
           type: string
       required:
       - type
@@ -1358,6 +1495,17 @@ components:
       - owner
       - attachments
       - id
+    DocumentReference:
+      properties:
+        active:
+          description: Identifies whether the document is active and used for checks.
+          type: boolean
+        fileName:
+          description: Document name.
+          type: string
+        id:
+          description: The unique identifier of the resource.
+          type: string
     EntityReference:
       properties:
         id:
@@ -1379,6 +1527,11 @@ components:
         organization:
           description: Information about the organization. Required if `type` is **organization**.
           $ref: '#/components/schemas/Organization'
+        soleProprietorship:
+          x-addedInVersion: '2'
+          description: Information about the sole proprietorship. Required if `type`
+            is **soleProprietorship**.
+          $ref: '#/components/schemas/SoleProprietorship'
     IdentificationData:
       properties:
         expiryDate:
@@ -1409,11 +1562,14 @@ components:
             When providing ID numbers:\n* For **individual**, the `type` values can\
             \ be **driversLicense**, **identityCard**, **nationalIdNumber**, or **passport**.\n\
             \nWhen uploading documents:\n* For **organization**, the `type` values\
-            \ can be **proofOfAddress**, **registrationDocument**, **taxDocument**,\
-            \ or **proofOfIndustry**. \n\n* For **individual**, the `type` values\
-            \ can be **identityCard**, **driversLicense**, **proofOfNationalIdNumber**,\
-            \ **proofOfResidency**, or **proofOfIndustry**.\n\n* Use **bankStatement**\
-            \ to upload documents for a [transfer instrument](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/transferInstruments__resParam_id)."
+            \ can be **proofOfAddress**, **registrationDocument**, **vatDocument**,\
+            \ **proofOfOrganizationTaxInfo**, or **proofOfIndustry**. \n\n* For **individual**,\
+            \ the `type` values can be **identityCard**, **driversLicense**, **passport**,\
+            \ **proofOfNationalIdNumber**, **proofOfResidency**, **proofOfIndustry**,\
+            \ or **proofOfIndividualTaxId**.\n\n* For **soleProprietorship**, the\
+            \ `type` values can be **constitutionalDocument**, **proofOfAddress**,\
+            \ or **proofOfIndustry**.\n\n* Use **bankStatement** to upload documents\
+            \ for a [transfer instrument](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/transferInstruments__resParam_id)."
           enum:
           - bankStatement
           - driversLicense
@@ -1424,8 +1580,10 @@ components:
           - proofOfNationalIdNumber
           - proofOfResidency
           - registrationDocument
-          - taxDocument
+          - vatDocument
+          - proofOfOrganizationTaxInfo
           - proofOfIndustry
+          - constitutionalDocument
           type: string
       required:
       - type
@@ -1452,6 +1610,12 @@ components:
         residentialAddress:
           description: The residential address of the individual.
           $ref: '#/components/schemas/Address'
+        taxInformation:
+          x-addedInVersion: '2'
+          description: The tax information of the organization.
+          items:
+            $ref: '#/components/schemas/TaxInformation'
+          type: array
         webData:
           deprecated: true
           x-deprecatedInVersion: '1'
@@ -1462,6 +1626,12 @@ components:
       - residentialAddress
     LegalEntity:
       properties:
+        documentDetails:
+          x-addedInVersion: '2'
+          description: List of documents uploaded for the legal entity.
+          items:
+            $ref: '#/components/schemas/DocumentReference'
+          type: array
         documents:
           deprecated: true
           x-deprecatedInVersion: '1'
@@ -1492,17 +1662,25 @@ components:
           description: Your reference for the legal entity, maximum 150 characters.
           maxLength: 150
           type: string
+        soleProprietorship:
+          x-addedInVersion: '2'
+          description: Information about the sole proprietorship. Required if `type`
+            is **soleProprietorship**.
+          $ref: '#/components/schemas/SoleProprietorship'
         transferInstruments:
           description: List of transfer instruments owned by the legal entity.
           items:
             $ref: '#/components/schemas/EntityReference'
           type: array
         type:
-          description: "The type of legal entity.\n\n Possible values: **individual**\
-            \ or **organization**"
+          description: "The type of legal entity.\n\n Possible values: **individual**,\
+            \ **organization**, or **soleProprietorship**."
           enum:
           - individual
           - organization
+          - soleProprietorship
+          - trust
+          - unincorporatedPartnership
           type: string
       required:
       - type
@@ -1571,12 +1749,20 @@ components:
           description: Your reference for the legal entity, maximum 150 characters.
           maxLength: 150
           type: string
+        soleProprietorship:
+          x-addedInVersion: '2'
+          description: Information about the sole proprietorship. Required if `type`
+            is **soleProprietorship**.
+          $ref: '#/components/schemas/SoleProprietorship'
         type:
-          description: "The type of legal entity.\n\n Possible values: **individual**\
-            \ or **organization**"
+          description: "The type of legal entity.\n\n Possible values: **individual**,\
+            \ **organization**, or **soleProprietorship**."
           enum:
           - individual
           - organization
+          - soleProprietorship
+          - trust
+          - unincorporatedPartnership
           type: string
       required:
       - type
@@ -1694,25 +1880,17 @@ components:
           description: Information about the organization's publicly traded stock.
             Provide this object only if `type` is **listedPublicCompany**.
           $ref: '#/components/schemas/StockData'
-        taxExempt:
-          description: 'Indicates whether the legal entity is exempt from tax. When
-            **true**, the `taxIdAbsenceReason` must be provided.
-
-
-            '
-          type: boolean
-        taxId:
-          description: The organization's tax identifier.
-          type: string
-        taxIdAbsenceReason:
-          description: 'The reason the organization has not provided a tax identifier.
-
-
-            Possible values: **industryExemption**, **belowTaxThreshold**.'
-          enum:
-          - industryExemption
-          - belowTaxThreshold
-          type: string
+        taxInformation:
+          x-addedInVersion: '2'
+          description: The tax information of the organization.
+          items:
+            $ref: '#/components/schemas/TaxInformation'
+          type: array
+        taxReportingClassification:
+          x-addedInVersion: '2'
+          description: The tax reporting classification (FATCA/CRS self-certification)
+            of the organization.
+          $ref: '#/components/schemas/TaxReportingClassification'
         type:
           description: "Type of organization. \n\nPossible values: **associationIncorporated**,\
             \ **governmentalOrganization**, **listedPublicCompany**, **nonProfit**,\
@@ -1724,6 +1902,20 @@ components:
           - nonProfit
           - partnershipIncorporated
           - privateCompany
+          type: string
+        vatAbsenceReason:
+          x-addedInVersion: '2'
+          description: 'The reason the organization has not provided a VAT number.
+
+
+            Possible values: **industryExemption**, **belowTaxThreshold**.'
+          enum:
+          - industryExemption
+          - belowTaxThreshold
+          type: string
+        vatNumber:
+          x-addedInVersion: '2'
+          description: The organization's VAT number.
           type: string
         webData:
           deprecated: true
@@ -1753,19 +1945,15 @@ components:
       - type
     PhoneNumber:
       properties:
-        countryCode:
-          description: The two-letter [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)
-            country code. For example, **US** or **NL**.
-          type: string
         number:
-          description: The phone number.
+          description: The full phone number, including the country code. For example,
+            **+3112345678**.
           type: string
         type:
           description: "The type of phone number.\n Possible values: **mobile**, **landline**,\
             \ **sip**, **fax.** "
           type: string
       required:
-      - type
       - number
     RecurringDetail:
       properties:
@@ -1797,6 +1985,44 @@ components:
           description: The HTTP response status.
           format: int32
           type: integer
+    SoleProprietorship:
+      properties:
+        countryOfGoverningLaw:
+          description: The two-character [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)
+            country code of the governing country.
+          type: string
+        doingBusinessAs:
+          description: The registered name, if different from the `name`.
+          type: string
+        name:
+          description: The legal name.
+          type: string
+        principalPlaceOfBusiness:
+          description: The business address. Required if the principal place of business
+            is different from the `registeredAddress`.
+          $ref: '#/components/schemas/Address'
+        registeredAddress:
+          description: The address registered at the registrar, such as the Chamber
+            of Commerce.
+          $ref: '#/components/schemas/Address'
+        registrationNumber:
+          description: The registration number.
+          type: string
+        vatAbsenceReason:
+          description: 'The reason for not providing a VAT number.
+
+
+            Possible values: **industryExemption**, **belowTaxThreshold**.'
+          enum:
+          - industryExemption
+          - belowTaxThreshold
+          type: string
+        vatNumber:
+          description: The VAT number.
+          type: string
+      required:
+      - name
+      - registeredAddress
     SourceOfFunds:
       properties:
         acquiringBusinessLineId:
@@ -1833,18 +2059,79 @@ components:
         tickerSymbol:
           description: The stock ticker symbol.
           type: string
+    TaxInformation:
+      properties:
+        country:
+          description: The two-letter [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)
+            country code.
+          maxLength: 2
+          minLength: 2
+          type: string
+        number:
+          description: The organization's tax ID number (TIN).
+          type: string
+        type:
+          description: The TIN type depending on the country where it was issued.
+            Provide only for countries that have multiple tax IDs, such as Sweden,
+            the UK, or the US. For example, provide **SSN**, **EIN**, or **ITIN**
+            for the US.
+          type: string
+    TaxReportingClassification:
+      properties:
+        businessType:
+          description: 'The organization''s business type.
+
+
+            Possible values: **other**, **listedPublicCompany**, **subsidiaryOfListedPublicCompany**,
+            **governmentalOrganization**, **internationalOrganization**, **financialInstitution**.'
+          enum:
+          - other
+          - listedPublicCompany
+          - subsidiaryOfListedPublicCompany
+          - governmentalOrganization
+          - internationalOrganization
+          - financialInstitution.
+          type: string
+        financialInstitutionNumber:
+          description: The Global Intermediary Identification Number (GIIN) required
+            for FATCA.
+          type: string
+        mainSourceOfIncome:
+          description: 'The organization''s main source of income.
+
+
+            Possible values: **businessOperation**, **realEstateSales**, **investmentInterestOrRoyalty**,
+            **propertyRental**, **other**.'
+          enum:
+          - businessOperation
+          - realEstateSales
+          - investmentInterestOrRoyalty
+          - propertyRental
+          - other
+          type: string
+        type:
+          description: 'The tax reporting classification type.
+
+
+            Possible values: **nonFinancialNonReportable**, **financialNonReportable**,
+            **nonFinancialActive**, **nonFinancialPassive**.'
+          enum:
+          - nonFinancialNonReportable
+          - financialNonReportable
+          - nonFinancialActive
+          - nonFinancialPassive
+          type: string
     TransferInstrument:
       properties:
         bankAccount:
           description: Contains information about the legal entity's bank account.
             Required when `type` is **bankAccount**.
           $ref: '#/components/schemas/BankAccountInfo'
-        documents:
-          deprecated: true
-          x-deprecatedInVersion: '1'
+        documentDetails:
+          x-addedInVersion: '2'
           description: List of documents uploaded for the transfer instrument.
           items:
-            $ref: '#/components/schemas/EntityReference'
+            $ref: '#/components/schemas/DocumentReference'
           type: array
         id:
           description: The unique identifier of the transfer instrument.
@@ -1970,7 +2257,7 @@ components:
         webData:
         - webAddress: https://yoururl.com
         id: SE322KT223222D5FJ7TJN2986
-    post-legalEntities-post-createLegalEntityIndividual:
+    post-legalEntities-createLegalEntityIndividual:
       summary: Create a legal entity for an individual
       description: Example request for creating a legal entity for an individual
       value:
@@ -1992,7 +2279,7 @@ components:
           birthData:
             dateOfBirth: '1981-12-01'
           email: s.hopper@example.com
-    post-legalEntities-post-createLegalEntityOrganization:
+    post-legalEntities-createLegalEntityOrganization:
       summary: Create a legal entity for an organization
       description: Example request for creating a legal entity for an organization
       value:
@@ -2013,7 +2300,7 @@ components:
             countryCode: US
             number: '4153671502'
           email: info@example.com
-    post-legalEntities-post-createLegalEntitySoleProp:
+    post-legalEntities-createLegalEntitySoleProp:
       summary: Create a legal entity for a sole proprietor
       description: Example request for creating a legal entity for a sole proprietor
       value:
@@ -2030,3 +2317,124 @@ components:
           registrationNumber: '12345678'
           vatNumber: NL123456789B01
           taxIdAbsenceReason: industryExemption
+    post-legalEntities-createLegalEntityTrust:
+      summary: Create a legal entity for a trust
+      description: Example request for creating a legal entity for a trust
+      value:
+        type: trust
+        trust:
+          countryOfGoverningLaw: AU
+          name: Trust Name
+          registeredAddress:
+            street: 27 Best Street
+            city: Perth
+            postalCode: '2372'
+            stateOrProvince: WE
+            country: AU
+          type: publicTradingTrust
+          registrationNumber: '000000123'
+          vatNumber: '51824753556'
+          taxIdAbsenceReason: belowTaxThreshold
+    post-legalEntities-post-createLegalEntityIndividual:
+      summary: Create a legal entity for an individual
+      description: Example request for creating a legal entity for an individual
+      value:
+        type: individual
+        individual:
+          residentialAddress:
+            city: San Francisco
+            country: US
+            postalCode: '94678'
+            stateOrProvince: CA
+            street: Brannan Street
+            street2: '274'
+          phone:
+            number: '+14153671502'
+            type: mobile
+          name:
+            firstName: Simone
+            lastName: Hopper
+          birthData:
+            dateOfBirth: '1981-12-01'
+          email: s.hopper@example.com
+    post-legalEntities-post-createLegalEntityIndividual-200:
+      summary: Example response for creating a legal entity for an individual
+      value:
+        individual:
+          email: s.hopper@example.com
+          phone:
+            number: '+14153671502'
+            type: mobile
+          birthData:
+            dateOfBirth: '1981-12-01'
+          name:
+            firstName: Simone
+            lastName: Hopper
+          residentialAddress:
+            city: San Francisco
+            country: US
+            postalCode: '94678'
+            stateOrProvince: CA
+            street: Brannan Street
+            street2: '274'
+        type: individual
+        id: LE322JV223222D5FZ9MQ3BRQ2
+    post-legalEntities-post-createLegalEntityOrganization:
+      summary: Create a legal entity for an organization
+      description: Example request for creating a legal entity for an organization
+      value:
+        type: organization
+        organization:
+          legalName: Example Company
+          registrationNumber: '101002749'
+          type: privateCompany
+          registeredAddress:
+            city: San Francisco
+            country: US
+            postalCode: '94107'
+            stateOrProvince: CA
+            street: Brannan Street
+            street2: Example Building
+    post-legalEntities-post-createLegalEntityOrganization-200:
+      summary: Example response for creating a legal entity for an organization
+      value:
+        organization:
+          legalName: Example Company
+          registrationNumber: '101002749'
+          registeredAddress:
+            city: San Francisco
+            country: US
+            postalCode: '94107'
+            stateOrProvince: CA
+            street: Brannan Street
+            street2: Example Building
+          taxExempt: false
+          type: privateCompany
+        type: organization
+        id: LE322JV223222D5FZ9N74BSGM
+    post-legalEntities-post-createLegalEntitySoleProp:
+      summary: Create a legal entity for a sole proprietor
+      description: Example request for creating a legal entity for a sole proprietor
+      value:
+        type: soleProprietorship
+        soleProprietorship:
+          name: Example Sole Trader
+          countryOfGoverningLaw: GB
+          registeredAddress:
+            city: London
+            country: GB
+            postalCode: W1T 3HE
+            street: 12-13 Wells Mews
+    post-legalEntities-post-createLegalEntitySoleProp-200:
+      summary: Example response for creating a legal entity for a sole proprietor
+      value:
+        type: soleProprietorship
+        soleProprietorship:
+          name: Example Sole Trader
+          countryOfGoverningLaw: GB
+          registeredAddress:
+            city: London
+            country: GB
+            postalCode: W1T 3HE
+            street: 12-13 Wells Mews
+        id: LE32272223222D5CGBR254SKT
