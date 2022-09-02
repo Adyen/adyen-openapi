@@ -4,29 +4,26 @@ servers:
 info:
   version: '2'
   x-publicVersion: true
-  title: Balance Platform Transfers API
-  description: "The Balance Platform Transfers API provides an endpoint that you can\
-    \ use to move funds within your balance platform, or to send funds from your balance\
-    \ platform to a [transfer instrument](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/transferInstruments).\n\
-    \nFor information on how the API is used in Adyen Issuing, refer to [Manage funds](https://docs.adyen.com/issuing/manage-funds#transfer).\n\
+  title: Transfers API
+  description: "The Transfers API provides an endpoint that you can use to move funds\
+    \ within your balance platform, or to send funds from your balance platform to\
+    \ a [transfer instrument](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/transferInstruments).\n\
     \n## Authentication\nYour Adyen contact will provide your API credential and an\
     \ API key. To connect to the API, add an `X-API-Key` header with the API key as\
     \ the value, for example:\n\n ```\ncurl\n-H \"Content-Type: application/json\"\
     \ \\\n-H \"X-API-Key: YOUR_API_KEY\" \\\n...\n```\n\nAlternatively, you can use\
     \ the username and password to connect to the API using basic authentication.\
     \ For example:\n\n```\ncurl\n-H \"Content-Type: application/json\" \\\n-U \"ws@BalancePlatform.YOUR_BALANCE_PLATFORM\"\
-    :\"YOUR_WS_PASSWORD\" \\\n...\n```\n## Roles and permissions\nTo use the Balance\
-    \ Platforms Transfers API, you need an additional role for your API credential.\
-    \ Transfers must also be enabled for the source balance account. Your Adyen contact\
-    \ will set up the roles and permissions for you.\n## Versioning\nThe Balance Platform\
-    \ Transfers API supports [versioning](https://docs.adyen.com/development-resources/versioning)\
+    :\"YOUR_WS_PASSWORD\" \\\n...\n```\n## Roles and permissions\nTo use the Transfers\
+    \ API, you need an additional role for your API credential. Transfers must also\
+    \ be enabled for the source balance account. Your Adyen contact will set up the\
+    \ roles and permissions for you.\n## Versioning\nThe Transfers API supports [versioning](https://docs.adyen.com/development-resources/versioning)\
     \ using a version suffix in the endpoint URL. This suffix has the following format:\
     \ \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://balanceplatform-api-test.adyen.com/btl/v1\n\
     ```\n## Going live\nWhen going live, your Adyen contact will provide your API\
     \ credential for the live environment. You can then use the username and password\
-    \ to send requests to `https://balanceplatform-api-live.adyen.com/btl/v1`.\n\n\
-    For more information, refer to our [Going live documentation](https://docs.adyen.com/issuing/integration-checklist#going-live)."
-  x-timestamp: '2022-03-22T20:02:57Z'
+    \ to send requests to `https://balanceplatform-api-live.adyen.com/btl/v1`.\n\n"
+  x-timestamp: '2022-09-01T13:20:13Z'
   termsOfService: https://www.adyen.com/legal/terms-and-conditions
   contact:
     name: Adyen Developer Experience team
@@ -237,6 +234,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/Transfer'
           description: OK - the request has succeeded.
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transfer'
+          description: Accepted - the request has been accepted for processing, but
+            the processing has not been completed.
         '401':
           content:
             application/json:
@@ -266,14 +270,19 @@ components:
     Address:
       properties:
         city:
-          description: The name of the city.
+          description: 'The name of the city. Maximum length: 3000 characters.'
+          maxLength: 3000
           type: string
         country:
-          description: The two-character ISO-3166-1 alpha-2 country code. For example,
+          description: 'The two-character ISO-3166-1 alpha-2 country code. For example,
             **US**.
+
+            > If you don''t know the country or are not collecting the country from
+            the shopper, provide `country` as `ZZ`.'
           type: string
         houseNumberOrName:
-          description: The number or name of the house.
+          description: 'The number or name of the house. Maximum length: 3000 characters.'
+          maxLength: 3000
           type: string
         postalCode:
           description: A maximum of five digits for an address in the US, or a maximum
@@ -286,8 +295,11 @@ components:
             > Required for the US and Canada.'
           type: string
         street:
-          description: "The name of the street. \n> The house number should not be\
-            \ included in this field; it should be separately provided via `houseNumberOrName`."
+          description: 'The name of the street. Maximum length: 3000 characters.
+
+            > The house number should not be included in this field; it should be
+            separately provided via `houseNumberOrName`.'
+          maxLength: 3000
           type: string
       required:
       - street
@@ -335,6 +347,7 @@ components:
             '
           enum:
           - fast
+          - instant
           - regular
           - wire
           type: string
@@ -349,7 +362,7 @@ components:
           type: string
         ownerName:
           description: The name of the bank account owner.
-          $ref: '#/components/schemas/Name2'
+          $ref: '#/components/schemas/Name'
     Counterparty:
       properties:
         balanceAccountId:
@@ -430,7 +443,7 @@ components:
         postalCode:
           description: The merchant postal code.
           type: string
-    Name2:
+    Name:
       properties:
         firstName:
           description: The first name.
@@ -475,10 +488,6 @@ components:
         errorCode:
           description: A code that identifies the problem type.
           type: string
-        errorType:
-          description: A URI that identifies the problem type, pointing to human-readable
-            documentation on this problem type.
-          type: string
         instance:
           description: A unique URI that identifies the specific occurrence of the
             problem.
@@ -502,8 +511,12 @@ components:
         title:
           description: A short, human-readable summary of the problem type.
           type: string
+        type:
+          description: A URI that identifies the problem type, pointing to human-readable
+            documentation on this problem type.
+          type: string
       required:
-      - errorType
+      - type
       - errorCode
       - title
       - detail
@@ -543,6 +556,7 @@ components:
             \ using an Adyen-issued card to pay online.\n\n"
           enum:
           - bank
+          - grants
           - internal
           - issuedCard
           - platformPayment
@@ -563,6 +577,7 @@ components:
         id:
           x-addedInVersion: '1'
           description: Unique identifier of the transaction.
+          readOnly: true
           type: string
         instructedAmount:
           x-addedInVersion: '1'
@@ -578,8 +593,8 @@ components:
         reference:
           x-addedInVersion: '1'
           description: The [`reference`](https://docs.adyen.com/api-explorer/#/transfers/latest/post/transfers__reqParam_reference)
-            from the from the `/transfers` request. If you haven't provided any, Adyen
-            generates a unique reference.
+            from the `/transfers` request. If you haven't provided any, Adyen generates
+            a unique reference.
           type: string
         referenceForBeneficiary:
           x-addedInVersion: '1'
@@ -618,14 +633,18 @@ components:
           - chargebackReversal
           - depositCorrection
           - fee
+          - grant
+          - installment
           - internalTransfer
           - invoiceDeduction
+          - leftover
           - manualCorrection
           - miscCost
           - payment
           - paymentCost
           - refund
           - refundReversal
+          - repayment
           - reserveAdjustment
           - secondChargeback
           type: string
@@ -638,7 +657,6 @@ components:
       required:
       - id
       - transferId
-      - balancePlatform
       - accountHolderId
       - balanceAccountId
       - paymentInstrumentId
@@ -651,6 +669,7 @@ components:
       - bookingDate
       - valueDate
       - counterparty
+      - balancePlatform
     TransactionSearchResponse:
       properties:
         _links:
@@ -707,6 +726,7 @@ components:
           description: Additional information about the status of the transfer.
           enum:
           - approved
+          - error
           - notEnoughBalance
           - unknown
           type: string
@@ -731,10 +751,65 @@ components:
         status:
           x-addedInVersion: '2'
           description: "The result of the transfer.\n\n Possible values: **authorised**,\
-            \ **refused**."
+            \ **refused**, **error**."
           enum:
+          - atmWithdrawal
+          - atmWithdrawalReversalPending
+          - atmWithdrawalReversed
           - authorised
+          - bankTransfer
+          - bankTransferPending
+          - booked
+          - bookingPending
+          - cancelled
+          - capturePending
+          - captureReversalPending
+          - captureReversed
+          - captured
+          - chargeback
+          - chargebackPending
+          - chargebackReversalPending
+          - chargebackReversed
+          - depositCorrection
+          - depositCorrectionPending
+          - dispute
+          - disputeClosed
+          - disputeExpired
+          - disputeNeedsReview
+          - error
+          - expired
+          - failed
+          - fee
+          - feePending
+          - installment
+          - installmentPending
+          - internalTransfer
+          - internalTransferPending
+          - invoiceDeduction
+          - invoiceDeductionPending
+          - manualCorrectionPending
+          - manuallyCorrected
+          - matchedStatement
+          - matchedStatementPending
+          - merchantPayin
+          - merchantPayinPending
+          - merchantPayinReversed
+          - merchantPayinReversedPending
+          - miscCost
+          - miscCostPending
+          - paymentCost
+          - paymentCostPending
+          - received
+          - refundPending
+          - refundReversalPending
+          - refundReversed
+          - refunded
           - refused
+          - reserveAdjustment
+          - reserveAdjustmentPending
+          - secondChargeback
+          - secondChargebackPending
+          - undefined
           type: string
       required:
       - amount
