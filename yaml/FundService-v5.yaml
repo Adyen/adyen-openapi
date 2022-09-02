@@ -4,25 +4,27 @@ servers:
 info:
   version: '5'
   x-publicVersion: true
-  title: 'Adyen for Platforms: Fund API'
-  description: "The Fund API provides endpoints for managing the funds in the accounts\
+  title: Fund API
+  description: "This API is used for the classic integration. If you are just starting\
+    \ your implementation, refer to our [new integration guide](https://docs.adyen.com/marketplaces-and-platforms)\
+    \ instead.\n\nThe Fund API provides endpoints for managing the funds in the accounts\
     \ on your platform. These management operations include, for example, the transfer\
     \ of funds from one account to another, the payout of funds to an account holder,\
     \ and the retrieval of balances in an account.\n\nFor more information, refer\
-    \ to our [documentation](https://docs.adyen.com/platforms).\n## Authentication\n\
-    Your Adyen contact will provide your API credential and an API key. To connect\
-    \ to the API, add an `X-API-Key` header with the API key as the value, for example:\n\
-    \n ```\ncurl\n-H \"Content-Type: application/json\" \\\n-H \"X-API-Key: YOUR_API_KEY\"\
-    \ \\\n...\n```\n\nAlternatively, you can use the username and password to connect\
-    \ to the API using basic authentication. For example:\n\n```\ncurl\n-U \"ws@MarketPlace.YOUR_PLATFORM_ACCOUNT\"\
-    :\"YOUR_WS_PASSWORD\" \\\n-H \"Content-Type: application/json\" \\\n...\n```\n\
-    When going live, you need to generate new web service user credentials to access\
-    \ the [live endpoints](https://docs.adyen.com/development-resources/live-endpoints).\n\
+    \ to our [documentation](https://docs.adyen.com/marketplaces-and-platforms/classic/).\n\
+    ## Authentication\nYour Adyen contact will provide your API credential and an\
+    \ API key. To connect to the API, add an `X-API-Key` header with the API key as\
+    \ the value, for example:\n\n ```\ncurl\n-H \"Content-Type: application/json\"\
+    \ \\\n-H \"X-API-Key: YOUR_API_KEY\" \\\n...\n```\n\nAlternatively, you can use\
+    \ the username and password to connect to the API using basic authentication.\
+    \ For example:\n\n```\ncurl\n-U \"ws@MarketPlace.YOUR_PLATFORM_ACCOUNT\":\"YOUR_WS_PASSWORD\"\
+    \ \\\n-H \"Content-Type: application/json\" \\\n...\n```\nWhen going live, you\
+    \ need to generate new web service user credentials to access the [live endpoints](https://docs.adyen.com/development-resources/live-endpoints).\n\
     \n## Versioning\nThe Fund API supports [versioning](https://docs.adyen.com/development-resources/versioning)\
     \ using a version suffix in the endpoint URL. This suffix has the following format:\
     \ \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://cal-test.adyen.com/cal/services/Fund/v5/accountHolderBalance\n\
     ```"
-  x-timestamp: '2022-04-21T16:24:56Z'
+  x-timestamp: '2022-08-25T18:26:01Z'
   termsOfService: https://www.adyen.com/legal/terms-and-conditions
   contact:
     name: Adyen Developer Experience team
@@ -166,7 +168,7 @@ paths:
         \ specified in the split instructions. Adyen sends the result of the direct\
         \ debit in a [`DIRECT_DEBIT_INITIATED`](https://docs.adyen.com/api-explorer/#/NotificationService/latest/post/DIRECT_DEBIT_INITIATED)\
         \ notification webhook.\n\n To learn more about direct debits, see [Top up\
-        \ accounts](https://docs.adyen.com/platforms/top-up-accounts)."
+        \ accounts](https://docs.adyen.com/marketplaces-and-platforms/classic/top-up-accounts)."
       operationId: post-debitAccountHolder
       x-groupName: General
       x-sortIndex: 8
@@ -1120,6 +1122,7 @@ components:
           - doingBusinessAs
           - drivingLicence
           - drivingLicenceBack
+          - drivingLicenceFront
           - drivingLicense
           - email
           - firstName
@@ -1154,8 +1157,10 @@ components:
           - legalBusinessName
           - legalEntity
           - legalEntityType
+          - logo
           - merchantAccount
           - merchantCategoryCode
+          - merchantHouseNumber
           - merchantReference
           - microDeposit
           - name
@@ -1247,7 +1252,15 @@ components:
             The Account Holder is the party to which the payout will be made.'
           type: string
         amount:
-          description: The amount to pay out.
+          description: 'An object containing the currency and value of the payout.
+
+            If the account has multiple currencies, specify the currency to be used.
+
+            If the `bankAccountUUID` is provided in the request, the currency supported
+            by the bank is used.
+
+            If the `payoutMethodCode` is provided in the request, the specified payout
+            method is selected.'
           $ref: '#/components/schemas/Amount'
         bankAccountUUID:
           description: 'The unique ID of the Bank Account held by the Account Holder
@@ -1256,11 +1269,11 @@ components:
             If left blank, a bank account is automatically selected.'
           type: string
         description:
-          description: 'A description of the payout. Maximum 35 characters.
+          description: 'A description of the payout. Maximum 200 characters.
 
             Allowed: **abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/?:().,''+
             ";**'
-          maxLength: 35
+          maxLength: 200
           type: string
         merchantReference:
           x-addedInVersion: '2'
