@@ -58,7 +58,7 @@ info:
 
     Have a look at the [release notes](https://docs.adyen.com/online-payments/release-notes?integration_type=api&version=66)
     to find out what changed in this version!'
-  x-timestamp: '2022-08-22T16:23:22Z'
+  x-timestamp: '2022-09-07T14:21:15Z'
   termsOfService: https://www.adyen.com/legal/terms-and-conditions
   contact:
     name: Adyen Developer Experience team
@@ -2013,6 +2013,48 @@ paths:
           description: Internal Server Error - the server could not process the request.
 components:
   schemas:
+    3D Secure challenge flow:
+      additionalProperties: false
+      properties:
+        paymentData:
+          description: A value that must be submitted to the `/payments/details` endpoint
+            to verify this payment.
+          type: string
+        paymentMethodType:
+          description: Specifies the payment method.
+          type: string
+        token:
+          description: A token to pass to the 3DS2 Component to get the challenge.
+          type: string
+        type:
+          description: '**threeDS2Challenge**'
+          type: string
+        url:
+          description: Specifies the URL to redirect to.
+          type: string
+      required:
+      - type
+    3D Secure frictionless or challenge flow:
+      additionalProperties: false
+      properties:
+        paymentData:
+          description: A value that must be submitted to the `/payments/details` endpoint
+            to verify this payment.
+          type: string
+        paymentMethodType:
+          description: Specifies the payment method.
+          type: string
+        token:
+          description: A token to pass to the 3DS2 Component to get the fingerprint.
+          type: string
+        type:
+          description: '**threeDS2Fingerprint**'
+          type: string
+        url:
+          description: Specifies the URL to redirect to.
+          type: string
+      required:
+      - type
     AccountInfo:
       properties:
         accountAgeIndicator:
@@ -3795,7 +3837,7 @@ components:
       properties:
         data:
           description: Base64 encoded data you need to [complete the Apple Pay merchant
-            vlaidation](https://docs.adyen.com/payment-methods/apple-pay/api-only?tab=adyen-certificate-validation_1#complete-apple-pay-session-validation).
+            validation](https://docs.adyen.com/payment-methods/apple-pay/api-only?tab=adyen-certificate-validation_1#complete-apple-pay-session-validation).
           type: string
       required:
       - data
@@ -4251,26 +4293,6 @@ components:
           - cellulant
           type: string
       title: Cellulant
-    CheckoutAwaitAction:
-      additionalProperties: false
-      properties:
-        paymentData:
-          description: A value that must be submitted to the `/payments/details` endpoint
-            to verify this payment.
-          type: string
-        paymentMethodType:
-          description: Specifies the payment method.
-          type: string
-        type:
-          description: '**await**'
-          enum:
-          - await
-          type: string
-        url:
-          description: Specifies the URL to redirect to.
-          type: string
-      required:
-      - type
     CheckoutBalanceCheckRequest:
       properties:
         accountInfo:
@@ -4575,15 +4597,15 @@ components:
         splits:
           x-addedInVersion: '37'
           description: An array of objects specifying how the payment should be split
-            when using [Adyen for Platforms](https://docs.adyen.com/platforms/processing-payments#providing-split-information)
-            or [Issuing](https://docs.adyen.com/issuing/manage-funds#split).
+            when using [Adyen for Platforms](https://docs.adyen.com/marketplaces-and-platforms/processing-payments#providing-split-information)
+            or [Issuing](https://docs.adyen.com/issuing/add-manage-funds#split).
           items:
             $ref: '#/components/schemas/Split'
           type: array
         store:
           x-addedInVersion: '23'
           description: The ecommerce or point-of-sale store that is processing the
-            payment. Used in [partner arrangement integrations](https://docs.adyen.com/platforms/platforms-for-partners#route-payments)
+            payment. Used in [partner model integrations](https://docs.adyen.com/marketplaces-and-platforms/classic/platforms-for-partners#route-payments)
             for Adyen for Platforms.
           maxLength: 16
           minLength: 1
@@ -4678,44 +4700,6 @@ components:
       required:
       - balance
       - resultCode
-    CheckoutBankTransferAction:
-      additionalProperties: false
-      properties:
-        beneficiary:
-          description: The name of the account holder.
-          type: string
-        bic:
-          description: The BIC of the IBAN.
-          type: string
-        downloadUrl:
-          description: The url to download payment details with.
-          type: string
-        iban:
-          description: The IBAN of the bank transfer.
-          type: string
-        paymentMethodType:
-          description: Specifies the payment method.
-          type: string
-        reference:
-          description: The transfer reference.
-          type: string
-        shopperEmail:
-          description: The e-mail of the shopper, included if an e-mail was sent to
-            the shopper.
-          type: string
-        totalAmount:
-          description: The amount of the bank transfer.
-          $ref: '#/components/schemas/Amount'
-        type:
-          description: The type of the action.
-          enum:
-          - bankTransfer
-          type: string
-        url:
-          description: Specifies the URL to redirect to.
-          type: string
-      required:
-      - type
     CheckoutCancelOrderRequest:
       properties:
         merchantAccount:
@@ -4822,61 +4806,6 @@ components:
       - expiresAt
       - orderData
       - resultCode
-    CheckoutDonationAction:
-      additionalProperties: false
-      properties:
-        paymentData:
-          description: A value that must be submitted to the `/payments/details` endpoint
-            to verify this payment.
-          type: string
-        paymentMethodType:
-          description: Specifies the payment method.
-          type: string
-        type:
-          description: The type of the action.
-          enum:
-          - donate
-          type: string
-        url:
-          description: Specifies the URL to redirect to.
-          type: string
-      required:
-      - type
-    CheckoutOneTimePasscodeAction:
-      additionalProperties: false
-      properties:
-        paymentData:
-          description: A value that must be submitted to the `/payments/details` endpoint
-            to verify this payment.
-          type: string
-        paymentMethodType:
-          description: Specifies the payment method.
-          type: string
-        redirect:
-          description: When the payment flow requires a redirect as fallback, this
-            object contains information about the redirect.
-          $ref: '#/components/schemas/Redirect'
-        resendInterval:
-          description: The interval in second between OTP resend.
-          format: int32
-          type: integer
-        resendMaxAttempts:
-          description: The maximum number of OTP resend attempts.
-          format: int32
-          type: integer
-        resendUrl:
-          description: The URL, to which you make POST request to trigger OTP resend.
-          type: string
-        type:
-          description: The type of the action.
-          enum:
-          - oneTimePasscode
-          type: string
-        url:
-          description: Specifies the URL to redirect to.
-          type: string
-      required:
-      - type
     CheckoutOrder:
       properties:
         orderData:
@@ -4910,130 +4839,6 @@ components:
           $ref: '#/components/schemas/Amount'
       required:
       - pspReference
-    CheckoutQrCodeAction:
-      additionalProperties: false
-      properties:
-        paymentData:
-          description: A value that must be submitted to the `/payments/details` endpoint
-            to verify this payment.
-          type: string
-        paymentMethodType:
-          description: Specifies the payment method.
-          type: string
-        qrCodeData:
-          description: The contents of the QR code as a UTF8 string.
-          type: string
-        type:
-          description: '**qrCode**'
-          enum:
-          - qrCode
-          type: string
-        url:
-          description: Specifies the URL to redirect to.
-          type: string
-      required:
-      - type
-    CheckoutRedirectAction:
-      additionalProperties: false
-      properties:
-        data:
-          additionalProperties:
-            type: string
-          description: When the redirect URL must be accessed via POST, use this data
-            to post to the redirect URL.
-          type: object
-        method:
-          description: Specifies the HTTP method, for example GET or POST.
-          type: string
-        paymentData:
-          description: A value that must be submitted to the `/payments/details` endpoint
-            to verify this payment.
-          type: string
-        paymentMethodType:
-          description: Specifies the payment method.
-          type: string
-        type:
-          description: '**redirect**'
-          enum:
-          - redirect
-          type: string
-        url:
-          description: Specifies the URL to redirect to.
-          type: string
-      required:
-      - type
-    CheckoutSDKAction:
-      additionalProperties: false
-      properties:
-        paymentData:
-          description: A value that must be submitted to the `/payments/details` endpoint
-            to verify this payment.
-          type: string
-        paymentMethodType:
-          description: Specifies the payment method.
-          type: string
-        sdkData:
-          additionalProperties:
-            type: string
-          description: The data to pass to the SDK.
-          type: object
-        type:
-          description: The type of the action.
-          enum:
-          - sdk
-          - wechatpaySDK
-          type: string
-        url:
-          description: Specifies the URL to redirect to.
-          type: string
-      required:
-      - type
-    CheckoutThreeDS2ChallengeAction:
-      additionalProperties: false
-      properties:
-        paymentData:
-          description: A value that must be submitted to the `/payments/details` endpoint
-            to verify this payment.
-          type: string
-        paymentMethodType:
-          description: Specifies the payment method.
-          type: string
-        token:
-          description: A token to pass to the 3DS2 Component to get the challenge.
-          type: string
-        type:
-          description: '**threeDS2Challenge**'
-          enum:
-          - threeDS2Challenge
-          type: string
-        url:
-          description: Specifies the URL to redirect to.
-          type: string
-      required:
-      - type
-    CheckoutThreeDS2FingerPrintAction:
-      additionalProperties: false
-      properties:
-        paymentData:
-          description: A value that must be submitted to the `/payments/details` endpoint
-            to verify this payment.
-          type: string
-        paymentMethodType:
-          description: Specifies the payment method.
-          type: string
-        token:
-          description: A token to pass to the 3DS2 Component to get the fingerprint.
-          type: string
-        type:
-          description: '**threeDS2Fingerprint**'
-          enum:
-          - threeDS2Fingerprint
-          type: string
-        url:
-          description: Specifies the URL to redirect to.
-          type: string
-      required:
-      - type
     CheckoutUtilityRequest:
       properties:
         originDomains:
@@ -5052,76 +4857,6 @@ components:
           description: The list of origin keys for all requested domains. For each
             list item, the key is the domain and the value is the origin key.
           type: object
-    CheckoutVoucherAction:
-      additionalProperties: false
-      properties:
-        alternativeReference:
-          description: The voucher alternative reference code.
-          type: string
-        collectionInstitutionNumber:
-          description: A collection institution number (store number) for Econtext
-            Pay-Easy ATM.
-          type: string
-        downloadUrl:
-          description: The URL to download the voucher.
-          type: string
-        entity:
-          description: An entity number of Multibanco.
-          type: string
-        expiresAt:
-          description: The date time of the voucher expiry.
-          type: string
-        initialAmount:
-          description: The initial amount.
-          $ref: '#/components/schemas/Amount'
-        instructionsUrl:
-          description: The URL to the detailed instructions to make payment using
-            the voucher.
-          type: string
-        issuer:
-          description: The issuer of the voucher.
-          type: string
-        maskedTelephoneNumber:
-          description: The shopper telephone number (partially masked).
-          type: string
-        merchantName:
-          description: The merchant name.
-          type: string
-        merchantReference:
-          description: The merchant reference.
-          type: string
-        paymentData:
-          description: A value that must be submitted to the `/payments/details` endpoint
-            to verify this payment.
-          type: string
-        paymentMethodType:
-          description: Specifies the payment method.
-          type: string
-        reference:
-          description: The voucher reference code.
-          type: string
-        shopperEmail:
-          description: The shopper email.
-          type: string
-        shopperName:
-          description: The shopper name.
-          type: string
-        surcharge:
-          description: The surcharge amount.
-          $ref: '#/components/schemas/Amount'
-        totalAmount:
-          description: The total amount (initial plus surcharge amount).
-          $ref: '#/components/schemas/Amount'
-        type:
-          description: '**voucher**'
-          enum:
-          - voucher
-          type: string
-        url:
-          description: Specifies the URL to redirect to.
-          type: string
-      required:
-      - type
     CommonField:
       properties:
         name:
@@ -5232,7 +4967,7 @@ components:
         splits:
           description: An array of objects specifying how the amount should be split
             between accounts when using Adyen for Platforms. For details, refer to
-            [Providing split information](https://docs.adyen.com/platforms/processing-payments#providing-split-information).
+            [Providing split information](https://docs.adyen.com/marketplaces-and-platforms/processing-payments#providing-split-information).
           items:
             $ref: '#/components/schemas/Split'
           type: array
@@ -5276,7 +5011,7 @@ components:
         splits:
           description: An array of objects specifying how the amount should be split
             between accounts when using Adyen for Platforms. For details, refer to
-            [Providing split information](https://docs.adyen.com/platforms/processing-payments#providing-split-information).
+            [Providing split information](https://docs.adyen.com/marketplaces-and-platforms/processing-payments#providing-split-information).
           items:
             $ref: '#/components/schemas/Split'
           type: array
@@ -5452,7 +5187,7 @@ components:
         splits:
           description: An array of objects specifying how the payment should be split
             between accounts when using Adyen for Platforms. For details, refer to
-            [Providing split information](https://docs.adyen.com/platforms/processing-payments#providing-split-information).
+            [Providing split information](https://docs.adyen.com/marketplaces-and-platforms/processing-payments#providing-split-information).
           items:
             $ref: '#/components/schemas/Split'
           type: array
@@ -5494,7 +5229,7 @@ components:
         splits:
           description: An array of objects specifying how the amount should be split
             between accounts when using Adyen for Platforms. For details, refer to
-            [Providing split information](https://docs.adyen.com/platforms/processing-payments#providing-split-information).
+            [Providing split information](https://docs.adyen.com/marketplaces-and-platforms/processing-payments#providing-split-information).
           items:
             $ref: '#/components/schemas/Split'
           type: array
@@ -5588,6 +5323,74 @@ components:
             - text
             type: string
           type: array
+    Display voucher:
+      additionalProperties: false
+      properties:
+        alternativeReference:
+          description: The voucher alternative reference code.
+          type: string
+        collectionInstitutionNumber:
+          description: A collection institution number (store number) for Econtext
+            Pay-Easy ATM.
+          type: string
+        downloadUrl:
+          description: The URL to download the voucher.
+          type: string
+        entity:
+          description: An entity number of Multibanco.
+          type: string
+        expiresAt:
+          description: The date time of the voucher expiry.
+          type: string
+        initialAmount:
+          description: The initial amount.
+          $ref: '#/components/schemas/Amount'
+        instructionsUrl:
+          description: The URL to the detailed instructions to make payment using
+            the voucher.
+          type: string
+        issuer:
+          description: The issuer of the voucher.
+          type: string
+        maskedTelephoneNumber:
+          description: The shopper telephone number (partially masked).
+          type: string
+        merchantName:
+          description: The merchant name.
+          type: string
+        merchantReference:
+          description: The merchant reference.
+          type: string
+        paymentData:
+          description: A value that must be submitted to the `/payments/details` endpoint
+            to verify this payment.
+          type: string
+        paymentMethodType:
+          description: Specifies the payment method.
+          type: string
+        reference:
+          description: The voucher reference code.
+          type: string
+        shopperEmail:
+          description: The shopper email.
+          type: string
+        shopperName:
+          description: The shopper name.
+          type: string
+        surcharge:
+          description: The surcharge amount.
+          $ref: '#/components/schemas/Amount'
+        totalAmount:
+          description: The total amount (initial plus surcharge amount).
+          $ref: '#/components/schemas/Amount'
+        type:
+          description: '**voucher**'
+          type: string
+        url:
+          description: Specifies the URL to redirect to.
+          type: string
+      required:
+      - type
     DokuDetails:
       additionalProperties: false
       properties:
@@ -6518,7 +6321,7 @@ components:
         splits:
           description: An array of objects specifying how the amount should be split
             between accounts when using Adyen for Platforms. For details, refer to
-            [Providing split information](https://docs.adyen.com/platforms/processing-payments#providing-split-information).
+            [Providing split information](https://docs.adyen.com/marketplaces-and-platforms/processing-payments#providing-split-information).
           items:
             $ref: '#/components/schemas/Split'
           type: array
@@ -6592,7 +6395,7 @@ components:
         splits:
           description: An array of objects specifying how the amount should be split
             between accounts when using Adyen for Platforms. For details, refer to
-            [Providing split information](https://docs.adyen.com/platforms/processing-payments#providing-split-information).
+            [Providing split information](https://docs.adyen.com/marketplaces-and-platforms/processing-payments#providing-split-information).
           items:
             $ref: '#/components/schemas/Split'
           type: array
@@ -6707,6 +6510,7 @@ components:
           - molpay_ebanking_VN
           - onlineBanking_PL
           - openbanking_UK
+          - paybybank
           - ebanking_FI
           - molpay_ebanking_MY
           - molpay_ebanking_direct_MY
@@ -6776,7 +6580,7 @@ components:
           description: Action to be taken for completing the payment. When returned,
             only the 3D Secure action is needed in most cases.
           oneOf:
-          - $ref: '#/components/schemas/CheckoutRedirectAction'
+          - $ref: '#/components/schemas/Redirect shopper'
         additionalData:
           additionalProperties:
             type: string
@@ -7384,15 +7188,15 @@ components:
         splits:
           x-addedInVersion: '37'
           description: An array of objects specifying how the payment should be split
-            when using [Adyen for Platforms](https://docs.adyen.com/platforms/processing-payments#providing-split-information)
-            or [Issuing](https://docs.adyen.com/issuing/manage-funds#split).
+            when using [Adyen for Platforms](https://docs.adyen.com/marketplaces-and-platforms/processing-payments#providing-split-information)
+            or [Issuing](https://docs.adyen.com/issuing/add-manage-funds#split).
           items:
             $ref: '#/components/schemas/Split'
           type: array
         store:
           x-addedInVersion: '23'
           description: The ecommerce or point-of-sale store that is processing the
-            payment. Used in [partner arrangement integrations](https://docs.adyen.com/platforms/platforms-for-partners#route-payments)
+            payment. Used in [partner model integrations](https://docs.adyen.com/marketplaces-and-platforms/classic/platforms-for-partners#route-payments)
             for Adyen for Platforms.
           maxLength: 16
           minLength: 1
@@ -7603,7 +7407,7 @@ components:
         splits:
           description: An array of objects specifying how the payment should be split
             between accounts when using Adyen for Platforms. For details, refer to
-            [Providing split information](https://docs.adyen.com/platforms/processing-payments#providing-split-information).
+            [Providing split information](https://docs.adyen.com/marketplaces-and-platforms/processing-payments#providing-split-information).
           items:
             $ref: '#/components/schemas/Split'
           type: array
@@ -7822,7 +7626,7 @@ components:
         store:
           x-addedInVersion: '23'
           description: The ecommerce or point-of-sale store that is processing the
-            payment. Used in [partner arrangement integrations](https://docs.adyen.com/platforms/platforms-for-partners#route-payments)
+            payment. Used in [partner model integrations](https://docs.adyen.com/marketplaces-and-platforms/classic/platforms-for-partners#route-payments)
             for Adyen for Platforms.
           maxLength: 16
           minLength: 1
@@ -7873,7 +7677,7 @@ components:
         splits:
           description: An array of objects specifying how the amount should be split
             between accounts when using Adyen for Platforms. For details, refer to
-            [Providing split information](https://docs.adyen.com/platforms/processing-payments#providing-split-information).
+            [Providing split information](https://docs.adyen.com/marketplaces-and-platforms/processing-payments#providing-split-information).
           items:
             $ref: '#/components/schemas/Split'
           type: array
@@ -8339,15 +8143,15 @@ components:
         splits:
           x-addedInVersion: '37'
           description: An array of objects specifying how the payment should be split
-            when using [Adyen for Platforms](https://docs.adyen.com/platforms/processing-payments#providing-split-information)
-            or [Issuing](https://docs.adyen.com/issuing/manage-funds#split).
+            when using [Adyen for Platforms](https://docs.adyen.com/marketplaces-and-platforms/processing-payments#providing-split-information)
+            or [Issuing](https://docs.adyen.com/issuing/add-manage-funds#split).
           items:
             $ref: '#/components/schemas/Split'
           type: array
         store:
           x-addedInVersion: '23'
           description: The ecommerce or point-of-sale store that is processing the
-            payment. Used in [partner arrangement integrations](https://docs.adyen.com/platforms/platforms-for-partners#route-payments)
+            payment. Used in [partner model integrations](https://docs.adyen.com/marketplaces-and-platforms/classic/platforms-for-partners#route-payments)
             for Adyen for Platforms.
           maxLength: 16
           minLength: 1
@@ -8389,16 +8193,13 @@ components:
           x-addedInVersion: '49'
           description: Action to be taken for completing the payment.
           oneOf:
-          - $ref: '#/components/schemas/CheckoutAwaitAction'
-          - $ref: '#/components/schemas/CheckoutBankTransferAction'
-          - $ref: '#/components/schemas/CheckoutDonationAction'
-          - $ref: '#/components/schemas/CheckoutOneTimePasscodeAction'
-          - $ref: '#/components/schemas/CheckoutQrCodeAction'
-          - $ref: '#/components/schemas/CheckoutRedirectAction'
-          - $ref: '#/components/schemas/CheckoutSDKAction'
-          - $ref: '#/components/schemas/CheckoutThreeDS2ChallengeAction'
-          - $ref: '#/components/schemas/CheckoutThreeDS2FingerPrintAction'
-          - $ref: '#/components/schemas/CheckoutVoucherAction'
+          - $ref: '#/components/schemas/3D Secure challenge flow'
+          - $ref: '#/components/schemas/3D Secure frictionless or challenge flow'
+          - $ref: '#/components/schemas/Display voucher'
+          - $ref: '#/components/schemas/Present QR code'
+          - $ref: '#/components/schemas/Redirect shopper'
+          - $ref: '#/components/schemas/Show payment method overlay'
+          - $ref: '#/components/schemas/Show waiting screen'
         additionalData:
           additionalProperties:
             type: string
@@ -8955,15 +8756,15 @@ components:
         splits:
           x-addedInVersion: '37'
           description: An array of objects specifying how the payment should be split
-            when using [Adyen for Platforms](https://docs.adyen.com/platforms/processing-payments#providing-split-information)
-            or [Issuing](https://docs.adyen.com/issuing/manage-funds#split).
+            when using [Adyen for Platforms](https://docs.adyen.com/marketplaces-and-platforms/processing-payments#providing-split-information)
+            or [Issuing](https://docs.adyen.com/issuing/add-manage-funds#split).
           items:
             $ref: '#/components/schemas/Split'
           type: array
         store:
           x-addedInVersion: '23'
           description: The ecommerce or point-of-sale store that is processing the
-            payment. Used in [partner arrangement integrations](https://docs.adyen.com/platforms/platforms-for-partners#route-payments)
+            payment. Used in [partner model integrations](https://docs.adyen.com/marketplaces-and-platforms/classic/platforms-for-partners#route-payments)
             for Adyen for Platforms.
           maxLength: 16
           minLength: 1
@@ -9127,6 +8928,27 @@ components:
       - merchantReference
       - paymentMethod
       - shopperLocale
+    Present QR code:
+      additionalProperties: false
+      properties:
+        paymentData:
+          description: A value that must be submitted to the `/payments/details` endpoint
+            to verify this payment.
+          type: string
+        paymentMethodType:
+          description: Specifies the payment method.
+          type: string
+        qrCodeData:
+          description: The contents of the QR code as a UTF8 string.
+          type: string
+        type:
+          description: '**qrCode**'
+          type: string
+        url:
+          description: Specifies the URL to redirect to.
+          type: string
+      required:
+      - type
     RatepayDetails:
       additionalProperties: false
       properties:
@@ -9270,6 +9092,33 @@ components:
           description: The URL, to which you must redirect a shopper to complete a
             payment.
           type: string
+    Redirect shopper:
+      additionalProperties: false
+      properties:
+        data:
+          additionalProperties:
+            type: string
+          description: When the redirect URL must be accessed via POST, use this data
+            to post to the redirect URL.
+          type: object
+        method:
+          description: Specifies the HTTP method, for example GET or POST.
+          type: string
+        paymentData:
+          description: A value that must be submitted to the `/payments/details` endpoint
+            to verify this payment.
+          type: string
+        paymentMethodType:
+          description: Specifies the payment method.
+          type: string
+        type:
+          description: '**redirect**'
+          type: string
+        url:
+          description: Specifies the URL to redirect to.
+          type: string
+      required:
+      - type
     ResponseAdditionalData3DSecure:
       properties:
         cardHolderInfo:
@@ -9618,36 +9467,12 @@ components:
             > Contact Support Team to enable this field.'
           type: string
         merchantAdviceCode:
-          description: 'A code and message that issuers send to provide more details
-            about the payment. This field is especially useful when implementing a
-            retry logic for declined payments.
+          description: 'The Merchant Advice Code (MAC) can be returned by Mastercard
+            issuers for refused payments. If present, the MAC contains information
+            about why the payment failed, and whether it can be retried.
 
 
-            Possible values:
-
-
-            * **01: New account information available**
-
-
-            * **02: Cannot approve at this time, try again later**
-
-
-            * **03: Do not try again**
-
-
-            * **04: Token requirements not fulfilled for this token type**
-
-
-            * **21: Payment Cancellation** (only for Mastercard)
-
-
-            '
-          enum:
-          - '01: New account information available'
-          - '02: Cannot approve at this time, try again later'
-          - '03: Do not try again'
-          - '04: Token requirements not fulfilled for this token type'
-          - '21: Payment Cancellation'
+            For more information see [Mastercard Merchant Advice Codes](https://docs.adyen.com/development-resources/raw-acquirer-responses#mastercard-merchant-advice-codes).'
           type: string
         merchantReference:
           description: The reference provided for the transaction.
@@ -10048,9 +9873,9 @@ components:
           x-addedInVersion: '46'
           additionalProperties:
             type: string
-          description: 'Contains additional information about the payment. Some data
-            fields are included only if you select them first: Go to **Customer Area**
-            > **Account** > **API URLs**.'
+          description: Contains additional information about the payment. Some data
+            fields are included only if you select them first. Go to **Customer Area**
+            > **Developers** > **Additional data**.
           type: object
         errorCode:
           description: The error code mapped to the error message.
@@ -10140,6 +9965,47 @@ components:
           description: Version of the operating system on the shopper interaction
             device.
           type: string
+    Show payment method overlay:
+      additionalProperties: false
+      properties:
+        paymentData:
+          description: A value that must be submitted to the `/payments/details` endpoint
+            to verify this payment.
+          type: string
+        paymentMethodType:
+          description: Specifies the payment method.
+          type: string
+        sdkData:
+          additionalProperties:
+            type: string
+          description: The data to pass to the SDK.
+          type: object
+        type:
+          description: The type of the action.
+          type: string
+        url:
+          description: Specifies the URL to redirect to.
+          type: string
+      required:
+      - type
+    Show waiting screen:
+      additionalProperties: false
+      properties:
+        paymentData:
+          description: A value that must be submitted to the `/payments/details` endpoint
+            to verify this payment.
+          type: string
+        paymentMethodType:
+          description: Specifies the payment method.
+          type: string
+        type:
+          description: '**await**'
+          type: string
+        url:
+          description: Specifies the URL to redirect to.
+          type: string
+      required:
+      - type
     Split:
       properties:
         account:
