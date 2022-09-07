@@ -5,7 +5,7 @@
       "x-publicVersion" : true,
       "title" : "Management Notification Webhooks",
       "description" : "Adyen sends notifications through webhooks to inform your system about events that happen with your Adyen company and merchant accounts, stores, payment terminals, and payment methods when using [Management API](https://docs.adyen.com/api-explorer/#/ManagementService/latest/overview).\n\nWhen an event occurs, Adyen makes an HTTP POST request to a URL on your server and includes the details of the event in the request body.\n\nRefer to [Notification webhooks](https://docs.adyen.com/development-resources/webhooks) for more information.",
-      "x-timestamp" : "2022-08-10T15:20:06Z",
+      "x-timestamp" : "2022-09-06T13:24:57Z",
       "termsOfService" : "https://www.adyen.com/legal/terms-and-conditions",
       "contact" : {
          "name" : "Adyen Developer Experience team",
@@ -14,19 +14,70 @@
       }
    },
    "x-groups" : [
+      "Merchant account",
       "Payment method"
    ],
    "tags" : [
       ],
    "x-staticResponse" : "response.json",
    "webhooks" : {
+      "merchant.created" : {
+         "post" : {
+            "tags" : [
+               "Merchant account"
+            ],
+            "summary" : "Merchant account created",
+            "description" : "A merchant account [was created](https://docs.adyen.com/api-explorer/#/ManagementService/latest/post/merchants).",
+            "x-addedInVersion" : "1",
+            "operationId" : "post-merchant.created",
+            "x-groupName" : "Merchant account",
+            "x-sortIndex" : 1,
+            "security" : [
+               {
+                  "ApiKeyAuth" : [
+                     ]
+               }
+            ],
+            "requestBody" : {
+               "content" : {
+                  "application/json" : {
+                     "examples" : {
+                        "merchant.created" : {
+                           "$ref" : "#/components/examples/post-merchant.created-merchant.created"
+                        }
+                     },
+                     "schema" : {
+                        "$ref" : "#/components/schemas/NotificationDataMessage"
+                     }
+                  }
+               }
+            },
+            "responses" : {
+               "200" : {
+                  "content" : {
+                     "application/json" : {
+                        "examples" : {
+                           "merchant.created" : {
+                              "$ref" : "#/components/examples/WebhookAck"
+                           }
+                        },
+                        "schema" : {
+                           "$ref" : "#/components/schemas/AccountNotificationResponse"
+                        }
+                     }
+                  },
+                  "description" : "OK - the request has succeeded."
+               }
+            }
+         }
+      },
       "paymentMethod.created" : {
          "post" : {
             "tags" : [
                "Payment method"
             ],
             "summary" : "Payment method created",
-            "description" : "Adyen sends this webhook as soon as the request to [add a payment method](https://docs.adyen.com/api-explorer/#/ManagementService/latest/post/merchants/{id}/paymentMethodSettings) has been completed.",
+            "description" : "A request to [add a payment method](https://docs.adyen.com/api-explorer/#/ManagementService/latest/post/merchants/{id}/paymentMethodSettings) was completed.",
             "x-addedInVersion" : "1",
             "operationId" : "post-paymentMethod.created",
             "x-groupName" : "Payment method",
@@ -46,7 +97,7 @@
                         }
                      },
                      "schema" : {
-                        "$ref" : "#/components/schemas/NotificationDataMessage"
+                        "$ref" : "#/components/schemas/NotificationDataMessage-type2"
                      }
                   }
                }
@@ -73,6 +124,141 @@
    },
    "components" : {
       "schemas" : {
+         "AccountCapabilityData" : {
+            "properties" : {
+               "allowed" : {
+                  "description" : "Indicates whether the capability is allowed. Adyen sets this to **true** if the verification is successful.",
+                  "type" : "boolean"
+               },
+               "allowedLevel" : {
+                  "description" : "The allowed level of the capability. Some capabilities have different levels which correspond to thresholds. Higher levels may require additional checks and increased monitoring.Possible values: **notApplicable**, **low**, **medium**, **high**.",
+                  "type" : "string"
+               },
+               "capability" : {
+                  "description" : "The name of the capability. For example, **sendToTransferInstrument**.",
+                  "type" : "string"
+               },
+               "problems" : {
+                  "description" : "List of entities that has problems with verification. The information includes the details of the errors and the actions that you can take to resolve them.",
+                  "items" : {
+                     "$ref" : "#/components/schemas/CapabilityProblem"
+                  },
+                  "type" : "array"
+               },
+               "requested" : {
+                  "description" : "Indicates whether you requested the capability.",
+                  "type" : "boolean"
+               },
+               "requestedLevel" : {
+                  "description" : "The level that you requested for the capability. Some capabilities have different levels which correspond to thresholds. Higher levels may require additional checks and increased monitoring.Possible values: **notApplicable**, **low**, **medium**, **high**.",
+                  "type" : "string"
+               },
+               "verificationStatus" : {
+                  "description" : "The status of the verification checks for the capability.\n\nPossible values:\n\n* **pending**: Adyen is running the verification.\n\n* **invalid**: The verification failed. Check if the `errors` array contains more information.\n\n* **valid**: The verification was successful.\n\n* **rejected**: Adyen checked the information and found reasons to not allow the capability.\n",
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "requestedLevel",
+               "requested"
+            ]
+         },
+         "AccountCreateNotificationData" : {
+            "properties" : {
+               "capabilities" : {
+                  "additionalProperties" : {
+                     "$ref" : "#/components/schemas/AccountCapabilityData"
+                  },
+                  "description" : "Key-value pairs that specify the actions that the merchant account can do and its settings. The key is a capability. For example, the **sendToTransferInstrument** is the capability required before you can pay out funds to the bank account. The value is an object containing the settings for the capability.",
+                  "type" : "object"
+               },
+               "companyId" : {
+                  "description" : "The unique identifier of the company account.",
+                  "type" : "string"
+               },
+               "legalEntityId" : {
+                  "description" : "The unique identifier of the [legal entity](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/legalEntities).",
+                  "type" : "string"
+               },
+               "merchantId" : {
+                  "description" : "The unique identifier of the merchant account.",
+                  "type" : "string"
+               },
+               "status" : {
+                  "description" : "The status of the merchant account.\n\nPossible values:\n\n* **PreActive**: The merchant account has been created. Users cannot access the merchant account in the Customer Area. The account cannot process payments.\n* **Active**: Users can access the merchant account in the Customer Area. If the company account is also **Active**, then payment processing and payouts are enabled.\n* **InactiveWithModifications**: Users can access the merchant account in the Customer Area. The account cannot process new payments but can still modify payments, for example issue refunds. The account can still receive payouts.\n* **Inactive**: Users can access the merchant account in the Customer Area. Payment processing and payouts are disabled.\n* **Closed**: The account is closed and this cannot be reversed. Users cannot log in. Payment processing and payouts are disabled.",
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "merchantId",
+               "companyId",
+               "status",
+               "capabilities"
+            ]
+         },
+         "AccountNotificationResponse" : {
+            "properties" : {
+               "notificationResponse" : {
+                  "description" : "Respond with **HTTP 200 OK** and `[accepted]` in the response body to [accept the webhook](https://docs.adyen.com/development-resources/webhooks#accept-notifications).",
+                  "type" : "string"
+               }
+            }
+         },
+         "CapabilityProblem" : {
+            "properties" : {
+               "entity" : {
+                  "description" : "The ID and the type of entity that has verification errors.",
+                  "$ref" : "#/components/schemas/CapabilityProblemEntity"
+               },
+               "verificationErrors" : {
+                  "description" : "List of verification errors.",
+                  "items" : {
+                     "$ref" : "#/components/schemas/VerificationError"
+                  },
+                  "type" : "array"
+               }
+            }
+         },
+         "CapabilityProblemEntity" : {
+            "properties" : {
+               "id" : {
+                  "description" : "The ID of the entity.",
+                  "type" : "string"
+               },
+               "owner" : {
+                  "description" : "The owner of the entity that has an error. For example, if the `entity.type` is **BankAccount**, then the `owner` contains the details of the legal entity that owns the bank account.",
+                  "$ref" : "#/components/schemas/CapabilityProblemEntity-recursive"
+               },
+               "type" : {
+                  "description" : "The type of entity.\n\nPossible values: **LegalEntity**, **BankAccount**, or **Document**.",
+                  "enum" : [
+                     "BankAccount",
+                     "Document",
+                     "LegalEntity"
+                  ],
+                  "type" : "string"
+               }
+            }
+         },
+         "CapabilityProblemEntity-recursive" : {
+            "properties" : {
+               "id" : {
+                  "description" : "The ID of the entity.",
+                  "type" : "string"
+               },
+               "type" : {
+                  "description" : "The type of entity.\n\nPossible values: **LegalEntity**, **BankAccount**, or **Document**.",
+                  "enum" : [
+                     "BankAccount",
+                     "Document",
+                     "LegalEntity"
+                  ],
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               ]
+         },
          "MidServiceNotificationData" : {
             "properties" : {
                "id" : {
@@ -116,6 +302,33 @@
                },
                "data" : {
                   "description" : "Contains event details.",
+                  "$ref" : "#/components/schemas/AccountCreateNotificationData"
+               },
+               "environment" : {
+                  "description" : "The environment from which the webhook originated.\n\nPossible values: **test**, **live**.",
+                  "type" : "string"
+               },
+               "type" : {
+                  "description" : "Type of notification.",
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "type",
+               "environment",
+               "createdAt",
+               "data"
+            ]
+         },
+         "NotificationDataMessage-type2" : {
+            "properties" : {
+               "createdAt" : {
+                  "description" : "Timestamp for when the webhook was created.",
+                  "format" : "date-time",
+                  "type" : "string"
+               },
+               "data" : {
+                  "description" : "Contains event details.",
                   "$ref" : "#/components/schemas/MidServiceNotificationData"
                },
                "environment" : {
@@ -141,6 +354,83 @@
                   "type" : "string"
                }
             }
+         },
+         "RemediatingAction" : {
+            "properties" : {
+               "code" : {
+                  "description" : "The remediating action code.",
+                  "type" : "string"
+               },
+               "message" : {
+                  "description" : "A description of how you can resolve the verification error.",
+                  "type" : "string"
+               }
+            }
+         },
+         "VerificationError" : {
+            "properties" : {
+               "code" : {
+                  "description" : "The verification error code.",
+                  "type" : "string"
+               },
+               "message" : {
+                  "description" : "The verification error message.",
+                  "type" : "string"
+               },
+               "remediatingActions" : {
+                  "description" : "The actions that you can take to resolve the verification error.",
+                  "items" : {
+                     "$ref" : "#/components/schemas/RemediatingAction"
+                  },
+                  "type" : "array"
+               },
+               "subErrors" : {
+                  "description" : "More granular information about the verification error.",
+                  "items" : {
+                     "$ref" : "#/components/schemas/VerificationError-recursive"
+                  },
+                  "type" : "array"
+               },
+               "type" : {
+                  "description" : "The type of verification error.\n\nPossible values: **invalidInput**, **dataMissing**, and **pendingStatus**.",
+                  "enum" : [
+                     "dataMissing",
+                     "invalidInput",
+                     "pendingStatus"
+                  ],
+                  "type" : "string"
+               }
+            }
+         },
+         "VerificationError-recursive" : {
+            "properties" : {
+               "code" : {
+                  "description" : "The verification error code.",
+                  "type" : "string"
+               },
+               "message" : {
+                  "description" : "The verification error message.",
+                  "type" : "string"
+               },
+               "type" : {
+                  "description" : "The type of verification error.\n\nPossible values: **invalidInput**, **dataMissing**, and **pendingStatus**.",
+                  "enum" : [
+                     "dataMissing",
+                     "invalidInput",
+                     "pendingStatus"
+                  ],
+                  "type" : "string"
+               },
+               "remediatingActions" : {
+                  "description" : "The actions that you can take to resolve the verification error.",
+                  "items" : {
+                     "$ref" : "#/components/schemas/RemediatingAction"
+                  },
+                  "type" : "array"
+               }
+            },
+            "required" : [
+               ]
          }
       },
       "securitySchemes" : {
@@ -159,6 +449,26 @@
             "summary" : "Acknowledge Webhook",
             "value" : {
                "notificationResponse" : "[accepted]"
+            }
+         },
+         "post-merchant.created-merchant.created" : {
+            "summary" : "Merchant account created",
+            "description" : "Example webhook when a merchant account was created",
+            "value" : {
+               "type" : "merchant.created",
+               "environment" : "test",
+               "createdAt" : "2022-08-12T10:50:01+02:00",
+               "data" : {
+                  "capabilities" : {
+                     "sendToTransferInstrument" : {
+                        "requested" : "true",
+                        "requestedLevel" : "notApplicable"
+                     }
+                  },
+                  "companyId" : "YOUR_COMPANY_ID",
+                  "merchantId" : "MC3224X22322535GH8D537TJR",
+                  "status" : "PreActive"
+               }
             }
          },
          "post-paymentMethod.created-paymentMethod.created" : {
