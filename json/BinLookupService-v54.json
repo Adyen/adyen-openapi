@@ -2,15 +2,15 @@
    "openapi" : "3.1.0",
    "servers" : [
       {
-         "url" : "https://pal-test.adyen.com/pal/servlet/BinLookup/v40"
+         "url" : "https://pal-test.adyen.com/pal/servlet/BinLookup/v54"
       }
    ],
    "info" : {
-      "version" : "40",
+      "version" : "54",
       "x-publicVersion" : true,
       "title" : "Adyen BinLookup API",
-      "description" : "The BIN Lookup API provides endpoints for retrieving information, such as cost estimates, and 3D Secure supported version based on a given BIN.\n\n## Authentication\nYou need an [API credential](https://docs.adyen.com/development-resources/api-credentials) to authenticate to the API.\n\nIf using an API key, add an `X-API-Key` header with the API key as the value, for example:\n\n ```\ncurl\n-H \"Content-Type: application/json\" \\\n-H \"X-API-Key: YOUR_API_KEY\" \\\n...\n```\n\nAlternatively, you can use the username and password to connect to the API using basic authentication, for example:\n\n```\ncurl\n-U \"ws@Company.YOUR_COMPANY_ACCOUNT\":\"YOUR_BASIC_AUTHENTICATION_PASSWORD\" \\\n-H \"Content-Type: application/json\" \\\n...\n```\n\n## Versioning\nThe BinLookup API supports [versioning](https://docs.adyen.com/development-resources/versioning) using a version suffix in the endpoint URL. This suffix has the following format: \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://pal-test.adyen.com/pal/servlet/BinLookup/v40/get3dsAvailability\n```## Going live\n\nTo authneticate to the live endpoints, you need an [API credential](https://docs.adyen.com/development-resources/api-credentials) from your live Customer Area.\n\nThe live endpoint URLs contain a prefix which is unique to your company account:\n```\n\nhttps://{PREFIX}-pal-live.adyenpayments.com/pal/servlet/BinLookup/v40/get3dsAvailability\n```\n\nGet your `{PREFIX}` from your live Customer Area under **Developers** > **API URLs** > **Prefix**.",
-      "x-timestamp" : "2022-09-23T11:29:18Z",
+      "description" : "The BIN Lookup API provides endpoints for retrieving information, such as cost estimates, and 3D Secure supported version based on a given BIN.\n\n## Authentication\nYou need an [API credential](https://docs.adyen.com/development-resources/api-credentials) to authenticate to the API.\n\nIf using an API key, add an `X-API-Key` header with the API key as the value, for example:\n\n ```\ncurl\n-H \"Content-Type: application/json\" \\\n-H \"X-API-Key: YOUR_API_KEY\" \\\n...\n```\n\nAlternatively, you can use the username and password to connect to the API using basic authentication, for example:\n\n```\ncurl\n-U \"ws@Company.YOUR_COMPANY_ACCOUNT\":\"YOUR_BASIC_AUTHENTICATION_PASSWORD\" \\\n-H \"Content-Type: application/json\" \\\n...\n```\n\n## Versioning\nThe BinLookup API supports [versioning](https://docs.adyen.com/development-resources/versioning) using a version suffix in the endpoint URL. This suffix has the following format: \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://pal-test.adyen.com/pal/servlet/BinLookup/v54/get3dsAvailability\n```## Going live\n\nTo authneticate to the live endpoints, you need an [API credential](https://docs.adyen.com/development-resources/api-credentials) from your live Customer Area.\n\nThe live endpoint URLs contain a prefix which is unique to your company account:\n```\n\nhttps://{PREFIX}-pal-live.adyenpayments.com/pal/servlet/BinLookup/v54/get3dsAvailability\n```\n\nGet your `{PREFIX}` from your live Customer Area under **Developers** > **API URLs** > **Prefix**.",
+      "x-timestamp" : "2022-09-23T11:29:19Z",
       "termsOfService" : "https://www.adyen.com/legal/terms-and-conditions",
       "contact" : {
          "name" : "Adyen Developer Experience team",
@@ -287,6 +287,14 @@
                "currency"
             ]
          },
+         "BinDetail" : {
+            "properties" : {
+               "issuerCountry" : {
+                  "description" : "The country where the card was issued.",
+                  "type" : "string"
+               }
+            }
+         },
          "CardBin" : {
             "properties" : {
                "bin" : {
@@ -303,6 +311,11 @@
                },
                "fundsAvailability" : {
                   "description" : "Indicates availability of funds.\n\nVisa:\n* \"I\" (fast funds are supported)\n* \"N\" (otherwise)\n\nMastercard:\n* \"I\" (product type is Prepaid or Debit, or issuing country is in CEE/HGEM list)\n* \"N\" (otherwise)\n> Returned when you verify a card BIN or estimate costs, and only if `payoutEligible` is different from \"N\" or \"U\".",
+                  "type" : "string"
+               },
+               "issuerBin" : {
+                  "x-addedInVersion" : "54",
+                  "description" : "The first 8 digit of the card number. Enable this field via merchant account settings.",
                   "type" : "string"
                },
                "issuingBank" : {
@@ -414,6 +427,11 @@
                   "description" : "The estimated cost (scheme fee + interchange) in the settlement currency. If the settlement currency cannot be determined, the fee in EUR is returned.",
                   "$ref" : "#/components/schemas/Amount"
                },
+               "costEstimateReference" : {
+                  "x-addedInVersion" : "52",
+                  "description" : "Adyen's 16-character reference associated with the request.",
+                  "type" : "string"
+               },
                "resultCode" : {
                   "description" : "The result of the cost estimation.",
                   "type" : "string"
@@ -502,6 +520,14 @@
          },
          "ServiceError" : {
             "properties" : {
+               "additionalData" : {
+                  "x-addedInVersion" : "46",
+                  "additionalProperties" : {
+                     "type" : "string"
+                  },
+                  "description" : "Contains additional information about the payment. Some data fields are included only if you select them first. Go to **Customer Area** > **Developers** > **Additional data**.",
+                  "type" : "object"
+               },
                "errorCode" : {
                   "description" : "The error code mapped to the error message.",
                   "type" : "string"
@@ -527,6 +553,14 @@
          },
          "ThreeDS2CardRangeDetail" : {
             "properties" : {
+               "acsInfoInd" : {
+                  "x-addedInVersion" : "51",
+                  "description" : "Provides additional information to the 3DS Server.\nPossible values:\n- 01 (Authentication is available at ACS)\n- 02 (Attempts supported by ACS or DS)\n- 03 (Decoupled authentication supported)\n- 04 (Whitelisting supported)",
+                  "items" : {
+                     "type" : "string"
+                  },
+                  "type" : "array"
+               },
                "brandCode" : {
                   "description" : "Card brand.",
                   "type" : "string"
@@ -539,9 +573,13 @@
                   "description" : "BIN start range.",
                   "type" : "string"
                },
-               "threeDS2Version" : {
-                  "description" : "3D Secure protocol version.",
-                  "type" : "string"
+               "threeDS2Versions" : {
+                  "x-addedInVersion" : "53",
+                  "description" : "Supported 3D Secure protocol versions",
+                  "items" : {
+                     "type" : "string"
+                  },
+                  "type" : "array"
                },
                "threeDSMethodURL" : {
                   "description" : "In a 3D Secure 2 browser-based flow, this is the URL where you should send the device fingerprint to.",
@@ -588,6 +626,11 @@
          },
          "ThreeDSAvailabilityResponse" : {
             "properties" : {
+               "binDetails" : {
+                  "x-addedInVersion" : "50",
+                  "description" : "Bin Group Details",
+                  "$ref" : "#/components/schemas/BinDetail"
+               },
                "dsPublicKeys" : {
                   "description" : "List of Directory Server (DS) public keys.",
                   "items" : {
