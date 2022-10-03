@@ -9,8 +9,8 @@
       "version" : "1",
       "x-publicVersion" : true,
       "title" : "Management API",
-      "description" : "Configure and manage your Adyen company and merchant accounts, stores, and payment terminals.\n## Authentication\nEach request to the Management API must be signed with an API key. [Generate your API key](https://docs.adyen.com/development-resources/api-credentials#generate-api-key) in the Customer Area and then set this key to the `X-API-Key` header value.\n\nTo access the live endpoints, you need to generate a new API key in your live Customer Area.\n## Versioning\n\nManagement API handles versioning as part of the endpoint URL. For example, to send a request to version 1 of the `/companies/{companyId}/webhooks` endpoint, use:\n\n```text\nhttps://management-test.adyen.com/v1/companies/{companyId}/webhooks\n```",
-      "x-timestamp" : "2022-09-02T16:24:46Z",
+      "description" : "Configure and manage your Adyen company and merchant accounts, stores, and payment terminals.\n## Authentication\nEach request to the Management API must be signed with an API key. [Generate your API key](https://docs.adyen.com/development-resources/api-credentials#generate-api-key) in the Customer Area and then set this key to the `X-API-Key` header value.\n\nTo access the live endpoints, you need to generate a new API key in your live Customer Area.\n## Versioning\n\nManagement API handles versioning as part of the endpoint URL. For example, to send a request to version 1 of the `/companies/{companyId}/webhooks` endpoint, use:\n\n```text\nhttps://management-test.adyen.com/v1/companies/{companyId}/webhooks\n```\n\n## Going live\n\nTo access the live endpoints, you need an API key from your live Customer Area. Use this API key to make requests to:\n\n```text\nhttps://management-live.adyen.com/v1\n```",
+      "x-timestamp" : "2022-09-28T17:20:03Z",
       "termsOfService" : "https://www.adyen.com/legal/terms-and-conditions",
       "contact" : {
          "name" : "Adyen Developer Experience team",
@@ -15103,8 +15103,7 @@
                },
                "percentage" : {
                   "description" : "Surcharge percentage per transaction. The maximum number of decimal places is two. For example, **1%** or **2.27%**.",
-                  "format" : "double",
-                  "type" : "number"
+                  "$ref" : "#/components/schemas/BigDecimal"
                }
             },
             "required" : [
@@ -15637,6 +15636,7 @@
                   "$ref" : "#/components/schemas/PaginationLinks"
                },
                "data" : {
+                  "description" : "List of stores",
                   "items" : {
                      "$ref" : "#/components/schemas/Store"
                   },
@@ -16004,10 +16004,6 @@
                   "description" : "Indicates if direct (immediate) capture for PayPal is enabled. If set to **true**, this setting overrides the [capture](https://docs.adyen.com/online-payments/capture) settings of your merchant account. Default value: **true**.",
                   "type" : "boolean"
                },
-               "directSettlement" : {
-                  "description" : "Must be set to **true** to confirm that the settlement to your bank account is performed directly by PayPal. Default value: **null**.",
-                  "type" : "boolean"
-               },
                "payerId" : {
                   "description" : "PayPal Merchant ID. Character length and limitations: 13 single-byte alphanumeric characters.",
                   "maxLength" : 13,
@@ -16021,12 +16017,15 @@
             },
             "required" : [
                "subject",
-               "payerId",
-               "directSettlement"
+               "payerId"
             ]
          },
          "PaymentMethod" : {
             "properties" : {
+               "allowed" : {
+                  "description" : "Indicates whether receiving payments is allowed. This value is set to **true** by Adyen after screening your merchant account.",
+                  "type" : "boolean"
+               },
                "applePay" : {
                   "description" : "Apple Pay details.",
                   "$ref" : "#/components/schemas/ApplePayInfo"
@@ -16095,6 +16094,16 @@
                },
                "type" : {
                   "description" : "Payment method [variant](https://docs.adyen.com/development-resources/paymentmethodvariant#management-api).",
+                  "type" : "string"
+               },
+               "verificationStatus" : {
+                  "description" : "Payment method status. Possible values:\n* **valid**\n* **pending**\n* **invalid**\n* **rejected**",
+                  "enum" : [
+                     "valid",
+                     "pending",
+                     "invalid",
+                     "rejected"
+                  ],
                   "type" : "string"
                }
             },
@@ -16719,6 +16728,26 @@
                }
             }
          },
+         "ShopperStatement" : {
+            "properties" : {
+               "doingBusinessAsName" : {
+                  "description" : "The name you want to be shown on the shopper's bank or credit card statement. Maximum length: 22 characters; can't be all numbers.",
+                  "type" : "string"
+               },
+               "type" : {
+                  "description" : "The type of shopperstatement you want to use: static, append or dynamic",
+                  "enum" : [
+                     "append",
+                     "dynamic",
+                     "fixed"
+                  ],
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "doingBusinessAsName"
+            ]
+         },
          "Signature" : {
             "properties" : {
                "askSignatureOnScreen" : {
@@ -16845,6 +16874,7 @@
                   "type" : "string"
                },
                "splitConfiguration" : {
+                  "description" : "The configuration of the split.",
                   "$ref" : "#/components/schemas/StoreSplitConfiguration"
                }
             },
@@ -16893,6 +16923,7 @@
                   "type" : "string"
                },
                "splitConfiguration" : {
+                  "description" : "The configuration of the split.",
                   "$ref" : "#/components/schemas/StoreSplitConfiguration"
                }
             },
@@ -17729,6 +17760,10 @@
                "enabled" : {
                   "description" : "Indicates whether the payment method is enabled (**true**) or disabled (**false**).",
                   "type" : "boolean"
+               },
+               "shopperStatement" : {
+                  "description" : "Information regarding the shopper statement.",
+                  "$ref" : "#/components/schemas/ShopperStatement"
                }
             }
          },
@@ -24002,7 +24037,7 @@
                "acceptsExpiredCertificate" : false,
                "acceptsSelfSignedCertificate" : true,
                "acceptsUntrustedRootCertificate" : true,
-               "certificateAlias" : "signed.adyen.com_2021",
+               "certificateAlias" : "signed-test.adyen.com_2022",
                "populateSoapActionHeader" : false,
                "additionalSettings" : {
                   "properties" : {
@@ -24589,7 +24624,7 @@
                "acceptsExpiredCertificate" : false,
                "acceptsSelfSignedCertificate" : true,
                "acceptsUntrustedRootCertificate" : true,
-               "certificateAlias" : "signed.adyen.com_2021",
+               "certificateAlias" : "signed-test.adyen.com_2022",
                "populateSoapActionHeader" : false,
                "additionalSettings" : {
                   "properties" : {

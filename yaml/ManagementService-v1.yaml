@@ -30,8 +30,22 @@ info:
 
     https://management-test.adyen.com/v1/companies/{companyId}/webhooks
 
+    ```
+
+
+    ## Going live
+
+
+    To access the live endpoints, you need an API key from your live Customer Area.
+    Use this API key to make requests to:
+
+
+    ```text
+
+    https://management-live.adyen.com/v1
+
     ```'
-  x-timestamp: '2022-09-02T16:24:46Z'
+  x-timestamp: '2022-09-28T17:20:03Z'
   termsOfService: https://www.adyen.com/legal/terms-and-conditions
   contact:
     name: Adyen Developer Experience team
@@ -10251,8 +10265,7 @@ components:
         percentage:
           description: Surcharge percentage per transaction. The maximum number of
             decimal places is two. For example, **1%** or **2.27%**.
-          format: double
-          type: number
+          $ref: '#/components/schemas/BigDecimal'
       required:
       - currencyCode
     CustomNotification:
@@ -10688,6 +10701,7 @@ components:
           description: Pagination references.
           $ref: '#/components/schemas/PaginationLinks'
         data:
+          description: List of stores
           items:
             $ref: '#/components/schemas/Store'
           type: array
@@ -11012,10 +11026,6 @@ components:
             If set to **true**, this setting overrides the [capture](https://docs.adyen.com/online-payments/capture)
             settings of your merchant account. Default value: **true**.'
           type: boolean
-        directSettlement:
-          description: 'Must be set to **true** to confirm that the settlement to
-            your bank account is performed directly by PayPal. Default value: **null**.'
-          type: boolean
         payerId:
           description: 'PayPal Merchant ID. Character length and limitations: 13 single-byte
             alphanumeric characters.'
@@ -11028,9 +11038,12 @@ components:
       required:
       - subject
       - payerId
-      - directSettlement
     PaymentMethod:
       properties:
+        allowed:
+          description: Indicates whether receiving payments is allowed. This value
+            is set to **true** by Adyen after screening your merchant account.
+          type: boolean
         applePay:
           description: Apple Pay details.
           $ref: '#/components/schemas/ApplePayInfo'
@@ -11086,6 +11099,22 @@ components:
           $ref: '#/components/schemas/SwishInfo'
         type:
           description: Payment method [variant](https://docs.adyen.com/development-resources/paymentmethodvariant#management-api).
+          type: string
+        verificationStatus:
+          description: 'Payment method status. Possible values:
+
+            * **valid**
+
+            * **pending**
+
+            * **invalid**
+
+            * **rejected**'
+          enum:
+          - valid
+          - pending
+          - invalid
+          - rejected
           type: string
       required:
       - id
@@ -11665,6 +11694,22 @@ components:
           items:
             $ref: '#/components/schemas/ShippingLocation'
           type: array
+    ShopperStatement:
+      properties:
+        doingBusinessAsName:
+          description: 'The name you want to be shown on the shopper''s bank or credit
+            card statement. Maximum length: 22 characters; can''t be all numbers.'
+          type: string
+        type:
+          description: 'The type of shopperstatement you want to use: static, append
+            or dynamic'
+          enum:
+          - append
+          - dynamic
+          - fixed
+          type: string
+      required:
+      - doingBusinessAsName
     Signature:
       properties:
         askSignatureOnScreen:
@@ -11786,6 +11831,7 @@ components:
             Maximum length: 22 characters; can''t be all numbers.'
           type: string
         splitConfiguration:
+          description: The configuration of the split.
           $ref: '#/components/schemas/StoreSplitConfiguration'
       required:
       - description
@@ -11832,6 +11878,7 @@ components:
             Maximum length: 22 characters; can''t be all numbers.'
           type: string
         splitConfiguration:
+          description: The configuration of the split.
           $ref: '#/components/schemas/StoreSplitConfiguration'
       required:
       - description
@@ -12636,6 +12683,9 @@ components:
           description: Indicates whether the payment method is enabled (**true**)
             or disabled (**false**).
           type: boolean
+        shopperStatement:
+          description: Information regarding the shopper statement.
+          $ref: '#/components/schemas/ShopperStatement'
     UpdatePayoutSettingsRequest:
       properties:
         enabled:
@@ -17322,7 +17372,7 @@ components:
         acceptsExpiredCertificate: false
         acceptsSelfSignedCertificate: true
         acceptsUntrustedRootCertificate: true
-        certificateAlias: signed.adyen.com_2021
+        certificateAlias: signed-test.adyen.com_2022
         populateSoapActionHeader: false
         additionalSettings:
           properties:
@@ -17776,7 +17826,7 @@ components:
         acceptsExpiredCertificate: false
         acceptsSelfSignedCertificate: true
         acceptsUntrustedRootCertificate: true
-        certificateAlias: signed.adyen.com_2021
+        certificateAlias: signed-test.adyen.com_2022
         populateSoapActionHeader: false
         additionalSettings:
           properties:
