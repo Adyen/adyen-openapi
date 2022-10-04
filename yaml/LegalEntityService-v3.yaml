@@ -1,8 +1,8 @@
 openapi: 3.1.0
 servers:
-- url: https://kyc-test.adyen.com/lem/v2
+- url: https://kyc-test.adyen.com/lem/v3
 info:
-  version: '2'
+  version: '3'
   x-publicVersion: true
   title: Legal Entity Management API
   description: "The Legal Entity Management API enables you to manage legal entities\
@@ -16,11 +16,11 @@ info:
     \ you need to generate new web service user credentials to access the [live endpoints](https://docs.adyen.com/development-resources/live-endpoints).\n\
     \n## Versioning\nThe Legal Entity Management API supports versioning of its endpoints\
     \ through a version suffix in the endpoint URL. This suffix has the following\
-    \ format: \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://kyc-test.adyen.com/lem/v2/legalEntities\n\
+    \ format: \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://kyc-test.adyen.com/lem/v1/legalEntities\n\
     ```\n## Going live\nWhen going live, your Adyen contact will provide your API\
     \ credential for the live environment. You can then use the username and password\
-    \ to send requests to `https://kyc-live.adyen.com/lem/v2`.\n\n"
-  x-timestamp: '2022-09-30T17:20:30Z'
+    \ to send requests to `https://kyc-live.adyen.com/lem/v1`.\n\n"
+  x-timestamp: '2022-09-08T12:24:10Z'
   termsOfService: https://www.adyen.com/legal/terms-and-conditions
   contact:
     name: Adyen Developer Experience team
@@ -1139,6 +1139,44 @@ paths:
           description: Internal Server Error - the server could not process the request.
 components:
   schemas:
+    AULocalAccountIdentification:
+      additionalProperties: false
+      properties:
+        accountNumber:
+          description: The bank account number (without separators or whitespace).
+          maxLength: 9
+          minLength: 5
+          type: string
+        bsbCode:
+          description: The 6-digit [Bank State Branch (BSB) code](https://en.wikipedia.org/wiki/Bank_state_branch)
+            (without separators or spaces).
+          maxLength: 6
+          minLength: 6
+          type: string
+        type:
+          default: auLocal
+          description: '**auLocal**'
+          enum:
+          - auLocal
+          type: string
+      required:
+      - accountNumber
+      - bsbCode
+    AdditionalBankIdentification:
+      properties:
+        code:
+          description: The value of the additional bank identification.
+          type: string
+        type:
+          description: "The type of additional bank identification, depending on the\
+            \ country.\n\nPossible values:\n\n * **gbSortCode**: The 6-digit [UK sort\
+            \ code](https://en.wikipedia.org/wiki/Sort_code), without separators or\
+            \ spaces\n * **usRoutingNumber**: The 9-digit [routing number](https://en.wikipedia.org/wiki/ABA_routing_transit_number),\
+            \ without separators or spaces."
+          enum:
+          - gbSortCode
+          - usRoutingNumber
+          type: string
     Address:
       properties:
         city:
@@ -1203,53 +1241,31 @@ components:
       - content
     BankAccountInfo:
       properties:
-        accountNumber:
-          description: "The bank account number (without separators).\n\n When this\
-            \ is provided, the `branchCode` is also required."
-          type: string
+        accountIdentification:
+          x-addedInVersion: '3'
+          description: Identification of the bank account.
+          oneOf:
+          - $ref: '#/components/schemas/AULocalAccountIdentification'
+          - $ref: '#/components/schemas/CZLocalAccountIdentification'
+          - $ref: '#/components/schemas/HULocalAccountIdentification'
+          - $ref: '#/components/schemas/IbanAccountIdentification'
+          - $ref: '#/components/schemas/NOLocalAccountIdentification'
+          - $ref: '#/components/schemas/NumberAndBicAccountIdentification'
+          - $ref: '#/components/schemas/PLLocalAccountIdentification'
+          - $ref: '#/components/schemas/SELocalAccountIdentification'
+          - $ref: '#/components/schemas/UKLocalAccountIdentification'
+          - $ref: '#/components/schemas/USLocalAccountIdentification'
         accountType:
           deprecated: true
           x-deprecatedInVersion: '2'
           description: The type of bank account.
           type: string
-        bankBicSwift:
-          description: The bank's BIC or SWIFT code.
-          type: string
-        bankCity:
-          description: The city where the bank is located.
-          type: string
-        bankCode:
-          description: The bank code of the banking institution with which the bank
-            account is registered.
-          type: string
-        bankName:
-          description: The name of the banking institution where the bank account
-            is held.
-          type: string
-        branchCode:
-          description: "The branch code of the branch under which the bank account\
-            \ is registered.\n\nRequired when you provide an `accountNumber`.\n\n\
-            \ In the following countries, this value corresponds to:\n\n\n* United\
-            \ States: routing number\n* United Kingdom: sort code\n* Germany: Bankleitzahl"
-          type: string
-        checkCode:
-          description: The check code of the bank account.
-          type: string
         countryCode:
           description: The two-character [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)
             country code where the bank account is registered. For example, **NL**.
           type: string
-        currencyCode:
-          description: The account's three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).
-            For example, **EUR**.
-          type: string
-        iban:
-          description: The international bank account number as defined in the [ISO-13616](https://www.iso.org/standard/81090.html)
-            standard.
-          type: string
       required:
       - countryCode
-      - currencyCode
     BirthData:
       properties:
         dateOfBirth:
@@ -1427,6 +1443,35 @@ components:
           type: array
       required:
       - businessLines
+    CZLocalAccountIdentification:
+      additionalProperties: false
+      properties:
+        accountNumber:
+          description: "The 2-16 digit bank account number (\u010C\xEDslo \xFA\u010D\
+            tu) in the following format:\n\n- The optional prefix (p\u0159ed\u010D\
+            \xEDsl\xED).\n\n- The required second part (z\xE1kladn\xED \u010D\xE1\
+            st) which must be at least two non-zero digits.\n\nExamples:\n\n- **19-123457**\
+            \ (with prefix)\n\n- **123457** (without prefix)\n\n- **000019-0000123457**\
+            \ (with prefix, normalized)\n\n- **000000-0000123457** (without prefix,\
+            \ normalized)"
+          maxLength: 17
+          minLength: 2
+          type: string
+        bankCode:
+          description: "The 4-digit bank code (K\xF3d banky), without separators or\
+            \ whitespace."
+          maxLength: 4
+          minLength: 4
+          type: string
+        type:
+          default: czLocal
+          description: '**czLocal**'
+          enum:
+          - czLocal
+          type: string
+      required:
+      - accountNumber
+      - bankCode
     Document:
       properties:
         attachment:
@@ -1480,11 +1525,11 @@ components:
             \ be **driversLicense**, **identityCard**, **nationalIdNumber**, or **passport**.\n\
             \nWhen uploading documents:\n* For **organization**, the `type` values\
             \ can be **proofOfAddress**, **registrationDocument**, **vatDocument**,\
-            \ **proofOfOrganizationTaxInfo**, **proofOfOwnership**, or **proofOfIndustry**.\
-            \ \n\n* For **individual**, the `type` values can be **identityCard**,\
-            \ **driversLicense**, **passport**, **proofOfNationalIdNumber**, **proofOfResidency**,\
-            \ **proofOfIndustry**, or **proofOfIndividualTaxId**.\n\n* For **soleProprietorship**,\
-            \ the `type` values can be **constitutionalDocument**, **proofOfAddress**,\
+            \ **proofOfOrganizationTaxInfo**, or **proofOfIndustry**. \n\n* For **individual**,\
+            \ the `type` values can be **identityCard**, **driversLicense**, **passport**,\
+            \ **proofOfNationalIdNumber**, **proofOfResidency**, **proofOfIndustry**,\
+            \ or **proofOfIndividualTaxId**.\n\n* For **soleProprietorship**, the\
+            \ `type` values can be **constitutionalDocument**, **proofOfAddress**,\
             \ or **proofOfIndustry**.\n\n* Use **bankStatement** to upload documents\
             \ for a [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments__resParam_id)."
           enum:
@@ -1545,6 +1590,37 @@ components:
           description: Information about the sole proprietorship. Required if `type`
             is **soleProprietorship**.
           $ref: '#/components/schemas/SoleProprietorship'
+    HULocalAccountIdentification:
+      additionalProperties: false
+      properties:
+        accountNumber:
+          description: The 24-digit bank account number without separators, or whitespace.
+          maxLength: 24
+          minLength: 24
+          type: string
+        type:
+          default: huLocal
+          description: '**huLocal**'
+          enum:
+          - huLocal
+          type: string
+      required:
+      - accountNumber
+    IbanAccountIdentification:
+      additionalProperties: false
+      properties:
+        iban:
+          description: The international bank account number as defined in the [ISO-13616](https://www.iso.org/standard/81090.html)
+            standard.
+          type: string
+        type:
+          default: iban
+          description: '**iban**'
+          enum:
+          - iban
+          type: string
+      required:
+      - iban
     IdentificationData:
       properties:
         expiryDate:
@@ -1576,11 +1652,11 @@ components:
             \ be **driversLicense**, **identityCard**, **nationalIdNumber**, or **passport**.\n\
             \nWhen uploading documents:\n* For **organization**, the `type` values\
             \ can be **proofOfAddress**, **registrationDocument**, **vatDocument**,\
-            \ **proofOfOrganizationTaxInfo**, **proofOfOwnership**, or **proofOfIndustry**.\
-            \ \n\n* For **individual**, the `type` values can be **identityCard**,\
-            \ **driversLicense**, **passport**, **proofOfNationalIdNumber**, **proofOfResidency**,\
-            \ **proofOfIndustry**, or **proofOfIndividualTaxId**.\n\n* For **soleProprietorship**,\
-            \ the `type` values can be **constitutionalDocument**, **proofOfAddress**,\
+            \ **proofOfOrganizationTaxInfo**, or **proofOfIndustry**. \n\n* For **individual**,\
+            \ the `type` values can be **identityCard**, **driversLicense**, **passport**,\
+            \ **proofOfNationalIdNumber**, **proofOfResidency**, **proofOfIndustry**,\
+            \ or **proofOfIndividualTaxId**.\n\n* For **soleProprietorship**, the\
+            \ `type` values can be **constitutionalDocument**, **proofOfAddress**,\
             \ or **proofOfIndustry**.\n\n* Use **bankStatement** to upload documents\
             \ for a [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments__resParam_id)."
           enum:
@@ -1625,7 +1701,7 @@ components:
           $ref: '#/components/schemas/Address'
         taxInformation:
           x-addedInVersion: '2'
-          description: The tax information of the individual.
+          description: The tax information of the organization.
           items:
             $ref: '#/components/schemas/TaxInformation'
           type: array
@@ -1779,6 +1855,22 @@ components:
           type: string
       required:
       - type
+    NOLocalAccountIdentification:
+      additionalProperties: false
+      properties:
+        accountNumber:
+          description: The 11 digit bank account number without separators, or whitespace.
+          maxLength: 11
+          minLength: 11
+          type: string
+        type:
+          default: noLocal
+          description: '**noLocal**'
+          enum:
+          - noLocal
+          type: string
+      required:
+      - accountNumber
     Name:
       properties:
         firstName:
@@ -1793,6 +1885,32 @@ components:
       required:
       - firstName
       - lastName
+    NumberAndBicAccountIdentification:
+      additionalProperties: false
+      properties:
+        accountNumber:
+          description: The bank account number, without separators or whitespace.
+            The length and format depends on the bank or country.
+          maxLength: 34
+          type: string
+        additionalBankIdentification:
+          description: Additional identification codes of the bank. Some banks may
+            require these identifiers for cross-border transfers.
+          $ref: '#/components/schemas/AdditionalBankIdentification'
+        bic:
+          description: The bank's 8 or 11 character BIC or SWIFT code.
+          maxLength: 11
+          minLength: 8
+          type: string
+        type:
+          default: numberAndBic
+          description: '**numberAndBic**'
+          enum:
+          - numberAndBic
+          type: string
+      required:
+      - accountNumber
+      - bic
     OnboardingLink:
       properties:
         url:
@@ -1855,7 +1973,6 @@ components:
           description: The previous page. Only present if there is a previous page.
           type: string
         themes:
-          description: List of onboarding themes.
           items:
             $ref: '#/components/schemas/OnboardingTheme'
           type: array
@@ -1938,6 +2055,7 @@ components:
           $ref: '#/components/schemas/WebData'
       required:
       - legalName
+      - type
       - registeredAddress
     OwnerEntity:
       properties:
@@ -1957,6 +2075,23 @@ components:
       required:
       - id
       - type
+    PLLocalAccountIdentification:
+      additionalProperties: false
+      properties:
+        accountNumber:
+          description: The 26-digit bank account number ([Numer rachunku](https://pl.wikipedia.org/wiki/Numer_Rachunku_Bankowego)),
+            without separators or whitespace.
+          maxLength: 26
+          minLength: 26
+          type: string
+        type:
+          default: plLocal
+          description: '**plLocal**'
+          enum:
+          - plLocal
+          type: string
+      required:
+      - accountNumber
     PhoneNumber:
       properties:
         number:
@@ -1981,6 +2116,30 @@ components:
         shopperReference:
           description: The unique identifier used when the payment details were stored.
           type: string
+    SELocalAccountIdentification:
+      additionalProperties: false
+      properties:
+        accountNumber:
+          description: The 7-10 digit bank account number ([Bankkontonummer](https://sv.wikipedia.org/wiki/Bankkonto))
+            without the clearing number, separators, or whitespace.
+          maxLength: 10
+          minLength: 7
+          type: string
+        clearingNumber:
+          description: The 4-5 digit clearing number ([Clearingnummer](https://sv.wikipedia.org/wiki/Clearingnummer)),
+            without separators or spaces.
+          maxLength: 5
+          minLength: 4
+          type: string
+        type:
+          default: seLocal
+          description: '**seLocal**'
+          enum:
+          - seLocal
+          type: string
+      required:
+      - accountNumber
+      - clearingNumber
     ServiceError:
       properties:
         errorCode:
@@ -2036,7 +2195,6 @@ components:
           type: string
       required:
       - name
-      - countryOfGoverningLaw
       - registeredAddress
     SourceOfFunds:
       properties:
@@ -2083,7 +2241,7 @@ components:
           minLength: 2
           type: string
         number:
-          description: The tax ID number (TIN) of the organization or individual.
+          description: The organization's tax ID number (TIN).
           type: string
         type:
           description: The TIN type depending on the country where it was issued.
@@ -2199,6 +2357,62 @@ components:
       required:
       - legalEntityId
       - type
+    UKLocalAccountIdentification:
+      additionalProperties: false
+      properties:
+        accountNumber:
+          description: The 8-digit bank account number, without separators or whitespace.
+          maxLength: 8
+          minLength: 8
+          type: string
+        sortCode:
+          description: The 6-digit [sort code](https://en.wikipedia.org/wiki/Sort_code),
+            without separators or spaces.
+          maxLength: 6
+          minLength: 6
+          type: string
+        type:
+          default: ukLocal
+          description: '**ukLocal**'
+          enum:
+          - ukLocal
+          type: string
+      required:
+      - accountNumber
+      - sortCode
+    USLocalAccountIdentification:
+      additionalProperties: false
+      properties:
+        accountNumber:
+          description: The bank account number, without separators or whitespace.
+          maxLength: 18
+          minLength: 2
+          type: string
+        accountType:
+          default: checking
+          description: 'The bank account type.
+
+
+            Possible values: **checking** or **savings**. Defaults to **checking**.'
+          enum:
+          - checking
+          - savings
+          type: string
+        routingNumber:
+          description: The 9-digit [routing number](https://en.wikipedia.org/wiki/ABA_routing_transit_number),
+            without separators or spaces.
+          maxLength: 9
+          minLength: 9
+          type: string
+        type:
+          default: usLocal
+          description: '**usLocal**'
+          enum:
+          - usLocal
+          type: string
+      required:
+      - accountNumber
+      - routingNumber
     VoidResponse: {}
     WebData:
       properties:
