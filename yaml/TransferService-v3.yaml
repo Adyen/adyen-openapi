@@ -5,9 +5,9 @@ info:
   version: '3'
   x-publicVersion: true
   title: Transfers API
-  description: "The Transfers API provides an endpoint that you can use to move funds\
-    \ within your balance platform, or to send funds from your balance platform to\
-    \ a [transfer instrument](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/transferInstruments).\n\
+  description: "The Transfers API provides endpoints that you can use to get information\
+    \ about all your transactions, move funds within your balance platform or send\
+    \ funds from your balance platform to a [transfer instrument](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/transferInstruments).\n\
     \n## Authentication\nYour Adyen contact will provide your API credential and an\
     \ API key. To connect to the API, add an `X-API-Key` header with the API key as\
     \ the value, for example:\n\n ```\ncurl\n-H \"Content-Type: application/json\"\
@@ -19,11 +19,11 @@ info:
     \ be enabled for the source balance account. Your Adyen contact will set up the\
     \ roles and permissions for you.\n## Versioning\nThe Transfers API supports [versioning](https://docs.adyen.com/development-resources/versioning)\
     \ using a version suffix in the endpoint URL. This suffix has the following format:\
-    \ \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://balanceplatform-api-test.adyen.com/btl/v1\n\
+    \ \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://balanceplatform-api-test.adyen.com/btl/v3/transfers\n\
     ```\n## Going live\nWhen going live, your Adyen contact will provide your API\
     \ credential for the live environment. You can then use the username and password\
-    \ to send requests to `https://balanceplatform-api-live.adyen.com/btl/v1`.\n\n"
-  x-timestamp: '2022-09-05T15:24:41Z'
+    \ to send requests to `https://balanceplatform-api-live.adyen.com/btl/v3`.\n\n"
+  x-timestamp: '2022-09-30T16:25:48Z'
   termsOfService: https://www.adyen.com/legal/terms-and-conditions
   contact:
     name: Adyen Developer Experience team
@@ -362,6 +362,34 @@ components:
       required:
       - value
       - currency
+    BRLocalAccountIdentification:
+      additionalProperties: false
+      properties:
+        accountNumber:
+          description: The bank account number, without separators or whitespace.
+          maxLength: 10
+          minLength: 1
+          type: string
+        bankCode:
+          description: The 3-digit Brazilian Bank Code (with leading zeros).
+          maxLength: 3
+          minLength: 3
+          type: string
+        branchNumber:
+          description: The bank account branch number, without separators or whitespace.
+          maxLength: 4
+          minLength: 1
+          type: string
+        type:
+          default: brLocal
+          description: '**brLocal**'
+          enum:
+          - brLocal
+          type: string
+      required:
+      - branchNumber
+      - accountNumber
+      - bankCode
     BankAccountV3:
       properties:
         accountHolder:
@@ -373,6 +401,7 @@ components:
             transfer.
           oneOf:
           - $ref: '#/components/schemas/AULocalAccountIdentification'
+          - $ref: '#/components/schemas/BRLocalAccountIdentification'
           - $ref: '#/components/schemas/CZLocalAccountIdentification'
           - $ref: '#/components/schemas/HULocalAccountIdentification'
           - $ref: '#/components/schemas/IbanAccountIdentification'
@@ -802,6 +831,7 @@ components:
           enum:
           - atmWithdrawal
           - atmWithdrawalReversal
+          - balanceAdjustment
           - bankTransfer
           - capture
           - captureReversal
@@ -833,14 +863,10 @@ components:
           type: string
       required:
       - id
-      - transferId
       - accountHolderId
       - balanceAccountId
-      - paymentInstrumentId
       - amount
-      - referenceForBeneficiary
       - reference
-      - instructedAmount
       - status
       - createdAt
       - bookingDate
@@ -1460,7 +1486,7 @@ components:
         category: bank
         counterparty:
           transferInstrumentId: SE1234567890ABC1234567890
-        priority: fast
+        priority: regular
         referenceForBeneficiary: Your reference sent to the beneficiary
         reference: Your internal reference for the transfer
         description: Your description for the transfer
@@ -1476,7 +1502,7 @@ components:
         category: bank
         counterparty:
           transferInstrumentId: SE1234567890ABC1234567890
-        priority: fast
+        priority: regular
         referenceForBeneficiary: Your reference sent to the beneficiary
         reference: Your internal reference for the transfer
         description: Your description for the transfer
