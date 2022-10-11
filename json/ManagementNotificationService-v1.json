@@ -5,7 +5,7 @@
       "x-publicVersion" : true,
       "title" : "Management Notification Webhooks",
       "description" : "Adyen sends notifications through webhooks to inform your system about events that happen with your Adyen company and merchant accounts, stores, payment terminals, and payment methods when using [Management API](https://docs.adyen.com/api-explorer/#/ManagementService/latest/overview).\n\nWhen an event occurs, Adyen makes an HTTP POST request to a URL on your server and includes the details of the event in the request body.\n\nRefer to [Notification webhooks](https://docs.adyen.com/development-resources/webhooks) for more information.",
-      "x-timestamp" : "2022-09-06T13:24:57Z",
+      "x-timestamp" : "2022-10-10T14:22:26Z",
       "termsOfService" : "https://www.adyen.com/legal/terms-and-conditions",
       "contact" : {
          "name" : "Adyen Developer Experience team",
@@ -71,13 +71,69 @@
             }
          }
       },
+      "merchant.updated" : {
+         "post" : {
+            "tags" : [
+               "Merchant account"
+            ],
+            "summary" : "Merchant account capability updated",
+            "description" : "There were changes to verification status and capabilities of a [merchant account](https://docs.adyen.com/api-explorer/#/ManagementService/latest/post/merchants). If the verification fails, this webhook includes the errors and the actions that you can take to resolve them.",
+            "x-addedInVersion" : "1",
+            "operationId" : "post-merchant.updated",
+            "x-groupName" : "Merchant account",
+            "x-sortIndex" : 2,
+            "security" : [
+               {
+                  "ApiKeyAuth" : [
+                     ]
+               }
+            ],
+            "requestBody" : {
+               "content" : {
+                  "application/json" : {
+                     "examples" : {
+                        "merchant-updated-valid" : {
+                           "$ref" : "#/components/examples/post-merchant.updated-merchant-updated-valid"
+                        },
+                        "merchant-updated-with-errors" : {
+                           "$ref" : "#/components/examples/post-merchant.updated-merchant-updated-with-errors"
+                        }
+                     },
+                     "schema" : {
+                        "$ref" : "#/components/schemas/NotificationDataMessage-type2"
+                     }
+                  }
+               }
+            },
+            "responses" : {
+               "200" : {
+                  "content" : {
+                     "application/json" : {
+                        "examples" : {
+                           "merchant-updated-valid" : {
+                              "$ref" : "#/components/examples/WebhookAck"
+                           },
+                           "merchant-updated-with-errors" : {
+                              "$ref" : "#/components/examples/WebhookAck"
+                           }
+                        },
+                        "schema" : {
+                           "$ref" : "#/components/schemas/AccountNotificationResponse"
+                        }
+                     }
+                  },
+                  "description" : "OK - the request has succeeded."
+               }
+            }
+         }
+      },
       "paymentMethod.created" : {
          "post" : {
             "tags" : [
                "Payment method"
             ],
             "summary" : "Payment method created",
-            "description" : "A request to [add a payment method](https://docs.adyen.com/api-explorer/#/ManagementService/latest/post/merchants/{id}/paymentMethodSettings) was completed.",
+            "description" : "A request to [add a payment method](https://docs.adyen.com/api-explorer/Management/latest/post/merchants/_merchantId_/paymentMethodSettings) was completed.",
             "x-addedInVersion" : "1",
             "operationId" : "post-paymentMethod.created",
             "x-groupName" : "Payment method",
@@ -97,7 +153,7 @@
                         }
                      },
                      "schema" : {
-                        "$ref" : "#/components/schemas/NotificationDataMessage-type2"
+                        "$ref" : "#/components/schemas/NotificationDataMessage-type3"
                      }
                   }
                }
@@ -203,6 +259,34 @@
                   "type" : "string"
                }
             }
+         },
+         "AccountUpdateNotificationData" : {
+            "properties" : {
+               "capabilities" : {
+                  "additionalProperties" : {
+                     "$ref" : "#/components/schemas/AccountCapabilityData"
+                  },
+                  "description" : "Key-value pairs that specify what you can do with the merchant account and its settings. The key is a capability. For example, the **sendToTransferInstrument** is the capability required before you can pay out the funds of a merchant account to a [bank account](https://docs.adyen.com/api-explorer/legalentity/latest/post/transferInstruments). The value is an object containing the settings for the capability.",
+                  "type" : "object"
+               },
+               "legalEntityId" : {
+                  "description" : "The unique identifier of the [legal entity](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/legalEntities).",
+                  "type" : "string"
+               },
+               "merchantId" : {
+                  "description" : "The unique identifier of the merchant account.",
+                  "type" : "string"
+               },
+               "status" : {
+                  "description" : "The status of the merchant account.\n\nPossible values:\n\n* **PreActive**: The merchant account has been created. Users cannot access the merchant account in the Customer Area. The account cannot process payments.\n* **Active**: Users can access the merchant account in the Customer Area. If the company account is also **Active**, then payment processing and payouts are enabled.\n* **InactiveWithModifications**: Users can access the merchant account in the Customer Area. The account cannot process new payments but can still modify payments, for example issue refunds. The account can still receive payouts.\n* **Inactive**: Users can access the merchant account in the Customer Area. Payment processing and payouts are disabled.\n* **Closed**: The account is closed and this cannot be reversed. Users cannot log in. Payment processing and payouts are disabled.",
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "merchantId",
+               "status",
+               "capabilities"
+            ]
          },
          "CapabilityProblem" : {
             "properties" : {
@@ -321,6 +405,33 @@
             ]
          },
          "NotificationDataMessage-type2" : {
+            "properties" : {
+               "createdAt" : {
+                  "description" : "Timestamp for when the webhook was created.",
+                  "format" : "date-time",
+                  "type" : "string"
+               },
+               "data" : {
+                  "description" : "Contains event details.",
+                  "$ref" : "#/components/schemas/AccountUpdateNotificationData"
+               },
+               "environment" : {
+                  "description" : "The environment from which the webhook originated.\n\nPossible values: **test**, **live**.",
+                  "type" : "string"
+               },
+               "type" : {
+                  "description" : "Type of notification.",
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "type",
+               "environment",
+               "createdAt",
+               "data"
+            ]
+         },
+         "NotificationDataMessage-type3" : {
             "properties" : {
                "createdAt" : {
                   "description" : "Timestamp for when the webhook was created.",
@@ -467,6 +578,95 @@
                   },
                   "companyId" : "YOUR_COMPANY_ID",
                   "merchantId" : "MC3224X22322535GH8D537TJR",
+                  "status" : "PreActive"
+               }
+            }
+         },
+         "post-merchant.updated-merchant-updated-valid" : {
+            "summary" : "Merchant account verified",
+            "description" : "Example webhook when verification is succesful",
+            "value" : {
+               "type" : "merchant.updated",
+               "environment" : "test",
+               "createdAt" : "2022-09-20T13:42:31+02:00",
+               "data" : {
+                  "capabilities" : {
+                     "receivePayments" : {
+                        "allowed" : "true",
+                        "verificationStatus" : "valid"
+                     }
+                  },
+                  "legalEntityId" : "LE322KH223222F5GNNW694PZN",
+                  "merchantId" : "YOUR_MERCHANT_ID",
+                  "status" : "PreActive"
+               }
+            }
+         },
+         "post-merchant.updated-merchant-updated-with-errors" : {
+            "summary" : "Merchant account verification failed",
+            "description" : "Example webhook when verification fails",
+            "value" : {
+               "type" : "merchant.updated",
+               "environment" : "test",
+               "createdAt" : "2022-09-20T13:41:12+02:00",
+               "data" : {
+                  "capabilities" : {
+                     "receivePayments" : {
+                        "allowed" : "false",
+                        "problems" : [
+                           {
+                              "entity" : {
+                                 "id" : "LE322KH223222F5GNNW694PZN",
+                                 "type" : "LegalEntity"
+                              },
+                              "verificationErrors" : [
+                                 {
+                                    "code" : "2_8064",
+                                    "message" : "'UBO through ownership' was missing.",
+                                    "remediatingActions" : [
+                                       {
+                                          "code" : "2_123",
+                                          "message" : "Add 'organization.entityAssociations' of type 'uboThroughOwnership' to legal entity"
+                                       }
+                                    ],
+                                    "type" : "dataMissing"
+                                 },
+                                 {
+                                    "code" : "1_30",
+                                    "message" : "Individual details couldn't be verified",
+                                    "remediatingActions" : [
+                                       {
+                                          "code" : "1_300",
+                                          "message" : "Update individual details"
+                                       }
+                                    ],
+                                    "subErrors" : [
+                                       {
+                                          "code" : "1_3000",
+                                          "message" : "The user couldn't be verified",
+                                          "remediatingActions" : [
+                                             {
+                                                "code" : "1_300",
+                                                "message" : "Update individual details"
+                                             },
+                                             {
+                                                "code" : "1_301",
+                                                "message" : "Upload an ID document"
+                                             }
+                                          ],
+                                          "type" : "invalidInput"
+                                       }
+                                    ],
+                                    "type" : "invalidInput"
+                                 }
+                              ]
+                           }
+                        ],
+                        "verificationStatus" : "invalid"
+                     }
+                  },
+                  "legalEntityId" : "LE322KH223222F5GNNW694PZN",
+                  "merchantId" : "YOUR_MERCHANT_ID",
                   "status" : "PreActive"
                }
             }
