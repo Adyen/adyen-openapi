@@ -1,0 +1,219 @@
+{
+   "openapi" : "3.1.0",
+   "info" : {
+      "version" : "1",
+      "x-publicVersion" : true,
+      "title" : "Report notifications",
+      "description" : "Adyen sends notifications through webhooks to inform your system that reports were generated and are ready to be downloaded.\n\nYou can download reports programmatically by making an HTTP GET request, or manually from your [Balance Platform Customer Area](https://balanceplatform-test.adyen.com/balanceplatform).",
+      "x-timestamp" : "2022-11-14T18:27:40Z",
+      "termsOfService" : "https://www.adyen.com/legal/terms-and-conditions",
+      "contact" : {
+         "name" : "Adyen Developer Experience team",
+         "url" : "https://www.adyen.help/hc/en-us/community/topics",
+         "email" : "developer-experience@adyen.com"
+      }
+   },
+   "x-groups" : [
+      "General"
+   ],
+   "tags" : [
+      ],
+   "webhooks" : {
+      "balancePlatform.report.created" : {
+         "post" : {
+            "tags" : [
+               "General"
+            ],
+            "summary" : "Report generated",
+            "description" : "Adyen sends this webhook after a report is generated and ready to be downloaded. The webhook contains the URL at which the report can be downloaded.\n\nBefore you download reports, ask your Adyen contact for your report credentials. You must use your the credentials to authenticate your GET request.",
+            "operationId" : "post-balancePlatform.report.created",
+            "x-groupName" : "General",
+            "x-sortIndex" : 0,
+            "security" : [
+               {
+                  "ApiKeyAuth" : [
+                     ]
+               }
+            ],
+            "requestBody" : {
+               "content" : {
+                  "application/json" : {
+                     "examples" : {
+                        "balancePlatform.report.created" : {
+                           "$ref" : "#/components/examples/post-balancePlatform.report.created-balancePlatform.report.created"
+                        }
+                     },
+                     "schema" : {
+                        "$ref" : "#/components/schemas/ReportNotificationRequest"
+                     }
+                  }
+               }
+            },
+            "responses" : {
+               "200" : {
+                  "content" : {
+                     "application/json" : {
+                        "examples" : {
+                           "balancePlatform.report.created" : {
+                              "$ref" : "#/components/examples/WebhookAck"
+                           }
+                        },
+                        "schema" : {
+                           "$ref" : "#/components/schemas/BalancePlatformNotificationResponse"
+                        }
+                     }
+                  },
+                  "description" : "OK - the request has succeeded."
+               }
+            }
+         }
+      }
+   },
+   "components" : {
+      "schemas" : {
+         "BalancePlatformNotificationResponse" : {
+            "properties" : {
+               "notificationResponse" : {
+                  "description" : "Respond with **HTTP 200 OK** and `[accepted]` in the response body to [accept the webhook](https://docs.adyen.com/development-resources/webhooks#accept-notifications).",
+                  "type" : "string"
+               }
+            }
+         },
+         "ReportNotificationData" : {
+            "properties" : {
+               "accountHolder" : {
+                  "description" : "The account holder related to the report.",
+                  "$ref" : "#/components/schemas/ResourceReference"
+               },
+               "balanceAccount" : {
+                  "description" : "The balance account related to the report.",
+                  "$ref" : "#/components/schemas/ResourceReference"
+               },
+               "balancePlatform" : {
+                  "description" : "Unique identifier of the balance platform.",
+                  "type" : "string"
+               },
+               "creationDate" : {
+                  "description" : "Date and time when the event was triggered, in ISO 8601 extended format. For example, **2020-12-18T10:15:30+01:00**.",
+                  "format" : "date-time",
+                  "type" : "string"
+               },
+               "downloadUrl" : {
+                  "description" : "The URL at which you can download the report. To download, you must authenticate your GET request with your [API credentials](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/overview).",
+                  "type" : "string"
+               },
+               "fileName" : {
+                  "description" : "The filename of the report.",
+                  "type" : "string"
+               },
+               "reportType" : {
+                  "description" : "Type of report.",
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "fileName",
+               "reportType",
+               "downloadUrl"
+            ]
+         },
+         "ReportNotificationRequest" : {
+            "properties" : {
+               "data" : {
+                  "description" : "Contains event details.",
+                  "$ref" : "#/components/schemas/ReportNotificationData"
+               },
+               "environment" : {
+                  "description" : "The environment from which the webhook originated.\n\nPossible values: **test**, **live**.",
+                  "type" : "string"
+               },
+               "type" : {
+                  "description" : "Type of notification.",
+                  "enum" : [
+                     "balancePlatform.report.created"
+                  ],
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "environment",
+               "type",
+               "data"
+            ]
+         },
+         "Resource" : {
+            "properties" : {
+               "balancePlatform" : {
+                  "description" : "Unique identifier of the balance platform.",
+                  "type" : "string"
+               },
+               "creationDate" : {
+                  "description" : "Date and time when the event was triggered, in ISO 8601 extended format. For example, **2020-12-18T10:15:30+01:00**.",
+                  "format" : "date-time",
+                  "type" : "string"
+               },
+               "id" : {
+                  "description" : "The ID of the resource.",
+                  "type" : "string"
+               }
+            }
+         },
+         "ResourceReference" : {
+            "properties" : {
+               "description" : {
+                  "description" : "The description of the resource.",
+                  "type" : "string"
+               },
+               "id" : {
+                  "description" : "The unique identifier of the resource.",
+                  "type" : "string"
+               },
+               "reference" : {
+                  "description" : "The reference of the resource.",
+                  "type" : "string"
+               }
+            }
+         }
+      },
+      "securitySchemes" : {
+         "ApiKeyAuth" : {
+            "in" : "header",
+            "name" : "X-API-Key",
+            "type" : "apiKey"
+         },
+         "BasicAuth" : {
+            "scheme" : "basic",
+            "type" : "http"
+         }
+      },
+      "examples" : {
+         "WebhookAck" : {
+            "summary" : "Acknowledge Webhook",
+            "value" : {
+               "notificationResponse" : "[accepted]"
+            }
+         },
+         "post-balancePlatform.report.created-balancePlatform.report.created" : {
+            "summary" : "Report created",
+            "description" : "Example webhook when a report was generated and is ready to be downloaded",
+            "value" : {
+               "data" : {
+                  "balancePlatform" : "YOUR_BALANCE_PLATFORM",
+                  "accountHolder" : {
+                     "id" : "AH32272223222B59MTF7458DP"
+                  },
+                  "balanceAccount" : {
+                     "id" : "BA3227C223222B5B9SCR82TMV"
+                  },
+                  "creationDate" : "2021-07-02T02:01:08+02:00",
+                  "fileName" : "balanceplatform_payments_accounting_report_2021_07_01.csv",
+                  "reportType" : "balanceplatform_payments_accounting_report",
+                  "downloadUrl" : "https://balanceplatform-test.adyen.com/balanceplatform/.../.../.../balanceplatform_payments_accounting_report_2021_07_01.csv"
+               },
+               "environment" : "test",
+               "type" : "balancePlatform.report.created"
+            }
+         }
+      }
+   }
+}
