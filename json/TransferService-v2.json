@@ -9,8 +9,8 @@
       "version" : "2",
       "x-publicVersion" : true,
       "title" : "Transfers API",
-      "description" : "The Transfers API provides endpoints that you can use to get information about all your transactions, move funds within your balance platform or send funds from your balance platform to a [transfer instrument](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/transferInstruments).\n\n## Authentication\nYour Adyen contact will provide your API credential and an API key. To connect to the API, add an `X-API-Key` header with the API key as the value, for example:\n\n ```\ncurl\n-H \"Content-Type: application/json\" \\\n-H \"X-API-Key: YOUR_API_KEY\" \\\n...\n```\n\nAlternatively, you can use the username and password to connect to the API using basic authentication. For example:\n\n```\ncurl\n-H \"Content-Type: application/json\" \\\n-U \"ws@BalancePlatform.YOUR_BALANCE_PLATFORM\":\"YOUR_WS_PASSWORD\" \\\n...\n```\n## Roles and permissions\nTo use the Transfers API, you need an additional role for your API credential. Transfers must also be enabled for the source balance account. Your Adyen contact will set up the roles and permissions for you.\n## Versioning\nThe Transfers API supports [versioning](https://docs.adyen.com/development-resources/versioning) using a version suffix in the endpoint URL. This suffix has the following format: \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://balanceplatform-api-test.adyen.com/btl/v2/transfers\n```\n## Going live\nWhen going live, your Adyen contact will provide your API credential for the live environment. You can then use the username and password to send requests to `https://balanceplatform-api-live.adyen.com/btl/v2`.\n\n",
-      "x-timestamp" : "2022-10-04T17:25:48Z",
+      "description" : "The Transfers API provides endpoints that you can use to get information about all your transactions, move funds within your balance platform or send funds from your balance platform to a [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments).\n\n## Authentication\nYour Adyen contact will provide your API credential and an API key. To connect to the API, add an `X-API-Key` header with the API key as the value, for example:\n\n ```\ncurl\n-H \"Content-Type: application/json\" \\\n-H \"X-API-Key: YOUR_API_KEY\" \\\n...\n```\n\nAlternatively, you can use the username and password to connect to the API using basic authentication. For example:\n\n```\ncurl\n-H \"Content-Type: application/json\" \\\n-U \"ws@BalancePlatform.YOUR_BALANCE_PLATFORM\":\"YOUR_WS_PASSWORD\" \\\n...\n```\n## Roles and permissions\nTo use the Transfers API, you need an additional role for your API credential. Transfers must also be enabled for the source balance account. Your Adyen contact will set up the roles and permissions for you.\n## Versioning\nThe Transfers API supports [versioning](https://docs.adyen.com/development-resources/versioning) using a version suffix in the endpoint URL. This suffix has the following format: \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://balanceplatform-api-test.adyen.com/btl/v2/transfers\n```\n## Going live\nWhen going live, your Adyen contact will provide your API credential for the live environment. You can then use the username and password to send requests to `https://balanceplatform-api-live.adyen.com/btl/v2`.\n\n",
+      "x-timestamp" : "2022-11-24T11:24:00Z",
       "termsOfService" : "https://www.adyen.com/legal/terms-and-conditions",
       "contact" : {
          "name" : "Adyen Developer Experience team",
@@ -42,6 +42,7 @@
             "operationId" : "get-transactions",
             "x-groupName" : "Transactions",
             "x-sortIndex" : 1,
+            "x-methodName" : "getAllTransactions",
             "security" : [
                {
                   "ApiKeyAuth" : [
@@ -186,6 +187,7 @@
             "operationId" : "get-transactions-id",
             "x-groupName" : "Transactions",
             "x-sortIndex" : 2,
+            "x-methodName" : "getTransaction",
             "security" : [
                {
                   "ApiKeyAuth" : [
@@ -273,6 +275,7 @@
             "operationId" : "post-transfers",
             "x-groupName" : "Transfers",
             "x-sortIndex" : 1,
+            "x-methodName" : "transferFunds",
             "security" : [
                {
                   "ApiKeyAuth" : [
@@ -438,7 +441,7 @@
             "properties" : {
                "priority" : {
                   "x-addedInVersion" : "1",
-                  "description" : "The priority for the bank transfer. This sets the speed at which the transfer is sent and the fees that you have to pay. If you don't provide this in the request, Adyen sets the optimal priority.\n\nPossible values:\n\n* **regular**: For normal, low-value transactions.\n\n* **fast**: Faster way to transfer funds but has higher fees. Recommended for high-priority, low-value transactions.\n\n* **wire**: Fastest way to transfer funds but has the highest fees. Recommended for high-priority, high-value transactions.\n\n",
+                  "description" : "The priority for the bank transfer. This sets the speed at which the transfer is sent and the fees that you have to pay. If you don't provide this in the request, Adyen sets the optimal priority.\n\nPossible values:\n\n* **regular**: For normal, low-value transactions.\n\n* **fast**: Faster way to transfer funds but has higher fees. Recommended for high-priority, low-value transactions.\n\n* **wire**: Fastest way to transfer funds but has the highest fees. Recommended for high-priority, high-value transactions.\n\n* **instant**: Instant way to transfer funds in [SEPA countries](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).",
                   "enum" : [
                      "fast",
                      "instant",
@@ -742,7 +745,6 @@
                "id" : {
                   "x-addedInVersion" : "1",
                   "description" : "Unique identifier of the transaction.",
-                  "readOnly" : true,
                   "type" : "string"
                },
                "instructedAmount" : {
@@ -792,6 +794,7 @@
                      "chargeback",
                      "chargebackReversal",
                      "depositCorrection",
+                     "directDebit",
                      "fee",
                      "grant",
                      "installment",
@@ -883,7 +886,6 @@
                },
                "id" : {
                   "description" : "The ID of the resource.",
-                  "readOnly" : true,
                   "type" : "string"
                },
                "paymentInstrumentId" : {
@@ -920,6 +922,9 @@
                      "atmWithdrawal",
                      "atmWithdrawalReversalPending",
                      "atmWithdrawalReversed",
+                     "authAdjustmentAuthorised",
+                     "authAdjustmentError",
+                     "authAdjustmentRefused",
                      "authorised",
                      "bankTransfer",
                      "bankTransferPending",
@@ -1009,7 +1014,6 @@
                },
                "id" : {
                   "description" : "The ID of the resource.",
-                  "readOnly" : true,
                   "type" : "string"
                },
                "paymentInstrumentId" : {

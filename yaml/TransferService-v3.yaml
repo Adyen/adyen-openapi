@@ -7,7 +7,7 @@ info:
   title: Transfers API
   description: "The Transfers API provides endpoints that you can use to get information\
     \ about all your transactions, move funds within your balance platform or send\
-    \ funds from your balance platform to a [transfer instrument](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/transferInstruments).\n\
+    \ funds from your balance platform to a [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments).\n\
     \n## Authentication\nYour Adyen contact will provide your API credential and an\
     \ API key. To connect to the API, add an `X-API-Key` header with the API key as\
     \ the value, for example:\n\n ```\ncurl\n-H \"Content-Type: application/json\"\
@@ -23,7 +23,7 @@ info:
     ```\n## Going live\nWhen going live, your Adyen contact will provide your API\
     \ credential for the live environment. You can then use the username and password\
     \ to send requests to `https://balanceplatform-api-live.adyen.com/btl/v3`.\n\n"
-  x-timestamp: '2022-10-06T11:24:30Z'
+  x-timestamp: '2022-11-24T11:24:00Z'
   termsOfService: https://www.adyen.com/legal/terms-and-conditions
   contact:
     name: Adyen Developer Experience team
@@ -50,6 +50,7 @@ paths:
       operationId: get-transactions
       x-groupName: Transactions
       x-sortIndex: 1
+      x-methodName: getAllTransactions
       security:
       - ApiKeyAuth: []
       parameters:
@@ -145,6 +146,7 @@ paths:
       operationId: get-transactions-id
       x-groupName: Transactions
       x-sortIndex: 2
+      x-methodName: getTransaction
       security:
       - ApiKeyAuth: []
       parameters:
@@ -206,6 +208,7 @@ paths:
       operationId: post-transfers
       x-groupName: Transfers
       x-sortIndex: 1
+      x-methodName: transferFunds
       security:
       - ApiKeyAuth: []
       requestBody:
@@ -296,6 +299,7 @@ components:
           - auLocal
           type: string
       required:
+      - type
       - accountNumber
       - bsbCode
     AdditionalBankIdentification:
@@ -387,6 +391,7 @@ components:
           - brLocal
           type: string
       required:
+      - type
       - branchNumber
       - accountNumber
       - bankCode
@@ -403,12 +408,14 @@ components:
           - $ref: '#/components/schemas/AULocalAccountIdentification'
           - $ref: '#/components/schemas/BRLocalAccountIdentification'
           - $ref: '#/components/schemas/CZLocalAccountIdentification'
+          - $ref: '#/components/schemas/DKLocalAccountIdentification'
           - $ref: '#/components/schemas/HULocalAccountIdentification'
           - $ref: '#/components/schemas/IbanAccountIdentification'
           - $ref: '#/components/schemas/NOLocalAccountIdentification'
           - $ref: '#/components/schemas/NumberAndBicAccountIdentification'
           - $ref: '#/components/schemas/PLLocalAccountIdentification'
           - $ref: '#/components/schemas/SELocalAccountIdentification'
+          - $ref: '#/components/schemas/SGLocalAccountIdentification'
           - $ref: '#/components/schemas/UKLocalAccountIdentification'
           - $ref: '#/components/schemas/USLocalAccountIdentification'
       required:
@@ -441,6 +448,7 @@ components:
           - czLocal
           type: string
       required:
+      - type
       - accountNumber
       - bankCode
     CounterpartyInfoV3:
@@ -468,6 +476,31 @@ components:
         transferInstrumentId:
           description: Unique identifier of the [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments__resParam_id).
           type: string
+    DKLocalAccountIdentification:
+      additionalProperties: false
+      properties:
+        accountNumber:
+          description: The 4-10 digits bank account number (Kontonummer) (without
+            separators or whitespace).
+          maxLength: 10
+          minLength: 4
+          type: string
+        bankCode:
+          description: The 4-digit bank code (Registreringsnummer) (without separators
+            or whitespace).
+          maxLength: 4
+          minLength: 4
+          type: string
+        type:
+          default: dkLocal
+          description: '**dkLocal**'
+          enum:
+          - dkLocal
+          type: string
+      required:
+      - type
+      - accountNumber
+      - bankCode
     HULocalAccountIdentification:
       additionalProperties: false
       properties:
@@ -483,6 +516,7 @@ components:
           - huLocal
           type: string
       required:
+      - type
       - accountNumber
     IbanAccountIdentification:
       additionalProperties: false
@@ -498,6 +532,7 @@ components:
           - iban
           type: string
       required:
+      - type
       - iban
     InvalidField:
       properties:
@@ -569,6 +604,7 @@ components:
           - noLocal
           type: string
       required:
+      - type
       - accountNumber
     NameLocation:
       properties:
@@ -616,6 +652,7 @@ components:
           - numberAndBic
           type: string
       required:
+      - type
       - accountNumber
       - bic
     PLLocalAccountIdentification:
@@ -634,6 +671,7 @@ components:
           - plLocal
           type: string
       required:
+      - type
       - accountNumber
     PartyIdentification-2:
       properties:
@@ -650,7 +688,7 @@ components:
           description: Last name of the individual. Required when `type` is **individual**.
           type: string
         type:
-          default: '**unknown**'
+          default: unknown
           description: "The type of entity that owns the bank account.\n\n Possible\
             \ values: **individual**, **organization**, or **unknown**."
           enum:
@@ -724,8 +762,31 @@ components:
           - seLocal
           type: string
       required:
+      - type
       - accountNumber
       - clearingNumber
+    SGLocalAccountIdentification:
+      additionalProperties: false
+      properties:
+        accountNumber:
+          description: The 4-19 digit bank account number, separators, or whitespace.
+          maxLength: 19
+          minLength: 4
+          type: string
+        bic:
+          description: The bank's 8 or 11 character BIC or SWIFT code.
+          maxLength: 11
+          minLength: 8
+          type: string
+        type:
+          default: sgLocal
+          description: '**sgLocal**'
+          enum:
+          - sgLocal
+          type: string
+      required:
+      - accountNumber
+      - bic
     Transaction:
       properties:
         accountHolderId:
@@ -782,7 +843,6 @@ components:
         id:
           x-addedInVersion: '1'
           description: Unique identifier of the transaction.
-          readOnly: true
           type: string
         instructedAmount:
           x-addedInVersion: '1'
@@ -838,6 +898,7 @@ components:
           - chargeback
           - chargebackReversal
           - depositCorrection
+          - directDebit
           - fee
           - grant
           - installment
@@ -924,7 +985,6 @@ components:
           type: string
         id:
           description: The ID of the resource.
-          readOnly: true
           type: string
         paymentInstrumentId:
           description: Unique identifier of the source [payment instrument](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/paymentInstruments__resParam_id).
@@ -950,7 +1010,7 @@ components:
             for high-priority, high-value transactions.
 
 
-            '
+            * **instant**: Instant way to transfer funds in [SEPA countries](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).'
           enum:
           - fast
           - instant
@@ -994,6 +1054,9 @@ components:
           - atmWithdrawal
           - atmWithdrawalReversalPending
           - atmWithdrawalReversed
+          - authAdjustmentAuthorised
+          - authAdjustmentError
+          - authAdjustmentRefused
           - authorised
           - bankTransfer
           - bankTransferPending
@@ -1084,7 +1147,6 @@ components:
           type: string
         id:
           description: The ID of the resource.
-          readOnly: true
           type: string
         paymentInstrumentId:
           description: Unique identifier of the source [payment instrument](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/paymentInstruments__resParam_id).
@@ -1110,7 +1172,7 @@ components:
             for high-priority, high-value transactions.
 
 
-            '
+            * **instant**: Instant way to transfer funds in [SEPA countries](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).'
           enum:
           - fast
           - instant
@@ -1162,6 +1224,7 @@ components:
           - ukLocal
           type: string
       required:
+      - type
       - accountNumber
       - sortCode
     USLocalAccountIdentification:
@@ -1195,6 +1258,7 @@ components:
           - usLocal
           type: string
       required:
+      - type
       - accountNumber
       - routingNumber
   securitySchemes:
@@ -1292,8 +1356,8 @@ components:
           next:
             href: https://balanceplatform-api-test.adyen.com/btl/v2/transactions?balancePlatform=Bastronaut&createdUntil=2022-03-21T00%3A00%3A00Z&createdSince=2022-03-11T00%3A00%3A00Z&limit=3&cursor=S2B-TSAjOkIrYlIlbjdqe0RreHRyM32lKRSxubXBHRkhHL2E32XitQQz5SfzpucD5HbHwpM1p6NDR1eXVQLFF6MmY33J32sobDxQYT90MHIud1hwLnd6JitcX32xJ
     post-transfers-payout-cross-border:
-      summary: Make a SEPA funds transfer
-      description: Example request to make a SEPA funds transfer
+      summary: Make a cross border transfer
+      description: Example request to make a cross border transfer
       value:
         amount:
           value: 110000
@@ -1351,7 +1415,7 @@ components:
         status: authorised
     post-transfers-payout-local-transfer-sepa:
       summary: Make a SEPA funds transfer
-      description: Example request to make a US local funds transfer
+      description: Example request to make a SEPA funds transfer
       value:
         amount:
           value: 110000
