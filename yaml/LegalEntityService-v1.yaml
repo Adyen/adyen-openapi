@@ -20,7 +20,7 @@ info:
     ```\n## Going live\nWhen going live, your Adyen contact will provide your API\
     \ credential for the live environment. You can then use the username and password\
     \ to send requests to `https://kyc-live.adyen.com/lem/v1`.\n\n"
-  x-timestamp: '2022-11-24T10:16:58Z'
+  x-timestamp: '2022-12-05T17:26:45Z'
   termsOfService: https://www.adyen.com/legal/terms-and-conditions
   contact:
     name: Adyen Developer Experience team
@@ -1162,6 +1162,15 @@ components:
           type: string
       required:
       - country
+    Amount:
+      properties:
+        currency:
+          description: The type of currency. Must be EUR (or EUR equivalent)
+          type: string
+        value:
+          description: Total value of amount. Must be >= 0
+          format: int64
+          type: integer
     Attachment:
       properties:
         content:
@@ -1183,7 +1192,8 @@ components:
           description: 'Specifies which side of the ID card is uploaded.
 
 
-            * When `type` is **driversLicense**, set this to **front** or **back**.
+            * When `type` is **driversLicense** or **identityCard**, set this to **front**
+            or **back**.
 
 
             * When omitted, we infer the page number based on the order of attachments.'
@@ -1234,9 +1244,6 @@ components:
           description: The international bank account number as defined in the [ISO-13616](https://www.iso.org/standard/81090.html)
             standard.
           type: string
-      required:
-      - countryCode
-      - currencyCode
     BirthData:
       properties:
         dateOfBirth:
@@ -1364,6 +1371,61 @@ components:
           type: array
       required:
       - businessLines
+    CapabilityProblem:
+      properties:
+        entity:
+          $ref: '#/components/schemas/CapabilityProblemEntity'
+        verificationErrors:
+          items:
+            $ref: '#/components/schemas/VerificationError'
+          type: array
+    CapabilityProblemEntity:
+      properties:
+        id:
+          type: string
+        owner:
+          $ref: '#/components/schemas/CapabilityProblemEntity-recursive'
+        type:
+          enum:
+          - BankAccount
+          - Document
+          - LegalEntity
+          type: string
+    CapabilityProblemEntity-recursive:
+      properties:
+        id:
+          type: string
+        type:
+          enum:
+          - BankAccount
+          - Document
+          - LegalEntity
+          type: string
+      required: []
+    CapabilitySettings:
+      properties:
+        amountPerIndustry:
+          additionalProperties:
+            $ref: '#/components/schemas/Amount'
+          type: object
+        authorizedCardUsers:
+          type: boolean
+        fundingSource:
+          items:
+            enum:
+            - credit
+            - debit
+            - prepaid
+            type: string
+          type: array
+        interval:
+          enum:
+          - daily
+          - monthly
+          - weekly
+          type: string
+        maxAmount:
+          $ref: '#/components/schemas/Amount'
     Document:
       properties:
         attachment:
@@ -1539,6 +1601,11 @@ components:
       - residentialAddress
     LegalEntity:
       properties:
+        capabilities:
+          additionalProperties:
+            $ref: '#/components/schemas/LegalEntityCapability'
+          description: Overview of capabilities for this legal entity
+          type: object
         documents:
           deprecated: true
           x-deprecatedInVersion: '1'
@@ -1628,8 +1695,97 @@ components:
       required:
       - legalEntityId
       - type
+    LegalEntityCapability:
+      properties:
+        allowed:
+          description: 'Indicates whether the capability is allowed. Adyen sets this
+            to **true** if the verification is successful '
+          readOnly: true
+          type: boolean
+        allowedLevel:
+          description: 'The capability level that is allowed for the legal entity.
+
+
+            Possible values: **notApplicable**, **low**, **medium**, **high**.'
+          enum:
+          - high
+          - low
+          - medium
+          - notApplicable
+          readOnly: true
+          type: string
+        allowedSettings:
+          description: The settings that were allowed for the Legal Entity.
+          readOnly: true
+          $ref: '#/components/schemas/CapabilitySettings'
+        problems:
+          description: Contains verification errors and the actions that you can take
+            to resolve them.
+          items:
+            $ref: '#/components/schemas/CapabilityProblem'
+          readOnly: true
+          type: array
+        requested:
+          description: 'Indicates whether the capability is requested. To check whether
+            the Legal Entity is permitted to use the capability, '
+          readOnly: true
+          type: boolean
+        requestedLevel:
+          description: 'The requested level of the capability. Some capabilities,
+            such as those used in [card issuing](https://docs.adyen.com/issuing/add-capabilities#capability-levels),
+            have different levels. Levels increase the capability, but also require
+            additional checks and increased monitoring.
+
+
+            Possible values: **notApplicable**, **low**, **medium**, **high**.'
+          enum:
+          - high
+          - low
+          - medium
+          - notApplicable
+          readOnly: true
+          type: string
+        requestedSettings:
+          description: The settings that are requested for the Legal Entity.
+          readOnly: true
+          $ref: '#/components/schemas/CapabilitySettings'
+        transferInstruments:
+          description: Capability status for transfer instruments associated with
+            legal entity
+          items:
+            $ref: '#/components/schemas/SupportingEntityCapability'
+          readOnly: true
+          type: array
+        verificationStatus:
+          description: 'The status of the verification checks for the capability.
+
+
+            Possible values:
+
+
+            * **pending**: Adyen is running the verification.
+
+
+            * **invalid**: The verification failed. Check if the `errors` array contains
+            more information.
+
+
+            * **valid**: The verification has been successfully completed.
+
+
+            * **rejected**: Adyen has verified the information, but found reasons
+            to not allow the capability.
+
+            '
+          readOnly: true
+          type: string
     LegalEntityInfo:
       properties:
+        capabilities:
+          additionalProperties:
+            $ref: '#/components/schemas/LegalEntityCapability'
+          description: Overview of capabilities for this legal entity
+          type: object
         entityAssociations:
           description: 'List of legal entities associated with the current legal entity.
 
@@ -1848,17 +2004,11 @@ components:
       required:
       - type
       - number
-    RecurringDetail:
+    RemediatingAction:
       properties:
-        merchantAccount:
-          description: The merchant account used when the payment details were stored.
+        code:
           type: string
-        reference:
-          description: The `recurringDetailReference` returned in the response when
-            the payment details were stored.
-          type: string
-        shopperReference:
-          description: The unique identifier used when the payment details were stored.
+        message:
           type: string
     ServiceError:
       properties:
@@ -1912,6 +2062,58 @@ components:
         tickerSymbol:
           description: The stock ticker symbol.
           type: string
+    SupportingEntityCapability:
+      properties:
+        allowed:
+          description: 'Indicates whether the supporting entity capability is allowed.
+
+
+            If a supporting entity is allowed but its parent legal entity is not,
+            it means there are other supporting entities that failed validation.
+
+
+            **The allowed supporting entity can still be used**'
+          readOnly: true
+          type: boolean
+        id:
+          description: 'Supporting entity reference '
+          readOnly: true
+          type: string
+        problems:
+          description: Contains verification errors and the actions that you can take
+            to resolve them.
+          items:
+            $ref: '#/components/schemas/CapabilityProblem'
+          readOnly: true
+          type: array
+        requested:
+          description: 'Indicates whether the supporting entity capability is requested. '
+          readOnly: true
+          type: boolean
+        verificationStatus:
+          description: 'The status of the verification checks for the supporting entity
+            capability.
+
+
+            Possible values:
+
+
+            * **pending**: Adyen is running the verification.
+
+
+            * **invalid**: The verification failed. Check if the `errors` array contains
+            more information.
+
+
+            * **valid**: The verification has been successfully completed.
+
+
+            * **rejected**: Adyen has verified the information, but found reasons
+            to not allow the capability.
+
+            '
+          readOnly: true
+          type: string
     TransferInstrument:
       properties:
         bankAccount:
@@ -1933,15 +2135,11 @@ components:
           description: The unique identifier of the [legal entity](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/legalEntities__resParam_id)
             that owns the transfer instrument.
           type: string
-        recurringDetail:
-          description: Contains information about the legal entity's previously stored
-            payment details. Required when `type` is **recurringDetail**.
-          $ref: '#/components/schemas/RecurringDetail'
         type:
           description: 'The type of transfer instrument.
 
 
-            Possible values: **bankAccount**, **recurringDetail**.'
+            Possible values: **bankAccount**.'
           enum:
           - bankAccount
           - recurringDetail
@@ -1960,15 +2158,11 @@ components:
           description: The unique identifier of the [legal entity](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/legalEntities__resParam_id)
             that owns the transfer instrument.
           type: string
-        recurringDetail:
-          description: Contains information about the legal entity's previously stored
-            payment details. Required when `type` is **recurringDetail**.
-          $ref: '#/components/schemas/RecurringDetail'
         type:
           description: 'The type of transfer instrument.
 
 
-            Possible values: **bankAccount**, **recurringDetail**.'
+            Possible values: **bankAccount**.'
           enum:
           - bankAccount
           - recurringDetail
@@ -1984,6 +2178,157 @@ components:
         id:
           description: The unique identifier of the resource.
           type: string
+    VerificationError:
+      properties:
+        capabilities:
+          items:
+            enum:
+            - acceptExternalFunding
+            - acceptPspFunding
+            - acceptTransactionInRestrictedCountries
+            - acceptTransactionInRestrictedCountriesCommercial
+            - acceptTransactionInRestrictedCountriesConsumer
+            - acceptTransactionInRestrictedIndustries
+            - acceptTransactionInRestrictedIndustriesCommercial
+            - acceptTransactionInRestrictedIndustriesConsumer
+            - acquiring
+            - atmWithdrawal
+            - atmWithdrawalCommercial
+            - atmWithdrawalConsumer
+            - atmWithdrawalInRestrictedCountries
+            - atmWithdrawalInRestrictedCountriesCommercial
+            - atmWithdrawalInRestrictedCountriesConsumer
+            - authorisedPaymentInstrumentUser
+            - getGrantOffers
+            - issueBankAccount
+            - issueCard
+            - issueCardCommercial
+            - issueCardConsumer
+            - localAcceptance
+            - payout
+            - payoutToTransferInstrument
+            - processing
+            - receiveFromBalanceAccount
+            - receiveFromPlatformPayments
+            - receiveFromThirdParty
+            - receiveFromTransferInstrument
+            - receiveGrants
+            - receivePayments
+            - sendToBalanceAccount
+            - sendToThirdParty
+            - sendToTransferInstrument
+            - thirdPartyFunding
+            - useCard
+            - useCardCommercial
+            - useCardConsumer
+            - useCardInRestrictedCountries
+            - useCardInRestrictedCountriesCommercial
+            - useCardInRestrictedCountriesConsumer
+            - useCardInRestrictedIndustries
+            - useCardInRestrictedIndustriesCommercial
+            - useCardInRestrictedIndustriesConsumer
+            - withdrawFromAtm
+            - withdrawFromAtmCommercial
+            - withdrawFromAtmConsumer
+            - withdrawFromAtmInRestrictedCountries
+            - withdrawFromAtmInRestrictedCountriesCommercial
+            - withdrawFromAtmInRestrictedCountriesConsumer
+            type: string
+          type: array
+        code:
+          type: string
+        entity:
+          $ref: '#/components/schemas/CapabilityProblemEntity'
+        message:
+          type: string
+        remediatingActions:
+          items:
+            $ref: '#/components/schemas/RemediatingAction'
+          type: array
+        subErrors:
+          items:
+            $ref: '#/components/schemas/VerificationError-recursive'
+          type: array
+        type:
+          enum:
+          - dataMissing
+          - invalidInput
+          - pendingStatus
+          type: string
+    VerificationError-recursive:
+      properties:
+        capabilities:
+          items:
+            enum:
+            - acceptExternalFunding
+            - acceptPspFunding
+            - acceptTransactionInRestrictedCountries
+            - acceptTransactionInRestrictedCountriesCommercial
+            - acceptTransactionInRestrictedCountriesConsumer
+            - acceptTransactionInRestrictedIndustries
+            - acceptTransactionInRestrictedIndustriesCommercial
+            - acceptTransactionInRestrictedIndustriesConsumer
+            - acquiring
+            - atmWithdrawal
+            - atmWithdrawalCommercial
+            - atmWithdrawalConsumer
+            - atmWithdrawalInRestrictedCountries
+            - atmWithdrawalInRestrictedCountriesCommercial
+            - atmWithdrawalInRestrictedCountriesConsumer
+            - authorisedPaymentInstrumentUser
+            - getGrantOffers
+            - issueBankAccount
+            - issueCard
+            - issueCardCommercial
+            - issueCardConsumer
+            - localAcceptance
+            - payout
+            - payoutToTransferInstrument
+            - processing
+            - receiveFromBalanceAccount
+            - receiveFromPlatformPayments
+            - receiveFromThirdParty
+            - receiveFromTransferInstrument
+            - receiveGrants
+            - receivePayments
+            - sendToBalanceAccount
+            - sendToThirdParty
+            - sendToTransferInstrument
+            - thirdPartyFunding
+            - useCard
+            - useCardCommercial
+            - useCardConsumer
+            - useCardInRestrictedCountries
+            - useCardInRestrictedCountriesCommercial
+            - useCardInRestrictedCountriesConsumer
+            - useCardInRestrictedIndustries
+            - useCardInRestrictedIndustriesCommercial
+            - useCardInRestrictedIndustriesConsumer
+            - withdrawFromAtm
+            - withdrawFromAtmCommercial
+            - withdrawFromAtmConsumer
+            - withdrawFromAtmInRestrictedCountries
+            - withdrawFromAtmInRestrictedCountriesCommercial
+            - withdrawFromAtmInRestrictedCountriesConsumer
+            type: string
+          type: array
+        code:
+          type: string
+        message:
+          type: string
+        type:
+          enum:
+          - dataMissing
+          - invalidInput
+          - pendingStatus
+          type: string
+        entity:
+          $ref: '#/components/schemas/CapabilityProblemEntity'
+        remediatingActions:
+          items:
+            $ref: '#/components/schemas/RemediatingAction'
+          type: array
+      required: []
     VoidResponse: {}
     WebData:
       properties:
