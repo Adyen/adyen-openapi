@@ -10,7 +10,7 @@
       "x-publicVersion" : true,
       "title" : "Adyen Checkout API",
       "description" : "Adyen Checkout API provides a simple and flexible way to initiate and authorise online payments. You can use the same integration for payments made with cards (including 3D Secure), mobile wallets, and local payment methods (for example, iDEAL and Sofort).\n\nThis API reference provides information on available endpoints and how to interact with them. To learn more about the API, visit [online payments documentation](https://docs.adyen.com/online-payments).\n\n## Authentication\nEach request to Checkout API must be signed with an API key. For this, [get your API key](https://docs.adyen.com/development-resources/api-credentials#generate-api-key) from your Customer Area, and set this key to the `X-API-Key` header value, for example:\n\n```\ncurl\n-H \"Content-Type: application/json\" \\\n-H \"X-API-Key: YOUR_API_KEY\" \\\n...\n```\n## Versioning\nCheckout API supports [versioning](https://docs.adyen.com/development-resources/versioning) using a version suffix in the endpoint URL. This suffix has the following format: \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://checkout-test.adyen.com/v49/payments\n```\n\n## Going live\n\nTo access the live endpoints, you need an API key from your live Customer Area.\n\nThe live endpoint URLs contain a prefix which is unique to your company account, for example:\n```\nhttps://{PREFIX}-checkout-live.adyenpayments.com/checkout/v49/payments\n```\n\nGet your `{PREFIX}` from your live Customer Area under **Developers** > **API URLs** > **Prefix**.\n\nWhen preparing to do live transactions with Checkout API, follow the [go-live checklist](https://docs.adyen.com/online-payments/go-live-checklist) to make sure you've got all the required configuration in place.\n\n## Release notes\nHave a look at the [release notes](https://docs.adyen.com/online-payments/release-notes?integration_type=api&version=49) to find out what changed in this version!",
-      "x-timestamp" : "2022-12-08T10:26:58Z",
+      "x-timestamp" : "2023-01-02T17:27:51Z",
       "termsOfService" : "https://www.adyen.com/legal/terms-and-conditions",
       "contact" : {
          "name" : "Adyen Developer Experience team",
@@ -270,7 +270,7 @@
             "operationId" : "post-cardDetails",
             "x-groupName" : "Payments",
             "x-sortIndex" : 6,
-            "x-methodName" : "getTheListOfBrandsOnTheCard",
+            "x-methodName" : "listBrandsOnCard",
             "security" : [
                {
                   "BasicAuth" : [
@@ -1202,7 +1202,7 @@
             "operationId" : "patch-paymentLinks-linkId",
             "x-groupName" : "Payment links",
             "x-sortIndex" : 3,
-            "x-methodName" : "updateTheStatusOfPaymentLink",
+            "x-methodName" : "updateStatusOfPaymentLink",
             "security" : [
                {
                   "BasicAuth" : [
@@ -1498,7 +1498,7 @@
             "operationId" : "post-paymentMethods-balance",
             "x-groupName" : "Orders",
             "x-sortIndex" : 1,
-            "x-methodName" : "getTheBalanceOfGiftCard",
+            "x-methodName" : "getBalanceOfGiftCard",
             "security" : [
                {
                   "BasicAuth" : [
@@ -4593,8 +4593,6 @@
                }
             },
             "required" : [
-               "number",
-               "expiryMonth",
                "expiryYear",
                "holderName"
             ]
@@ -4702,12 +4700,7 @@
                      "networkToken",
                      "giftcard",
                      "alliancedata",
-                     "card",
-                     "qiwiwallet",
-                     "lianlianpay_ebanking_enterprise",
-                     "lianlianpay_ebanking_credit",
-                     "lianlianpay_ebanking_debit",
-                     "entercash"
+                     "card"
                   ],
                   "type" : "string"
                }
@@ -5850,6 +5843,10 @@
                   },
                   "type" : "array"
                },
+               "manualCapture" : {
+                  "description" : "Indicates if the payment must be [captured manually](https://docs.adyen.com/online-payments/capture).",
+                  "type" : "boolean"
+               },
                "merchantAccount" : {
                   "description" : "The merchant account identifier for which the payment link is created.",
                   "type" : "string"
@@ -5901,6 +5898,11 @@
                "shopperReference" : {
                   "description" : "Your reference to uniquely identify this shopper, for example user ID or account ID. Minimum length: 3 characters.\n> Your reference must not include personally identifiable information (PII), for example name or email address.",
                   "type" : "string"
+               },
+               "showRemovePaymentMethodButton" : {
+                  "default" : true,
+                  "description" : "Set to **false** to hide the button that lets the shopper remove a stored payment method.",
+                  "type" : "boolean"
                },
                "splits" : {
                   "description" : "An array of objects specifying how the payment should be split between accounts when using Adyen for Platforms. For details, refer to [Providing split information](https://docs.adyen.com/marketplaces-and-platforms/processing-payments#providing-split-information).",
@@ -6338,6 +6340,7 @@
                "type" : {
                   "description" : "**genericissuer**",
                   "enum" : [
+                     "onlineBanking_PL",
                      "eps",
                      "onlineBanking_SK",
                      "onlineBanking_CZ"
@@ -7299,7 +7302,6 @@
                      "upi_qr",
                      "paytm",
                      "molpay_ebanking_VN",
-                     "onlineBanking_PL",
                      "openbanking_UK",
                      "paybybank",
                      "ebanking_FI",
@@ -7472,6 +7474,7 @@
                   "description" : "The result of the payment. For more information, see [Result codes](https://docs.adyen.com/online-payments/payment-result-codes).\n\nPossible values:\n\n* **AuthenticationFinished** – The payment has been successfully authenticated with 3D Secure 2. Returned for 3D Secure 2 authentication-only transactions.\n* **AuthenticationNotRequired** – The transaction does not require 3D Secure authentication. Returned for [standalone authentication-only integrations](https://docs.adyen.com/online-payments/3d-secure/other-3ds-flows/authentication-only).\n* **Authorised** – The payment was successfully authorised. This state serves as an indicator to proceed with the delivery of goods and services. This is a final state.\n* **Cancelled** – Indicates the payment has been cancelled (either by the shopper or the merchant) before processing was completed. This is a final state.\n* **ChallengeShopper** – The issuer requires further shopper interaction before the payment can be authenticated. Returned for 3D Secure 2 transactions.\n* **Error** – There was an error when the payment was being processed. The reason is given in the `refusalReason` field. This is a final state.\n* **IdentifyShopper** – The issuer requires the shopper's device fingerprint before the payment can be authenticated. Returned for 3D Secure 2 transactions.\n* **Pending** – Indicates that it is not possible to obtain the final status of the payment. This can happen if the systems providing final status information for the payment are unavailable, or if the shopper needs to take further action to complete the payment.\n* **PresentToShopper** – Indicates that the response contains additional information that you need to present to a shopper, so that they can use it to complete a payment.\n* **Received** – Indicates the payment has successfully been received by Adyen, and will be processed. This is the initial state for all payments.\n* **RedirectShopper** – Indicates the shopper should be redirected to an external web page or app to complete the authorisation.\n* **Refused** – Indicates the payment was refused. The reason is given in the `refusalReason` field. This is a final state.",
                   "enum" : [
                      "AuthenticationFinished",
+                     "AuthenticationNotRequired",
                      "Authorised",
                      "Cancelled",
                      "ChallengeShopper",
@@ -8050,6 +8053,10 @@
                   },
                   "type" : "array"
                },
+               "manualCapture" : {
+                  "description" : "Indicates if the payment must be [captured manually](https://docs.adyen.com/online-payments/capture).",
+                  "type" : "boolean"
+               },
                "merchantAccount" : {
                   "description" : "The merchant account identifier for which the payment link is created.",
                   "type" : "string"
@@ -8102,6 +8109,11 @@
                   "description" : "Your reference to uniquely identify this shopper, for example user ID or account ID. Minimum length: 3 characters.\n> Your reference must not include personally identifiable information (PII), for example name or email address.",
                   "type" : "string"
                },
+               "showRemovePaymentMethodButton" : {
+                  "default" : true,
+                  "description" : "Set to **false** to hide the button that lets the shopper remove a stored payment method.",
+                  "type" : "boolean"
+               },
                "splits" : {
                   "description" : "An array of objects specifying how the payment should be split between accounts when using Adyen for Platforms. For details, refer to [Providing split information](https://docs.adyen.com/marketplaces-and-platforms/processing-payments#providing-split-information).",
                   "items" : {
@@ -8144,6 +8156,11 @@
                },
                "store" : {
                   "description" : "The physical store, for which this payment is processed.",
+                  "type" : "string"
+               },
+               "updatedAt" : {
+                  "description" : "The date when the payment link status was updated.\n\n[ISO 8601](https://www.w3.org/TR/NOTE-datetime) format: YYYY-MM-DDThh:mm:ss+TZD, for example, **2020-12-18T10:15:30+01:00**.",
+                  "format" : "date-time",
                   "type" : "string"
                },
                "url" : {
@@ -9043,6 +9060,7 @@
                   "description" : "The result of the payment. For more information, see [Result codes](https://docs.adyen.com/online-payments/payment-result-codes).\n\nPossible values:\n\n* **AuthenticationFinished** – The payment has been successfully authenticated with 3D Secure 2. Returned for 3D Secure 2 authentication-only transactions.\n* **AuthenticationNotRequired** – The transaction does not require 3D Secure authentication. Returned for [standalone authentication-only integrations](https://docs.adyen.com/online-payments/3d-secure/other-3ds-flows/authentication-only).\n* **Authorised** – The payment was successfully authorised. This state serves as an indicator to proceed with the delivery of goods and services. This is a final state.\n* **Cancelled** – Indicates the payment has been cancelled (either by the shopper or the merchant) before processing was completed. This is a final state.\n* **ChallengeShopper** – The issuer requires further shopper interaction before the payment can be authenticated. Returned for 3D Secure 2 transactions.\n* **Error** – There was an error when the payment was being processed. The reason is given in the `refusalReason` field. This is a final state.\n* **IdentifyShopper** – The issuer requires the shopper's device fingerprint before the payment can be authenticated. Returned for 3D Secure 2 transactions.\n* **Pending** – Indicates that it is not possible to obtain the final status of the payment. This can happen if the systems providing final status information for the payment are unavailable, or if the shopper needs to take further action to complete the payment.\n* **PresentToShopper** – Indicates that the response contains additional information that you need to present to a shopper, so that they can use it to complete a payment.\n* **Received** – Indicates the payment has successfully been received by Adyen, and will be processed. This is the initial state for all payments.\n* **RedirectShopper** – Indicates the shopper should be redirected to an external web page or app to complete the authorisation.\n* **Refused** – Indicates the payment was refused. The reason is given in the `refusalReason` field. This is a final state.",
                   "enum" : [
                      "AuthenticationFinished",
+                     "AuthenticationNotRequired",
                      "Authorised",
                      "Cancelled",
                      "ChallengeShopper",
@@ -9522,6 +9540,7 @@
                   "description" : "The result of the payment. For more information, see [Result codes](https://docs.adyen.com/online-payments/payment-result-codes).\n\nPossible values:\n\n* **AuthenticationFinished** – The payment has been successfully authenticated with 3D Secure 2. Returned for 3D Secure 2 authentication-only transactions.\n* **AuthenticationNotRequired** – The transaction does not require 3D Secure authentication. Returned for [standalone authentication-only integrations](https://docs.adyen.com/online-payments/3d-secure/other-3ds-flows/authentication-only).\n* **Authorised** – The payment was successfully authorised. This state serves as an indicator to proceed with the delivery of goods and services. This is a final state.\n* **Cancelled** – Indicates the payment has been cancelled (either by the shopper or the merchant) before processing was completed. This is a final state.\n* **ChallengeShopper** – The issuer requires further shopper interaction before the payment can be authenticated. Returned for 3D Secure 2 transactions.\n* **Error** – There was an error when the payment was being processed. The reason is given in the `refusalReason` field. This is a final state.\n* **IdentifyShopper** – The issuer requires the shopper's device fingerprint before the payment can be authenticated. Returned for 3D Secure 2 transactions.\n* **Pending** – Indicates that it is not possible to obtain the final status of the payment. This can happen if the systems providing final status information for the payment are unavailable, or if the shopper needs to take further action to complete the payment.\n* **PresentToShopper** – Indicates that the response contains additional information that you need to present to a shopper, so that they can use it to complete a payment.\n* **Received** – Indicates the payment has successfully been received by Adyen, and will be processed. This is the initial state for all payments.\n* **RedirectShopper** – Indicates the shopper should be redirected to an external web page or app to complete the authorisation.\n* **Refused** – Indicates the payment was refused. The reason is given in the `refusalReason` field. This is a final state.",
                   "enum" : [
                      "AuthenticationFinished",
+                     "AuthenticationNotRequired",
                      "Authorised",
                      "Cancelled",
                      "ChallengeShopper",
@@ -10375,7 +10394,7 @@
                   "type" : "string"
                },
                "type" : {
-                  "description" : "The type of split.\nPossible values: **Default**, **PaymentFee**, **VAT**, **Commission**, **MarketPlace**, **BalanceAccount**, **Remainder**.",
+                  "description" : "The type of split.\nPossible values: **Default**, **PaymentFee**, **VAT**, **Commission**, **MarketPlace**, **BalanceAccount**, **Remainder**, **Surcharge**, **Tip**.",
                   "enum" : [
                      "BalanceAccount",
                      "Commission",
@@ -10383,6 +10402,8 @@
                      "MarketPlace",
                      "PaymentFee",
                      "Remainder",
+                     "Surcharge",
+                     "Tip",
                      "VAT",
                      "Verification"
                   ],
@@ -10872,6 +10893,22 @@
          "UpiIntentDetails" : {
             "additionalProperties" : false,
             "properties" : {
+               "recurringDetailReference" : {
+                  "deprecated" : true,
+                  "x-deprecatedInVersion" : "49",
+                  "x-deprecatedMessage" : "Use `storedPaymentMethodId` instead.",
+                  "description" : "This is the `recurringDetailReference` returned in the response when you created the token.",
+                  "type" : "string"
+               },
+               "shopperNotificationReference" : {
+                  "description" : "The `shopperNotificationReference` returned in the response when you requested to notify the shopper. Used for recurring payment only.",
+                  "type" : "string"
+               },
+               "storedPaymentMethodId" : {
+                  "x-addedInVersion" : "49",
+                  "description" : "This is the `recurringDetailReference` returned in the response when you created the token.",
+                  "type" : "string"
+               },
                "type" : {
                   "default" : "upi_intent",
                   "description" : "**upi_intent**",
@@ -11100,12 +11137,13 @@
                },
                "countryCode" : "NL",
                "expiresAt" : "2021-04-08T14:06:39Z",
-               "merchantAccount" : "TestMerchantCheckout",
+               "merchantAccount" : "YOUR_MERCHANT_ACCOUNT",
                "reference" : "shopper-reference-ekvL83",
                "shopperLocale" : "hu-HU",
                "shopperReference" : "shopper-reference-LZfdWZ",
                "status" : "active",
-               "url" : "https://test.adyen.link/PL61C53A8B97E6915A"
+               "url" : "https://test.adyen.link/PL61C53A8B97E6915A",
+               "id" : "PL61C53A8B97E6915A"
             }
          },
          "patch-paymentLinks-linkId-basic" : {
@@ -11123,12 +11161,13 @@
                },
                "countryCode" : "NL",
                "expiresAt" : "2021-04-08T14:06:39Z",
-               "merchantAccount" : "TestMerchantCheckout",
+               "merchantAccount" : "YOUR_MERCHANT_ACCOUNT",
                "reference" : "shopper-reference-ekvL83",
                "shopperLocale" : "hu-HU",
                "shopperReference" : "shopper-reference-LZfdWZ",
                "status" : "expired",
-               "url" : "https://test.adyen.link/PL61C53A8B97E6915A"
+               "url" : "https://test.adyen.link/PL61C53A8B97E6915A",
+               "id" : "PL61C53A8B97E6915A"
             }
          },
          "post-applePay-sessions-basic" : {
@@ -11160,7 +11199,7 @@
                "brands" : [
                   {
                      "type" : "visa",
-                     "supported" : "true"
+                     "supported" : true
                   },
                   {
                      "type" : "cartebancaire",
@@ -11189,11 +11228,11 @@
                "brands" : [
                   {
                      "type" : "visa",
-                     "supported" : "true"
+                     "supported" : true
                   },
                   {
                      "type" : "cartebancaire",
-                     "supported" : "false"
+                     "supported" : false
                   }
                ]
             }
@@ -11354,15 +11393,39 @@
             }
          },
          "post-paymentLinks-basic-200" : {
-            "summary" : "Example response for request 'basic'",
+            "summary" : "Payment link created",
             "value" : {
                "amount" : {
-                  "currency" : "EUR",
+                  "currency" : "BRL",
                   "value" : 1250
                },
-               "expiresAt" : "2021-04-09T14:17:31Z",
-               "reference" : "shopper-reference-ekvL83",
-               "url" : "https://test.adyen.link/PL6DB3157D27FFBBCF"
+               "billingAddress" : {
+                  "city" : "São Paulo",
+                  "country" : "BR",
+                  "houseNumberOrName" : "999",
+                  "postalCode" : "59000060",
+                  "stateOrProvince" : "SP",
+                  "street" : "Roque Petroni Jr"
+               },
+               "countryCode" : "BR",
+               "deliveryAddress" : {
+                  "city" : "São Paulo",
+                  "country" : "BR",
+                  "houseNumberOrName" : "999",
+                  "postalCode" : "59000060",
+                  "stateOrProvince" : "SP",
+                  "street" : "Roque Petroni Jr"
+               },
+               "expiresAt" : "2022-10-28T09:16:22Z",
+               "merchantAccount" : "YOUR_MERCHANT_ACCOUNT",
+               "reference" : "YOUR_ORDER_NUMBER",
+               "reusable" : false,
+               "shopperEmail" : "test@email.com",
+               "shopperLocale" : "pt-BR",
+               "shopperReference" : "YOUR_UNIQUE_SHOPPER_ID",
+               "id" : "PLE83C39B0A0DE0C1E",
+               "status" : "active",
+               "url" : "https://test.adyen.link/PLE83C39B0A0DE0C1E"
             }
          },
          "post-paymentMethods-balance-basic" : {
@@ -14913,7 +14976,7 @@
                   "currency" : "EUR",
                   "value" : 1000
                },
-               "shopperReference" : "YOUR_UNIQUE_SHOPPER_ID_IOfW3k9G2PvXFu2j"
+               "shopperReference" : "YOUR_UNIQUE_SHOPPER_ID"
             }
          },
          "post-paymentMethods-include-oneclick-200" : {
@@ -15528,7 +15591,7 @@
                   "value" : 17408
                },
                "reference" : "Your order number",
-               "shopperReference" : "YOUR_UNIQUE_SHOPPER_ID_IOfW3k9G2PvXFu2j",
+               "shopperReference" : "YOUR_UNIQUE_SHOPPER_ID",
                "channel" : "Android",
                "token" : "TOKEN_YOU_GET_FROM_CHECKOUT_SDK",
                "returnUrl" : "app://",
@@ -15546,7 +15609,7 @@
                   "value" : 17408
                },
                "reference" : "Your order number",
-               "shopperReference" : "YOUR_UNIQUE_SHOPPER_ID_IOfW3k9G2PvXFu2j",
+               "shopperReference" : "YOUR_UNIQUE_SHOPPER_ID",
                "enableOneClick" : true,
                "enableRecurring" : true,
                "channel" : "Web",
@@ -15573,7 +15636,7 @@
                   "value" : 17408
                },
                "reference" : "Your order number",
-               "shopperReference" : "YOUR_UNIQUE_SHOPPER_ID_IOfW3k9G2PvXFu2j",
+               "shopperReference" : "YOUR_UNIQUE_SHOPPER_ID",
                "channel" : "iOS",
                "token" : "TOKEN_YOU_GET_FROM_CHECKOUT_SDK",
                "returnUrl" : "app://",
@@ -15605,7 +15668,7 @@
                   "split.item2.reference" : "6124146"
                },
                "reference" : "Your order number",
-               "shopperReference" : "YOUR_UNIQUE_SHOPPER_ID_IOfW3k9G2PvXFu2j",
+               "shopperReference" : "YOUR_UNIQUE_SHOPPER_ID",
                "channel" : "Android",
                "token" : "TOKEN_YOU_GET_FROM_CHECKOUT_SDK",
                "returnUrl" : "app://",
@@ -15623,7 +15686,7 @@
                   "value" : 17408
                },
                "reference" : "Your order number",
-               "shopperReference" : "YOUR_UNIQUE_SHOPPER_ID_IOfW3k9G2PvXFu2j",
+               "shopperReference" : "YOUR_UNIQUE_SHOPPER_ID",
                "channel" : "Web",
                "html" : true,
                "origin" : "https://www.yourwebsite.com",
@@ -15934,7 +15997,7 @@
                   "encryptedSecurityCode" : "adyenjs_0_1_18$MT6ppy0FAMVMLH...",
                   "storeDetails" : true
                },
-               "shopperReference" : "YOUR_UNIQUE_SHOPPER_ID_IOfW3k9G2PvXFu2j",
+               "shopperReference" : "YOUR_UNIQUE_SHOPPER_ID",
                "returnUrl" : "https://your-company.com/...",
                "merchantAccount" : "YOUR_MERCHANT_ACCOUNT"
             }
@@ -15956,7 +16019,7 @@
                   "cvc" : "737",
                   "storeDetails" : true
                },
-               "shopperReference" : "YOUR_UNIQUE_SHOPPER_ID_IOfW3k9G2PvXFu2j",
+               "shopperReference" : "YOUR_UNIQUE_SHOPPER_ID",
                "returnUrl" : "https://your-company.com/...",
                "merchantAccount" : "YOUR_MERCHANT_ACCOUNT"
             }
@@ -15973,7 +16036,7 @@
                   "avsResultRaw" : "4",
                   "cvcResultRaw" : "M",
                   "refusalReasonRaw" : "AUTHORISED",
-                  "recurring.shopperReference" : "YOUR_UNIQUE_SHOPPER_ID_IOfW3k9G2PvXFu2j",
+                  "recurring.shopperReference" : "YOUR_UNIQUE_SHOPPER_ID",
                   "acquirerCode" : "TestPmmAcquirer",
                   "acquirerReference" : "8PQMP9UDGL3"
                },
@@ -16098,7 +16161,7 @@
                   "gender" : "UNKNOWN",
                   "lastName" : "Approved"
                },
-               "shopperReference" : "YOUR_UNIQUE_SHOPPER_ID_IOfW3k9G2PvXFu2j",
+               "shopperReference" : "YOUR_UNIQUE_SHOPPER_ID",
                "billingAddress" : {
                   "city" : "Ankeborg",
                   "country" : "SE",
