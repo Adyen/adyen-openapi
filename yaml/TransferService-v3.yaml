@@ -23,7 +23,7 @@ info:
     ```\n## Going live\nWhen going live, your Adyen contact will provide your API\
     \ credential for the live environment. You can then use the username and password\
     \ to send requests to `https://balanceplatform-api-live.adyen.com/btl/v3`.\n\n"
-  x-timestamp: '2022-11-24T11:24:00Z'
+  x-timestamp: '2023-01-10T10:26:12Z'
   termsOfService: https://www.adyen.com/legal/terms-and-conditions
   contact:
     name: Adyen Developer Experience team
@@ -41,11 +41,14 @@ paths:
       tags:
       - Transactions
       summary: Get all transactions
-      description: Returns transactions that match the query parameters. This endpoint
-        supports cursor-based pagination. The response returns the first page of results,
-        and returns links to the next page when applicable. You can use the links
-        to page through the results. The response also returns links to the previous
-        page when applicable.
+      description: 'Returns all transactions related to a balance account with a payment
+        instrument of type **bankAccount**.
+
+
+        This endpoint supports cursor-based pagination. The response returns the first
+        page of results, and returns links to the next page when applicable. You can
+        use the links to page through the results. The response also returns links
+        to the previous page when applicable.'
       x-addedInVersion: '1'
       operationId: get-transactions
       x-groupName: Transactions
@@ -282,13 +285,13 @@ components:
       additionalProperties: false
       properties:
         accountNumber:
-          description: The bank account number (without separators or whitespace).
+          description: The bank account number, without separators or whitespace.
           maxLength: 9
           minLength: 5
           type: string
         bsbCode:
-          description: The 6-digit [Bank State Branch (BSB) code](https://en.wikipedia.org/wiki/Bank_state_branch)
-            (without separators or whitespace).
+          description: The 6-digit [Bank State Branch (BSB) code](https://en.wikipedia.org/wiki/Bank_state_branch),
+            without separators or whitespace.
           maxLength: 6
           minLength: 6
           type: string
@@ -407,6 +410,7 @@ components:
           oneOf:
           - $ref: '#/components/schemas/AULocalAccountIdentification'
           - $ref: '#/components/schemas/BRLocalAccountIdentification'
+          - $ref: '#/components/schemas/CALocalAccountIdentification'
           - $ref: '#/components/schemas/CZLocalAccountIdentification'
           - $ref: '#/components/schemas/DKLocalAccountIdentification'
           - $ref: '#/components/schemas/HULocalAccountIdentification'
@@ -421,6 +425,36 @@ components:
       required:
       - accountIdentification
       - accountHolder
+    CALocalAccountIdentification:
+      additionalProperties: false
+      properties:
+        accountNumber:
+          description: The 5- to 12-digit bank account number, without separators
+            or whitespace.
+          maxLength: 12
+          minLength: 5
+          type: string
+        institutionNumber:
+          description: The 3-digit institution number, without separators or whitespace.
+          maxLength: 3
+          minLength: 3
+          type: string
+        transitNumber:
+          description: The 5-digit transit number, without separators or whitespace.
+          maxLength: 5
+          minLength: 5
+          type: string
+        type:
+          default: caLocal
+          description: '**caLocal**'
+          enum:
+          - caLocal
+          type: string
+      required:
+      - type
+      - accountNumber
+      - institutionNumber
+      - transitNumber
     CZLocalAccountIdentification:
       additionalProperties: false
       properties:
@@ -436,8 +470,8 @@ components:
           minLength: 2
           type: string
         bankCode:
-          description: "The 4-digit bank code (K\xF3d banky) (without separators or\
-            \ whitespace)."
+          description: "The 4-digit bank code (K\xF3d banky), without separators or\
+            \ whitespace."
           maxLength: 4
           minLength: 4
           type: string
@@ -505,7 +539,7 @@ components:
       additionalProperties: false
       properties:
         accountNumber:
-          description: The 24-digit bank account number (without separators or whitespace).
+          description: The 24-digit bank account number, without separators or whitespace.
           maxLength: 24
           minLength: 24
           type: string
@@ -593,7 +627,7 @@ components:
       additionalProperties: false
       properties:
         accountNumber:
-          description: The 11-digit bank account number (without separators or whitespace).
+          description: The 11-digit bank account number, without separators or whitespace.
           maxLength: 11
           minLength: 11
           type: string
@@ -641,7 +675,7 @@ components:
             require these identifiers for cross-border transfers.
           $ref: '#/components/schemas/AdditionalBankIdentification'
         bic:
-          description: The bank's 8 or 11 character BIC or SWIFT code.
+          description: The bank's 8- or 11-character BIC or SWIFT code.
           maxLength: 11
           minLength: 8
           type: string
@@ -659,8 +693,8 @@ components:
       additionalProperties: false
       properties:
         accountNumber:
-          description: The 26-digit bank account number ([Numer rachunku](https://pl.wikipedia.org/wiki/Numer_Rachunku_Bankowego))
-            (without separators or whitespace).
+          description: The 26-digit bank account number ([Numer rachunku](https://pl.wikipedia.org/wiki/Numer_Rachunku_Bankowego)),
+            without separators or whitespace.
           maxLength: 26
           minLength: 26
           type: string
@@ -744,14 +778,14 @@ components:
       additionalProperties: false
       properties:
         accountNumber:
-          description: The 7- to 10-digit bank account number ([Bankkontonummer](https://sv.wikipedia.org/wiki/Bankkonto))
-            (without the clearing number, separators, or whitespace).
+          description: The 7- to 10-digit bank account number ([Bankkontonummer](https://sv.wikipedia.org/wiki/Bankkonto)),
+            without the clearing number, separators, or whitespace.
           maxLength: 10
           minLength: 7
           type: string
         clearingNumber:
-          description: "The 4\u2013 to 5-digit clearing number ([Clearingnummer](https://sv.wikipedia.org/wiki/Clearingnummer))\
-            \ (without separators or whitespace)."
+          description: The 4- to 5-digit clearing number ([Clearingnummer](https://sv.wikipedia.org/wiki/Clearingnummer)),
+            without separators or whitespace.
           maxLength: 5
           minLength: 4
           type: string
@@ -769,12 +803,13 @@ components:
       additionalProperties: false
       properties:
         accountNumber:
-          description: The 4-19 digit bank account number, separators, or whitespace.
+          description: The 4- to 19-digit bank account number, without separators
+            or whitespace.
           maxLength: 19
           minLength: 4
           type: string
         bic:
-          description: The bank's 8 or 11 character BIC or SWIFT code.
+          description: The bank's 8- or 11-character BIC or SWIFT code.
           maxLength: 11
           minLength: 8
           type: string
@@ -892,6 +927,7 @@ components:
           - atmWithdrawal
           - atmWithdrawalReversal
           - balanceAdjustment
+          - balanceRollover
           - bankTransfer
           - capture
           - captureReversal
@@ -1021,9 +1057,19 @@ components:
           x-addedInVersion: '2'
           description: Additional information about the status of the transfer.
           enum:
+          - amountLimitExceded
           - approved
+          - counterpartyAccountBlocked
+          - counterpartyAccountClosed
+          - counterpartyAccountNotFound
+          - counterpartyAddressRequired
+          - counterpartyBankTimedOut
+          - counterpartyBankUnavailable
           - error
           - notEnoughBalance
+          - refusedByCounterpartyBank
+          - rejectedByCounterpartyBank
+          - routeNotFound
           - unknown
           type: string
         reference:
@@ -1106,6 +1152,7 @@ components:
           - refused
           - reserveAdjustment
           - reserveAdjustmentPending
+          - returned
           - secondChargeback
           - secondChargebackPending
           - undefined
@@ -1207,13 +1254,13 @@ components:
       additionalProperties: false
       properties:
         accountNumber:
-          description: The 8-digit bank account number (without separators or whitespace).
+          description: The 8-digit bank account number, without separators or whitespace.
           maxLength: 8
           minLength: 8
           type: string
         sortCode:
-          description: The 6-digit [sort code](https://en.wikipedia.org/wiki/Sort_code)
-            (without separators or whitespace).
+          description: The 6-digit [sort code](https://en.wikipedia.org/wiki/Sort_code),
+            without separators or whitespace.
           maxLength: 6
           minLength: 6
           type: string
@@ -1231,7 +1278,7 @@ components:
       additionalProperties: false
       properties:
         accountNumber:
-          description: The bank account number (without separators or whitespace).
+          description: The bank account number, without separators or whitespace.
           maxLength: 18
           minLength: 2
           type: string
@@ -1246,8 +1293,8 @@ components:
           - savings
           type: string
         routingNumber:
-          description: The 9-digit [routing number](https://en.wikipedia.org/wiki/ABA_routing_transit_number)
-            (without separators or whitespace).
+          description: The 9-digit [routing number](https://en.wikipedia.org/wiki/ABA_routing_transit_number),
+            without separators or whitespace.
           maxLength: 9
           minLength: 9
           type: string
@@ -1365,17 +1412,18 @@ components:
         balanceAccountId: BAB8B2C3D4E5F6G7H8D9J6GD4
         category: bank
         counterparty:
-          accountHolder:
-            fullName: A. Klaassen
-            address:
-              city: San Francisco
-              country: US
-              postalCode: '94678'
-              stateOrProvince: CA
-              street: Brannan Street
-              street2: '274'
+          bankAccount:
+            accountHolder:
+              fullName: A. Klaassen
+              address:
+                city: San Francisco
+                country: US
+                postalCode: '94678'
+                stateOrProvince: CA
+                street: Brannan Street
+                street2: '274'
           accountIdentification:
-            type: numberBic
+            type: numberAndBic
             accountNumber: '123456789'
             bic: BOFAUS3NXXX
         priority: wire
@@ -1393,26 +1441,27 @@ components:
         balanceAccountId: BAB8B2C3D4E5F6G7H8D9J6GD4
         category: bank
         counterparty:
-          accountHolder:
-            fullName: A. Klaassen
-            address:
-              city: San Francisco
-              country: US
-              postalCode: '94678'
-              stateOrProvince: CA
-              street: Brannan Street
-              street2: '274'
-          accountIdentification:
-            type: numberBic
-            accountNumber: '123456789'
-            bic: BOFAUS3NXXX
-        priority: wire
-        referenceForBeneficiary: Your reference sent to the beneficiary
-        reference: Your internal reference for the transfer
-        description: Your description for the transfer
-        direction: outgoing
-        reason: approved
-        status: authorised
+          bankAccount:
+            accountHolder:
+              fullName: A. Klaassen
+              address:
+                city: San Francisco
+                country: US
+                postalCode: '94678'
+                stateOrProvince: CA
+                street: Brannan Street
+                street2: '274'
+            accountIdentification:
+              type: numberAndBic
+              accountNumber: '123456789'
+              bic: BOFAUS3NXXX
+          priority: wire
+          referenceForBeneficiary: Your reference sent to the beneficiary
+          reference: Your internal reference for the transfer
+          description: Your description for the transfer
+          direction: outgoing
+          reason: approved
+          status: authorised
     post-transfers-payout-local-transfer-sepa:
       summary: Make a SEPA funds transfer
       description: Example request to make a SEPA funds transfer
