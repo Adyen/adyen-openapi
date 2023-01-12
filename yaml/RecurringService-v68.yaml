@@ -24,7 +24,7 @@ info:
     \ unique to your company account:\n```\n\nhttps://{PREFIX}-pal-live.adyenpayments.com/pal/servlet/Recurring/v68/disable\n\
     ```\n\nGet your `{PREFIX}` from your live Customer Area under **Developers** >\
     \ **API URLs** > **Prefix**."
-  x-timestamp: '2022-11-28T11:27:24Z'
+  x-timestamp: '2023-01-10T17:26:09Z'
   termsOfService: https://www.adyen.com/legal/terms-and-conditions
   contact:
     name: Adyen Developer Experience team
@@ -35,6 +35,63 @@ x-groups:
 tags:
 - name: General
 paths:
+  /createPermit:
+    post:
+      tags:
+      - General
+      summary: Create new permits linked to a recurring contract.
+      description: Create permits for a recurring contract, including support for
+        defining restrictions.
+      x-addedInVersion: '40'
+      operationId: post-createPermit
+      x-groupName: General
+      x-sortIndex: 0
+      x-methodName: createNewPermitsLinkedToRecurringContract
+      security:
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePermitRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatePermitResult'
+          description: OK - the request has succeeded.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Bad Request - a problem reading or understanding the request.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Unauthorized - authentication required.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Forbidden - insufficient permissions to process the request.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Unprocessable Entity - a request validation error.
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Internal Server Error - the server could not process the request.
   /disable:
     post:
       tags:
@@ -66,6 +123,62 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DisableResult'
+          description: OK - the request has succeeded.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Bad Request - a problem reading or understanding the request.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Unauthorized - authentication required.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Forbidden - insufficient permissions to process the request.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Unprocessable Entity - a request validation error.
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Internal Server Error - the server could not process the request.
+  /disablePermit:
+    post:
+      tags:
+      - General
+      summary: Disable an existing permit.
+      description: Disable a permit that was previously linked to a recurringDetailReference.
+      x-addedInVersion: '61'
+      operationId: post-disablePermit
+      x-groupName: General
+      x-sortIndex: 0
+      x-methodName: disableExistingPermit
+      security:
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DisablePermitRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DisablePermitResult'
           description: OK - the request has succeeded.
         '400':
           content:
@@ -172,7 +285,7 @@ paths:
       operationId: post-notifyShopper
       x-groupName: General
       x-sortIndex: 4
-      x-methodName: askIssuerToNotifyTheShopper
+      x-methodName: askIssuerToNotifyShopper
       security:
       - BasicAuth: []
       - ApiKeyAuth: []
@@ -240,7 +353,7 @@ paths:
       operationId: post-scheduleAccountUpdater
       x-groupName: General
       x-sortIndex: 3
-      x-methodName: scheduleRunningTheAccountUpdater
+      x-methodName: scheduleRunningAccountUpdater
       security:
       - BasicAuth: []
       - ApiKeyAuth: []
@@ -459,10 +572,63 @@ components:
           minLength: 4
           type: string
       required:
-      - number
-      - expiryMonth
       - expiryYear
       - holderName
+    CreatePermitRequest:
+      properties:
+        merchantAccount:
+          description: The merchant account identifier, with which you want to process
+            the transaction.
+          type: string
+        permits:
+          description: The permits to create for this recurring contract.
+          items:
+            $ref: '#/components/schemas/Permit'
+          type: array
+        recurringDetailReference:
+          description: The recurring contract the new permits will use.
+          type: string
+        shopperReference:
+          description: The shopper's reference to uniquely identify this shopper (e.g.
+            user ID or account ID).
+          type: string
+      required:
+      - merchantAccount
+      - shopperReference
+      - recurringDetailReference
+      - permits
+    CreatePermitResult:
+      properties:
+        permitResultList:
+          description: List of new permits.
+          items:
+            $ref: '#/components/schemas/PermitResult'
+          type: array
+        pspReference:
+          description: A unique reference associated with the request. This value
+            is globally unique; quote it when communicating with us about this request.
+          type: string
+    DisablePermitRequest:
+      properties:
+        merchantAccount:
+          description: The merchant account identifier, with which you want to process
+            the transaction.
+          type: string
+        token:
+          description: The permit token to disable.
+          type: string
+      required:
+      - merchantAccount
+      - token
+    DisablePermitResult:
+      properties:
+        pspReference:
+          description: A unique reference associated with the request. This value
+            is globally unique; quote it when communicating with us about this request.
+          type: string
+        status:
+          description: Status of the disable request.
+          type: string
     DisableRequest:
       properties:
         contract:
@@ -587,6 +753,51 @@ components:
         storedPaymentMethodId:
           description: This is the recurringDetailReference returned in the response
             when token was created
+          type: string
+    Permit:
+      properties:
+        partnerId:
+          description: Partner ID (when using the permit-per-partner token sharing
+            model).
+          type: string
+        profileReference:
+          description: The profile to apply to this permit (when using the shared
+            permits model).
+          type: string
+        restriction:
+          description: Permit level restriction overrides.
+          $ref: '#/components/schemas/PermitRestriction'
+        resultKey:
+          description: The key to link permit requests to permit results.
+          type: string
+        validTillDate:
+          description: The expiry date for this permit.
+          format: date-time
+          type: string
+    PermitRestriction:
+      properties:
+        maxAmount:
+          description: The total sum amount of one or more payments made using this
+            permit may not exceed this amount if set.
+          $ref: '#/components/schemas/Amount'
+        singleTransactionLimit:
+          description: The amount of any single payment using this permit may not
+            exceed this amount if set.
+          $ref: '#/components/schemas/Amount'
+        singleUse:
+          description: Only a single payment can be made using this permit if set
+            to true, otherwise multiple payments are allowed.
+          type: boolean
+    PermitResult:
+      properties:
+        resultKey:
+          x-addedInVersion: '32'
+          description: The key to link permit requests to permit results.
+          type: string
+        token:
+          x-addedInVersion: '32'
+          description: The permit token which is used to make payments by the partner
+            company.
           type: string
     Recurring:
       properties:

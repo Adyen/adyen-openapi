@@ -10,7 +10,7 @@
       "x-publicVersion" : true,
       "title" : "Adyen Recurring API",
       "description" : "The Recurring APIs allow you to manage and remove your tokens or saved payment details. Tokens should be created with validation during a payment request.\n\nFor more information, refer to our [Tokenization documentation](https://docs.adyen.com/online-payments/tokenization).\n## Authentication\nYou need an [API credential](https://docs.adyen.com/development-resources/api-credentials) to authenticate to the API.\n\nIf using an API key, add an `X-API-Key` header with the API key as the value, for example:\n\n ```\ncurl\n-H \"Content-Type: application/json\" \\\n-H \"X-API-Key: YOUR_API_KEY\" \\\n...\n```\n\nAlternatively, you can use the username and password to connect to the API using basic authentication, for example:\n\n```\ncurl\n-U \"ws@Company.YOUR_COMPANY_ACCOUNT\":\"YOUR_BASIC_AUTHENTICATION_PASSWORD\" \\\n-H \"Content-Type: application/json\" \\\n...\n```\n\n## Versioning\nRecurring API supports [versioning](https://docs.adyen.com/development-resources/versioning) using a version suffix in the endpoint URL. This suffix has the following format: \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://pal-test.adyen.com/pal/servlet/Recurring/v40/disable\n```\n\n## Going live\n\nTo authenticate to the live endpoints, you need an [API credential](https://docs.adyen.com/development-resources/api-credentials) from your live Customer Area.\n\nThe live endpoint URLs contain a prefix which is unique to your company account:\n```\n\nhttps://{PREFIX}-pal-live.adyenpayments.com/pal/servlet/Recurring/v40/disable\n```\n\nGet your `{PREFIX}` from your live Customer Area under **Developers** > **API URLs** > **Prefix**.",
-      "x-timestamp" : "2022-11-28T11:27:24Z",
+      "x-timestamp" : "2023-01-10T17:26:09Z",
       "termsOfService" : "https://www.adyen.com/legal/terms-and-conditions",
       "contact" : {
          "name" : "Adyen Developer Experience team",
@@ -27,6 +27,101 @@
       }
    ],
    "paths" : {
+      "/createPermit" : {
+         "post" : {
+            "tags" : [
+               "General"
+            ],
+            "summary" : "Create new permits linked to a recurring contract.",
+            "description" : "Create permits for a recurring contract, including support for defining restrictions.",
+            "x-addedInVersion" : "40",
+            "operationId" : "post-createPermit",
+            "x-groupName" : "General",
+            "x-sortIndex" : 0,
+            "x-methodName" : "createNewPermitsLinkedToRecurringContract",
+            "security" : [
+               {
+                  "BasicAuth" : [
+                     ]
+               },
+               {
+                  "ApiKeyAuth" : [
+                     ]
+               }
+            ],
+            "requestBody" : {
+               "content" : {
+                  "application/json" : {
+                     "schema" : {
+                        "$ref" : "#/components/schemas/CreatePermitRequest"
+                     }
+                  }
+               }
+            },
+            "responses" : {
+               "200" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/CreatePermitResult"
+                        }
+                     }
+                  },
+                  "description" : "OK - the request has succeeded."
+               },
+               "400" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/ServiceError"
+                        }
+                     }
+                  },
+                  "description" : "Bad Request - a problem reading or understanding the request."
+               },
+               "401" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/ServiceError"
+                        }
+                     }
+                  },
+                  "description" : "Unauthorized - authentication required."
+               },
+               "403" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/ServiceError"
+                        }
+                     }
+                  },
+                  "description" : "Forbidden - insufficient permissions to process the request."
+               },
+               "422" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/ServiceError"
+                        }
+                     }
+                  },
+                  "description" : "Unprocessable Entity - a request validation error."
+               },
+               "500" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/ServiceError"
+                        }
+                     }
+                  },
+                  "description" : "Internal Server Error - the server could not process the request."
+               }
+            }
+         }
+      },
       "/disable" : {
          "post" : {
             "tags" : [
@@ -235,7 +330,7 @@
             "operationId" : "post-notifyShopper",
             "x-groupName" : "General",
             "x-sortIndex" : 4,
-            "x-methodName" : "askIssuerToNotifyTheShopper",
+            "x-methodName" : "askIssuerToNotifyShopper",
             "security" : [
                {
                   "BasicAuth" : [
@@ -340,7 +435,7 @@
             "operationId" : "post-scheduleAccountUpdater",
             "x-groupName" : "General",
             "x-sortIndex" : 3,
-            "x-methodName" : "scheduleRunningTheAccountUpdater",
+            "x-methodName" : "scheduleRunningAccountUpdater",
             "security" : [
                {
                   "BasicAuth" : [
@@ -586,11 +681,53 @@
                }
             },
             "required" : [
-               "number",
-               "expiryMonth",
                "expiryYear",
                "holderName"
             ]
+         },
+         "CreatePermitRequest" : {
+            "properties" : {
+               "merchantAccount" : {
+                  "description" : "The merchant account identifier, with which you want to process the transaction.",
+                  "type" : "string"
+               },
+               "permits" : {
+                  "description" : "The permits to create for this recurring contract.",
+                  "items" : {
+                     "$ref" : "#/components/schemas/Permit"
+                  },
+                  "type" : "array"
+               },
+               "recurringDetailReference" : {
+                  "description" : "The recurring contract the new permits will use.",
+                  "type" : "string"
+               },
+               "shopperReference" : {
+                  "description" : "The shopper's reference to uniquely identify this shopper (e.g. user ID or account ID).",
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "merchantAccount",
+               "shopperReference",
+               "recurringDetailReference",
+               "permits"
+            ]
+         },
+         "CreatePermitResult" : {
+            "properties" : {
+               "permitResultList" : {
+                  "description" : "List of new permits.",
+                  "items" : {
+                     "$ref" : "#/components/schemas/PermitResult"
+                  },
+                  "type" : "array"
+               },
+               "pspReference" : {
+                  "description" : "A unique reference associated with the request. This value is globally unique; quote it when communicating with us about this request.",
+                  "type" : "string"
+               }
+            }
          },
          "DisableRequest" : {
             "properties" : {
@@ -715,6 +852,61 @@
                },
                "storedPaymentMethodId" : {
                   "description" : "This is the recurringDetailReference returned in the response when token was created",
+                  "type" : "string"
+               }
+            }
+         },
+         "Permit" : {
+            "properties" : {
+               "partnerId" : {
+                  "description" : "Partner ID (when using the permit-per-partner token sharing model).",
+                  "type" : "string"
+               },
+               "profileReference" : {
+                  "description" : "The profile to apply to this permit (when using the shared permits model).",
+                  "type" : "string"
+               },
+               "restriction" : {
+                  "description" : "Permit level restriction overrides.",
+                  "$ref" : "#/components/schemas/PermitRestriction"
+               },
+               "resultKey" : {
+                  "description" : "The key to link permit requests to permit results.",
+                  "type" : "string"
+               },
+               "validTillDate" : {
+                  "description" : "The expiry date for this permit.",
+                  "format" : "date-time",
+                  "type" : "string"
+               }
+            }
+         },
+         "PermitRestriction" : {
+            "properties" : {
+               "maxAmount" : {
+                  "description" : "The total sum amount of one or more payments made using this permit may not exceed this amount if set.",
+                  "$ref" : "#/components/schemas/Amount"
+               },
+               "singleTransactionLimit" : {
+                  "description" : "The amount of any single payment using this permit may not exceed this amount if set.",
+                  "$ref" : "#/components/schemas/Amount"
+               },
+               "singleUse" : {
+                  "description" : "Only a single payment can be made using this permit if set to true, otherwise multiple payments are allowed.",
+                  "type" : "boolean"
+               }
+            }
+         },
+         "PermitResult" : {
+            "properties" : {
+               "resultKey" : {
+                  "x-addedInVersion" : "32",
+                  "description" : "The key to link permit requests to permit results.",
+                  "type" : "string"
+               },
+               "token" : {
+                  "x-addedInVersion" : "32",
+                  "description" : "The permit token which is used to make payments by the partner company.",
                   "type" : "string"
                }
             }
