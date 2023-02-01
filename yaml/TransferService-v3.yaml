@@ -23,7 +23,7 @@ info:
     ```\n## Going live\nWhen going live, your Adyen contact will provide your API\
     \ credential for the live environment. You can then use the username and password\
     \ to send requests to `https://balanceplatform-api-live.adyen.com/btl/v3`.\n\n"
-  x-timestamp: '2023-01-10T10:26:12Z'
+  x-timestamp: '2023-01-31T12:26:34Z'
   termsOfService: https://www.adyen.com/legal/terms-and-conditions
   contact:
     name: Adyen Developer Experience team
@@ -934,11 +934,8 @@ components:
           - chargeback
           - chargebackReversal
           - depositCorrection
-          - directDebit
           - fee
           - grant
-          - installment
-          - installmentReversal
           - internalTransfer
           - invoiceDeduction
           - leftover
@@ -987,17 +984,21 @@ components:
           description: The amount of the transfer.
           $ref: '#/components/schemas/Amount'
         balanceAccountId:
-          description: Unique identifier of the source [balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__resParam_id).
+          description: The unique identifier of the source [balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__resParam_id).
           type: string
         category:
           x-addedInVersion: '3'
           description: "The type of transfer.\n\nPossible values:\n\n - **bank**:\
             \ Transfer to a [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments__resParam_id)\
             \ or a bank account.\n\n- **internal**: Transfer to another [balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__resParam_id)\
-            \ within your platform."
+            \ within your platform.\n\n- **issuedCard**: Transfer initiated by a Adyen-issued\
+            \ card.\n\n- **platformPayment**: Fund movements related to payments that\
+            \ are acquired for your users."
           enum:
           - bank
           - internal
+          - issuedCard
+          - platformPayment
           type: string
         counterparty:
           x-addedInVersion: '3'
@@ -1023,7 +1024,7 @@ components:
           description: The ID of the resource.
           type: string
         paymentInstrumentId:
-          description: Unique identifier of the source [payment instrument](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/paymentInstruments__resParam_id).
+          description: The unique identifier of the source [payment instrument](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/paymentInstruments__resParam_id).
           type: string
         priority:
           x-addedInVersion: '3'
@@ -1048,6 +1049,7 @@ components:
 
             * **instant**: Instant way to transfer funds in [SEPA countries](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).'
           enum:
+          - directDebit
           - fast
           - instant
           - regular
@@ -1068,17 +1070,14 @@ components:
           - error
           - notEnoughBalance
           - refusedByCounterpartyBank
-          - rejectedByCounterpartyBank
           - routeNotFound
           - unknown
           type: string
         reference:
           x-addedInVersion: '2'
-          description: 'A reference for the transfer, only used internally within
-            your platform. If you don''t provide this in the request, Adyen generates
-            a unique reference.
-
-            Maximum length: 80 characters.'
+          description: Your reference for the transfer, used internally within your
+            platform. If you don't provide this in the request, Adyen generates a
+            unique reference.
           maxLength: 80
           type: string
         referenceForBeneficiary:
@@ -1094,8 +1093,8 @@ components:
           type: string
         status:
           x-addedInVersion: '2'
-          description: "The result of the transfer.\n\n Possible values: **authorised**,\
-            \ **refused**, **error**."
+          description: "The result of the transfer.\n\n For example, **authorised**,\
+            \ **refused**, or **error**."
           enum:
           - atmWithdrawal
           - atmWithdrawalReversalPending
@@ -1117,6 +1116,7 @@ components:
           - chargebackPending
           - chargebackReversalPending
           - chargebackReversed
+          - credited
           - depositCorrection
           - depositCorrectionPending
           - dispute
@@ -1169,17 +1169,21 @@ components:
           description: The amount of the transfer.
           $ref: '#/components/schemas/Amount'
         balanceAccountId:
-          description: Unique identifier of the source [balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__resParam_id).
+          description: The unique identifier of the source [balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__resParam_id).
           type: string
         category:
           x-addedInVersion: '3'
           description: "The type of transfer.\n\nPossible values:\n\n - **bank**:\
             \ Transfer to a [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments__resParam_id)\
             \ or a bank account.\n\n- **internal**: Transfer to another [balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__resParam_id)\
-            \ within your platform."
+            \ within your platform.\n\n- **issuedCard**: Transfer initiated by a Adyen-issued\
+            \ card.\n\n- **platformPayment**: Fund movements related to payments that\
+            \ are acquired for your users."
           enum:
           - bank
           - internal
+          - issuedCard
+          - platformPayment
           type: string
         counterparty:
           x-addedInVersion: '3'
@@ -1196,7 +1200,7 @@ components:
           description: The ID of the resource.
           type: string
         paymentInstrumentId:
-          description: Unique identifier of the source [payment instrument](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/paymentInstruments__resParam_id).
+          description: The unique identifier of the source [payment instrument](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/paymentInstruments__resParam_id).
           type: string
         priority:
           x-addedInVersion: '3'
@@ -1221,6 +1225,7 @@ components:
 
             * **instant**: Instant way to transfer funds in [SEPA countries](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).'
           enum:
+          - directDebit
           - fast
           - instant
           - regular
@@ -1228,11 +1233,9 @@ components:
           type: string
         reference:
           x-addedInVersion: '2'
-          description: 'A reference for the transfer, only used internally within
-            your platform. If you don''t provide this in the request, Adyen generates
-            a unique reference.
-
-            Maximum length: 80 characters.'
+          description: Your reference for the transfer, used internally within your
+            platform. If you don't provide this in the request, Adyen generates a
+            unique reference.
           maxLength: 80
           type: string
         referenceForBeneficiary:

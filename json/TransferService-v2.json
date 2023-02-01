@@ -10,7 +10,7 @@
       "x-publicVersion" : true,
       "title" : "Transfers API",
       "description" : "The Transfers API provides endpoints that you can use to get information about all your transactions, move funds within your balance platform or send funds from your balance platform to a [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments).\n\n## Authentication\nYour Adyen contact will provide your API credential and an API key. To connect to the API, add an `X-API-Key` header with the API key as the value, for example:\n\n ```\ncurl\n-H \"Content-Type: application/json\" \\\n-H \"X-API-Key: YOUR_API_KEY\" \\\n...\n```\n\nAlternatively, you can use the username and password to connect to the API using basic authentication. For example:\n\n```\ncurl\n-H \"Content-Type: application/json\" \\\n-U \"ws@BalancePlatform.YOUR_BALANCE_PLATFORM\":\"YOUR_WS_PASSWORD\" \\\n...\n```\n## Roles and permissions\nTo use the Transfers API, you need an additional role for your API credential. Transfers must also be enabled for the source balance account. Your Adyen contact will set up the roles and permissions for you.\n## Versioning\nThe Transfers API supports [versioning](https://docs.adyen.com/development-resources/versioning) using a version suffix in the endpoint URL. This suffix has the following format: \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://balanceplatform-api-test.adyen.com/btl/v2/transfers\n```\n## Going live\nWhen going live, your Adyen contact will provide your API credential for the live environment. You can then use the username and password to send requests to `https://balanceplatform-api-live.adyen.com/btl/v2`.\n\n",
-      "x-timestamp" : "2022-12-20T12:27:11Z",
+      "x-timestamp" : "2023-01-31T12:26:34Z",
       "termsOfService" : "https://www.adyen.com/legal/terms-and-conditions",
       "contact" : {
          "name" : "Adyen Developer Experience team",
@@ -443,6 +443,7 @@
                   "x-addedInVersion" : "1",
                   "description" : "The priority for the bank transfer. This sets the speed at which the transfer is sent and the fees that you have to pay. If you don't provide this in the request, Adyen sets the optimal priority.\n\nPossible values:\n\n* **regular**: For normal, low-value transactions.\n\n* **fast**: Faster way to transfer funds but has higher fees. Recommended for high-priority, low-value transactions.\n\n* **wire**: Fastest way to transfer funds but has the highest fees. Recommended for high-priority, high-value transactions.\n\n* **instant**: Instant way to transfer funds in [SEPA countries](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).",
                   "enum" : [
+                     "directDebit",
                      "fast",
                      "instant",
                      "regular",
@@ -795,11 +796,8 @@
                      "chargeback",
                      "chargebackReversal",
                      "depositCorrection",
-                     "directDebit",
                      "fee",
                      "grant",
-                     "installment",
-                     "installmentReversal",
                      "internalTransfer",
                      "invoiceDeduction",
                      "leftover",
@@ -859,7 +857,7 @@
                   "$ref" : "#/components/schemas/Amount"
                },
                "balanceAccountId" : {
-                  "description" : "Unique identifier of the source [balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__resParam_id).",
+                  "description" : "The unique identifier of the source [balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__resParam_id).",
                   "type" : "string"
                },
                "bank" : {
@@ -890,7 +888,7 @@
                   "type" : "string"
                },
                "paymentInstrumentId" : {
-                  "description" : "Unique identifier of the source [payment instrument](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/paymentInstruments__resParam_id).",
+                  "description" : "The unique identifier of the source [payment instrument](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/paymentInstruments__resParam_id).",
                   "type" : "string"
                },
                "reason" : {
@@ -908,7 +906,6 @@
                      "error",
                      "notEnoughBalance",
                      "refusedByCounterpartyBank",
-                     "rejectedByCounterpartyBank",
                      "routeNotFound",
                      "unknown"
                   ],
@@ -916,7 +913,7 @@
                },
                "reference" : {
                   "x-addedInVersion" : "2",
-                  "description" : "A reference for the transfer, only used internally within your platform. If you don't provide this in the request, Adyen generates a unique reference.\nMaximum length: 80 characters.",
+                  "description" : "Your reference for the transfer, used internally within your platform. If you don't provide this in the request, Adyen generates a unique reference.",
                   "maxLength" : 80,
                   "type" : "string"
                },
@@ -928,7 +925,7 @@
                },
                "status" : {
                   "x-addedInVersion" : "2",
-                  "description" : "The result of the transfer.\n\n Possible values: **authorised**, **refused**, **error**.",
+                  "description" : "The result of the transfer.\n\n For example, **authorised**, **refused**, or **error**.",
                   "enum" : [
                      "atmWithdrawal",
                      "atmWithdrawalReversalPending",
@@ -950,6 +947,7 @@
                      "chargebackPending",
                      "chargebackReversalPending",
                      "chargebackReversed",
+                     "credited",
                      "depositCorrection",
                      "depositCorrectionPending",
                      "dispute",
@@ -1007,7 +1005,7 @@
                   "$ref" : "#/components/schemas/Amount"
                },
                "balanceAccountId" : {
-                  "description" : "Unique identifier of the source [balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__resParam_id).",
+                  "description" : "The unique identifier of the source [balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__resParam_id).",
                   "type" : "string"
                },
                "bank" : {
@@ -1029,12 +1027,12 @@
                   "type" : "string"
                },
                "paymentInstrumentId" : {
-                  "description" : "Unique identifier of the source [payment instrument](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/paymentInstruments__resParam_id).",
+                  "description" : "The unique identifier of the source [payment instrument](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/paymentInstruments__resParam_id).",
                   "type" : "string"
                },
                "reference" : {
                   "x-addedInVersion" : "2",
-                  "description" : "A reference for the transfer, only used internally within your platform. If you don't provide this in the request, Adyen generates a unique reference.\nMaximum length: 80 characters.",
+                  "description" : "Your reference for the transfer, used internally within your platform. If you don't provide this in the request, Adyen generates a unique reference.",
                   "maxLength" : 80,
                   "type" : "string"
                },
