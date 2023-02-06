@@ -80,7 +80,7 @@ info:
 
     Have a look at the [release notes](https://docs.adyen.com/online-payments/release-notes?integration_type=api&version=68)
     to find out what changed in this version!'
-  x-timestamp: '2023-01-05T17:24:53Z'
+  x-timestamp: '2023-02-06T13:29:18Z'
   termsOfService: https://www.adyen.com/legal/terms-and-conditions
   contact:
     name: Adyen Developer Experience team
@@ -311,7 +311,7 @@ paths:
       operationId: post-donations
       x-groupName: Payments
       x-sortIndex: 5
-      x-methodName: startTransactionForDonations
+      x-methodName: donations
       security:
       - BasicAuth: []
       - ApiKeyAuth: []
@@ -834,7 +834,7 @@ paths:
       operationId: patch-paymentLinks-linkId
       x-groupName: Payment links
       x-sortIndex: 3
-      x-methodName: updateStatusOfPaymentLink
+      x-methodName: updatePaymentLink
       security:
       - BasicAuth: []
       - ApiKeyAuth: []
@@ -926,7 +926,7 @@ paths:
       operationId: post-paymentMethods
       x-groupName: Payments
       x-sortIndex: 2
-      x-methodName: listAvailablePaymentMethods
+      x-methodName: paymentMethods
       security:
       - BasicAuth: []
       - ApiKeyAuth: []
@@ -1112,7 +1112,7 @@ paths:
       operationId: post-paymentSession
       x-groupName: Classic Checkout SDK
       x-sortIndex: 1
-      x-methodName: createPaymentSession
+      x-methodName: paymentSession
       security:
       - BasicAuth: []
       - ApiKeyAuth: []
@@ -1213,7 +1213,7 @@ paths:
       operationId: post-payments
       x-groupName: Payments
       x-sortIndex: 3
-      x-methodName: startTransaction
+      x-methodName: payments
       security:
       - BasicAuth: []
       - ApiKeyAuth: []
@@ -1349,7 +1349,7 @@ paths:
       operationId: post-payments-details
       x-groupName: Payments
       x-sortIndex: 4
-      x-methodName: submitDetailsForPayment
+      x-methodName: paymentsDetails
       security:
       - BasicAuth: []
       - ApiKeyAuth: []
@@ -1639,7 +1639,7 @@ paths:
       operationId: post-payments-paymentPspReference-cancels
       x-groupName: Modifications
       x-sortIndex: 2
-      x-methodName: cancelAuthorisedPayment
+      x-methodName: cancelAuthorisedPaymentByPspReference
       security:
       - BasicAuth: []
       - ApiKeyAuth: []
@@ -2064,7 +2064,7 @@ paths:
       operationId: post-sessions
       x-groupName: Payments
       x-sortIndex: 1
-      x-methodName: createPaymentSession
+      x-methodName: sessions
       security:
       - BasicAuth: []
       - ApiKeyAuth: []
@@ -4231,8 +4231,6 @@ components:
       properties:
         acceptHeader:
           description: The accept header value of the shopper's browser.
-          maxLength: 50
-          minLength: 10
           type: string
         colorDepth:
           x-addedInVersion: '40'
@@ -4276,8 +4274,6 @@ components:
           type: integer
         userAgent:
           description: The user agent value of the shopper's browser.
-          maxLength: 50
-          minLength: 10
           type: string
       required:
       - userAgent
@@ -4616,7 +4612,7 @@ components:
 
 
             Format [ISO-8601](https://www.w3.org/TR/NOTE-datetime): YYYY-MM-DD'
-          format: date-time
+          format: date
           type: string
         dccQuote:
           description: The forex quote as returned in the response of the forex service.
@@ -4651,6 +4647,27 @@ components:
           description: Contains installment settings. For more information, refer
             to [Installments](https://docs.adyen.com/payment-methods/cards/credit-card-installments).
           $ref: '#/components/schemas/Installments'
+        localizedShopperStatement:
+          x-addedInVersion: '68'
+          additionalProperties:
+            type: string
+          description: "This field allows merchants to use dynamic shopper statement\
+            \ in local character sets.\nThe local shopper statement field can be supplied\
+            \ in markets where localized merchant descriptors are used. Currently,\
+            \ Adyen only supports this in the Japanese market\n.The available character\
+            \ sets at the moment are:\n* Processing in Japan: **ja-Kana**\nThe character\
+            \ set **ja-Kana** supports UTF-8 based Katakana and alphanumeric and special\
+            \ characters.\nMerchants should send the Katakana shopperStatement in\
+            \ full-width characters. \nAn example request would be:\n> {\n  \"shopperStatement\"\
+            \ : \"ADYEN - SELLER-A\",\n  \"localizedShopperStatement\" : {\n    \"\
+            ja-Kana\" : \"ADYEN - \u30BB\u30E9\u30FCA\"\n  }\n}\nWe recommend merchants\
+            \ to always supply the field localizedShopperStatement in addition to\
+            \ the field shopperStatement.It is issuer dependent whether the localized\
+            \ shopper statement field is supported.\nIn the case of non-domestic transactions\
+            \ (e.g. US-issued cards processed in JP) the field `shopperStatement`\
+            \ is used to modify the statement of the shopper.\nAdyen handles the complexity\
+            \ of ensuring the correct descriptors are assigned."
+          type: object
         mcc:
           x-addedInVersion: '12'
           description: The [merchant category code](https://en.wikipedia.org/wiki/Merchant_category_code)
@@ -5503,7 +5520,7 @@ components:
 
 
             Format [ISO-8601](https://www.w3.org/TR/NOTE-datetime): YYYY-MM-DD'
-          format: date-time
+          format: date
           type: string
         deliverAt:
           description: 'The date and time when the purchased goods should be delivered.
@@ -5613,9 +5630,10 @@ components:
             Secure 2.
           type: string
         recurringProcessingModel:
-          description: "Defines a recurring payment type.\nAllowed values:\n* `Subscription`\
-            \ \u2013 A transaction for a fixed or variable amount, which follows a\
-            \ fixed schedule.\n* `CardOnFile` \u2013 With a card-on-file (CoF) transaction,\
+          description: "Defines a recurring payment type. Required when creating a\
+            \ token to store payment details.\nAllowed values:\n* `Subscription` \u2013\
+            \ A transaction for a fixed or variable amount, which follows a fixed\
+            \ schedule.\n* `CardOnFile` \u2013 With a card-on-file (CoF) transaction,\
             \ card details are stored to enable one-click or omnichannel journeys,\
             \ or simply to streamline the checkout process. Any subscription not following\
             \ a fixed schedule is also considered a card-on-file transaction.\n* `UnscheduledCardOnFile`\
@@ -5856,7 +5874,7 @@ components:
 
 
             Format [ISO-8601](https://www.w3.org/TR/NOTE-datetime): YYYY-MM-DD'
-          format: date-time
+          format: date
           type: string
         deliverAt:
           description: 'The date and time when the purchased goods should be delivered.
@@ -5970,9 +5988,10 @@ components:
             Secure 2.
           type: string
         recurringProcessingModel:
-          description: "Defines a recurring payment type.\nAllowed values:\n* `Subscription`\
-            \ \u2013 A transaction for a fixed or variable amount, which follows a\
-            \ fixed schedule.\n* `CardOnFile` \u2013 With a card-on-file (CoF) transaction,\
+          description: "Defines a recurring payment type. Required when creating a\
+            \ token to store payment details.\nAllowed values:\n* `Subscription` \u2013\
+            \ A transaction for a fixed or variable amount, which follows a fixed\
+            \ schedule.\n* `CardOnFile` \u2013 With a card-on-file (CoF) transaction,\
             \ card details are stored to enable one-click or omnichannel journeys,\
             \ or simply to streamline the checkout process. Any subscription not following\
             \ a fixed schedule is also considered a card-on-file transaction.\n* `UnscheduledCardOnFile`\
@@ -6298,7 +6317,8 @@ components:
             with this key is going to be replaced by the real payment link ID.'
           type: object
         recurringProcessingModel:
-          description: "Defines a recurring payment type.\nPossible values:\n* **Subscription**\
+          description: "Defines a recurring payment type. Required when creating a\
+            \ token to store payment details.\nPossible values:\n* **Subscription**\
             \ \u2013 A transaction for a fixed or variable amount, which follows a\
             \ fixed schedule.\n* **CardOnFile** \u2013 With a card-on-file (CoF) transaction,\
             \ card details are stored to enable one-click or omnichannel journeys,\
@@ -6436,6 +6456,15 @@ components:
           type: array
         merchantAccount:
           description: The merchant account that is used to process the payment.
+          type: string
+        merchantRefundReason:
+          description: Your reason for the refund request
+          enum:
+          - FRAUD
+          - CUSTOMER REQUEST
+          - RETURN
+          - DUPLICATE
+          - OTHER
           type: string
         reference:
           description: 'Your reference for the refund request. Maximum length: 80
@@ -8110,7 +8139,7 @@ components:
 
 
             Format [ISO-8601](https://www.w3.org/TR/NOTE-datetime): YYYY-MM-DD'
-          format: date-time
+          format: date
           type: string
         dccQuote:
           description: The forex quote as returned in the response of the forex service.
@@ -8188,6 +8217,27 @@ components:
           items:
             $ref: '#/components/schemas/LineItem'
           type: array
+        localizedShopperStatement:
+          x-addedInVersion: '68'
+          additionalProperties:
+            type: string
+          description: "This field allows merchants to use dynamic shopper statement\
+            \ in local character sets.\nThe local shopper statement field can be supplied\
+            \ in markets where localized merchant descriptors are used. Currently,\
+            \ Adyen only supports this in the Japanese market\n.The available character\
+            \ sets at the moment are:\n* Processing in Japan: **ja-Kana**\nThe character\
+            \ set **ja-Kana** supports UTF-8 based Katakana and alphanumeric and special\
+            \ characters.\nMerchants should send the Katakana shopperStatement in\
+            \ full-width characters. \nAn example request would be:\n> {\n  \"shopperStatement\"\
+            \ : \"ADYEN - SELLER-A\",\n  \"localizedShopperStatement\" : {\n    \"\
+            ja-Kana\" : \"ADYEN - \u30BB\u30E9\u30FCA\"\n  }\n}\nWe recommend merchants\
+            \ to always supply the field localizedShopperStatement in addition to\
+            \ the field shopperStatement.It is issuer dependent whether the localized\
+            \ shopper statement field is supported.\nIn the case of non-domestic transactions\
+            \ (e.g. US-issued cards processed in JP) the field `shopperStatement`\
+            \ is used to modify the statement of the shopper.\nAdyen handles the complexity\
+            \ of ensuring the correct descriptors are assigned."
+          type: object
         mandate:
           description: The mandate details to initiate recurring transaction.
           $ref: '#/components/schemas/Mandate'
@@ -8620,7 +8670,8 @@ components:
             with this key is going to be replaced by the real payment link ID.'
           type: object
         recurringProcessingModel:
-          description: "Defines a recurring payment type.\nPossible values:\n* **Subscription**\
+          description: "Defines a recurring payment type. Required when creating a\
+            \ token to store payment details.\nPossible values:\n* **Subscription**\
             \ \u2013 A transaction for a fixed or variable amount, which follows a\
             \ fixed schedule.\n* **CardOnFile** \u2013 With a card-on-file (CoF) transaction,\
             \ card details are stored to enable one-click or omnichannel journeys,\
@@ -8943,6 +8994,27 @@ components:
         countryCode:
           description: The shopper's country code.
           type: string
+        localizedShopperStatement:
+          x-addedInVersion: '68'
+          additionalProperties:
+            type: string
+          description: "This field allows merchants to use dynamic shopper statement\
+            \ in local character sets.\nThe local shopper statement field can be supplied\
+            \ in markets where localized merchant descriptors are used. Currently,\
+            \ Adyen only supports this in the Japanese market\n.The available character\
+            \ sets at the moment are:\n* Processing in Japan: **ja-Kana**\nThe character\
+            \ set **ja-Kana** supports UTF-8 based Katakana and alphanumeric and special\
+            \ characters.\nMerchants should send the Katakana shopperStatement in\
+            \ full-width characters. \nAn example request would be:\n> {\n  \"shopperStatement\"\
+            \ : \"ADYEN - SELLER-A\",\n  \"localizedShopperStatement\" : {\n    \"\
+            ja-Kana\" : \"ADYEN - \u30BB\u30E9\u30FCA\"\n  }\n}\nWe recommend merchants\
+            \ to always supply the field localizedShopperStatement in addition to\
+            \ the field shopperStatement.It is issuer dependent whether the localized\
+            \ shopper statement field is supported.\nIn the case of non-domestic transactions\
+            \ (e.g. US-issued cards processed in JP) the field `shopperStatement`\
+            \ is used to modify the statement of the shopper.\nAdyen handles the complexity\
+            \ of ensuring the correct descriptors are assigned."
+          type: object
         merchantAccount:
           description: The merchant account identifier, with which you want to process
             the transaction.
@@ -9008,6 +9080,15 @@ components:
           type: array
         merchantAccount:
           description: The merchant account that is used to process the payment.
+          type: string
+        merchantRefundReason:
+          description: Your reason for the refund request.
+          enum:
+          - FRAUD
+          - CUSTOMER REQUEST
+          - RETURN
+          - DUPLICATE
+          - OTHER
           type: string
         paymentPspReference:
           description: 'The [`pspReference`](https://docs.adyen.com/api-explorer/#/CheckoutService/latest/post/payments__resParam_pspReference)
@@ -9155,7 +9236,7 @@ components:
 
 
             Format [ISO-8601](https://www.w3.org/TR/NOTE-datetime): YYYY-MM-DD'
-          format: date-time
+          format: date
           type: string
         dccQuote:
           description: The forex quote as returned in the response of the forex service.
@@ -9223,6 +9304,27 @@ components:
           items:
             $ref: '#/components/schemas/LineItem'
           type: array
+        localizedShopperStatement:
+          x-addedInVersion: '68'
+          additionalProperties:
+            type: string
+          description: "This field allows merchants to use dynamic shopper statement\
+            \ in local character sets.\nThe local shopper statement field can be supplied\
+            \ in markets where localized merchant descriptors are used. Currently,\
+            \ Adyen only supports this in the Japanese market\n.The available character\
+            \ sets at the moment are:\n* Processing in Japan: **ja-Kana**\nThe character\
+            \ set **ja-Kana** supports UTF-8 based Katakana and alphanumeric and special\
+            \ characters.\nMerchants should send the Katakana shopperStatement in\
+            \ full-width characters. \nAn example request would be:\n> {\n  \"shopperStatement\"\
+            \ : \"ADYEN - SELLER-A\",\n  \"localizedShopperStatement\" : {\n    \"\
+            ja-Kana\" : \"ADYEN - \u30BB\u30E9\u30FCA\"\n  }\n}\nWe recommend merchants\
+            \ to always supply the field localizedShopperStatement in addition to\
+            \ the field shopperStatement.It is issuer dependent whether the localized\
+            \ shopper statement field is supported.\nIn the case of non-domestic transactions\
+            \ (e.g. US-issued cards processed in JP) the field `shopperStatement`\
+            \ is used to modify the statement of the shopper.\nAdyen handles the complexity\
+            \ of ensuring the correct descriptors are assigned."
+          type: object
         mandate:
           description: The mandate details to initiate recurring transaction.
           $ref: '#/components/schemas/Mandate'
@@ -9828,7 +9930,7 @@ components:
 
 
             Format [ISO-8601](https://www.w3.org/TR/NOTE-datetime): YYYY-MM-DD'
-          format: date-time
+          format: date
           type: string
         dccQuote:
           description: The forex quote as returned in the response of the forex service.
@@ -9890,6 +9992,27 @@ components:
           items:
             $ref: '#/components/schemas/LineItem'
           type: array
+        localizedShopperStatement:
+          x-addedInVersion: '68'
+          additionalProperties:
+            type: string
+          description: "This field allows merchants to use dynamic shopper statement\
+            \ in local character sets.\nThe local shopper statement field can be supplied\
+            \ in markets where localized merchant descriptors are used. Currently,\
+            \ Adyen only supports this in the Japanese market\n.The available character\
+            \ sets at the moment are:\n* Processing in Japan: **ja-Kana**\nThe character\
+            \ set **ja-Kana** supports UTF-8 based Katakana and alphanumeric and special\
+            \ characters.\nMerchants should send the Katakana shopperStatement in\
+            \ full-width characters. \nAn example request would be:\n> {\n  \"shopperStatement\"\
+            \ : \"ADYEN - SELLER-A\",\n  \"localizedShopperStatement\" : {\n    \"\
+            ja-Kana\" : \"ADYEN - \u30BB\u30E9\u30FCA\"\n  }\n}\nWe recommend merchants\
+            \ to always supply the field localizedShopperStatement in addition to\
+            \ the field shopperStatement.It is issuer dependent whether the localized\
+            \ shopper statement field is supported.\nIn the case of non-domestic transactions\
+            \ (e.g. US-issued cards processed in JP) the field `shopperStatement`\
+            \ is used to modify the statement of the shopper.\nAdyen handles the complexity\
+            \ of ensuring the correct descriptors are assigned."
+          type: object
         mandate:
           description: The mandate details to initiate recurring transaction.
           $ref: '#/components/schemas/Mandate'

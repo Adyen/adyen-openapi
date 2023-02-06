@@ -10,7 +10,7 @@
       "x-publicVersion" : true,
       "title" : "Adyen Checkout API",
       "description" : "Adyen Checkout API provides a simple and flexible way to initiate and authorise online payments. You can use the same integration for payments made with cards (including 3D Secure), mobile wallets, and local payment methods (for example, iDEAL and Sofort).\n\nThis API reference provides information on available endpoints and how to interact with them. To learn more about the API, visit [online payments documentation](https://docs.adyen.com/online-payments).\n\n## Authentication\nEach request to Checkout API must be signed with an API key. For this, [get your API key](https://docs.adyen.com/development-resources/api-credentials#generate-api-key) from your Customer Area, and set this key to the `X-API-Key` header value, for example:\n\n```\ncurl\n-H \"Content-Type: application/json\" \\\n-H \"X-API-Key: YOUR_API_KEY\" \\\n...\n```\n## Versioning\nCheckout API supports [versioning](https://docs.adyen.com/development-resources/versioning) using a version suffix in the endpoint URL. This suffix has the following format: \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://checkout-test.adyen.com/v65/payments\n```\n\n## Going live\n\nTo access the live endpoints, you need an API key from your live Customer Area.\n\nThe live endpoint URLs contain a prefix which is unique to your company account, for example:\n```\nhttps://{PREFIX}-checkout-live.adyenpayments.com/checkout/v65/payments\n```\n\nGet your `{PREFIX}` from your live Customer Area under **Developers** > **API URLs** > **Prefix**.\n\nWhen preparing to do live transactions with Checkout API, follow the [go-live checklist](https://docs.adyen.com/online-payments/go-live-checklist) to make sure you've got all the required configuration in place.\n\n## Release notes\nHave a look at the [release notes](https://docs.adyen.com/online-payments/release-notes?integration_type=api&version=65) to find out what changed in this version!",
-      "x-timestamp" : "2023-01-05T17:24:52Z",
+      "x-timestamp" : "2023-02-06T13:29:17Z",
       "termsOfService" : "https://www.adyen.com/legal/terms-and-conditions",
       "contact" : {
          "name" : "Adyen Developer Experience team",
@@ -340,7 +340,7 @@
             "operationId" : "post-donations",
             "x-groupName" : "Payments",
             "x-sortIndex" : 5,
-            "x-methodName" : "startTransactionForDonations",
+            "x-methodName" : "donations",
             "security" : [
                {
                   "BasicAuth" : [
@@ -1202,7 +1202,7 @@
             "operationId" : "patch-paymentLinks-linkId",
             "x-groupName" : "Payment links",
             "x-sortIndex" : 3,
-            "x-methodName" : "updateStatusOfPaymentLink",
+            "x-methodName" : "updatePaymentLink",
             "security" : [
                {
                   "BasicAuth" : [
@@ -1342,7 +1342,7 @@
             "operationId" : "post-paymentMethods",
             "x-groupName" : "Payments",
             "x-sortIndex" : 2,
-            "x-methodName" : "listAvailablePaymentMethods",
+            "x-methodName" : "paymentMethods",
             "security" : [
                {
                   "BasicAuth" : [
@@ -1645,7 +1645,7 @@
             "operationId" : "post-paymentSession",
             "x-groupName" : "Classic Checkout SDK",
             "x-sortIndex" : 1,
-            "x-methodName" : "createPaymentSession",
+            "x-methodName" : "paymentSession",
             "security" : [
                {
                   "BasicAuth" : [
@@ -1804,7 +1804,7 @@
             "operationId" : "post-payments",
             "x-groupName" : "Payments",
             "x-sortIndex" : 3,
-            "x-methodName" : "startTransaction",
+            "x-methodName" : "payments",
             "security" : [
                {
                   "BasicAuth" : [
@@ -2017,7 +2017,7 @@
             "operationId" : "post-payments-details",
             "x-groupName" : "Payments",
             "x-sortIndex" : 4,
-            "x-methodName" : "submitDetailsForPayment",
+            "x-methodName" : "paymentsDetails",
             "security" : [
                {
                   "BasicAuth" : [
@@ -2462,7 +2462,7 @@
             "operationId" : "post-payments-paymentPspReference-cancels",
             "x-groupName" : "Modifications",
             "x-sortIndex" : 2,
-            "x-methodName" : "cancelAuthorisedPayment",
+            "x-methodName" : "cancelAuthorisedPaymentByPspReference",
             "security" : [
                {
                   "BasicAuth" : [
@@ -4501,8 +4501,6 @@
             "properties" : {
                "acceptHeader" : {
                   "description" : "The accept header value of the shopper's browser.",
-                  "maxLength" : 50,
-                  "minLength" : 10,
                   "type" : "string"
                },
                "colorDepth" : {
@@ -4547,8 +4545,6 @@
                },
                "userAgent" : {
                   "description" : "The user agent value of the shopper's browser.",
-                  "maxLength" : 50,
-                  "minLength" : 10,
                   "type" : "string"
                }
             },
@@ -4909,7 +4905,7 @@
                "dateOfBirth" : {
                   "x-addedInVersion" : "7",
                   "description" : "The shopper's date of birth.\n\nFormat [ISO-8601](https://www.w3.org/TR/NOTE-datetime): YYYY-MM-DD",
-                  "format" : "date-time",
+                  "format" : "date",
                   "type" : "string"
                },
                "dccQuote" : {
@@ -5896,7 +5892,7 @@
                   "type" : "object"
                },
                "recurringProcessingModel" : {
-                  "description" : "Defines a recurring payment type.\nPossible values:\n* **Subscription** – A transaction for a fixed or variable amount, which follows a fixed schedule.\n* **CardOnFile** – With a card-on-file (CoF) transaction, card details are stored to enable one-click or omnichannel journeys, or simply to streamline the checkout process. Any subscription not following a fixed schedule is also considered a card-on-file transaction.\n* **UnscheduledCardOnFile** – An unscheduled card-on-file (UCoF) transaction is a transaction that occurs on a non-fixed schedule and/or has variable amounts. For example, automatic top-ups when a cardholder's balance drops below a certain amount.\n",
+                  "description" : "Defines a recurring payment type. Required when creating a token to store payment details.\nPossible values:\n* **Subscription** – A transaction for a fixed or variable amount, which follows a fixed schedule.\n* **CardOnFile** – With a card-on-file (CoF) transaction, card details are stored to enable one-click or omnichannel journeys, or simply to streamline the checkout process. Any subscription not following a fixed schedule is also considered a card-on-file transaction.\n* **UnscheduledCardOnFile** – An unscheduled card-on-file (UCoF) transaction is a transaction that occurs on a non-fixed schedule and/or has variable amounts. For example, automatic top-ups when a cardholder's balance drops below a certain amount.\n",
                   "enum" : [
                      "CardOnFile",
                      "Subscription",
@@ -5980,6 +5976,17 @@
                },
                "merchantAccount" : {
                   "description" : "The merchant account that is used to process the payment.",
+                  "type" : "string"
+               },
+               "merchantRefundReason" : {
+                  "description" : "Your reason for the refund request",
+                  "enum" : [
+                     "FRAUD",
+                     "CUSTOMER REQUEST",
+                     "RETURN",
+                     "DUPLICATE",
+                     "OTHER"
+                  ],
                   "type" : "string"
                },
                "reference" : {
@@ -7710,7 +7717,7 @@
                "dateOfBirth" : {
                   "x-addedInVersion" : "7",
                   "description" : "The shopper's date of birth.\n\nFormat [ISO-8601](https://www.w3.org/TR/NOTE-datetime): YYYY-MM-DD",
-                  "format" : "date-time",
+                  "format" : "date",
                   "type" : "string"
                },
                "dccQuote" : {
@@ -8184,7 +8191,7 @@
                   "type" : "object"
                },
                "recurringProcessingModel" : {
-                  "description" : "Defines a recurring payment type.\nPossible values:\n* **Subscription** – A transaction for a fixed or variable amount, which follows a fixed schedule.\n* **CardOnFile** – With a card-on-file (CoF) transaction, card details are stored to enable one-click or omnichannel journeys, or simply to streamline the checkout process. Any subscription not following a fixed schedule is also considered a card-on-file transaction.\n* **UnscheduledCardOnFile** – An unscheduled card-on-file (UCoF) transaction is a transaction that occurs on a non-fixed schedule and/or has variable amounts. For example, automatic top-ups when a cardholder's balance drops below a certain amount.\n",
+                  "description" : "Defines a recurring payment type. Required when creating a token to store payment details.\nPossible values:\n* **Subscription** – A transaction for a fixed or variable amount, which follows a fixed schedule.\n* **CardOnFile** – With a card-on-file (CoF) transaction, card details are stored to enable one-click or omnichannel journeys, or simply to streamline the checkout process. Any subscription not following a fixed schedule is also considered a card-on-file transaction.\n* **UnscheduledCardOnFile** – An unscheduled card-on-file (UCoF) transaction is a transaction that occurs on a non-fixed schedule and/or has variable amounts. For example, automatic top-ups when a cardholder's balance drops below a certain amount.\n",
                   "enum" : [
                      "CardOnFile",
                      "Subscription",
@@ -8535,6 +8542,17 @@
                   "description" : "The merchant account that is used to process the payment.",
                   "type" : "string"
                },
+               "merchantRefundReason" : {
+                  "description" : "Your reason for the refund request.",
+                  "enum" : [
+                     "FRAUD",
+                     "CUSTOMER REQUEST",
+                     "RETURN",
+                     "DUPLICATE",
+                     "OTHER"
+                  ],
+                  "type" : "string"
+               },
                "paymentPspReference" : {
                   "description" : "The [`pspReference`](https://docs.adyen.com/api-explorer/#/CheckoutService/latest/post/payments__resParam_pspReference) of the payment to refund. ",
                   "type" : "string"
@@ -8681,7 +8699,7 @@
                "dateOfBirth" : {
                   "x-addedInVersion" : "7",
                   "description" : "The shopper's date of birth.\n\nFormat [ISO-8601](https://www.w3.org/TR/NOTE-datetime): YYYY-MM-DD",
-                  "format" : "date-time",
+                  "format" : "date",
                   "type" : "string"
                },
                "dccQuote" : {
@@ -9371,7 +9389,7 @@
                "dateOfBirth" : {
                   "x-addedInVersion" : "7",
                   "description" : "The shopper's date of birth.\n\nFormat [ISO-8601](https://www.w3.org/TR/NOTE-datetime): YYYY-MM-DD",
-                  "format" : "date-time",
+                  "format" : "date",
                   "type" : "string"
                },
                "dccQuote" : {
