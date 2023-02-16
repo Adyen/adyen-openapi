@@ -20,7 +20,7 @@ info:
     ```\n## Going live\nWhen going live, your Adyen contact will provide your API\
     \ credential for the live environment. You can then use the username and password\
     \ to send requests to `https://kyc-live.adyen.com/lem/v1`.\n\n"
-  x-timestamp: '2023-02-09T14:21:17Z'
+  x-timestamp: '2023-02-16T11:21:56Z'
   termsOfService: https://www.adyen.com/legal/terms-and-conditions
   contact:
     name: Adyen Developer Experience team
@@ -129,7 +129,7 @@ paths:
       - BasicAuth: []
       - ApiKeyAuth: []
       parameters:
-      - description: The unique identifier of the business line.
+      - description: The unique identifier of the business line to be deleted.
         name: id
         in: path
         required: true
@@ -624,7 +624,8 @@ paths:
       tags:
       - Legal entities
       summary: Update a legal entity
-      description: "Updates a legal entity.\n\n >To update the `entityAssociations`\
+      description: "Updates a legal entity.\n\n >To change the legal entity type,\
+        \ include only the new `type` in your request. To update the `entityAssociations`\
         \ array, you need to replace the entire array. For example, if the array has\
         \ 3 entries and you want to remove 1 entry, you need to PATCH the resource\
         \ with the remaining 2 entries."
@@ -640,6 +641,8 @@ paths:
         content:
           application/json:
             examples:
+              changeLegalEntityType:
+                $ref: '#/components/examples/patch-legalEntities-id-changeLegalEntityType'
               updateLegalEntityOrganization:
                 $ref: '#/components/examples/patch-legalEntities-id-updateLegalEntityOrganization'
             schema:
@@ -656,6 +659,8 @@ paths:
           content:
             application/json:
               examples:
+                changeLegalEntityType:
+                  $ref: '#/components/examples/patch-legalEntities-id-changeLegalEntityType-200'
                 updateLegalEntityOrganization:
                   $ref: '#/components/examples/patch-legalEntities-id-updateLegalEntityOrganization-200'
               schema:
@@ -1292,12 +1297,9 @@ paths:
         schema:
           type: string
       responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VoidResponse'
-          description: OK - the request has succeeded.
+        '204':
+          description: No Content - the request has been successfully processed, but
+            there is no additional content.
         '400':
           content:
             application/json:
@@ -1602,7 +1604,6 @@ components:
             standard.
           type: string
       required:
-      - countryCode
       - currencyCode
     BirthData:
       properties:
@@ -1781,10 +1782,13 @@ components:
         amountPerIndustry:
           additionalProperties:
             $ref: '#/components/schemas/Amount'
+          description: The maximum amount a card holder can spend per industry.
           type: object
         authorizedCardUsers:
+          description: The number of card holders who can use the card.
           type: boolean
         fundingSource:
+          description: The funding source of the card, for example **debit**.
           items:
             enum:
             - credit
@@ -1793,12 +1797,14 @@ components:
             type: string
           type: array
         interval:
+          description: The period when the rule conditions apply.
           enum:
           - daily
           - monthly
           - weekly
           type: string
         maxAmount:
+          description: The maximum amount a card holder can withdraw per day.
           $ref: '#/components/schemas/Amount'
     Document:
       properties:
@@ -2688,6 +2694,10 @@ components:
     VerificationError:
       properties:
         capabilities:
+          description: Contains key-value pairs that specify the actions that the
+            legal entity can do in your platform. The key is a capability required
+            for your integration. For example, **issueCard** for Issuing.The value
+            is an object containing the settings for the capability.
           items:
             enum:
             - acceptExternalFunding
@@ -2743,20 +2753,25 @@ components:
             type: string
           type: array
         code:
+          description: The general error code.
           type: string
-        entity:
-          $ref: '#/components/schemas/CapabilityProblemEntity'
         message:
+          description: The general error message.
           type: string
         remediatingActions:
+          description: An object containing possible solutions to fix a verification
+            error.
           items:
             $ref: '#/components/schemas/RemediatingAction'
           type: array
         subErrors:
+          description: An array containing more granular information about the cause
+            of the verification error.
           items:
             $ref: '#/components/schemas/VerificationError-recursive'
           type: array
         type:
+          description: The type of error.
           enum:
           - dataMissing
           - invalidInput
@@ -2765,6 +2780,10 @@ components:
     VerificationError-recursive:
       properties:
         capabilities:
+          description: Contains key-value pairs that specify the actions that the
+            legal entity can do in your platform. The key is a capability required
+            for your integration. For example, **issueCard** for Issuing.The value
+            is an object containing the settings for the capability.
           items:
             enum:
             - acceptExternalFunding
@@ -2820,18 +2839,21 @@ components:
             type: string
           type: array
         code:
+          description: The general error code.
           type: string
         message:
+          description: The general error message.
           type: string
         type:
+          description: The type of error.
           enum:
           - dataMissing
           - invalidInput
           - pendingStatus
           type: string
-        entity:
-          $ref: '#/components/schemas/CapabilityProblemEntity'
         remediatingActions:
+          description: An object containing possible solutions to fix a verification
+            error.
           items:
             $ref: '#/components/schemas/RemediatingAction'
           type: array
@@ -3049,6 +3071,23 @@ components:
           id: LE322KH223222D5GG4C9J83RN
           type: legalEntity
         id: SE322JV223222F5GV2N9L8GDK
+    patch-legalEntities-id-changeLegalEntityType:
+      summary: Change a legal entity from an organization to an individual
+      description: Example request when changing the legal entity type
+      value:
+        type: individual
+    patch-legalEntities-id-changeLegalEntityType-200:
+      summary: Legal entity type changed
+      description: Example response when changing the legal entity type
+      value:
+        individual:
+          name:
+            firstName: Explorer
+            lastName: Company based in US
+          residentialAddress:
+            country: US
+        type: individual
+        id: LE322JV223222J5HD8HZS2C8B
     patch-legalEntities-id-updateLegalEntityOrganization:
       summary: Add entity associations to an organization
       description: Example request adding entity associations to a legal entity

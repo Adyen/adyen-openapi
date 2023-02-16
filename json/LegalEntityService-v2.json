@@ -10,7 +10,7 @@
       "x-publicVersion" : true,
       "title" : "Legal Entity Management API",
       "description" : "The Legal Entity Management API enables you to manage legal entities that contain information required for verification. \n## Authentication\nTo connect to the Legal Entity Management API, you must use the basic authentication credentials of your web service user. If you don't have one, contact the [Adyen Support Team](https://www.adyen.help/hc/en-us/requests/new). Use the web service user credentials to authenticate your request, for example:\n\n```\ncurl\n-U \"ws12345@Scope.BalancePlatform_YourBalancePlatform\":\"YourWsPassword\" \\\n-H \"Content-Type: application/json\" \\\n...\n```\nNote that when going live, you need to generate new web service user credentials to access the [live endpoints](https://docs.adyen.com/development-resources/live-endpoints).\n\n## Versioning\nThe Legal Entity Management API supports versioning of its endpoints through a version suffix in the endpoint URL. This suffix has the following format: \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://kyc-test.adyen.com/lem/v2/legalEntities\n```\n## Going live\nWhen going live, your Adyen contact will provide your API credential for the live environment. You can then use the username and password to send requests to `https://kyc-live.adyen.com/lem/v2`.\n\n",
-      "x-timestamp" : "2023-02-09T14:21:19Z",
+      "x-timestamp" : "2023-02-16T11:21:57Z",
       "termsOfService" : "https://www.adyen.com/legal/terms-and-conditions",
       "contact" : {
          "name" : "Adyen Developer Experience team",
@@ -176,7 +176,7 @@
             ],
             "parameters" : [
                {
-                  "description" : "The unique identifier of the business line.",
+                  "description" : "The unique identifier of the business line to be deleted.",
                   "name" : "id",
                   "in" : "path",
                   "required" : true,
@@ -1113,7 +1113,7 @@
                "Legal entities"
             ],
             "summary" : "Update a legal entity",
-            "description" : "Updates a legal entity.\n\n >To update the `entityAssociations` array, you need to replace the entire array. For example, if the array has 3 entries and you want to remove 1 entry, you need to PATCH the resource with the remaining 2 entries.",
+            "description" : "Updates a legal entity.\n\n >To change the legal entity type, include only the new `type` in your request. To update the `entityAssociations` array, you need to replace the entire array. For example, if the array has 3 entries and you want to remove 1 entry, you need to PATCH the resource with the remaining 2 entries.",
             "x-addedInVersion" : "1",
             "operationId" : "patch-legalEntities-id",
             "x-groupName" : "Legal entities",
@@ -1133,6 +1133,9 @@
                "content" : {
                   "application/json" : {
                      "examples" : {
+                        "changeLegalEntityType" : {
+                           "$ref" : "#/components/examples/patch-legalEntities-id-changeLegalEntityType"
+                        },
                         "updateLegalEntityOrganization" : {
                            "$ref" : "#/components/examples/patch-legalEntities-id-updateLegalEntityOrganization"
                         },
@@ -1162,6 +1165,9 @@
                   "content" : {
                      "application/json" : {
                         "examples" : {
+                           "changeLegalEntityType" : {
+                              "$ref" : "#/components/examples/patch-legalEntities-id-changeLegalEntityType-200"
+                           },
                            "updateLegalEntityOrganization" : {
                               "$ref" : "#/components/examples/patch-legalEntities-id-updateLegalEntityOrganization-200"
                            },
@@ -2220,15 +2226,8 @@
                }
             ],
             "responses" : {
-               "200" : {
-                  "content" : {
-                     "application/json" : {
-                        "schema" : {
-                           "$ref" : "#/components/schemas/VoidResponse"
-                        }
-                     }
-                  },
-                  "description" : "OK - the request has succeeded."
+               "204" : {
+                  "description" : "No Content - the request has been successfully processed, but there is no additional content."
                },
                "400" : {
                   "content" : {
@@ -2664,7 +2663,6 @@
                }
             },
             "required" : [
-               "countryCode",
                "currencyCode"
             ]
          },
@@ -2703,7 +2701,7 @@
                   "type" : "array"
                },
                "sourceOfFunds" : {
-                  "description" : "Contains information about the source of your user's funds. Required only for the `capability` to **issueBankAccount**.",
+                  "description" : "Contains information about the source of your user's funds. Required only for the `capability` to **issueBankAccount**",
                   "$ref" : "#/components/schemas/SourceOfFunds"
                },
                "webData" : {
@@ -2747,7 +2745,7 @@
                   "type" : "array"
                },
                "sourceOfFunds" : {
-                  "description" : "Contains information about the source of your user's funds. Required only for the `capability` to **issueBankAccount**.",
+                  "description" : "Contains information about the source of your user's funds. Required only for the `capability` to **issueBankAccount**",
                   "$ref" : "#/components/schemas/SourceOfFunds"
                },
                "webData" : {
@@ -2790,7 +2788,7 @@
                   "type" : "array"
                },
                "sourceOfFunds" : {
-                  "description" : "Contains information about the source of your user's funds. Required only for the `capability` to **issueBankAccount**.",
+                  "description" : "Contains information about the source of your user's funds. Required only for the `capability` to **issueBankAccount**",
                   "$ref" : "#/components/schemas/SourceOfFunds"
                },
                "webData" : {
@@ -2892,12 +2890,15 @@
                   "additionalProperties" : {
                      "$ref" : "#/components/schemas/Amount"
                   },
+                  "description" : "The maximum amount a card holder can spend per industry.",
                   "type" : "object"
                },
                "authorizedCardUsers" : {
+                  "description" : "The number of card holders who can use the card.",
                   "type" : "boolean"
                },
                "fundingSource" : {
+                  "description" : "The funding source of the card, for example **debit**.",
                   "items" : {
                      "enum" : [
                         "credit",
@@ -2909,6 +2910,7 @@
                   "type" : "array"
                },
                "interval" : {
+                  "description" : "The period when the rule conditions apply.",
                   "enum" : [
                      "daily",
                      "monthly",
@@ -2917,6 +2919,7 @@
                   "type" : "string"
                },
                "maxAmount" : {
+                  "description" : "The maximum amount a card holder can withdraw per day.",
                   "$ref" : "#/components/schemas/Amount"
                }
             }
@@ -2989,7 +2992,7 @@
                   "$ref" : "#/components/schemas/OwnerEntity"
                },
                "type" : {
-                  "description" : "Type of document, used when providing an ID number or uploading a document. The possible values depend on the legal entity type.\n\nWhen providing ID numbers:\n* For **individual**, the `type` values can be **driversLicense**, **identityCard**, **nationalIdNumber**, or **passport**.\n\nWhen uploading documents:\n* For **organization**, the `type` values can be **proofOfAddress**, **registrationDocument**, **vatDocument**, **proofOfOrganizationTaxInfo**, **proofOfOwnership**, or **proofOfIndustry**. \n\n* For **individual**, the `type` values can be **identityCard**, **driversLicense**, **passport**, **proofOfNationalIdNumber**, **proofOfResidency**, **proofOfIndustry**, or **proofOfIndividualTaxId**.\n\n* For **soleProprietorship**, the `type` values can be **constitutionalDocument**, **proofOfAddress**, or **proofOfIndustry**.\n\n* Use **bankStatement** to upload documents for a [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments__resParam_id).",
+                  "description" : "Type of document, used when providing an ID number or uploading a document. The possible values depend on the legal entity type.\n\nWhen providing ID numbers:\n* For **individual**, the `type` values can be **driversLicense**, **identityCard**, **nationalIdNumber**, or **passport**.\n\nWhen uploading photo IDs:\n* For **individual**, the `type` values can be **identityCard**, **driversLicense**, or **passport**.\n\nWhen uploading other documents:\n* For **organization**, the `type` values can be **proofOfAddress**, **registrationDocument**, **vatDocument**, **proofOfOrganizationTaxInfo**, **proofOfOwnership**, or **proofOfIndustry**. \n\n* For **individual**, the `type` values can be **identityCard**, **driversLicense**, **passport**, **proofOfNationalIdNumber**, **proofOfResidency**, **proofOfIndustry**, or **proofOfIndividualTaxId**.\n\n* For **soleProprietorship**, the `type` values can be **constitutionalDocument**, **proofOfAddress**, or **proofOfIndustry**.\n\n* Use **bankStatement** to upload documents for a [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments__resParam_id).",
                   "enum" : [
                      "bankStatement",
                      "driversLicense",
@@ -3146,7 +3149,7 @@
                   "type" : "string"
                },
                "type" : {
-                  "description" : "Type of document, used when providing an ID number or uploading a document. The possible values depend on the legal entity type.\n\nWhen providing ID numbers:\n* For **individual**, the `type` values can be **driversLicense**, **identityCard**, **nationalIdNumber**, or **passport**.\n\nWhen uploading documents:\n* For **organization**, the `type` values can be **proofOfAddress**, **registrationDocument**, **vatDocument**, **proofOfOrganizationTaxInfo**, **proofOfOwnership**, or **proofOfIndustry**. \n\n* For **individual**, the `type` values can be **identityCard**, **driversLicense**, **passport**, **proofOfNationalIdNumber**, **proofOfResidency**, **proofOfIndustry**, or **proofOfIndividualTaxId**.\n\n* For **soleProprietorship**, the `type` values can be **constitutionalDocument**, **proofOfAddress**, or **proofOfIndustry**.\n\n* Use **bankStatement** to upload documents for a [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments__resParam_id).",
+                  "description" : "Type of document, used when providing an ID number or uploading a document. The possible values depend on the legal entity type.\n\nWhen providing ID numbers:\n* For **individual**, the `type` values can be **driversLicense**, **identityCard**, **nationalIdNumber**, or **passport**.\n\nWhen uploading photo IDs:\n* For **individual**, the `type` values can be **identityCard**, **driversLicense**, or **passport**.\n\nWhen uploading other documents:\n* For **organization**, the `type` values can be **proofOfAddress**, **registrationDocument**, **vatDocument**, **proofOfOrganizationTaxInfo**, **proofOfOwnership**, or **proofOfIndustry**. \n\n* For **individual**, the `type` values can be **identityCard**, **driversLicense**, **passport**, **proofOfNationalIdNumber**, **proofOfResidency**, **proofOfIndustry**, or **proofOfIndividualTaxId**.\n\n* For **soleProprietorship**, the `type` values can be **constitutionalDocument**, **proofOfAddress**, or **proofOfIndustry**.\n\n* Use **bankStatement** to upload documents for a [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments__resParam_id).",
                   "enum" : [
                      "bankStatement",
                      "driversLicense",
@@ -4063,6 +4066,7 @@
          "VerificationError" : {
             "properties" : {
                "capabilities" : {
+                  "description" : "Contains key-value pairs that specify the actions that the legal entity can do in your platform. The key is a capability required for your integration. For example, **issueCard** for Issuing.The value is an object containing the settings for the capability.",
                   "items" : {
                      "enum" : [
                         "acceptExternalFunding",
@@ -4121,27 +4125,29 @@
                   "type" : "array"
                },
                "code" : {
+                  "description" : "The general error code.",
                   "type" : "string"
                },
-               "entity" : {
-                  "$ref" : "#/components/schemas/CapabilityProblemEntity"
-               },
                "message" : {
+                  "description" : "The general error message.",
                   "type" : "string"
                },
                "remediatingActions" : {
+                  "description" : "An object containing possible solutions to fix a verification error.",
                   "items" : {
                      "$ref" : "#/components/schemas/RemediatingAction"
                   },
                   "type" : "array"
                },
                "subErrors" : {
+                  "description" : "An array containing more granular information about the cause of the verification error.",
                   "items" : {
                      "$ref" : "#/components/schemas/VerificationError-recursive"
                   },
                   "type" : "array"
                },
                "type" : {
+                  "description" : "The type of error.",
                   "enum" : [
                      "dataMissing",
                      "invalidInput",
@@ -4154,6 +4160,7 @@
          "VerificationError-recursive" : {
             "properties" : {
                "capabilities" : {
+                  "description" : "Contains key-value pairs that specify the actions that the legal entity can do in your platform. The key is a capability required for your integration. For example, **issueCard** for Issuing.The value is an object containing the settings for the capability.",
                   "items" : {
                      "enum" : [
                         "acceptExternalFunding",
@@ -4212,12 +4219,15 @@
                   "type" : "array"
                },
                "code" : {
+                  "description" : "The general error code.",
                   "type" : "string"
                },
                "message" : {
+                  "description" : "The general error message.",
                   "type" : "string"
                },
                "type" : {
+                  "description" : "The type of error.",
                   "enum" : [
                      "dataMissing",
                      "invalidInput",
@@ -4225,10 +4235,8 @@
                   ],
                   "type" : "string"
                },
-               "entity" : {
-                  "$ref" : "#/components/schemas/CapabilityProblemEntity"
-               },
                "remediatingActions" : {
+                  "description" : "An object containing possible solutions to fix a verification error.",
                   "items" : {
                      "$ref" : "#/components/schemas/RemediatingAction"
                   },
@@ -4566,6 +4574,30 @@
                   "type" : "legalEntity"
                },
                "id" : "SE322JV223222F5GV2N9L8GDK"
+            }
+         },
+         "patch-legalEntities-id-changeLegalEntityType" : {
+            "summary" : "Change a legal entity from an organization to an individual",
+            "description" : "Example request when changing the legal entity type",
+            "value" : {
+               "type" : "individual"
+            }
+         },
+         "patch-legalEntities-id-changeLegalEntityType-200" : {
+            "summary" : "Legal entity type changed",
+            "description" : "Example response when changing the legal entity type",
+            "value" : {
+               "individual" : {
+                  "name" : {
+                     "firstName" : "Explorer",
+                     "lastName" : "Company based in US"
+                  },
+                  "residentialAddress" : {
+                     "country" : "US"
+                  }
+               },
+               "type" : "individual",
+               "id" : "LE322JV223222J5HD8HZS2C8B"
             }
          },
          "patch-legalEntities-id-updateLegalEntityOrganization" : {
