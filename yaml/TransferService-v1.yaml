@@ -7,7 +7,7 @@ info:
   title: Transfers API
   description: "The Transfers API provides endpoints that you can use to get information\
     \ about all your transactions, move funds within your balance platform or send\
-    \ funds from your balance platform to a [transfer instrument](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/transferInstruments).\n\
+    \ funds from your balance platform to a [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments).\n\
     \n## Authentication\nYour Adyen contact will provide your API credential and an\
     \ API key. To connect to the API, add an `X-API-Key` header with the API key as\
     \ the value, for example:\n\n ```\ncurl\n-H \"Content-Type: application/json\"\
@@ -23,7 +23,7 @@ info:
     ```\n## Going live\nWhen going live, your Adyen contact will provide your API\
     \ credential for the live environment. You can then use the username and password\
     \ to send requests to `https://balanceplatform-api-live.adyen.com/btl/v1`.\n\n"
-  x-timestamp: '2022-09-30T16:25:47Z'
+  x-timestamp: '2023-02-20T18:21:55Z'
   termsOfService: https://www.adyen.com/legal/terms-and-conditions
   contact:
     name: Adyen Developer Experience team
@@ -41,20 +41,30 @@ paths:
       tags:
       - Transactions
       summary: Get all transactions
-      description: Returns transactions that match the query parameters. This endpoint
-        supports cursor-based pagination. The response returns the first page of results,
-        and returns links to the next page when applicable. You can use the links
-        to page through the results. The response also returns links to the previous
-        page when applicable.
+      description: 'Returns all transactions related to a balance account with a payment
+        instrument of type **bankAccount**.
+
+
+        This endpoint supports cursor-based pagination. The response returns the first
+        page of results, and returns links to the next page when applicable. You can
+        use the links to page through the results. The response also returns links
+        to the previous page when applicable.'
       x-addedInVersion: '1'
       operationId: get-transactions
       x-groupName: Transactions
       x-sortIndex: 1
+      x-methodName: getAllTransactions
       security:
       - ApiKeyAuth: []
       parameters:
       - description: Unique identifier of the [balance platform](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/get/balancePlatforms/{id}__queryParam_id).
         name: balancePlatform
+        in: query
+        required: false
+        schema:
+          type: string
+      - description: Unique identifier of the [payment instrument](https://docs.adyen.com/api-explorer/balanceplatform/latest/get/paymentInstruments/_id_).
+        name: paymentInstrumentId
         in: query
         required: false
         schema:
@@ -142,6 +152,7 @@ paths:
       operationId: get-transactions-id
       x-groupName: Transactions
       x-sortIndex: 2
+      x-methodName: getTransaction
       security:
       - ApiKeyAuth: []
       parameters:
@@ -188,7 +199,7 @@ paths:
       - Transfers
       summary: Transfer funds
       description: 'Starts a transfer request to move funds within your balance platform,
-        or send funds to a [transfer instrument](https://docs.adyen.com/api-explorer/#/balanceplatform/v1/post/transferInstruments).
+        or send funds to a [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/v1/post/transferInstruments).
         Adyen sends the outcome of the transfer request through webhooks.
 
 
@@ -199,6 +210,7 @@ paths:
       operationId: post-transfers
       x-groupName: Transfers
       x-sortIndex: 1
+      x-methodName: transferFunds
       security:
       - ApiKeyAuth: []
       requestBody:
@@ -289,6 +301,7 @@ components:
       - city
       - postalCode
       - country
+      type: object
     Amount:
       properties:
         currency:
@@ -303,6 +316,7 @@ components:
       required:
       - value
       - currency
+      type: object
     BankAccountInfo:
       properties:
         address:
@@ -315,6 +329,7 @@ components:
         ownerName:
           description: The name of the bank account owner.
           $ref: '#/components/schemas/Name'
+      type: object
     Counterparty:
       properties:
         balanceAccountId:
@@ -329,6 +344,7 @@ components:
         transferInstrumentId:
           description: Unique identifier of the [transfer instrument](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/transferInstruments__resParam_id).
           type: string
+      type: object
     InternalPartyIdentification:
       properties:
         balanceAccountId:
@@ -337,6 +353,7 @@ components:
         paymentInstrumentId:
           description: Unique identifier of the [payment instrument](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/paymentInstruments__resParam_id).
           type: string
+      type: object
     InvalidField:
       properties:
         message:
@@ -352,6 +369,7 @@ components:
       - name
       - value
       - message
+      type: object
     JSONObject:
       properties:
         paths:
@@ -360,16 +378,19 @@ components:
           type: array
         rootPath:
           $ref: '#/components/schemas/JSONPath'
+      type: object
     JSONPath:
       properties:
         content:
           items:
             type: string
           type: array
+      type: object
     Link:
       properties:
         href:
           type: string
+      type: object
     Links:
       properties:
         next:
@@ -378,6 +399,7 @@ components:
         prev:
           description: Contains a link to the previous page.
           $ref: '#/components/schemas/Link'
+      type: object
     MerchantData:
       properties:
         mcc:
@@ -392,6 +414,7 @@ components:
         postalCode:
           description: The merchant postal code.
           type: string
+      type: object
     Name:
       properties:
         firstName:
@@ -406,6 +429,7 @@ components:
         lastName:
           description: The last name.
           type: string
+      type: object
     NameLocation:
       properties:
         city:
@@ -428,6 +452,7 @@ components:
         state:
           description: The state where the merchant is located.
           type: string
+      type: object
     PartyIdentification:
       properties:
         balanceAccountId:
@@ -436,6 +461,7 @@ components:
         paymentInstrumentId:
           description: Unique identifier of the [payment instrument](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/paymentInstruments__resParam_id).
           type: string
+      type: object
     RestServiceError:
       properties:
         detail:
@@ -478,6 +504,7 @@ components:
       - title
       - detail
       - status
+      type: object
     Transaction:
       properties:
         accountHolderId:
@@ -534,7 +561,6 @@ components:
         id:
           x-addedInVersion: '1'
           description: Unique identifier of the transaction.
-          readOnly: true
           type: string
         instructedAmount:
           x-addedInVersion: '1'
@@ -584,6 +610,7 @@ components:
           - atmWithdrawal
           - atmWithdrawalReversal
           - balanceAdjustment
+          - balanceRollover
           - bankTransfer
           - capture
           - captureReversal
@@ -625,6 +652,7 @@ components:
       - valueDate
       - counterparty
       - balancePlatform
+      type: object
     TransactionSearchResponse:
       properties:
         _links:
@@ -635,6 +663,7 @@ components:
           items:
             $ref: '#/components/schemas/Transaction'
           type: array
+      type: object
     TransferInfoOld:
       properties:
         amount:
@@ -668,6 +697,7 @@ components:
       - source
       - destination
       - amount
+      type: object
     TransferOld:
       properties:
         amount:
@@ -716,6 +746,7 @@ components:
       - amount
       - id
       - resultCode
+      type: object
   securitySchemes:
     ApiKeyAuth:
       in: header

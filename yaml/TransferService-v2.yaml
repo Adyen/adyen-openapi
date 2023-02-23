@@ -7,7 +7,7 @@ info:
   title: Transfers API
   description: "The Transfers API provides endpoints that you can use to get information\
     \ about all your transactions, move funds within your balance platform or send\
-    \ funds from your balance platform to a [transfer instrument](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/transferInstruments).\n\
+    \ funds from your balance platform to a [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments).\n\
     \n## Authentication\nYour Adyen contact will provide your API credential and an\
     \ API key. To connect to the API, add an `X-API-Key` header with the API key as\
     \ the value, for example:\n\n ```\ncurl\n-H \"Content-Type: application/json\"\
@@ -23,7 +23,7 @@ info:
     ```\n## Going live\nWhen going live, your Adyen contact will provide your API\
     \ credential for the live environment. You can then use the username and password\
     \ to send requests to `https://balanceplatform-api-live.adyen.com/btl/v2`.\n\n"
-  x-timestamp: '2022-10-04T17:25:48Z'
+  x-timestamp: '2023-02-20T18:21:55Z'
   termsOfService: https://www.adyen.com/legal/terms-and-conditions
   contact:
     name: Adyen Developer Experience team
@@ -41,20 +41,30 @@ paths:
       tags:
       - Transactions
       summary: Get all transactions
-      description: Returns transactions that match the query parameters. This endpoint
-        supports cursor-based pagination. The response returns the first page of results,
-        and returns links to the next page when applicable. You can use the links
-        to page through the results. The response also returns links to the previous
-        page when applicable.
+      description: 'Returns all transactions related to a balance account with a payment
+        instrument of type **bankAccount**.
+
+
+        This endpoint supports cursor-based pagination. The response returns the first
+        page of results, and returns links to the next page when applicable. You can
+        use the links to page through the results. The response also returns links
+        to the previous page when applicable.'
       x-addedInVersion: '1'
       operationId: get-transactions
       x-groupName: Transactions
       x-sortIndex: 1
+      x-methodName: getAllTransactions
       security:
       - ApiKeyAuth: []
       parameters:
       - description: Unique identifier of the [balance platform](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/get/balancePlatforms/{id}__queryParam_id).
         name: balancePlatform
+        in: query
+        required: false
+        schema:
+          type: string
+      - description: Unique identifier of the [payment instrument](https://docs.adyen.com/api-explorer/balanceplatform/latest/get/paymentInstruments/_id_).
+        name: paymentInstrumentId
         in: query
         required: false
         schema:
@@ -145,6 +155,7 @@ paths:
       operationId: get-transactions-id
       x-groupName: Transactions
       x-sortIndex: 2
+      x-methodName: getTransaction
       security:
       - ApiKeyAuth: []
       parameters:
@@ -206,6 +217,7 @@ paths:
       operationId: post-transfers
       x-groupName: Transfers
       x-sortIndex: 1
+      x-methodName: transferFunds
       security:
       - ApiKeyAuth: []
       requestBody:
@@ -307,6 +319,7 @@ components:
       - city
       - postalCode
       - country
+      type: object
     Amount:
       properties:
         currency:
@@ -321,6 +334,7 @@ components:
       required:
       - value
       - currency
+      type: object
     Bank:
       properties:
         priority:
@@ -344,13 +358,24 @@ components:
             for high-priority, high-value transactions.
 
 
-            '
+            * **instant**: Instant way to transfer funds in [SEPA countries](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).
+
+
+            * **crossBorder**: High value transfer to receipt in a different country.
+
+
+            * **internal**: Bank transfers to a bank account held at Adyen (by bank
+            account number/IBAN).'
           enum:
+          - crossBorder
+          - directDebit
           - fast
           - instant
+          - internal
           - regular
           - wire
           type: string
+      type: object
     BankAccountInfo:
       properties:
         address:
@@ -363,6 +388,7 @@ components:
         ownerName:
           description: The name of the bank account owner.
           $ref: '#/components/schemas/Name'
+      type: object
     Counterparty:
       properties:
         balanceAccountId:
@@ -377,6 +403,7 @@ components:
         transferInstrumentId:
           description: Unique identifier of the [transfer instrument](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/transferInstruments__resParam_id).
           type: string
+      type: object
     CounterpartyInfo:
       properties:
         balanceAccountId:
@@ -388,6 +415,7 @@ components:
         transferInstrumentId:
           description: Unique identifier of the [transfer instrument](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/transferInstruments__resParam_id).
           type: string
+      type: object
     InvalidField:
       properties:
         message:
@@ -403,6 +431,7 @@ components:
       - name
       - value
       - message
+      type: object
     JSONObject:
       properties:
         paths:
@@ -411,16 +440,19 @@ components:
           type: array
         rootPath:
           $ref: '#/components/schemas/JSONPath'
+      type: object
     JSONPath:
       properties:
         content:
           items:
             type: string
           type: array
+      type: object
     Link:
       properties:
         href:
           type: string
+      type: object
     Links:
       properties:
         next:
@@ -429,6 +461,7 @@ components:
         prev:
           description: Contains a link to the previous page.
           $ref: '#/components/schemas/Link'
+      type: object
     MerchantData:
       properties:
         mcc:
@@ -443,6 +476,7 @@ components:
         postalCode:
           description: The merchant postal code.
           type: string
+      type: object
     Name:
       properties:
         firstName:
@@ -457,6 +491,7 @@ components:
         lastName:
           description: The last name.
           type: string
+      type: object
     NameLocation:
       properties:
         city:
@@ -479,6 +514,7 @@ components:
         state:
           description: The state where the merchant is located.
           type: string
+      type: object
     RestServiceError:
       properties:
         detail:
@@ -521,6 +557,7 @@ components:
       - title
       - detail
       - status
+      type: object
     Transaction:
       properties:
         accountHolderId:
@@ -577,7 +614,6 @@ components:
         id:
           x-addedInVersion: '1'
           description: Unique identifier of the transaction.
-          readOnly: true
           type: string
         instructedAmount:
           x-addedInVersion: '1'
@@ -627,6 +663,7 @@ components:
           - atmWithdrawal
           - atmWithdrawalReversal
           - balanceAdjustment
+          - balanceRollover
           - bankTransfer
           - capture
           - captureReversal
@@ -668,6 +705,7 @@ components:
       - valueDate
       - counterparty
       - balancePlatform
+      type: object
     TransactionSearchResponse:
       properties:
         _links:
@@ -678,6 +716,7 @@ components:
           items:
             $ref: '#/components/schemas/Transaction'
           type: array
+      type: object
     Transfer:
       properties:
         amount:
@@ -685,7 +724,7 @@ components:
           description: The amount of the transfer.
           $ref: '#/components/schemas/Amount'
         balanceAccountId:
-          description: Unique identifier of the source [balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__resParam_id).
+          description: The unique identifier of the source [balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__resParam_id).
           type: string
         bank:
           x-addedInVersion: '1'
@@ -714,27 +753,33 @@ components:
           type: string
         id:
           description: The ID of the resource.
-          readOnly: true
           type: string
         paymentInstrumentId:
-          description: Unique identifier of the source [payment instrument](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/paymentInstruments__resParam_id).
+          description: The unique identifier of the source [payment instrument](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/paymentInstruments__resParam_id).
           type: string
         reason:
           x-addedInVersion: '2'
           description: Additional information about the status of the transfer.
           enum:
+          - amountLimitExceded
           - approved
+          - counterpartyAccountBlocked
+          - counterpartyAccountClosed
+          - counterpartyAccountNotFound
+          - counterpartyAddressRequired
+          - counterpartyBankTimedOut
+          - counterpartyBankUnavailable
           - error
           - notEnoughBalance
+          - refusedByCounterpartyBank
+          - routeNotFound
           - unknown
           type: string
         reference:
           x-addedInVersion: '2'
-          description: 'A reference for the transfer, only used internally within
-            your platform. If you don''t provide this in the request, Adyen generates
-            a unique reference.
-
-            Maximum length: 80 characters.'
+          description: Your reference for the transfer, used internally within your
+            platform. If you don't provide this in the request, Adyen generates a
+            unique reference.
           maxLength: 80
           type: string
         referenceForBeneficiary:
@@ -748,12 +793,15 @@ components:
           type: string
         status:
           x-addedInVersion: '2'
-          description: "The result of the transfer.\n\n Possible values: **authorised**,\
-            \ **refused**, **error**."
+          description: "The result of the transfer.\n\n For example, **authorised**,\
+            \ **refused**, or **error**."
           enum:
           - atmWithdrawal
           - atmWithdrawalReversalPending
           - atmWithdrawalReversed
+          - authAdjustmentAuthorised
+          - authAdjustmentError
+          - authAdjustmentRefused
           - authorised
           - bankTransfer
           - bankTransferPending
@@ -768,6 +816,7 @@ components:
           - chargebackPending
           - chargebackReversalPending
           - chargebackReversed
+          - credited
           - depositCorrection
           - depositCorrectionPending
           - dispute
@@ -803,6 +852,7 @@ components:
           - refused
           - reserveAdjustment
           - reserveAdjustmentPending
+          - returned
           - secondChargeback
           - secondChargebackPending
           - undefined
@@ -811,6 +861,7 @@ components:
       - amount
       - counterparty
       - status
+      type: object
     TransferInfo:
       properties:
         amount:
@@ -818,7 +869,7 @@ components:
           description: The amount of the transfer.
           $ref: '#/components/schemas/Amount'
         balanceAccountId:
-          description: Unique identifier of the source [balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__resParam_id).
+          description: The unique identifier of the source [balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__resParam_id).
           type: string
         bank:
           x-addedInVersion: '1'
@@ -838,18 +889,15 @@ components:
           type: string
         id:
           description: The ID of the resource.
-          readOnly: true
           type: string
         paymentInstrumentId:
-          description: Unique identifier of the source [payment instrument](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/paymentInstruments__resParam_id).
+          description: The unique identifier of the source [payment instrument](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/paymentInstruments__resParam_id).
           type: string
         reference:
           x-addedInVersion: '2'
-          description: 'A reference for the transfer, only used internally within
-            your platform. If you don''t provide this in the request, Adyen generates
-            a unique reference.
-
-            Maximum length: 80 characters.'
+          description: Your reference for the transfer, used internally within your
+            platform. If you don't provide this in the request, Adyen generates a
+            unique reference.
           maxLength: 80
           type: string
         referenceForBeneficiary:
@@ -864,6 +912,7 @@ components:
       required:
       - amount
       - counterparty
+      type: object
   securitySchemes:
     ApiKeyAuth:
       in: header
