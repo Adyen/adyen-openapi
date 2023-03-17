@@ -1,4 +1,6 @@
 openapi: 3.1.0
+servers:
+- url: https://balanceplatform-api-test.adyen.com/btl/v3
 info:
   version: '3'
   x-publicVersion: true
@@ -10,7 +12,7 @@ info:
     You can use these webhooks to build your implementation. For example, you can
     use this information to update balances in your own dashboards or to keep track
     of incoming funds.'
-  x-timestamp: '2023-03-03T13:35:29Z'
+  x-timestamp: '2023-03-16T15:26:18Z'
   termsOfService: https://www.adyen.com/legal/terms-and-conditions
   contact:
     name: Adyen Developer Experience team
@@ -529,14 +531,22 @@ components:
         address:
           description: Address of the bank account owner.
           $ref: '#/components/schemas/Address-2'
+        dateOfBirth:
+          description: 'The date of birth of the individual.
+
+            Format: [ISO-8601](https://www.w3.org/TR/NOTE-datetime); example: YYYY-MM-DD
+
+            Allowed only when `type` is **individual**.'
+          format: date
+          type: string
         firstName:
-          description: First name of the individual. Required when `type` is **individual**.
+          description: First name of the individual. Allowed only when `type` is **individual**.
           type: string
         fullName:
           description: The name of the entity.
           type: string
         lastName:
-          description: Last name of the individual. Required when `type` is **individual**.
+          description: Last name of the individual. Allowed only when `type` is **individual**.
           type: string
         type:
           default: unknown
@@ -727,6 +737,12 @@ components:
           description: The date when the transfer request was sent.
           format: date-time
           type: string
+        estimatedArrivalTime:
+          x-addedInVersion: '3'
+          description: The estimated time the beneficiary should have access to the
+            funds.
+          format: date-time
+          type: string
         id:
           x-addedInVersion: '3'
           description: The unique identifier of the transfer event.
@@ -873,6 +889,9 @@ components:
             object instead.
           description: The unique identifier of the source [balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__resParam_id).
           type: string
+        balancePlatform:
+          description: The unique identifier of the balance platform.
+          type: string
         balances:
           x-addedInVersion: '3'
           description: The list of the latest balance statuses in the transfer.
@@ -897,6 +916,11 @@ components:
           x-addedInVersion: '3'
           description: The other party in the transfer.
           $ref: '#/components/schemas/CounterpartyV3'
+        creationDate:
+          description: The date and time when the event was triggered, in ISO 8601
+            extended format. For example, **2020-12-18T10:15:30+01:00**.
+          format: date-time
+          type: string
         description:
           x-addedInVersion: '1'
           description: A human-readable description for the transfer. You can use
@@ -1197,7 +1221,6 @@ components:
       required:
       - category
       - amount
-      - counterparty
       - status
       type: object
     TransferNotificationRequest:
@@ -1223,6 +1246,12 @@ components:
       type: object
     TransferNotificationTransferTracking:
       properties:
+        estimatedArrivalTime:
+          x-addedInVersion: '3'
+          description: The estimated time the beneficiary should have access to the
+            funds.
+          format: date-time
+          type: string
         status:
           x-addedInVersion: '3'
           description: The tracking status of the transfer.
