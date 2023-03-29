@@ -20,7 +20,7 @@ info:
     ```\n## Going live\nWhen going live, your Adyen contact will provide your API\
     \ credential for the live environment. You can then use the API key or the username\
     \ and password to send requests to `https://balanceplatform-api-live.adyen.com/bcl/v2`."
-  x-timestamp: '2023-03-23T00:20:30Z'
+  x-timestamp: '2023-03-29T11:22:19Z'
   termsOfService: https://www.adyen.com/legal/terms-and-conditions
   contact:
     name: Adyen Developer Experience team
@@ -574,6 +574,8 @@ paths:
                 $ref: '#/components/examples/post-balanceAccounts-balanceAccountId-sweeps-createSweep-pull'
               createSweep-push:
                 $ref: '#/components/examples/post-balanceAccounts-balanceAccountId-sweeps-createSweep-push'
+              createSweep-push-priorities:
+                $ref: '#/components/examples/post-balanceAccounts-balanceAccountId-sweeps-createSweep-push-priorities'
             schema:
               $ref: '#/components/schemas/SweepConfigurationV2'
       parameters:
@@ -592,6 +594,8 @@ paths:
                   $ref: '#/components/examples/post-balanceAccounts-balanceAccountId-sweeps-createSweep-pull-200'
                 createSweep-push:
                   $ref: '#/components/examples/post-balanceAccounts-balanceAccountId-sweeps-createSweep-push-200'
+                createSweep-push-priorities:
+                  $ref: '#/components/examples/post-balanceAccounts-balanceAccountId-sweeps-createSweep-push-priorities-200'
               schema:
                 $ref: '#/components/schemas/SweepConfigurationV2'
           description: OK - the request has succeeded.
@@ -1795,13 +1799,19 @@ paths:
     get:
       tags:
       - Payment instruments
-      summary: Get the reveal information of a payment instrument
-      description: Returns the reveal information of a payment instrument.
+      summary: Get the PAN of a payment instrument
+      description: 'Returns the primary account number (PAN) of a payment instrument.
+
+
+        To make this request, your API credential must have the following [role](https://docs.adyen.com/issuing/manage-access/api-credentials-web-service#api-permissions):
+
+
+        * Balance Platform BCL PCI role'
       x-addedInVersion: '1'
       operationId: get-paymentInstruments-id-reveal
       x-groupName: Payment instruments
       x-sortIndex: 14
-      x-methodName: getRevealInformationOfPaymentInstrument
+      x-methodName: getPanOfPaymentInstrument
       security:
       - BasicAuth: []
       - ApiKeyAuth: []
@@ -2994,34 +3004,6 @@ components:
       - hasPrevious
       - hasNext
       type: object
-    BankAccount:
-      properties:
-        accountNumber:
-          description: The bank account number, without separators or whitespace.
-          maxLength: 18
-          minLength: 2
-          type: string
-        accountType:
-          description: 'The bank account type.
-
-
-            Possible values: **checking** only.'
-          enum:
-          - checking
-          type: string
-        iban:
-          description: The [International Bank Account Number](https://en.wikipedia.org/wiki/International_Bank_Account_Number)
-            (IBAN).
-          type: string
-        routingNumber:
-          description: The 9-digit [routing number](https://en.wikipedia.org/wiki/ABA_routing_transit_number),
-            without separators or whitespace.
-          maxLength: 9
-          minLength: 9
-          type: string
-      required:
-      - iban
-      type: object
     BankAccountIdentificationValidationRequest:
       properties:
         accountIdentification:
@@ -3115,6 +3097,16 @@ components:
             or whitespace.
           maxLength: 12
           minLength: 5
+          type: string
+        accountType:
+          default: checking
+          description: 'The bank account type.
+
+
+            Possible values: **checking** or **savings**. Defaults to **checking**.'
+          enum:
+          - checking
+          - savings
           type: string
         institutionNumber:
           description: The 3-digit institution number, without separators or whitespace.
@@ -3892,7 +3884,9 @@ components:
         bankAccount:
           description: Contains the business account details. Returned when you create
             a payment instrument with `type` **bankAccount**.
-          $ref: '#/components/schemas/BankAccount'
+          oneOf:
+          - $ref: '#/components/schemas/IbanAccountIdentification'
+          - $ref: '#/components/schemas/USLocalAccountIdentification'
         card:
           description: Contains information about the card payment instrument. Returned
             when you create a payment instrument with `type` **card**.
@@ -4137,13 +4131,13 @@ components:
     PaymentInstrumentRevealInfo:
       properties:
         cvc:
-          description: The cvc of the card.
+          description: The CVC2 value of the card.
           type: string
         expiration:
           description: The expiration date of the card.
           $ref: '#/components/schemas/Expiry'
         pan:
-          description: The pan number of the card.
+          description: The primary account number (PAN) of the card.
           type: string
       required:
       - pan
@@ -4402,10 +4396,10 @@ components:
       properties:
         category:
           x-addedInVersion: '2'
-          description: "The type of sweep.\n\nPossible values:\n\n - **bank**: Sweep\
-            \ to a [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments__resParam_id)\
-            \ \n\n- **internal**: Transfer to another [balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__resParam_id)\
-            \ within your platform."
+          description: "The type of transfer that results from the sweep.\n\nPossible\
+            \ values:\n\n - **bank**: Sweep to a [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments__resParam_id).\n\
+            \n- **internal**: Transfer to another [balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__resParam_id)\
+            \ within your platform.\n\nRequired when setting `priorities`."
           enum:
           - bank
           - internal
@@ -4440,15 +4434,11 @@ components:
           type: string
         priorities:
           x-addedInVersion: '2'
-          description: 'The priority for the bank transfer. This sets the speed at
-            which the transfer is sent and the fees that you have to pay. Required
-            for sweeps with `category` **bank**.
-
-
-            Some transfer routes have an amount limit. The sweep will be executed
-            using the first priority that leads to a valid route given the sweep amount.All
-            supplied priorities need to lead to a valid route at time of configuration
-            given the sweep currency and counterparty details.
+          description: 'The list of priorities for the bank transfer. This sets the
+            speed at which the transfer is sent and the fees that you have to pay.
+            You can provide multiple priorities. Adyen will try to pay out using the
+            priority listed first, and if that''s not possible, it moves on to the
+            next option in the order of provided priorities.
 
 
             Possible values:
@@ -4472,7 +4462,11 @@ components:
 
 
             * **internal**: Transfer to an Adyen-issued business bank account (by
-            bank account number/IBAN).'
+            bank account number/IBAN).
+
+
+            Set `category` to **bank**. For more details, see [optional priorities
+            setup](https://docs.adyen.com/marketplaces-and-platforms/payout-to-users/scheduled-payouts#optional-priorities-setup).'
           items:
             enum:
             - crossBorder
@@ -4717,6 +4711,17 @@ components:
           description: Your reference for the transaction rule, maximum 150 characters.
           maxLength: 150
           type: string
+        requestType:
+          x-addedInVersion: '2'
+          description: 'Indicates the type of request to which the rule applies.
+
+
+            Possible values: **authorization**, **authentication**, **tokenization**.'
+          enum:
+          - authentication
+          - authorization
+          - tokenization
+          type: string
         ruleRestrictions:
           x-addedInVersion: '2'
           description: 'Contains one or more objects that define the [rule conditions](https://docs.adyen.com/issuing/transaction-rules#conditions).
@@ -4852,6 +4857,17 @@ components:
         reference:
           description: Your reference for the transaction rule, maximum 150 characters.
           maxLength: 150
+          type: string
+        requestType:
+          x-addedInVersion: '2'
+          description: 'Indicates the type of request to which the rule applies.
+
+
+            Possible values: **authorization**, **authentication**, **tokenization**.'
+          enum:
+          - authentication
+          - authorization
+          - tokenization
           type: string
         ruleRestrictions:
           x-addedInVersion: '2'
@@ -5163,7 +5179,9 @@ components:
         bankAccount:
           description: Contains the business account details. Returned when you create
             a payment instrument with `type` **bankAccount**.
-          $ref: '#/components/schemas/BankAccount'
+          oneOf:
+          - $ref: '#/components/schemas/IbanAccountIdentification'
+          - $ref: '#/components/schemas/USLocalAccountIdentification'
         card:
           description: Contains information about the card payment instrument. Returned
             when you create a payment instrument with `type` **card**.
@@ -5970,6 +5988,43 @@ components:
           currency: EUR
           value: 50000
         currency: EUR
+        schedule:
+          type: weekly
+        type: push
+        status: active
+    post-balanceAccounts-balanceAccountId-sweeps-createSweep-push-priorities:
+      summary: Create a sweep to push funds out of a balance account with set priorities
+      description: Example request for creating a push sweep with priorities
+      value:
+        counterparty:
+          transferInstrumentId: SE322JV223222J5HGLCGF2WDV
+        triggerAmount:
+          currency: EUR
+          value: 50000
+        currency: EUR
+        priorities:
+        - fast
+        - instant
+        category: bank
+        schedule:
+          type: weekly
+        type: push
+        status: active
+    post-balanceAccounts-balanceAccountId-sweeps-createSweep-push-priorities-200:
+      summary: Sweep of push type with priorities created
+      description: Example response for creating a push sweep with priorities
+      value:
+        id: SWPC4227C224555B5FTD2NT2JV4WN9
+        counterparty:
+          transferInstrumentId: SE322JV223222J5HGLCGF2WDV
+        triggerAmount:
+          currency: EUR
+          value: 50000
+        currency: EUR
+        priorities:
+        - fast
+        - instant
+        category: bank
         schedule:
           type: weekly
         type: push
