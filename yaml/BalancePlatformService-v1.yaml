@@ -20,7 +20,7 @@ info:
     ```\n## Going live\nWhen going live, your Adyen contact will provide your API\
     \ credential for the live environment. You can then use the API key or the username\
     \ and password to send requests to `https://balanceplatform-api-live.adyen.com/bcl/v1`."
-  x-timestamp: '2023-02-20T18:22:00Z'
+  x-timestamp: '2023-03-29T11:22:17Z'
   termsOfService: https://www.adyen.com/legal/terms-and-conditions
   contact:
     name: Adyen Developer Experience team
@@ -1594,8 +1594,10 @@ paths:
         content:
           application/json:
             examples:
-              createBusinessAccount:
-                $ref: '#/components/examples/post-paymentInstruments-createBusinessAccount'
+              createBusinessAccountNL:
+                $ref: '#/components/examples/post-paymentInstruments-createBusinessAccountNL'
+              createBusinessAccountUS:
+                $ref: '#/components/examples/post-paymentInstruments-createBusinessAccountUS'
               createPhysicalCard:
                 $ref: '#/components/examples/post-paymentInstruments-createPhysicalCard'
               createVirtualCard:
@@ -1607,8 +1609,10 @@ paths:
           content:
             application/json:
               examples:
-                createBusinessAccount:
-                  $ref: '#/components/examples/post-paymentInstruments-createBusinessAccount-200'
+                createBusinessAccountNL:
+                  $ref: '#/components/examples/post-paymentInstruments-createBusinessAccountNL-200'
+                createBusinessAccountUS:
+                  $ref: '#/components/examples/post-paymentInstruments-createBusinessAccountUS-200'
                 createPhysicalCard:
                   $ref: '#/components/examples/post-paymentInstruments-createPhysicalCard-200'
                 createVirtualCard:
@@ -1830,13 +1834,19 @@ paths:
     get:
       tags:
       - Payment instruments
-      summary: Get the reveal information of a payment instrument
-      description: Returns the reveal information of a payment instrument.
+      summary: Get the PAN of a payment instrument
+      description: 'Returns the primary account number (PAN) of a payment instrument.
+
+
+        To make this request, your API credential must have the following [role](https://docs.adyen.com/issuing/manage-access/api-credentials-web-service#api-permissions):
+
+
+        * Balance Platform BCL PCI role'
       x-addedInVersion: '1'
       operationId: get-paymentInstruments-id-reveal
       x-groupName: Payment instruments
       x-sortIndex: 14
-      x-methodName: getRevealInformationOfPaymentInstrument
+      x-methodName: getPanOfPaymentInstrument
       security:
       - BasicAuth: []
       - ApiKeyAuth: []
@@ -2560,6 +2570,11 @@ paths:
       requestBody:
         content:
           application/json:
+            examples:
+              validateBankAccountIdentificationIban:
+                $ref: '#/components/examples/post-validateBankAccountIdentification-validateBankAccountIdentificationIban'
+              validateBankAccountIdentificationUs:
+                $ref: '#/components/examples/post-validateBankAccountIdentification-validateBankAccountIdentificationUs'
             schema:
               $ref: '#/components/schemas/BankAccountIdentificationValidationRequest'
       responses:
@@ -2593,6 +2608,10 @@ paths:
               examples:
                 generic:
                   $ref: '#/components/examples/generic-422'
+                validateBankAccountIdentificationIban:
+                  $ref: '#/components/examples/post-validateBankAccountIdentification-validateBankAccountIdentificationIban-422'
+                validateBankAccountIdentificationUs:
+                  $ref: '#/components/examples/post-validateBankAccountIdentification-validateBankAccountIdentificationUs-422'
               schema:
                 $ref: '#/components/schemas/RestServiceError'
           description: Unprocessable Entity - a request validation error.
@@ -2659,7 +2678,7 @@ components:
           readOnly: true
           type: string
         legalEntityId:
-          description: The unique identifier of the [legal entity](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/legalEntities__resParam_id)
+          description: The unique identifier of the [legal entity](https://docs.adyen.com/api-explorer/legalentity/latest/post/legalEntities#responses-200-id)
             associated with the account holder. Adyen performs a verification process
             against the legal entity of the account holder.
           type: string
@@ -2817,7 +2836,7 @@ components:
           maxLength: 300
           type: string
         legalEntityId:
-          description: The unique identifier of the [legal entity](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/legalEntities__resParam_id)
+          description: The unique identifier of the [legal entity](https://docs.adyen.com/api-explorer/legalentity/latest/post/legalEntities#responses-200-id)
             associated with the account holder. Adyen performs a verification process
             against the legal entity of the account holder.
           type: string
@@ -3287,34 +3306,6 @@ components:
       required:
       - id
       type: object
-    BankAccount:
-      properties:
-        accountNumber:
-          description: The bank account number, without separators or whitespace.
-          maxLength: 18
-          minLength: 2
-          type: string
-        accountType:
-          description: 'The bank account type.
-
-
-            Possible values: **checking** only.'
-          enum:
-          - checking
-          type: string
-        iban:
-          description: The [International Bank Account Number](https://en.wikipedia.org/wiki/International_Bank_Account_Number)
-            (IBAN).
-          type: string
-        routingNumber:
-          description: The 9-digit [routing number](https://en.wikipedia.org/wiki/ABA_routing_transit_number),
-            without separators or whitespace.
-          maxLength: 9
-          minLength: 9
-          type: string
-      required:
-      - iban
-      type: object
     BankAccountIdentificationValidationRequest:
       properties:
         accountIdentification:
@@ -3463,6 +3454,37 @@ components:
       - accountNumber
       - institutionNumber
       - transitNumber
+      type: object
+    CZLocalAccountIdentification:
+      additionalProperties: false
+      properties:
+        accountNumber:
+          description: "The 2- to 16-digit bank account number (\u010C\xEDslo \xFA\
+            \u010Dtu) in the following format:\n\n- The optional prefix (p\u0159ed\u010D\
+            \xEDsl\xED).\n\n- The required second part (z\xE1kladn\xED \u010D\xE1\
+            st) which must be at least two non-zero digits.\n\nExamples:\n\n- **19-123457**\
+            \ (with prefix)\n\n- **123457** (without prefix)\n\n- **000019-0000123457**\
+            \ (with prefix, normalized)\n\n- **000000-0000123457** (without prefix,\
+            \ normalized)"
+          maxLength: 17
+          minLength: 2
+          type: string
+        bankCode:
+          description: "The 4-digit bank code (K\xF3d banky), without separators or\
+            \ whitespace."
+          maxLength: 4
+          minLength: 4
+          type: string
+        type:
+          default: czLocal
+          description: '**czLocal**'
+          enum:
+          - czLocal
+          type: string
+      required:
+      - type
+      - accountNumber
+      - bankCode
       type: object
     CapabilityProblem:
       type: object
@@ -3659,6 +3681,8 @@ components:
         shipmentMethod:
           description: Overrides the logistics company defined in the `configurationProfileId`.
           type: string
+      required:
+      - configurationProfileId
       type: object
     CardInfo:
       properties:
@@ -3706,37 +3730,6 @@ components:
       - cardholderName
       - brand
       - brandVariant
-      type: object
-    CZLocalAccountIdentification:
-      additionalProperties: false
-      properties:
-        accountNumber:
-          description: "The 2- to 16-digit bank account number (\u010C\xEDslo \xFA\
-            \u010Dtu) in the following format:\n\n- The optional prefix (p\u0159ed\u010D\
-            \xEDsl\xED).\n\n- The required second part (z\xE1kladn\xED \u010D\xE1\
-            st) which must be at least two non-zero digits.\n\nExamples:\n\n- **19-123457**\
-            \ (with prefix)\n\n- **123457** (without prefix)\n\n- **000019-0000123457**\
-            \ (with prefix, normalized)\n\n- **000000-0000123457** (without prefix,\
-            \ normalized)"
-          maxLength: 17
-          minLength: 2
-          type: string
-        bankCode:
-          description: "The 4-digit bank code (K\xF3d banky), without separators or\
-            \ whitespace."
-          maxLength: 4
-          minLength: 4
-          type: string
-        type:
-          default: czLocal
-          description: '**czLocal**'
-          enum:
-          - czLocal
-          type: string
-      required:
-      - type
-      - accountNumber
-      - bankCode
       type: object
     Contact:
       properties:
@@ -4613,7 +4606,9 @@ components:
         bankAccount:
           description: Contains the business account details. Returned when you create
             a payment instrument with `type` **bankAccount**.
-          $ref: '#/components/schemas/BankAccount'
+          oneOf:
+          - $ref: '#/components/schemas/IbanAccountIdentification'
+          - $ref: '#/components/schemas/USLocalAccountIdentification'
         card:
           description: Contains information about the card payment instrument. Returned
             when you create a payment instrument with `type` **card**.
@@ -4858,13 +4853,13 @@ components:
     PaymentInstrumentRevealInfo:
       properties:
         cvc:
-          description: The cvc of the card.
+          description: The CVC2 value of the card.
           type: string
         expiration:
           description: The expiration date of the card.
           $ref: '#/components/schemas/Expiry'
         pan:
-          description: The pan number of the card.
+          description: The primary account number (PAN) of the card.
           type: string
       required:
       - pan
@@ -5764,7 +5759,9 @@ components:
         bankAccount:
           description: Contains the business account details. Returned when you create
             a payment instrument with `type` **bankAccount**.
-          $ref: '#/components/schemas/BankAccount'
+          oneOf:
+          - $ref: '#/components/schemas/IbanAccountIdentification'
+          - $ref: '#/components/schemas/USLocalAccountIdentification'
         card:
           description: Contains information about the card payment instrument. Returned
             when you create a payment instrument with `type` **card**.
@@ -6075,6 +6072,7 @@ components:
         type: https://docs.adyen.com/errors/security/unauthorized
         title: Unauthorized
         status: 401
+        detail: Not authorized to access this service.
         errorCode: '00_401'
     generic-403:
       summary: Response code - 403 Forbidden.
@@ -6090,6 +6088,7 @@ components:
         type: https://docs.adyen.com/errors/general/not-found
         title: Not found
         status: 404
+        detail: Service not found.
         errorCode: '00_404'
     generic-422:
       summary: Response code - 422 Unprocessable Entity.
@@ -6140,8 +6139,8 @@ components:
           timeZone: Europe/Amsterdam
           id: BA32272223222B5BRR27B2M7G
           status: Active
-        hasNext: 'true'
-        hasPrevious: 'false'
+        hasNext: true
+        hasPrevious: false
     get-accountHolders-id-success-200:
       summary: Account holder retrieved
       description: Example response when retrieving an account holder
@@ -6152,24 +6151,24 @@ components:
         reference: S.Eller-001
         capabilities:
           receiveFromPlatformPayments:
-            enabled: 'true'
-            requested: 'true'
-            allowed: 'false'
+            enabled: true
+            requested: true
+            allowed: false
             verificationStatus: pending
           receiveFromBalanceAccount:
-            enabled: 'true'
-            requested: 'true'
-            allowed: 'false'
+            enabled: true
+            requested: true
+            allowed: false
             verificationStatus: pending
           sendToBalanceAccount:
-            enabled: 'true'
-            requested: 'true'
-            allowed: 'false'
+            enabled: true
+            requested: true
+            allowed: false
             verificationStatus: pending
           sendToTransferInstrument:
-            enabled: 'true'
-            requested: 'true'
-            allowed: 'false'
+            enabled: true
+            requested: true
+            allowed: false
             verificationStatus: pending
         id: AH3227C223222C5GXQXF658WB
         status: Active
@@ -6178,8 +6177,8 @@ components:
       description: Example response when retrieving a list of payment instruments
         under a balance account
       value:
-        hasNext: 'true'
-        hasPrevious: 'false'
+        hasNext: true
+        hasPrevious: false
         paymentInstruments:
         - balanceAccountId: BA32272223222B59CZ3T52DKZ
           issuingCountryCode: GB
@@ -6249,8 +6248,8 @@ components:
           reference: Account from the Explorer Holder
           id: AH32272223222B5GFWNRFFVR6
           status: Active
-        hasNext: 'true'
-        hasPrevious: 'true'
+        hasNext: true
+        hasPrevious: true
     get-balancePlatforms-id-success-200:
       summary: Balance platform retrieved
       description: Example response when retrieving a balance platform
@@ -6328,7 +6327,7 @@ components:
             value: 100000
           description: Up to 1000 EUR per card for the last 12 hours
           interval:
-            type: ''
+            type: perTransaction
           paymentInstrumentGroupId: PG3227C223222C5GXR3M5592Q
           reference: YOUR_REFERENCE_2918A
           status: inactive
@@ -6339,7 +6338,7 @@ components:
             value: 100000
           description: NL only
           interval:
-            type: ''
+            type: daily
           paymentInstrumentGroupId: PG3227C223222C5GXR3M5592Q
           reference: myRule12345
           status: inactive
@@ -6439,9 +6438,9 @@ components:
         reference: S.Eller-001
         capabilities:
           receivePayments:
-            enabled: 'false'
-            requested: 'true'
-            allowed: 'false'
+            enabled: false
+            requested: true
+            allowed: false
             verificationStatus: pending
         id: AH3227C223222C5GKR23686TF
         status: Active
@@ -6815,24 +6814,47 @@ components:
       value:
         balancePlatform: YOUR_BALANCE_PLATFORM
         txVariant: mc
-    post-paymentInstruments-createBusinessAccount:
-      summary: Create a business account
-      description: Example request for creating a business account
+    post-paymentInstruments-createBusinessAccountNL:
+      summary: Create a business account in NL
+      description: Example request for creating a business account in NL
       value:
         type: bankAccount
         description: YOUR_DESCRIPTION
         balanceAccountId: BA3227C223222B5CTBLR8BWJB
         issuingCountryCode: NL
-    post-paymentInstruments-createBusinessAccount-200:
-      summary: Business account created
-      description: Example response for creating a business account
+    post-paymentInstruments-createBusinessAccountNL-200:
+      summary: Business account in NL created
+      description: Example response for creating a business account in NL
       value:
         balanceAccountId: BA3227C223222B5CTBLR8BWJB
         issuingCountryCode: NL
         status: Active
         type: bankAccount
+        description: YOUR_DESCRIPTION
         bankAccount:
           iban: NL20ADYB2017000035
+        id: PI322LJ223222B5DJS7CD9LWL
+    post-paymentInstruments-createBusinessAccountUS:
+      summary: Create a business account in the US
+      description: Example request for creating a business account in the US
+      value:
+        type: bankAccount
+        description: YOUR_DESCRIPTION
+        balanceAccountId: BA3227C223222B5CTBLR8BWJB
+        issuingCountryCode: US
+    post-paymentInstruments-createBusinessAccountUS-200:
+      summary: Business account in the US created
+      description: Example response for creating a business account in the US
+      value:
+        balanceAccountId: BA3227C223222B5CTBLR8BWJB
+        issuingCountryCode: US
+        status: Active
+        type: bankAccount
+        description: YOUR_DESCRIPTION
+        bankAccount:
+          accountNumber: '333720756'
+          routingNumber: '21000021'
+          accountType: checking
         id: PI322LJ223222B5DJS7CD9LWL
     post-paymentInstruments-createPhysicalCard:
       summary: Create a physical card
@@ -6850,12 +6872,11 @@ components:
           cardholderName: Sam Hopper
           deliveryContact:
             address:
+              houseNumberOrName: '64'
+              street: Brannan Street
+              postalCode: 1020CD
               city: Amsterdam
               country: NL
-              stateOrProvince: NH
-              line1: Brannan Street
-              line2: '274'
-              postalCode: 1020CD
             name:
               firstName: Sam
               lastName: Hopper
@@ -6875,6 +6896,7 @@ components:
           brandVariant: mcdebit
           cardholderName: Sam Hopper
           formFactor: physical
+          number: '************5785'
           bin: '555544'
           expiration:
             month: 08
@@ -6887,12 +6909,11 @@ components:
               type: mobile
           deliveryContact:
             address:
+              houseNumberOrName: '64'
+              street: Brannan Street
+              postalCode: 1020CD
               city: Amsterdam
               country: NL
-              stateOrProvince: NH
-              line1: Brannan Street
-              line2: '274'
-              postalCode: 1020CD
             name:
               firstName: Sam
               lastName: Hopper
@@ -6994,3 +7015,38 @@ components:
         status: active
         interval:
           type: perTransaction
+    post-validateBankAccountIdentification-validateBankAccountIdentificationIban:
+      summary: Validate an IBAN
+      value:
+        accountIdentification:
+          type: iban
+          iban: '1001001234'
+    post-validateBankAccountIdentification-validateBankAccountIdentificationIban-422:
+      summary: Invalid IBAN details
+      value:
+        type: https://docs.adyen.com/errors/validation
+        title: Invalid bank account identification details provided
+        status: 422
+        invalidFields:
+        - name: iban
+          message: Invalid IBAN.
+        errorCode: '33_01'
+    post-validateBankAccountIdentification-validateBankAccountIdentificationUs:
+      summary: Validate a US bank account
+      value:
+        accountIdentification:
+          type: usLocal
+          accountNumber: 12345JHDhjkf67890
+          routingNumber: 121000cxhgjhzxg248
+    post-validateBankAccountIdentification-validateBankAccountIdentificationUs-422:
+      summary: Invalid US bank account details
+      value:
+        type: https://docs.adyen.com/errors/validation
+        title: Invalid bank account identification details provided
+        status: 422
+        invalidFields:
+        - name: accountNumber
+          message: Invalid account number.
+        - name: routingNumber
+          message: Invalid routing number.
+        errorCode: '33_01'
