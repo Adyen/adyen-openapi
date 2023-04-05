@@ -23,7 +23,7 @@ info:
     ```\n## Going live\nWhen going live, your Adyen contact will provide your API\
     \ credential for the live environment. You can then use the username and password\
     \ to send requests to `https://balanceplatform-api-live.adyen.com/btl/v3`.\n\n"
-  x-timestamp: '2023-02-22T12:23:54Z'
+  x-timestamp: '2023-03-28T13:27:36Z'
   termsOfService: https://www.adyen.com/legal/terms-and-conditions
   contact:
     name: Adyen Developer Experience team
@@ -446,6 +446,16 @@ components:
           maxLength: 12
           minLength: 5
           type: string
+        accountType:
+          default: checking
+          description: 'The bank account type.
+
+
+            Possible values: **checking** or **savings**. Defaults to **checking**.'
+          enum:
+          - checking
+          - savings
+          type: string
         institutionNumber:
           description: The 3-digit institution number, without separators or whitespace.
           maxLength: 3
@@ -741,14 +751,22 @@ components:
         address:
           description: Address of the bank account owner.
           $ref: '#/components/schemas/Address-2'
+        dateOfBirth:
+          description: 'The date of birth of the individual.
+
+            Format: [ISO-8601](https://www.w3.org/TR/NOTE-datetime); example: YYYY-MM-DD
+
+            Allowed only when `type` is **individual**.'
+          format: date
+          type: string
         firstName:
-          description: First name of the individual. Required when `type` is **individual**.
+          description: First name of the individual. Allowed only when `type` is **individual**.
           type: string
         fullName:
           description: The name of the entity.
           type: string
         lastName:
-          description: Last name of the individual. Required when `type` is **individual**.
+          description: Last name of the individual. Allowed only when `type` is **individual**.
           type: string
         type:
           default: unknown
@@ -1105,7 +1123,7 @@ components:
           x-addedInVersion: '2'
           description: Additional information about the status of the transfer.
           enum:
-          - amountLimitExceded
+          - amountLimitExceeded
           - approved
           - counterpartyAccountBlocked
           - counterpartyAccountClosed
@@ -1142,6 +1160,7 @@ components:
           description: "The result of the transfer.\n\n For example, **authorised**,\
             \ **refused**, or **error**."
           enum:
+          - approvalPending
           - atmWithdrawal
           - atmWithdrawalReversalPending
           - atmWithdrawalReversed
@@ -1392,7 +1411,7 @@ components:
         bookingDate: '2022-03-14T12:01:00+01:00'
         category: bank
         counterparty:
-          balanceAccountId: NL29ADYX0000000001
+          balanceAccountId: BA00000000000000000000001
         createdAt: '2022-03-14T12:01:00+01:00'
         description: YOUR_DESCRIPTION
         id: IZK7C25U7DYVX03Y
@@ -1418,6 +1437,8 @@ components:
           balancePlatform: YOUR_BALANCE_PLATFORM
           bookingDate: '2022-03-11T11:21:24+01:00'
           category: internal
+          counterparty:
+            balanceAccountId: BA00000000000000000000001
           createdAt: '2022-03-11T11:21:24+01:00'
           id: 1VVF0D5U66PIUIVP
           instructedAmount:
@@ -1436,6 +1457,8 @@ components:
           balancePlatform: YOUR_BALANCE_PLATFORM
           bookingDate: '2022-03-12T14:22:52+01:00'
           category: internal
+          counterparty:
+            balanceAccountId: BA00000000000000000000001
           createdAt: '2022-03-12T14:22:52+01:00'
           id: 1WEPGD5U6MS1CFK3
           instructedAmount:
@@ -1456,6 +1479,9 @@ components:
           createdAt: '2022-03-14T15:00:00+01:00'
           description: YOUR_DESCRIPTION_2
           id: 2QP32A5U7IWC5WKG
+          counterparty:
+            balanceAccountId: BA00000000000000000000001
+          reference: REFERENCE_46e8c40e
           instructedAmount:
             currency: EUR
             value: -8
@@ -1465,8 +1491,8 @@ components:
           next:
             href: https://balanceplatform-api-test.adyen.com/btl/v2/transactions?balancePlatform=Bastronaut&createdUntil=2022-03-21T00%3A00%3A00Z&createdSince=2022-03-11T00%3A00%3A00Z&limit=3&cursor=S2B-TSAjOkIrYlIlbjdqe0RreHRyM32lKRSxubXBHRkhHL2E32XitQQz5SfzpucD5HbHwpM1p6NDR1eXVQLFF6MmY33J32sobDxQYT90MHIud1hwLnd6JitcX32xJ
     post-transfers-payout-cross-border:
-      summary: Make a cross border transfer
-      description: Example request to make a cross border transfer
+      summary: Make a cross-border transfer
+      description: Example request to make a cross-border transfer
       value:
         amount:
           value: 110000
@@ -1484,12 +1510,12 @@ components:
                 stateOrProvince: CA
                 street: Brannan Street
                 street2: '274'
-          accountIdentification:
-            type: numberAndBic
-            accountNumber: '123456789'
-            bic: BOFAUS3NXXX
-        priority: wire
-        referenceForBeneficiary: Your reference sent to the beneficiary
+            accountIdentification:
+              type: numberAndBic
+              accountNumber: '123456789'
+              bic: BOFAUS3NXXX
+        priority: crossBorder
+        referenceForBeneficiary: Your-reference-sent-to-the-beneficiary
         reference: Your internal reference for the transfer
         description: Your description for the transfer
     post-transfers-payout-cross-border-200:
@@ -1517,8 +1543,8 @@ components:
               type: numberAndBic
               accountNumber: '123456789'
               bic: BOFAUS3NXXX
-          priority: wire
-          referenceForBeneficiary: Your reference sent to the beneficiary
+          priority: crossBorder
+          referenceForBeneficiary: Your-reference-sent-to-the-beneficiary
           reference: Your internal reference for the transfer
           description: Your description for the transfer
           direction: outgoing
@@ -1541,7 +1567,7 @@ components:
               type: iban
               iban: NL91ABNA0417164300
         priority: regular
-        referenceForBeneficiary: Your reference sent to the beneficiary
+        referenceForBeneficiary: Your-reference-sent-to-the-beneficiary
         reference: Your internal reference for the transfer
         description: Your description for the transfer
     post-transfers-payout-local-transfer-sepa-200:
@@ -1562,7 +1588,7 @@ components:
               type: iban
               iban: NL91ABNA0417164300
         priority: regular
-        referenceForBeneficiary: Your reference sent to the beneficiary
+        referenceForBeneficiary: Your-reference-sent-to-the-beneficiary
         reference: Your internal reference for the transfer
         description: Your description for the transfer
         direction: outgoing
@@ -1586,7 +1612,7 @@ components:
               accountNumber: '123456789'
               routingNumber: 011000138
         priority: regular
-        referenceForBeneficiary: Your reference sent to the beneficiary
+        referenceForBeneficiary: Your-reference-sent-to-the-beneficiary
         reference: Your internal reference for the transfer
         description: Your description for the transfer
     post-transfers-payout-local-transfer-us-200:
@@ -1608,7 +1634,7 @@ components:
               accountNumber: '123456789'
               routingNumber: 011000138
         priority: regular
-        referenceForBeneficiary: Your reference sent to the beneficiary
+        referenceForBeneficiary: Your-reference-sent-to-the-beneficiary
         reference: Your internal reference for the transfer
         description: Your description for the transfer
         direction: outgoing
@@ -1625,7 +1651,7 @@ components:
         category: internal
         counterparty:
           balanceAccountId: BA32272223222B5LPRFDW7J9G
-        referenceForBeneficiary: Your reference sent to the beneficiary
+        referenceForBeneficiary: Your-reference-sent-to-the-beneficiary
         reference: Your internal reference for the transfer
         description: Your description for the transfer
     post-transfers-payout-to-balance-account-200:
@@ -1640,7 +1666,7 @@ components:
         category: internal
         counterparty:
           balanceAccountId: BA32272223222B5LPRFDW7J9G
-        referenceForBeneficiary: Your reference sent to the beneficiary
+        referenceForBeneficiary: Your-reference-sent-to-the-beneficiary
         reference: Your internal reference for the transfer
         description: Your description for the transfer
         direction: outgoing
@@ -1658,7 +1684,7 @@ components:
         counterparty:
           transferInstrumentId: SE1234567890ABC1234567890
         priority: regular
-        referenceForBeneficiary: Your reference sent to the beneficiary
+        referenceForBeneficiary: Your-reference-sent-to-the-beneficiary
         reference: Your internal reference for the transfer
         description: Your description for the transfer
     post-transfers-payout-to-transfer-instrument-200:
@@ -1674,7 +1700,7 @@ components:
         counterparty:
           transferInstrumentId: SE1234567890ABC1234567890
         priority: regular
-        referenceForBeneficiary: Your reference sent to the beneficiary
+        referenceForBeneficiary: Your-reference-sent-to-the-beneficiary
         reference: Your internal reference for the transfer
         description: Your description for the transfer
         direction: outgoing

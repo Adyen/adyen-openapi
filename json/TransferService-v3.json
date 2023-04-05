@@ -10,7 +10,7 @@
       "x-publicVersion" : true,
       "title" : "Transfers API",
       "description" : "The Transfers API provides endpoints that you can use to get information about all your transactions, move funds within your balance platform or send funds from your balance platform to a [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments).\n\n## Authentication\nYour Adyen contact will provide your API credential and an API key. To connect to the API, add an `X-API-Key` header with the API key as the value, for example:\n\n ```\ncurl\n-H \"Content-Type: application/json\" \\\n-H \"X-API-Key: YOUR_API_KEY\" \\\n...\n```\n\nAlternatively, you can use the username and password to connect to the API using basic authentication. For example:\n\n```\ncurl\n-H \"Content-Type: application/json\" \\\n-U \"ws@BalancePlatform.YOUR_BALANCE_PLATFORM\":\"YOUR_WS_PASSWORD\" \\\n...\n```\n## Roles and permissions\nTo use the Transfers API, you need an additional role for your API credential. Transfers must also be enabled for the source balance account. Your Adyen contact will set up the roles and permissions for you.\n## Versioning\nThe Transfers API supports [versioning](https://docs.adyen.com/development-resources/versioning) using a version suffix in the endpoint URL. This suffix has the following format: \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://balanceplatform-api-test.adyen.com/btl/v3/transfers\n```\n## Going live\nWhen going live, your Adyen contact will provide your API credential for the live environment. You can then use the username and password to send requests to `https://balanceplatform-api-live.adyen.com/btl/v3`.\n\n",
-      "x-timestamp" : "2023-02-22T12:23:54Z",
+      "x-timestamp" : "2023-03-28T13:27:36Z",
       "termsOfService" : "https://www.adyen.com/legal/terms-and-conditions",
       "contact" : {
          "name" : "Adyen Developer Experience team",
@@ -608,6 +608,15 @@
                   "minLength" : 5,
                   "type" : "string"
                },
+               "accountType" : {
+                  "default" : "checking",
+                  "description" : "The bank account type.\n\nPossible values: **checking** or **savings**. Defaults to **checking**.",
+                  "enum" : [
+                     "checking",
+                     "savings"
+                  ],
+                  "type" : "string"
+               },
                "institutionNumber" : {
                   "description" : "The 3-digit institution number, without separators or whitespace.",
                   "maxLength" : 3,
@@ -989,8 +998,13 @@
                   "description" : "Address of the bank account owner.",
                   "$ref" : "#/components/schemas/Address-2"
                },
+               "dateOfBirth" : {
+                  "description" : "The date of birth of the individual.\nFormat: [ISO-8601](https://www.w3.org/TR/NOTE-datetime); example: YYYY-MM-DD\nAllowed only when `type` is **individual**.",
+                  "format" : "date",
+                  "type" : "string"
+               },
                "firstName" : {
-                  "description" : "First name of the individual. Required when `type` is **individual**.",
+                  "description" : "First name of the individual. Allowed only when `type` is **individual**.",
                   "type" : "string"
                },
                "fullName" : {
@@ -998,7 +1012,7 @@
                   "type" : "string"
                },
                "lastName" : {
-                  "description" : "Last name of the individual. Required when `type` is **individual**.",
+                  "description" : "Last name of the individual. Allowed only when `type` is **individual**.",
                   "type" : "string"
                },
                "type" : {
@@ -1363,7 +1377,7 @@
                   "x-addedInVersion" : "2",
                   "description" : "Additional information about the status of the transfer.",
                   "enum" : [
-                     "amountLimitExceded",
+                     "amountLimitExceeded",
                      "approved",
                      "counterpartyAccountBlocked",
                      "counterpartyAccountClosed",
@@ -1395,6 +1409,7 @@
                   "x-addedInVersion" : "2",
                   "description" : "The result of the transfer.\n\n For example, **authorised**, **refused**, or **error**.",
                   "enum" : [
+                     "approvalPending",
                      "atmWithdrawal",
                      "atmWithdrawalReversalPending",
                      "atmWithdrawalReversed",
@@ -1639,7 +1654,7 @@
                "bookingDate" : "2022-03-14T12:01:00+01:00",
                "category" : "bank",
                "counterparty" : {
-                  "balanceAccountId" : "NL29ADYX0000000001"
+                  "balanceAccountId" : "BA00000000000000000000001"
                },
                "createdAt" : "2022-03-14T12:01:00+01:00",
                "description" : "YOUR_DESCRIPTION",
@@ -1671,6 +1686,9 @@
                      "balancePlatform" : "YOUR_BALANCE_PLATFORM",
                      "bookingDate" : "2022-03-11T11:21:24+01:00",
                      "category" : "internal",
+                     "counterparty" : {
+                        "balanceAccountId" : "BA00000000000000000000001"
+                     },
                      "createdAt" : "2022-03-11T11:21:24+01:00",
                      "id" : "1VVF0D5U66PIUIVP",
                      "instructedAmount" : {
@@ -1693,6 +1711,9 @@
                      "balancePlatform" : "YOUR_BALANCE_PLATFORM",
                      "bookingDate" : "2022-03-12T14:22:52+01:00",
                      "category" : "internal",
+                     "counterparty" : {
+                        "balanceAccountId" : "BA00000000000000000000001"
+                     },
                      "createdAt" : "2022-03-12T14:22:52+01:00",
                      "id" : "1WEPGD5U6MS1CFK3",
                      "instructedAmount" : {
@@ -1717,6 +1738,10 @@
                      "createdAt" : "2022-03-14T15:00:00+01:00",
                      "description" : "YOUR_DESCRIPTION_2",
                      "id" : "2QP32A5U7IWC5WKG",
+                     "counterparty" : {
+                        "balanceAccountId" : "BA00000000000000000000001"
+                     },
+                     "reference" : "REFERENCE_46e8c40e",
                      "instructedAmount" : {
                         "currency" : "EUR",
                         "value" : -8
@@ -1733,8 +1758,8 @@
             }
          },
          "post-transfers-payout-cross-border" : {
-            "summary" : "Make a cross border transfer",
-            "description" : "Example request to make a cross border transfer",
+            "summary" : "Make a cross-border transfer",
+            "description" : "Example request to make a cross-border transfer",
             "value" : {
                "amount" : {
                   "value" : 110000,
@@ -1754,16 +1779,16 @@
                            "street" : "Brannan Street",
                            "street2" : "274"
                         }
+                     },
+                     "accountIdentification" : {
+                        "type" : "numberAndBic",
+                        "accountNumber" : "123456789",
+                        "bic" : "BOFAUS3NXXX"
                      }
-                  },
-                  "accountIdentification" : {
-                     "type" : "numberAndBic",
-                     "accountNumber" : "123456789",
-                     "bic" : "BOFAUS3NXXX"
                   }
                },
-               "priority" : "wire",
-               "referenceForBeneficiary" : "Your reference sent to the beneficiary",
+               "priority" : "crossBorder",
+               "referenceForBeneficiary" : "Your-reference-sent-to-the-beneficiary",
                "reference" : "Your internal reference for the transfer",
                "description" : "Your description for the transfer"
             }
@@ -1798,8 +1823,8 @@
                         "bic" : "BOFAUS3NXXX"
                      }
                   },
-                  "priority" : "wire",
-                  "referenceForBeneficiary" : "Your reference sent to the beneficiary",
+                  "priority" : "crossBorder",
+                  "referenceForBeneficiary" : "Your-reference-sent-to-the-beneficiary",
                   "reference" : "Your internal reference for the transfer",
                   "description" : "Your description for the transfer",
                   "direction" : "outgoing",
@@ -1830,7 +1855,7 @@
                   }
                },
                "priority" : "regular",
-               "referenceForBeneficiary" : "Your reference sent to the beneficiary",
+               "referenceForBeneficiary" : "Your-reference-sent-to-the-beneficiary",
                "reference" : "Your internal reference for the transfer",
                "description" : "Your description for the transfer"
             }
@@ -1858,7 +1883,7 @@
                   }
                },
                "priority" : "regular",
-               "referenceForBeneficiary" : "Your reference sent to the beneficiary",
+               "referenceForBeneficiary" : "Your-reference-sent-to-the-beneficiary",
                "reference" : "Your internal reference for the transfer",
                "description" : "Your description for the transfer",
                "direction" : "outgoing",
@@ -1889,7 +1914,7 @@
                   }
                },
                "priority" : "regular",
-               "referenceForBeneficiary" : "Your reference sent to the beneficiary",
+               "referenceForBeneficiary" : "Your-reference-sent-to-the-beneficiary",
                "reference" : "Your internal reference for the transfer",
                "description" : "Your description for the transfer"
             }
@@ -1918,7 +1943,7 @@
                   }
                },
                "priority" : "regular",
-               "referenceForBeneficiary" : "Your reference sent to the beneficiary",
+               "referenceForBeneficiary" : "Your-reference-sent-to-the-beneficiary",
                "reference" : "Your internal reference for the transfer",
                "description" : "Your description for the transfer",
                "direction" : "outgoing",
@@ -1939,7 +1964,7 @@
                "counterparty" : {
                   "balanceAccountId" : "BA32272223222B5LPRFDW7J9G"
                },
-               "referenceForBeneficiary" : "Your reference sent to the beneficiary",
+               "referenceForBeneficiary" : "Your-reference-sent-to-the-beneficiary",
                "reference" : "Your internal reference for the transfer",
                "description" : "Your description for the transfer"
             }
@@ -1958,7 +1983,7 @@
                "counterparty" : {
                   "balanceAccountId" : "BA32272223222B5LPRFDW7J9G"
                },
-               "referenceForBeneficiary" : "Your reference sent to the beneficiary",
+               "referenceForBeneficiary" : "Your-reference-sent-to-the-beneficiary",
                "reference" : "Your internal reference for the transfer",
                "description" : "Your description for the transfer",
                "direction" : "outgoing",
@@ -1980,7 +2005,7 @@
                   "transferInstrumentId" : "SE1234567890ABC1234567890"
                },
                "priority" : "regular",
-               "referenceForBeneficiary" : "Your reference sent to the beneficiary",
+               "referenceForBeneficiary" : "Your-reference-sent-to-the-beneficiary",
                "reference" : "Your internal reference for the transfer",
                "description" : "Your description for the transfer"
             }
@@ -2000,7 +2025,7 @@
                   "transferInstrumentId" : "SE1234567890ABC1234567890"
                },
                "priority" : "regular",
-               "referenceForBeneficiary" : "Your reference sent to the beneficiary",
+               "referenceForBeneficiary" : "Your-reference-sent-to-the-beneficiary",
                "reference" : "Your internal reference for the transfer",
                "description" : "Your description for the transfer",
                "direction" : "outgoing",
