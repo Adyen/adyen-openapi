@@ -72,7 +72,7 @@ info:
 
     Get your `{PREFIX}` from your live Customer Area under **Developers** > **API
     URLs** > **Prefix**.'
-  x-timestamp: '2022-12-13T09:27:04Z'
+  x-timestamp: '2023-04-11T21:25:15Z'
   termsOfService: https://www.adyen.com/legal/terms-and-conditions
   contact:
     name: Adyen Developer Experience team
@@ -100,7 +100,7 @@ paths:
       operationId: post-confirmThirdParty
       x-groupName: Reviewing
       x-sortIndex: 1
-      x-methodName: confirmPayout
+      x-methodName: confirmThirdParty
       security:
       - BasicAuth: []
       - ApiKeyAuth: []
@@ -168,7 +168,7 @@ paths:
       operationId: post-declineThirdParty
       x-groupName: Reviewing
       x-sortIndex: 2
-      x-methodName: cancelPayout
+      x-methodName: declineThirdParty
       security:
       - BasicAuth: []
       - ApiKeyAuth: []
@@ -236,7 +236,7 @@ paths:
       operationId: post-payout
       x-groupName: Instant payouts
       x-sortIndex: 1
-      x-methodName: makeInstantCardPayout
+      x-methodName: payout
       security:
       - BasicAuth: []
       - ApiKeyAuth: []
@@ -301,7 +301,7 @@ paths:
       operationId: post-storeDetail
       x-groupName: Initialization
       x-sortIndex: 2
-      x-methodName: storePayoutDetails
+      x-methodName: storeDetail
       security:
       - BasicAuth: []
       - ApiKeyAuth: []
@@ -370,7 +370,7 @@ paths:
       operationId: post-storeDetailAndSubmitThirdParty
       x-groupName: Initialization
       x-sortIndex: 1
-      x-methodName: storeDetailsAndSubmitPayout
+      x-methodName: storeDetailAndSubmitThirdParty
       security:
       - BasicAuth: []
       - ApiKeyAuth: []
@@ -445,7 +445,7 @@ paths:
       operationId: post-submitThirdParty
       x-groupName: Initialization
       x-sortIndex: 3
-      x-methodName: submitPayout
+      x-methodName: submitThirdParty
       security:
       - BasicAuth: []
       - ApiKeyAuth: []
@@ -539,6 +539,7 @@ components:
       - city
       - postalCode
       - country
+      type: object
     Amount:
       properties:
         currency:
@@ -553,6 +554,7 @@ components:
       required:
       - value
       - currency
+      type: object
     BankAccount:
       properties:
         bankAccountNumber:
@@ -601,6 +603,7 @@ components:
           x-addedInVersion: '18'
           description: The bank account holder's tax ID.
           type: string
+      type: object
     Card:
       properties:
         cvc:
@@ -664,11 +667,7 @@ components:
           maxLength: 4
           minLength: 4
           type: string
-      required:
-      - number
-      - expiryMonth
-      - expiryYear
-      - holderName
+      type: object
     FraudCheckResult:
       properties:
         accountScore:
@@ -686,6 +685,11 @@ components:
       - checkId
       - name
       - accountScore
+      type: object
+    FraudCheckResultWrapper:
+      properties:
+        FraudCheckResult:
+          $ref: '#/components/schemas/FraudCheckResult'
     FraudResult:
       properties:
         accountScore:
@@ -695,10 +699,11 @@ components:
         results:
           description: The result of the individual risk checks.
           items:
-            $ref: '#/components/schemas/FraudCheckResult'
+            $ref: '#/components/schemas/FraudCheckResultWrapper'
           type: array
       required:
       - accountScore
+      type: object
     FundSource:
       properties:
         additionalData:
@@ -726,6 +731,7 @@ components:
         telephoneNumber:
           description: Phone number of the person
           type: string
+      type: object
     ModifyRequest:
       properties:
         additionalData:
@@ -744,6 +750,7 @@ components:
       required:
       - merchantAccount
       - originalReference
+      type: object
     ModifyResponse:
       properties:
         additionalData:
@@ -767,6 +774,7 @@ components:
       required:
       - pspReference
       - response
+      type: object
     Name:
       properties:
         firstName:
@@ -778,6 +786,7 @@ components:
       required:
       - firstName
       - lastName
+      type: object
     PayoutRequest:
       properties:
         amount:
@@ -888,6 +897,7 @@ components:
       - merchantAccount
       - reference
       - amount
+      type: object
     PayoutResponse:
       properties:
         additionalData:
@@ -1008,6 +1018,7 @@ components:
           - Refused
           - Success
           type: string
+      type: object
     Recurring:
       properties:
         contract:
@@ -1045,6 +1056,7 @@ components:
           - VISATOKENSERVICE
           - MCTOKENSERVICE
           type: string
+      type: object
     ResponseAdditionalData3DSecure:
       properties:
         cardHolderInfo:
@@ -1066,6 +1078,7 @@ components:
         threeds2.cardEnrolled:
           description: Indicates whether a card is enrolled for 3D Secure 2.
           type: boolean
+      type: object
     ResponseAdditionalDataBillingAddress:
       properties:
         billingAddress.city:
@@ -1097,6 +1110,7 @@ components:
         billingAddress.street:
           description: The billing address street passed in the payment request.
           type: string
+      type: object
     ResponseAdditionalDataCard:
       properties:
         cardBin:
@@ -1151,6 +1165,7 @@ components:
 
             Example: 52123423'
           type: string
+      type: object
     ResponseAdditionalDataCommon:
       properties:
         acquirerAccountCode:
@@ -1588,6 +1603,7 @@ components:
 
             Example: ODgxNDc2MDg2MDExODk5MAAAAAA='
           type: string
+      type: object
     ResponseAdditionalDataInstallments:
       properties:
         installmentPaymentData.installmentType:
@@ -1639,6 +1655,7 @@ components:
 
             > Only relevant for card payments in countries that support installments.'
           type: string
+      type: object
     ResponseAdditionalDataNetworkTokens:
       properties:
         networkToken.available:
@@ -1652,6 +1669,7 @@ components:
         networkToken.tokenSummary:
           description: The last four digits of a network token.
           type: string
+      type: object
     ResponseAdditionalDataOpi:
       properties:
         opi.transToken:
@@ -1661,6 +1679,7 @@ components:
             tokenized ecommerce transactions. For more information and required settings,
             see [Oracle Opera](https://docs.adyen.com/plugins/oracle-opera#opi-token-ecommerce).'
           type: string
+      type: object
     ResponseAdditionalDataSepa:
       properties:
         sepadirectdebit.dateOfSignature:
@@ -1689,6 +1708,7 @@ components:
 
             Example: OOFF'
           type: string
+      type: object
     ServiceError:
       properties:
         additionalData:
@@ -1715,6 +1735,7 @@ components:
           description: The HTTP response status.
           format: int32
           type: integer
+      type: object
     StoreDetailAndSubmitRequest:
       properties:
         additionalData:
@@ -1755,7 +1776,7 @@ components:
             account.
 
             > This field is mandatory for natural persons.'
-          format: date-time
+          format: date
           type: string
         entityType:
           x-addedInVersion: '24'
@@ -1837,6 +1858,7 @@ components:
       - entityType
       - reference
       - amount
+      type: object
     StoreDetailAndSubmitResponse:
       properties:
         additionalData:
@@ -1862,6 +1884,7 @@ components:
       required:
       - pspReference
       - resultCode
+      type: object
     StoreDetailRequest:
       properties:
         additionalData:
@@ -1898,7 +1921,7 @@ components:
             account.
 
             > This field is mandatory for natural persons.'
-          format: date-time
+          format: date
           type: string
         entityType:
           x-addedInVersion: '24'
@@ -1967,6 +1990,7 @@ components:
       - dateOfBirth
       - nationality
       - entityType
+      type: object
     StoreDetailResponse:
       properties:
         additionalData:
@@ -1989,6 +2013,7 @@ components:
       - pspReference
       - recurringDetailReference
       - resultCode
+      type: object
     SubmitRequest:
       properties:
         additionalData:
@@ -2008,7 +2033,7 @@ components:
             \ account.\n\n> This field is mandatory for natural persons. \n> This\
             \ field is required to update the existing `dateOfBirth` that is associated\
             \ with this recurring contract."
-          format: date-time
+          format: date
           type: string
         entityType:
           x-addedInVersion: '24'
@@ -2102,6 +2127,7 @@ components:
       - shopperReference
       - recurring
       - selectedRecurringDetailReference
+      type: object
     SubmitResponse:
       properties:
         additionalData:
@@ -2126,6 +2152,7 @@ components:
       required:
       - pspReference
       - resultCode
+      type: object
   securitySchemes:
     ApiKeyAuth:
       in: header
@@ -2278,7 +2305,7 @@ components:
       value:
         merchantAccount: YOUR_MERCHANT_ACCOUNT
         recurring:
-          contract: RECURRING,PAYOUT
+          contract: PAYOUT
         amount:
           value: 2000
           currency: EUR

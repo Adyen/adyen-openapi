@@ -10,7 +10,7 @@
       "x-publicVersion" : true,
       "title" : "Adyen Payout API",
       "description" : "A set of API endpoints that allow you to store payout details, confirm, or decline a payout.\n\nFor more information, refer to [Online payouts](https://docs.adyen.com/online-payments/online-payouts).\n## Authentication\nTo use the Payout API, you need to have [two API credentials](https://docs.adyen.com/online-payments/online-payouts#payouts-to-bank-accounts-and-wallets): one for storing payout details and submitting payouts, and another one for confirming or declining payouts. If you don't have the required API credentials, contact our [Support Team](https://www.adyen.help/hc/en-us/requests/new).\n\nBoth of these API credentials must be authenticated with [basic authentication](https://docs.adyen.com/development-resources/api-credentials#basic-authentication).The following example shows how to authenticate your request when submitting a payout:\n\n```\ncurl\n-U \"storePayout@Company.YOUR_COMPANY_ACCOUNT\":\"YOUR_BASIC_AUTHENTICATION_PASSWORD\" \\\n-H \"Content-Type: application/json\" \\\n...\n```\n\n## Versioning\nPayments API supports [versioning](https://docs.adyen.com/development-resources/versioning) using a version suffix in the endpoint URL. This suffix has the following format: \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://pal-test.adyen.com/pal/servlet/Payout/v51/payout\n```\n\n## Going live\n\nTo authenticate to the live endpoints, you need [API credentials](https://docs.adyen.com/development-resources/api-credentials) from your live Customer Area.\n\nThe live endpoint URLs contain a prefix which is unique to your company account:\n```\n\nhttps://{PREFIX}-pal-live.adyenpayments.com/pal/servlet/Payout/v51/payout\n```\n\nGet your `{PREFIX}` from your live Customer Area under **Developers** > **API URLs** > **Prefix**.",
-      "x-timestamp" : "2022-12-13T09:27:04Z",
+      "x-timestamp" : "2023-04-11T21:25:14Z",
       "termsOfService" : "https://www.adyen.com/legal/terms-and-conditions",
       "contact" : {
          "name" : "Adyen Developer Experience team",
@@ -46,7 +46,7 @@
             "operationId" : "post-confirmThirdParty",
             "x-groupName" : "Reviewing",
             "x-sortIndex" : 1,
-            "x-methodName" : "confirmPayout",
+            "x-methodName" : "confirmThirdParty",
             "security" : [
                {
                   "BasicAuth" : [
@@ -156,7 +156,7 @@
             "operationId" : "post-declineThirdParty",
             "x-groupName" : "Reviewing",
             "x-sortIndex" : 2,
-            "x-methodName" : "cancelPayout",
+            "x-methodName" : "declineThirdParty",
             "security" : [
                {
                   "BasicAuth" : [
@@ -266,7 +266,7 @@
             "operationId" : "post-payout",
             "x-groupName" : "Instant payouts",
             "x-sortIndex" : 1,
-            "x-methodName" : "makeInstantCardPayout",
+            "x-methodName" : "payout",
             "security" : [
                {
                   "BasicAuth" : [
@@ -373,7 +373,7 @@
             "operationId" : "post-storeDetail",
             "x-groupName" : "Initialization",
             "x-sortIndex" : 2,
-            "x-methodName" : "storePayoutDetails",
+            "x-methodName" : "storeDetail",
             "security" : [
                {
                   "BasicAuth" : [
@@ -483,7 +483,7 @@
             "operationId" : "post-storeDetailAndSubmitThirdParty",
             "x-groupName" : "Initialization",
             "x-sortIndex" : 1,
-            "x-methodName" : "storeDetailsAndSubmitPayout",
+            "x-methodName" : "storeDetailAndSubmitThirdParty",
             "security" : [
                {
                   "BasicAuth" : [
@@ -600,7 +600,7 @@
             "operationId" : "post-submitThirdParty",
             "x-groupName" : "Initialization",
             "x-sortIndex" : 3,
-            "x-methodName" : "submitPayout",
+            "x-methodName" : "submitThirdParty",
             "security" : [
                {
                   "BasicAuth" : [
@@ -733,7 +733,8 @@
                "city",
                "postalCode",
                "country"
-            ]
+            ],
+            "type" : "object"
          },
          "Amount" : {
             "properties" : {
@@ -752,7 +753,8 @@
             "required" : [
                "value",
                "currency"
-            ]
+            ],
+            "type" : "object"
          },
          "BankAccount" : {
             "properties" : {
@@ -794,7 +796,8 @@
                   "description" : "The bank account holder's tax ID.",
                   "type" : "string"
                }
-            }
+            },
+            "type" : "object"
          },
          "Card" : {
             "properties" : {
@@ -847,12 +850,7 @@
                   "type" : "string"
                }
             },
-            "required" : [
-               "number",
-               "expiryMonth",
-               "expiryYear",
-               "holderName"
-            ]
+            "type" : "object"
          },
          "FraudCheckResult" : {
             "properties" : {
@@ -875,7 +873,15 @@
                "checkId",
                "name",
                "accountScore"
-            ]
+            ],
+            "type" : "object"
+         },
+         "FraudCheckResultWrapper" : {
+            "properties" : {
+               "FraudCheckResult" : {
+                  "$ref" : "#/components/schemas/FraudCheckResult"
+               }
+            }
          },
          "FraudResult" : {
             "properties" : {
@@ -887,14 +893,15 @@
                "results" : {
                   "description" : "The result of the individual risk checks.",
                   "items" : {
-                     "$ref" : "#/components/schemas/FraudCheckResult"
+                     "$ref" : "#/components/schemas/FraudCheckResultWrapper"
                   },
                   "type" : "array"
                }
             },
             "required" : [
                "accountScore"
-            ]
+            ],
+            "type" : "object"
          },
          "FundSource" : {
             "properties" : {
@@ -925,7 +932,8 @@
                   "description" : "Phone number of the person",
                   "type" : "string"
                }
-            }
+            },
+            "type" : "object"
          },
          "ModifyRequest" : {
             "properties" : {
@@ -948,7 +956,8 @@
             "required" : [
                "merchantAccount",
                "originalReference"
-            ]
+            ],
+            "type" : "object"
          },
          "ModifyResponse" : {
             "properties" : {
@@ -971,7 +980,8 @@
             "required" : [
                "pspReference",
                "response"
-            ]
+            ],
+            "type" : "object"
          },
          "Name" : {
             "properties" : {
@@ -987,7 +997,8 @@
             "required" : [
                "firstName",
                "lastName"
-            ]
+            ],
+            "type" : "object"
          },
          "PayoutRequest" : {
             "properties" : {
@@ -1063,7 +1074,8 @@
                "merchantAccount",
                "reference",
                "amount"
-            ]
+            ],
+            "type" : "object"
          },
          "PayoutResponse" : {
             "properties" : {
@@ -1156,7 +1168,8 @@
                   ],
                   "type" : "string"
                }
-            }
+            },
+            "type" : "object"
          },
          "Recurring" : {
             "properties" : {
@@ -1193,7 +1206,8 @@
                   ],
                   "type" : "string"
                }
-            }
+            },
+            "type" : "object"
          },
          "ResponseAdditionalData3DSecure" : {
             "properties" : {
@@ -1217,7 +1231,8 @@
                   "description" : "Indicates whether a card is enrolled for 3D Secure 2.",
                   "type" : "boolean"
                }
-            }
+            },
+            "type" : "object"
          },
          "ResponseAdditionalDataBillingAddress" : {
             "properties" : {
@@ -1245,7 +1260,8 @@
                   "description" : "The billing address street passed in the payment request.",
                   "type" : "string"
                }
-            }
+            },
+            "type" : "object"
          },
          "ResponseAdditionalDataCard" : {
             "properties" : {
@@ -1281,7 +1297,8 @@
                   "description" : "The first eight digits of the card number. Only returned if the card number is 16 digits or more.\n\nThis is the [Bank Identification Number (BIN)](https://docs.adyen.com/get-started-with-adyen/payment-glossary#bank-identification-number-bin) for card numbers with an eight-digit BIN.\n\nExample: 52123423",
                   "type" : "string"
                }
-            }
+            },
+            "type" : "object"
          },
          "ResponseAdditionalDataCommon" : {
             "properties" : {
@@ -1543,7 +1560,8 @@
                   "description" : "The 3DS transaction ID of the 3DS session sent in notifications. The value is Base64-encoded and is returned for transactions with directoryResponse 'N' or 'Y'. If you want to submit the xid in your 3D Secure 1 request, use the `mpiData.xid`, field.\n\nExample: ODgxNDc2MDg2MDExODk5MAAAAAA=",
                   "type" : "string"
                }
-            }
+            },
+            "type" : "object"
          },
          "ResponseAdditionalDataInstallments" : {
             "properties" : {
@@ -1595,7 +1613,8 @@
                   "description" : "The number of installments that the payment amount should be charged with.\n\nExample: 5\n> Only relevant for card payments in countries that support installments.",
                   "type" : "string"
                }
-            }
+            },
+            "type" : "object"
          },
          "ResponseAdditionalDataNetworkTokens" : {
             "properties" : {
@@ -1611,7 +1630,8 @@
                   "description" : "The last four digits of a network token.",
                   "type" : "string"
                }
-            }
+            },
+            "type" : "object"
          },
          "ResponseAdditionalDataOpi" : {
             "properties" : {
@@ -1619,7 +1639,8 @@
                   "description" : "Returned in the response if you included `opi.includeTransToken: true` in an ecommerce payment request. This contains an Oracle Payment Interface token that you can store in your Oracle Opera database to identify tokenized ecommerce transactions. For more information and required settings, see [Oracle Opera](https://docs.adyen.com/plugins/oracle-opera#opi-token-ecommerce).",
                   "type" : "string"
                }
-            }
+            },
+            "type" : "object"
          },
          "ResponseAdditionalDataSepa" : {
             "properties" : {
@@ -1635,7 +1656,8 @@
                   "description" : "This field can take one of the following values:\n* OneOff: (OOFF) Direct debit instruction to initiate exactly one direct debit transaction.\n\n* First: (FRST) Initial/first collection in a series of direct debit instructions.\n* Recurring: (RCUR) Direct debit instruction to carry out regular direct debit transactions initiated by the creditor.\n* Final: (FNAL) Last/final collection in a series of direct debit instructions.\n\nExample: OOFF",
                   "type" : "string"
                }
-            }
+            },
+            "type" : "object"
          },
          "ServiceError" : {
             "properties" : {
@@ -1668,7 +1690,8 @@
                   "format" : "int32",
                   "type" : "integer"
                }
-            }
+            },
+            "type" : "object"
          },
          "StoreDetailAndSubmitRequest" : {
             "properties" : {
@@ -1699,7 +1722,7 @@
                "dateOfBirth" : {
                   "x-addedInVersion" : "24",
                   "description" : "The date of birth.\nFormat: [ISO-8601](https://www.w3.org/TR/NOTE-datetime); example: YYYY-MM-DD\nFor Paysafecard it must be the same as used when registering the Paysafecard account.\n> This field is mandatory for natural persons.",
-                  "format" : "date-time",
+                  "format" : "date",
                   "type" : "string"
                },
                "entityType" : {
@@ -1773,7 +1796,8 @@
                "entityType",
                "reference",
                "amount"
-            ]
+            ],
+            "type" : "object"
          },
          "StoreDetailAndSubmitResponse" : {
             "properties" : {
@@ -1800,7 +1824,8 @@
             "required" : [
                "pspReference",
                "resultCode"
-            ]
+            ],
+            "type" : "object"
          },
          "StoreDetailRequest" : {
             "properties" : {
@@ -1827,7 +1852,7 @@
                "dateOfBirth" : {
                   "x-addedInVersion" : "24",
                   "description" : "The date of birth.\nFormat: [ISO-8601](https://www.w3.org/TR/NOTE-datetime); example: YYYY-MM-DD\nFor Paysafecard it must be the same as used when registering the Paysafecard account.\n> This field is mandatory for natural persons.",
-                  "format" : "date-time",
+                  "format" : "date",
                   "type" : "string"
                },
                "entityType" : {
@@ -1890,7 +1915,8 @@
                "dateOfBirth",
                "nationality",
                "entityType"
-            ]
+            ],
+            "type" : "object"
          },
          "StoreDetailResponse" : {
             "properties" : {
@@ -1918,7 +1944,8 @@
                "pspReference",
                "recurringDetailReference",
                "resultCode"
-            ]
+            ],
+            "type" : "object"
          },
          "SubmitRequest" : {
             "properties" : {
@@ -1936,7 +1963,7 @@
                "dateOfBirth" : {
                   "x-addedInVersion" : "24",
                   "description" : "The date of birth.\nFormat: ISO-8601; example: YYYY-MM-DD\n\nFor Paysafecard it must be the same as used when registering the Paysafecard account.\n\n> This field is mandatory for natural persons. \n> This field is required to update the existing `dateOfBirth` that is associated with this recurring contract.",
-                  "format" : "date-time",
+                  "format" : "date",
                   "type" : "string"
                },
                "entityType" : {
@@ -2006,7 +2033,8 @@
                "shopperReference",
                "recurring",
                "selectedRecurringDetailReference"
-            ]
+            ],
+            "type" : "object"
          },
          "SubmitResponse" : {
             "properties" : {
@@ -2033,7 +2061,8 @@
             "required" : [
                "pspReference",
                "resultCode"
-            ]
+            ],
+            "type" : "object"
          }
       },
       "securitySchemes" : {
@@ -2226,7 +2255,7 @@
             "value" : {
                "merchantAccount" : "YOUR_MERCHANT_ACCOUNT",
                "recurring" : {
-                  "contract" : "RECURRING,PAYOUT"
+                  "contract" : "PAYOUT"
                },
                "amount" : {
                   "value" : 2000,
