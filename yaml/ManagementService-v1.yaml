@@ -45,7 +45,7 @@ info:
     https://management-live.adyen.com/v1
 
     ```'
-  x-timestamp: '2023-04-03T23:26:06Z'
+  x-timestamp: '2023-05-12T18:21:13Z'
   termsOfService: https://www.adyen.com/legal/terms-and-conditions
   contact:
     name: Adyen Developer Experience team
@@ -6230,6 +6230,8 @@ paths:
             examples:
               patch-stores:
                 $ref: '#/components/examples/patch-merchants-merchantId-stores-storeId-patch-stores'
+              patch-stores-splitConfiguration:
+                $ref: '#/components/examples/patch-merchants-merchantId-stores-storeId-patch-stores-splitConfiguration'
             schema:
               $ref: '#/components/schemas/UpdateStoreRequest'
       parameters:
@@ -6252,6 +6254,8 @@ paths:
               examples:
                 patch-stores:
                   $ref: '#/components/examples/patch-merchants-merchantId-stores-storeId-patch-stores-200'
+                patch-stores-splitConfiguration:
+                  $ref: '#/components/examples/patch-merchants-merchantId-stores-storeId-patch-stores-splitConfiguration-200'
               schema:
                 $ref: '#/components/schemas/Store'
           description: OK - the request has succeeded.
@@ -8229,6 +8233,8 @@ paths:
             examples:
               patch-stores:
                 $ref: '#/components/examples/patch-stores-storeId-patch-stores'
+              patch-stores-splitConfiguration:
+                $ref: '#/components/examples/patch-stores-storeId-patch-stores-splitConfiguration'
             schema:
               $ref: '#/components/schemas/UpdateStoreRequest'
       parameters:
@@ -9145,6 +9151,14 @@ components:
           description: Additional address details, if any.
           type: string
       type: object
+    AfterpayTouchInfo:
+      properties:
+        supportUrl:
+          description: Support Url
+          type: string
+      required:
+      - supportUrl
+      type: object
     AllowedOrigin:
       properties:
         _links:
@@ -9410,6 +9424,14 @@ components:
       required:
       - siret
       type: object
+    ClearpayInfo:
+      properties:
+        supportUrl:
+          description: Support Url
+          type: string
+      required:
+      - supportUrl
+      type: object
     Company:
       properties:
         _links:
@@ -9544,14 +9566,14 @@ components:
         active:
           description: Indicates whether this user is active.
           type: boolean
-        associatedMerchantAccounts:
-          description: The list of [merchant accounts](https://docs.adyen.com/account/account-structure#merchant-accounts)
-            associated with this user.
+        apps:
+          description: Set of apps available to this user
           items:
             type: string
           type: array
-        authnApps:
-          description: Set of authn apps available to this user
+        associatedMerchantAccounts:
+          description: The list of [merchant accounts](https://docs.adyen.com/account/account-structure#merchant-accounts)
+            associated with this user.
           items:
             type: string
           type: array
@@ -9835,11 +9857,6 @@ components:
           items:
             type: string
           type: array
-        authnApps:
-          description: Set of authn apps to add to this user
-          items:
-            type: string
-          type: array
         email:
           description: The email address of the user.
           type: string
@@ -9859,8 +9876,8 @@ components:
             of the time zone of the user. For example, **Europe/Amsterdam**.
           type: string
         username:
-          description: 'The username for this user. Allowed length: 255 alphanumeric
-            characters.'
+          description: The user's email address that will be their username. Must
+            be the same as the one in the `email` field.
           maxLength: 255
           minLength: 1
           type: string
@@ -9883,14 +9900,14 @@ components:
         active:
           description: Indicates whether this user is active.
           type: boolean
-        associatedMerchantAccounts:
-          description: The list of [merchant accounts](https://docs.adyen.com/account/account-structure#merchant-accounts)
-            associated with this user.
+        apps:
+          description: Set of apps available to this user
           items:
             type: string
           type: array
-        authnApps:
-          description: Set of authn apps available to this user
+        associatedMerchantAccounts:
+          description: The list of [merchant accounts](https://docs.adyen.com/account/account-structure#merchant-accounts)
+            associated with this user.
           items:
             type: string
           type: array
@@ -10185,11 +10202,6 @@ components:
           items:
             type: string
           type: array
-        authnApps:
-          description: Set of authn apps to add to this user
-          items:
-            type: string
-          type: array
         email:
           description: The email address of the user.
           type: string
@@ -10209,8 +10221,8 @@ components:
             of the time zone of the user. For example, **Europe/Amsterdam**.
           type: string
         username:
-          description: 'The username for this user. Allowed length: 255 alphanumeric
-            characters.'
+          description: The user's email address that will be their username. Must
+            be the same as the one in the `email` field.
           maxLength: 255
           minLength: 1
           type: string
@@ -10363,8 +10375,8 @@ components:
         active:
           description: Indicates whether this user is active.
           type: boolean
-        authnApps:
-          description: Set of authn apps available to this user
+        apps:
+          description: Set of apps available to this user
           items:
             type: string
           type: array
@@ -10689,11 +10701,15 @@ components:
       - value
       - message
       type: object
+    InvalidFieldWrapper:
+      properties:
+        InvalidField:
+          $ref: '#/components/schemas/InvalidField'
     JSONObject:
       properties:
         paths:
           items:
-            $ref: '#/components/schemas/JSONPath'
+            $ref: '#/components/schemas/JSONPathWrapper'
           type: array
         rootPath:
           $ref: '#/components/schemas/JSONPath'
@@ -10705,6 +10721,10 @@ components:
             type: string
           type: array
       type: object
+    JSONPathWrapper:
+      properties:
+        JSONPath:
+          $ref: '#/components/schemas/JSONPath'
     Key:
       properties:
         identifier:
@@ -10922,11 +10942,25 @@ components:
       type: object
     ListTerminalsResponse:
       properties:
+        _links:
+          description: Pagination references.
+          $ref: '#/components/schemas/PaginationLinks'
         data:
           description: The list of terminals.
           items:
             $ref: '#/components/schemas/Terminal'
           type: array
+        itemsTotal:
+          description: Total number of items.
+          format: int32
+          type: integer
+        pagesTotal:
+          description: Total number of pages.
+          format: int32
+          type: integer
+      required:
+      - itemsTotal
+      - pagesTotal
       type: object
     ListWebhooksResponse:
       properties:
@@ -11351,6 +11385,9 @@ components:
       type: object
     PaymentMethod:
       properties:
+        afterpayTouch:
+          description: Afterpay Touch details.
+          $ref: '#/components/schemas/AfterpayTouchInfo'
         allowed:
           description: Indicates whether receiving payments is allowed. This value
             is set to **true** by Adyen after screening your merchant account.
@@ -11367,6 +11404,9 @@ components:
         cartesBancaires:
           description: Cartes Bancaires details.
           $ref: '#/components/schemas/CartesBancairesInfo'
+        clearpay:
+          description: Clearpay details.
+          $ref: '#/components/schemas/ClearpayInfo'
         countries:
           description: The list of countries where a payment method is available.
             By default, all countries supported by the payment method.
@@ -11425,6 +11465,9 @@ components:
         swish:
           description: Swish details.
           $ref: '#/components/schemas/SwishInfo'
+        twint:
+          description: Twint details.
+          $ref: '#/components/schemas/TwintInfo'
         type:
           description: Payment method [variant](https://docs.adyen.com/development-resources/paymentmethodvariant#management-api).
           type: string
@@ -11458,7 +11501,7 @@ components:
         data:
           description: Payment methods details.
           items:
-            $ref: '#/components/schemas/PaymentMethod'
+            $ref: '#/components/schemas/PaymentMethodWrapper'
           type: array
         itemsTotal:
           description: Total number of items.
@@ -11514,6 +11557,8 @@ components:
             - payshop
             - swish
             - trustly
+            - twint
+            - twint_pos
             - vipps
             - visa
             - visadebit
@@ -11528,6 +11573,9 @@ components:
       type: object
     PaymentMethodSetupInfo:
       properties:
+        afterpayTouch:
+          description: Afterpay Touch details.
+          $ref: '#/components/schemas/AfterpayTouchInfo'
         applePay:
           description: Apple Pay details.
           $ref: '#/components/schemas/ApplePayInfo'
@@ -11540,6 +11588,9 @@ components:
         cartesBancaires:
           description: Cartes Bancaires details.
           $ref: '#/components/schemas/CartesBancairesInfo'
+        clearpay:
+          description: Clearpay details.
+          $ref: '#/components/schemas/ClearpayInfo'
         countries:
           description: The list of countries where a payment method is available.
             By default, all countries supported by the payment method.
@@ -11601,6 +11652,9 @@ components:
         swish:
           description: Swish details.
           $ref: '#/components/schemas/SwishInfo'
+        twint:
+          description: Twint details.
+          $ref: '#/components/schemas/TwintInfo'
         type:
           description: Payment method [variant](https://docs.adyen.com/development-resources/paymentmethodvariant#management-api).
           enum:
@@ -11646,6 +11700,8 @@ components:
           - payshop
           - swish
           - trustly
+          - twint
+          - twint_pos
           - vipps
           - visa
           - visadebit
@@ -11657,6 +11713,10 @@ components:
           description: Vipps details.
           $ref: '#/components/schemas/VippsInfo'
       type: object
+    PaymentMethodWrapper:
+      properties:
+        PaymentMethod:
+          $ref: '#/components/schemas/PaymentMethod'
     PayoutSettings:
       properties:
         allowed:
@@ -11974,7 +12034,7 @@ components:
         invalidFields:
           description: Detailed explanation of each validation error, when applicable.
           items:
-            $ref: '#/components/schemas/InvalidField'
+            $ref: '#/components/schemas/InvalidFieldWrapper'
           type: array
         requestId:
           description: A unique reference for the request, essentially the same as
@@ -12129,24 +12189,6 @@ components:
             $ref: '#/components/schemas/ShippingLocation'
           type: array
       type: object
-    ShopperStatement:
-      properties:
-        doingBusinessAsName:
-          description: The name you want to be shown on the shopper's bank or credit
-            card statement. Can't be all numbers. If a shopper statement is present,
-            this field is required.
-          maxLength: 22
-          type: string
-        type:
-          default: dynamic
-          description: 'The type of shopperstatement you want to use: fixed, append
-            or dynamic'
-          enum:
-          - append
-          - dynamic
-          - fixed
-          type: string
-      type: object
     Signature:
       properties:
         askSignatureOnScreen:
@@ -12257,7 +12299,7 @@ components:
           description: The address of the store.
           $ref: '#/components/schemas/StoreLocation'
         businessLineIds:
-          description: 'The unique identifiers of the [business lines](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/businesslines__resParam_id)
+          description: 'The unique identifiers of the [business lines](https://docs.adyen.com/api-explorer/legalentity/latest/post/businessLines#responses-200-id)
             that the store is associated with.
 
             If not specified, the business line of the merchant account is used. Required
@@ -12277,8 +12319,10 @@ components:
           type: string
         reference:
           description: "Your reference to recognize the store by. Also known as the\
-            \ store code.\n Allowed characters: Lowercase and uppercase letters without\
-            \ diacritics, numbers 0 through 9, hyphen (-), and underscore (_)."
+            \ store code.\n Allowed characters: lowercase and uppercase letters without\
+            \ diacritics, numbers 0 through 9, hyphen (-), and underscore (_).\n\n\
+            If you do not provide a reference in your POST request, it is populated\
+            \ with the Adyen-generated [id](https://docs.adyen.com/api-explorer/Management/latest/post/stores#responses-200-id)."
           type: string
         shopperStatement:
           description: 'The store name to be shown on the shopper''s bank or credit
@@ -12301,7 +12345,7 @@ components:
           description: The address of the store.
           $ref: '#/components/schemas/StoreLocation'
         businessLineIds:
-          description: 'The unique identifiers of the [business lines](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/businesslines__resParam_id)
+          description: 'The unique identifiers of the [business lines](https://docs.adyen.com/api-explorer/legalentity/latest/post/businessLines#responses-200-id)
             that the store is associated with.
 
             If not specified, the business line of the merchant account is used. Required
@@ -12325,8 +12369,10 @@ components:
           type: string
         reference:
           description: "Your reference to recognize the store by. Also known as the\
-            \ store code.\n Allowed characters: Lowercase and uppercase letters without\
-            \ diacritics, numbers 0 through 9, hyphen (-), and underscore (_)."
+            \ store code.\n Allowed characters: lowercase and uppercase letters without\
+            \ diacritics, numbers 0 through 9, hyphen (-), and underscore (_).\n\n\
+            If you do not provide a reference in your POST request, it is populated\
+            \ with the Adyen-generated [id](https://docs.adyen.com/api-explorer/Management/latest/post/stores#responses-200-id)."
           type: string
         shopperStatement:
           description: 'The store name to be shown on the shopper''s bank or credit
@@ -12410,40 +12456,49 @@ components:
     Terminal:
       properties:
         assigned:
+          deprecated: true
           description: The [assignment status](https://docs.adyen.com/point-of-sale/automating-terminal-management/assign-terminals-api)
             of the terminal. If true, the terminal is assigned. If false, the terminal
             is in inventory and can't be boarded.
           type: boolean
         bluetoothIp:
+          deprecated: true
           description: The Bluetooth IP address of the terminal.
           type: string
         bluetoothMac:
           description: The Bluetooth MAC address of the terminal.
           type: string
         city:
+          deprecated: true
           description: The city where the terminal is located.
           type: string
         companyAccount:
+          deprecated: true
           description: The company account that the terminal is associated with. If
             this is the only account level shown in the response, the terminal is
             assigned to the inventory of the company account.
           type: string
         countryCode:
+          deprecated: true
           description: The country code of the country where the terminal is located.
           type: string
         deviceModel:
+          deprecated: true
           description: The model name of the terminal.
           type: string
         ethernetIp:
+          deprecated: true
           description: The ethernet IP address of the terminal.
           type: string
         ethernetMac:
+          deprecated: true
           description: The ethernet MAC address of the terminal.
           type: string
         firmwareVersion:
           description: The software release currently in use on the terminal.
           type: string
         iccid:
+          deprecated: true
           description: The integrated circuit card identifier (ICCID) of the SIM card
             in the terminal.
           type: string
@@ -12451,16 +12506,19 @@ components:
           description: The unique identifier of the terminal.
           type: string
         lastActivityDateTime:
+          deprecated: true
           description: Date and time of the last activity on the terminal. Not included
             when the last activity was more than 14 days ago.
           format: date-time
           type: string
         lastTransactionDateTime:
+          deprecated: true
           description: Date and time of the last transaction on the terminal. Not
             included when the last transaction was more than 14 days ago.
           format: date-time
           type: string
         linkNegotiation:
+          deprecated: true
           description: 'The Ethernet link negotiation that the terminal uses:
 
 
@@ -12473,24 +12531,30 @@ components:
           description: The serial number of the terminal.
           type: string
         simStatus:
+          deprecated: true
           description: 'On a terminal that supports 3G or 4G connectivity, indicates
             the status of the SIM card in the terminal: ACTIVE or INVENTORY.'
           type: string
         status:
+          deprecated: true
           description: Indicates when the terminal was last online, whether the terminal
             is being reassigned, or whether the terminal is turned off. If the terminal
             was last online more that a week ago, it is also shown as turned off.
           type: string
         storeStatus:
+          deprecated: true
           description: The status of the store that the terminal is assigned to.
           type: string
         wifiIp:
+          deprecated: true
           description: The terminal's IP address in your Wi-Fi network.
           type: string
         wifiMac:
+          deprecated: true
           description: The terminal's MAC address in your Wi-Fi network.
           type: string
         wifiSsid:
+          deprecated: true
           description: The SSID of the Wi-Fi network that your terminal is connected
             to.
           type: string
@@ -12557,6 +12621,9 @@ components:
           items:
             $ref: '#/components/schemas/OrderItem'
           type: array
+        orderType:
+          description: Type of order
+          type: string
         shippingLocationId:
           description: The identification of the shipping location to use for the
             order.
@@ -12800,6 +12867,14 @@ components:
           format: int32
           type: integer
       type: object
+    TwintInfo:
+      properties:
+        logo:
+          description: 'Twint logo. Format: Base64-encoded string.'
+          type: string
+      required:
+      - logo
+      type: object
     UninstallAndroidAppDetails:
       additionalProperties: false
       properties:
@@ -12891,16 +12966,6 @@ components:
         associatedMerchantAccounts:
           description: The list of [merchant accounts](https://docs.adyen.com/account/account-structure#merchant-accounts)
             to associate the user with.
-          items:
-            type: string
-          type: array
-        authnAppsToAdd:
-          description: Set of authn apps to add to this user
-          items:
-            type: string
-          type: array
-        authnAppsToRemove:
-          description: Set of authn apps to remove from this user
           items:
             type: string
           type: array
@@ -13086,16 +13151,6 @@ components:
           description: Sets the status of the user to active (**true**) or inactive
             (**false**).
           type: boolean
-        authnAppsToAdd:
-          description: Set of authn apps to add to this user
-          items:
-            type: string
-          type: array
-        authnAppsToRemove:
-          description: Set of authn apps to remove from this user
-          items:
-            type: string
-          type: array
         email:
           description: The email address of the user.
           type: string
@@ -13213,6 +13268,12 @@ components:
       type: object
     UpdatePaymentMethodInfo:
       properties:
+        bcmc:
+          description: Bancontact details.
+          $ref: '#/components/schemas/BcmcInfo'
+        cartesBancaires:
+          description: Cartes Bancaires details.
+          $ref: '#/components/schemas/CartesBancairesInfo'
         countries:
           description: The list of countries where a payment method is available.
             By default, all countries supported by the payment method.
@@ -13225,18 +13286,10 @@ components:
           items:
             type: string
           type: array
-        customRoutingFlags:
-          description: Custom routing flags for acquirer routing.
-          items:
-            type: string
-          type: array
         enabled:
           description: Indicates whether the payment method is enabled (**true**)
             or disabled (**false**).
           type: boolean
-        shopperStatement:
-          description: Information regarding the shopper statement.
-          $ref: '#/components/schemas/ShopperStatement'
         storeIds:
           description: The list of stores for this payment method
           items:
@@ -13321,8 +13374,8 @@ components:
         active:
           description: Indicates whether this user is active.
           type: boolean
-        authnApps:
-          description: Set of authn apps available to this user
+        apps:
+          description: Set of apps available to this user
           items:
             type: string
           type: array
@@ -13363,7 +13416,8 @@ components:
           description: 'Vipps logo. Format: Base64-encoded string.'
           type: string
         subscriptionCancelUrl:
-          description: Vipps subscription cancel url
+          description: Vipps subscription cancel url (required in case of [recurring
+            payments](https://docs.adyen.com/online-payments/tokenization))
           type: string
       required:
       - logo
@@ -16823,6 +16877,38 @@ components:
         _links:
           self:
             href: https://management-test.adyen.com/v1/stores/YOUR_STORE_ID
+    patch-merchants-merchantId-stores-storeId-patch-stores-splitConfiguration:
+      summary: Add split configuration to store
+      description: Example request to add a split configuration to the store
+      value:
+        splitConfiguration:
+          balanceAccountId: BA3227C223222H5HQ2XX77VVH
+          splitConfigurationId: SCNF4224P22322585HPCX384JV6JGX
+    patch-merchants-merchantId-stores-storeId-patch-stores-splitConfiguration-200:
+      summary: Split configuration added to store
+      description: Example response after adding a split confuguration to the store
+      value:
+        id: YOUR_STORE_ID
+        address:
+          country: US
+          line1: 1776 West Pinewood Avenue
+          line2: Heartland Building
+          line3: ''
+          city: Springfield
+          stateOrProvince: NY
+          postalCode: '20251'
+        description: City centre store
+        merchantId: YOUR_MERCHANT_ACCOUNT_ID
+        shopperStatement: Springfield Shop
+        phoneNumber: '+1813702551707653'
+        reference: Spring_store_2
+        splitConfiguration:
+          balanceAccountId: BA3227C223222H5HQ2XX77VVH
+          splitConfigurationId: SCNF4224P22322585HPCX384JV6JGX
+        status: active
+        _links:
+          self:
+            href: https://management-test.adyen.com/v1/stores/YOUR_STORE_ID
     patch-merchants-merchantId-terminalLogos-remove-logo:
       summary: Remove logo to restore the logo from a higher level
       description: Example request to remove the payment terminal logo configured
@@ -17241,6 +17327,13 @@ components:
         _links:
           self:
             href: https://management-test.adyen.com/v1/stores/YOUR_STORE_ID
+    patch-stores-storeId-patch-stores-splitConfiguration:
+      summary: Add split configuration to store
+      description: Example request to add a split configuration to the store
+      value:
+        splitConfiguration:
+          balanceAccountId: BA3227C223222H5HQ2XX77VVH
+          splitConfigurationId: SCNF4224P22322585HPCX384JV6JGX
     patch-stores-storeId-terminalLogos-remove-logo:
       summary: Remove logo to restore the logo from a higher level
       description: Example request to remove the payment terminal logo configured
@@ -18057,7 +18150,9 @@ components:
         notification:
           paymentMethod: visa
           eventCode: AUTHORISATION
-          amount: '20'
+          amount:
+            currency: EUR
+            value: 2000
           reason: Authorize visa payment
           success: true
         types:
@@ -18512,7 +18607,9 @@ components:
         notification:
           paymentMethod: visa
           eventCode: AUTHORISATION
-          amount: '10'
+          amount:
+            currency: EUR
+            value: 1000
           reason: Authorize visa payment
           success: true
         types:
