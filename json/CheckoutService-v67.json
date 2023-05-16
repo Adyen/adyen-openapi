@@ -10,7 +10,7 @@
       "x-publicVersion" : true,
       "title" : "Adyen Checkout API",
       "description" : "Adyen Checkout API provides a simple and flexible way to initiate and authorise online payments. You can use the same integration for payments made with cards (including 3D Secure), mobile wallets, and local payment methods (for example, iDEAL and Sofort).\n\nThis API reference provides information on available endpoints and how to interact with them. To learn more about the API, visit [online payments documentation](https://docs.adyen.com/online-payments).\n\n## Authentication\nEach request to Checkout API must be signed with an API key. For this, [get your API key](https://docs.adyen.com/development-resources/api-credentials#generate-api-key) from your Customer Area, and set this key to the `X-API-Key` header value, for example:\n\n```\ncurl\n-H \"Content-Type: application/json\" \\\n-H \"X-API-Key: YOUR_API_KEY\" \\\n...\n```\n## Versioning\nCheckout API supports [versioning](https://docs.adyen.com/development-resources/versioning) using a version suffix in the endpoint URL. This suffix has the following format: \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://checkout-test.adyen.com/v67/payments\n```\n\n## Going live\n\nTo access the live endpoints, you need an API key from your live Customer Area.\n\nThe live endpoint URLs contain a prefix which is unique to your company account, for example:\n```\nhttps://{PREFIX}-checkout-live.adyenpayments.com/checkout/v67/payments\n```\n\nGet your `{PREFIX}` from your live Customer Area under **Developers** > **API URLs** > **Prefix**.\n\nWhen preparing to do live transactions with Checkout API, follow the [go-live checklist](https://docs.adyen.com/online-payments/go-live-checklist) to make sure you've got all the required configuration in place.\n\n## Release notes\nHave a look at the [release notes](https://docs.adyen.com/online-payments/release-notes?integration_type=api&version=67) to find out what changed in this version!",
-      "x-timestamp" : "2023-05-03T10:31:55Z",
+      "x-timestamp" : "2023-05-15T18:27:05Z",
       "termsOfService" : "https://www.adyen.com/legal/terms-and-conditions",
       "contact" : {
          "name" : "Adyen Developer Experience team",
@@ -1912,6 +1912,9 @@
                            },
                            "sofort" : {
                               "$ref" : "#/components/examples/post-payments-sofort-200"
+                           },
+                           "split" : {
+                              "$ref" : "#/components/examples/post-payments-split-200"
                            },
                            "subscription-first-transaction" : {
                               "$ref" : "#/components/examples/post-payments-subscription-first-transaction-200"
@@ -4758,6 +4761,9 @@
                      "scheme",
                      "networkToken",
                      "giftcard",
+                     "mealVoucher_FR_groupeup",
+                     "mealVoucher_FR_natixis",
+                     "mealVoucher_FR_sodexo",
                      "alliancedata",
                      "card"
                   ],
@@ -6016,7 +6022,7 @@
                   "type" : "boolean"
                },
                "splits" : {
-                  "description" : "An array of objects specifying how the payment should be split between accounts when using Adyen for Platforms. For details, refer to [Providing split information](https://docs.adyen.com/marketplaces-and-platforms/processing-payments#providing-split-information).",
+                  "description" : "An array of objects specifying how to split a payment when using [Adyen for Platforms](https://docs.adyen.com/marketplaces-and-platforms/processing-payments#providing-split-information), [Classic Platforms integration](https://docs.adyen.com/marketplaces-and-platforms/classic/processing-payments#providing-split-information), or [Issuing](https://docs.adyen.com/issuing/manage-funds#split).",
                   "items" : {
                      "$ref" : "#/components/schemas/Split"
                   },
@@ -7555,6 +7561,7 @@
                      "pix",
                      "bizum",
                      "alma",
+                     "paypo",
                      "molpay_fpx",
                      "konbini",
                      "directEbanking",
@@ -8377,7 +8384,7 @@
                   "type" : "boolean"
                },
                "splits" : {
-                  "description" : "An array of objects specifying how the payment should be split between accounts when using Adyen for Platforms. For details, refer to [Providing split information](https://docs.adyen.com/marketplaces-and-platforms/processing-payments#providing-split-information).",
+                  "description" : "An array of objects specifying how to split a payment when using [Adyen for Platforms](https://docs.adyen.com/marketplaces-and-platforms/processing-payments#providing-split-information), [Classic Platforms integration](https://docs.adyen.com/marketplaces-and-platforms/classic/processing-payments#providing-split-information), or [Issuing](https://docs.adyen.com/issuing/manage-funds#split).",
                   "items" : {
                      "$ref" : "#/components/schemas/Split"
                   },
@@ -10714,6 +10721,12 @@
                      "Default",
                      "MarketPlace",
                      "PaymentFee",
+                     "PaymentFeeAcquiring",
+                     "PaymentFeeAdyen",
+                     "PaymentFeeAdyenCommission",
+                     "PaymentFeeAdyenMarkup",
+                     "PaymentFeeInterchange",
+                     "PaymentFeeSchemeFee",
                      "Remainder",
                      "Surcharge",
                      "Tip",
@@ -16729,7 +16742,7 @@
             }
          },
          "post-payments-split" : {
-            "summary" : "Split a payment between a sub-merchant and a platform account",
+            "summary" : "Split a payment between balance accounts",
             "value" : {
                "paymentMethod" : {
                   "type" : "scheme",
@@ -16740,30 +16753,70 @@
                   "holderName" : "John Smith"
                },
                "amount" : {
-                  "value" : 6200,
-                  "currency" : "EUR"
+                  "value" : 40000,
+                  "currency" : "USD"
                },
                "reference" : "YOUR_ORDER_NUMBER",
                "merchantAccount" : "YOUR_MERCHANT_ACCOUNT",
                "returnUrl" : "https://your-company.com/...",
+               "platformChargebackLogic" : {
+                  "behavior" : "deductFromOneBalanceAccount",
+                  "targetAccount" : "BA00000000000000000000001"
+               },
                "splits" : [
                   {
                      "amount" : {
-                        "value" : 6000
+                        "value" : 39600
                      },
-                     "type" : "MarketPlace",
-                     "account" : "151272963",
-                     "reference" : "6124145",
-                     "description" : "Porcelain Doll: Eliza (20cm)"
+                     "type" : "BalanceAcocount",
+                     "account" : "BA00000000000000000000001",
+                     "reference" : "Your reference for the sale amount",
+                     "description" : "Your description for the sale amount"
                   },
                   {
                      "amount" : {
-                        "value" : 200
+                        "value" : 400
                      },
                      "type" : "Commission",
-                     "reference" : "6124146"
+                     "reference" : "Your reference for the commission",
+                     "description" : "Your description for the commission"
+                  },
+                  {
+                     "account" : "BA00000000000000000000001",
+                     "reference" : "Your reference for the fees",
+                     "description" : "Your description for the fees",
+                     "type" : "PaymentFee"
                   }
                ]
+            }
+         },
+         "post-payments-split-200" : {
+            "summary" : "Example response for request 'split'",
+            "value" : {
+               "additionalData" : {
+                  "authCode" : "008304",
+                  "avsResult" : "5 No AVS data provided",
+                  "cardHolderName" : "John Smith",
+                  "refusalReasonRaw" : "AUTHORISED",
+                  "issuerCountry" : "NL",
+                  "cvcResult" : "1 Matches",
+                  "avsResultRaw" : "5",
+                  "paymentMethod" : "visa",
+                  "cvcResultRaw" : "M",
+                  "acquirerCode" : "TestPmmAcquirer",
+                  "acquirerReference" : "YOUR_ACQUIRER_REFERENCE"
+               },
+               "pspReference" : "993617895204576J",
+               "resultCode" : "Authorised",
+               "amount" : {
+                  "currency" : "USD",
+                  "value" : 40000
+               },
+               "merchantReference" : "YOUR_ORDER_NUMBER",
+               "paymentMethod" : {
+                  "brand" : "visa",
+                  "type" : "scheme"
+               }
             }
          },
          "post-payments-subscription-first-transaction" : {
