@@ -20,7 +20,7 @@ info:
     ```\n## Going live\nWhen going live, your Adyen contact will provide your API\
     \ credential for the live environment. You can then use the API key or the username\
     \ and password to send requests to `https://balanceplatform-api-live.adyen.com/bcl/v2`."
-  x-timestamp: '2023-05-05T19:25:43Z'
+  x-timestamp: '2023-05-25T20:25:14Z'
   termsOfService: https://www.adyen.com/legal/terms-and-conditions
   contact:
     name: Adyen Developer Experience team
@@ -2528,7 +2528,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Void'
+                $ref: '#/components/schemas/void'
           description: OK - the request has succeeded.
         '401':
           content:
@@ -2629,6 +2629,17 @@ components:
             associated with the account holder. Adyen performs a verification process
             against the legal entity of the account holder.
           type: string
+        metadata:
+          additionalProperties:
+            type: string
+          description: 'A set of key and value pairs for general use by the merchant.
+
+            The keys do not have specific names and may be used for storing miscellaneous
+            data as desired.
+
+            > Note that during an update of metadata, the omission of existing key-value
+            pairs will result in the deletion of those key-value pairs.'
+          type: object
         primaryBalanceAccount:
           description: The ID of the account holder's primary balance account. By
             default, this is set to the first balance account that you create for
@@ -2696,7 +2707,7 @@ components:
           description: A JSON object containing the settings that are allowed for
             the account holder.
           readOnly: true
-          $ref: '#/components/schemas/JSONObject'
+          $ref: '#/components/schemas/CapabilitySettings'
         enabled:
           description: Indicates whether the capability is enabled. If **false**,
             the capability is temporarily disabled for the account holder.
@@ -2731,7 +2742,7 @@ components:
           description: A JSON object containing the settings that were requested for
             the account holder.
           readOnly: true
-          $ref: '#/components/schemas/JSONObject'
+          $ref: '#/components/schemas/CapabilitySettings'
         transferInstruments:
           description: 'Contains the status of the transfer instruments associated
             with this capability. '
@@ -2795,6 +2806,17 @@ components:
             associated with the account holder. Adyen performs a verification process
             against the legal entity of the account holder.
           type: string
+        metadata:
+          additionalProperties:
+            type: string
+          description: 'A set of key and value pairs for general use by the merchant.
+
+            The keys do not have specific names and may be used for storing miscellaneous
+            data as desired.
+
+            > Note that during an update of metadata, the omission of existing key-value
+            pairs will result in the deletion of those key-value pairs.'
+          type: object
         reference:
           description: Your reference for the account holder, maximum 150 characters.
           maxLength: 150
@@ -3053,6 +3075,17 @@ components:
         id:
           description: The unique identifier of the balance account.
           type: string
+        metadata:
+          additionalProperties:
+            type: string
+          description: 'A set of key and value pairs for general use by the merchant.
+
+            The keys do not have specific names and may be used for storing miscellaneous
+            data as desired.
+
+            > Note that during an update of metadata, the omission of existing key-value
+            pairs will result in the deletion of those key-value pairs.'
+          type: object
         reference:
           description: Your reference for the balance account, maximum 150 characters.
           maxLength: 150
@@ -3097,6 +3130,17 @@ components:
         id:
           description: The unique identifier of the balance account.
           type: string
+        metadata:
+          additionalProperties:
+            type: string
+          description: 'A set of key and value pairs for general use by the merchant.
+
+            The keys do not have specific names and may be used for storing miscellaneous
+            data as desired.
+
+            > Note that during an update of metadata, the omission of existing key-value
+            pairs will result in the deletion of those key-value pairs.'
+          type: object
         reference:
           description: Your reference for the balance account, maximum 150 characters.
           maxLength: 150
@@ -3138,6 +3182,17 @@ components:
             balance accounts under an account holder.
           maxLength: 300
           type: string
+        metadata:
+          additionalProperties:
+            type: string
+          description: 'A set of key and value pairs for general use by the merchant.
+
+            The keys do not have specific names and may be used for storing miscellaneous
+            data as desired.
+
+            > Note that during an update of metadata, the omission of existing key-value
+            pairs will result in the deletion of those key-value pairs.'
+          type: object
         reference:
           description: Your reference for the balance account, maximum 150 characters.
           maxLength: 150
@@ -3168,6 +3223,17 @@ components:
             balance accounts under an account holder.
           maxLength: 300
           type: string
+        metadata:
+          additionalProperties:
+            type: string
+          description: 'A set of key and value pairs for general use by the merchant.
+
+            The keys do not have specific names and may be used for storing miscellaneous
+            data as desired.
+
+            > Note that during an update of metadata, the omission of existing key-value
+            pairs will result in the deletion of those key-value pairs.'
+          type: object
         reference:
           description: Your reference to the balance account, maximum 150 characters.
           maxLength: 150
@@ -3386,6 +3452,36 @@ components:
       - bankCode
       type: object
     CapabilityProblem:
+      type: object
+    CapabilitySettings:
+      properties:
+        amountPerIndustry:
+          additionalProperties:
+            $ref: '#/components/schemas/Amount'
+          description: ''
+          type: object
+        authorizedCardUsers:
+          description: ''
+          type: boolean
+        fundingSource:
+          description: ''
+          items:
+            enum:
+            - credit
+            - debit
+            - prepaid
+            type: string
+          type: array
+        interval:
+          description: ''
+          enum:
+          - daily
+          - monthly
+          - weekly
+          type: string
+        maxAmount:
+          description: ''
+          $ref: '#/components/schemas/Amount'
       type: object
     CapitalBalance:
       properties:
@@ -3707,7 +3803,9 @@ components:
 
             * **balance**: pull in funds instantly if the balance is less than or
             equal to the `triggerAmount`. You can only use this for sweeps of `type`
-            **pull** and when the source is a `merchantAccount` or `transferInstrument`.'
+            **pull** and when the source is a `merchantAccount` or `transferInstrument`.If
+            the source is transferInstrument, merchant account identifier is still
+            required, with which you want to process the transaction.'
           enum:
           - daily
           - weekly
@@ -4310,11 +4408,11 @@ components:
           type: string
         statusReason:
           x-addedInVersion: '2'
-          description: 'The reason for updating the status of the payment instrument.
+          description: 'The reason for the status of the payment instrument.
 
 
-            Possible values: **lost**, **stolen**, **damaged**, **suspectedFraud**,
-            **expired**, **endOfLife**, **accountClosure**, **other**.
+            Possible values: **accountClosure**, **damaged**, **endOfLife**, **expired**,
+            **lost**, **stolen**, **suspectedFraud**, **transactionRule**, **other**.
 
             If the reason is **other**, you must also send the `statusComment` parameter
             describing the status change.'
@@ -4327,6 +4425,7 @@ components:
           - other
           - stolen
           - suspectedFraud
+          - transactionRule
           type: string
         type:
           description: 'Type of payment instrument.
@@ -4462,11 +4561,11 @@ components:
           type: string
         statusReason:
           x-addedInVersion: '2'
-          description: 'The reason for updating the status of the payment instrument.
+          description: 'The reason for the status of the payment instrument.
 
 
-            Possible values: **lost**, **stolen**, **damaged**, **suspectedFraud**,
-            **expired**, **endOfLife**, **accountClosure**, **other**.
+            Possible values: **accountClosure**, **damaged**, **endOfLife**, **expired**,
+            **lost**, **stolen**, **suspectedFraud**, **transactionRule**, **other**.
 
             If the reason is **other**, you must also send the `statusComment` parameter
             describing the status change.'
@@ -4479,6 +4578,7 @@ components:
           - other
           - stolen
           - suspectedFraud
+          - transactionRule
           type: string
         type:
           description: 'Type of payment instrument.
@@ -4578,6 +4678,7 @@ components:
           - other
           - stolen
           - suspectedFraud
+          - transactionRule
           type: string
       type: object
     Phone:
@@ -5003,7 +5104,9 @@ components:
 
             * **balance**: pull in funds instantly if the balance is less than or
             equal to the `triggerAmount`. You can only use this for sweeps of `type`
-            **pull** and when the source is a `merchantAccount` or `transferInstrument`.'
+            **pull** and when the source is a `merchantAccount` or `transferInstrument`.If
+            the source is transferInstrument, merchant account identifier is still
+            required, with which you want to process the transaction.'
           enum:
           - daily
           - weekly
@@ -5650,11 +5753,11 @@ components:
           type: string
         statusReason:
           x-addedInVersion: '2'
-          description: 'The reason for updating the status of the payment instrument.
+          description: 'The reason for the status of the payment instrument.
 
 
-            Possible values: **lost**, **stolen**, **damaged**, **suspectedFraud**,
-            **expired**, **endOfLife**, **accountClosure**, **other**.
+            Possible values: **accountClosure**, **damaged**, **endOfLife**, **expired**,
+            **lost**, **stolen**, **suspectedFraud**, **transactionRule**, **other**.
 
             If the reason is **other**, you must also send the `statusComment` parameter
             describing the status change.'
@@ -5667,6 +5770,7 @@ components:
           - other
           - stolen
           - suspectedFraud
+          - transactionRule
           type: string
         type:
           description: 'Type of payment instrument.
@@ -5751,8 +5855,6 @@ components:
       required:
       - expiresAt
       - capabilities
-      type: object
-    Void:
       type: object
     void:
       type: object
@@ -6460,10 +6562,11 @@ components:
       value:
         balanceAccountId: BA3227C223222B5CTBLR8BWJB
         issuingCountryCode: NL
-        status: Active
+        status: active
         type: bankAccount
         description: YOUR_DESCRIPTION
         bankAccount:
+          type: iban
           iban: NL20ADYB2017000035
         id: PI322LJ223222B5DJS7CD9LWL
     post-paymentInstruments-createBusinessAccountUS:
@@ -6480,12 +6583,13 @@ components:
       value:
         balanceAccountId: BA3227C223222B5CTBLR8BWJB
         issuingCountryCode: US
-        status: Active
+        status: active
         type: bankAccount
         description: YOUR_DESCRIPTION
         bankAccount:
+          type: usLocal
           accountNumber: '333720756'
-          routingNumber: '21000021'
+          routingNumber: '210000210'
           accountType: checking
         id: PI322LJ223222B5DJS7CD9LWL
     post-paymentInstruments-createPhysicalCard:
@@ -6688,9 +6792,11 @@ components:
       value:
         type: https://docs.adyen.com/errors/validation
         title: Invalid bank account identification details provided
+        detail: Provided IBAN is incorrect
         status: 422
         invalidFields:
         - name: iban
+          value: '1001001234'
           message: Invalid IBAN.
         errorCode: '33_01'
     post-validateBankAccountIdentification-validateBankAccountIdentificationUs:
@@ -6699,16 +6805,20 @@ components:
         accountIdentification:
           type: usLocal
           accountNumber: 12345JHDhjkf67890
-          routingNumber: 121000cxhgjhzxg248
+          accountType: checking
+          routingNumber: '121000567'
     post-validateBankAccountIdentification-validateBankAccountIdentificationUs-422:
       summary: Invalid US bank account details
       value:
         type: https://docs.adyen.com/errors/validation
         title: Invalid bank account identification details provided
+        detail: Provided account number and the routing number are incorrect
         status: 422
         invalidFields:
         - name: accountNumber
+          value: 12345JHDhjkf67890
           message: Invalid account number.
         - name: routingNumber
+          value: '121000567'
           message: Invalid routing number.
         errorCode: '33_01'
