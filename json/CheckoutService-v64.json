@@ -10,7 +10,7 @@
       "x-publicVersion" : true,
       "title" : "Adyen Checkout API",
       "description" : "Adyen Checkout API provides a simple and flexible way to initiate and authorise online payments. You can use the same integration for payments made with cards (including 3D Secure), mobile wallets, and local payment methods (for example, iDEAL and Sofort).\n\nThis API reference provides information on available endpoints and how to interact with them. To learn more about the API, visit [online payments documentation](https://docs.adyen.com/online-payments).\n\n## Authentication\nEach request to Checkout API must be signed with an API key. For this, [get your API key](https://docs.adyen.com/development-resources/api-credentials#generate-api-key) from your Customer Area, and set this key to the `X-API-Key` header value, for example:\n\n```\ncurl\n-H \"Content-Type: application/json\" \\\n-H \"X-API-Key: YOUR_API_KEY\" \\\n...\n```\n## Versioning\nCheckout API supports [versioning](https://docs.adyen.com/development-resources/versioning) using a version suffix in the endpoint URL. This suffix has the following format: \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://checkout-test.adyen.com/v64/payments\n```\n\n## Going live\n\nTo access the live endpoints, you need an API key from your live Customer Area.\n\nThe live endpoint URLs contain a prefix which is unique to your company account, for example:\n```\nhttps://{PREFIX}-checkout-live.adyenpayments.com/checkout/v64/payments\n```\n\nGet your `{PREFIX}` from your live Customer Area under **Developers** > **API URLs** > **Prefix**.\n\nWhen preparing to do live transactions with Checkout API, follow the [go-live checklist](https://docs.adyen.com/online-payments/go-live-checklist) to make sure you've got all the required configuration in place.\n\n## Release notes\nHave a look at the [release notes](https://docs.adyen.com/online-payments/release-notes?integration_type=api&version=64) to find out what changed in this version!",
-      "x-timestamp" : "2023-05-30T15:26:50Z",
+      "x-timestamp" : "2023-05-30T19:28:41Z",
       "termsOfService" : "https://www.adyen.com/legal/terms-and-conditions",
       "contact" : {
          "name" : "Adyen Developer Experience team",
@@ -1516,8 +1516,8 @@
                         "basic" : {
                            "$ref" : "#/components/examples/post-paymentMethods-balance-basic"
                         },
-                        "plastix" : {
-                           "$ref" : "#/components/examples/post-paymentMethods-balance-plastix"
+                        "not-enough" : {
+                           "$ref" : "#/components/examples/post-paymentMethods-balance-not-enough"
                         }
                      },
                      "schema" : {
@@ -1536,8 +1536,11 @@
                   "content" : {
                      "application/json" : {
                         "examples" : {
-                           "plastix" : {
-                              "$ref" : "#/components/examples/post-paymentMethods-balance-plastix-200"
+                           "basic" : {
+                              "$ref" : "#/components/examples/post-paymentMethods-balance-basic-200"
+                           },
+                           "not-enough" : {
+                              "$ref" : "#/components/examples/post-paymentMethods-balance-not-enough-200"
                            }
                         },
                         "schema" : {
@@ -5391,6 +5394,7 @@
             },
             "required" : [
                "merchantAccount",
+               "amount",
                "paymentMethod"
             ],
             "type" : "object"
@@ -7158,7 +7162,7 @@
                   "type" : "string"
                },
                "expiresAt" : {
-                  "description" : "The date when the payment link expires.\n\n[ISO 8601](https://www.w3.org/TR/NOTE-datetime) format: YYYY-MM-DDThh:mm:ss+TZD, for example, **2020-12-18T10:15:30+01:00**.\n\nThe maximum expiry date is 70 days after the payment link is created.\n\nIf not provided, the payment link expires 24 hours after it was created.",
+                  "description" : "The date when the payment link expires.\n\n[ISO 8601](https://www.w3.org/TR/NOTE-datetime) format: YYYY-MM-DDThh:mm:ss+TZD, for example, **2020-12-18T10:15:30+01:00**.\n\nThe maximum expiry date is 70 days after the payment link is created.\n\nIf not provided, the payment link expires 24 hours after it was created.This value is represented in Zulu format which is utilized for API v70 and lower.",
                   "type" : "string"
                },
                "installmentOptions" : {
@@ -9234,7 +9238,7 @@
                   "type" : "string"
                },
                "expiresAt" : {
-                  "description" : "The date when the payment link expires.\n\n[ISO 8601](https://www.w3.org/TR/NOTE-datetime) format: YYYY-MM-DDThh:mm:ss+TZD, for example, **2020-12-18T10:15:30+01:00**.\n\nThe maximum expiry date is 70 days after the payment link is created.\n\nIf not provided, the payment link expires 24 hours after it was created.",
+                  "description" : "The date when the payment link expires.\n\n[ISO 8601](https://www.w3.org/TR/NOTE-datetime) format: YYYY-MM-DDThh:mm:ss+TZD, for example, **2020-12-18T10:15:30+01:00**.\n\nThe maximum expiry date is 70 days after the payment link is created.\n\nIf not provided, the payment link expires 24 hours after it was created.This value is represented in Zulu format which is utilized for API v70 and lower.",
                   "type" : "string"
                },
                "id" : {
@@ -12489,40 +12493,54 @@
             }
          },
          "post-paymentMethods-balance-basic" : {
-            "summary" : "Retrieve gift card balance",
+            "summary" : "Get gift card balance specifying amount of 10 EUR",
             "value" : {
                "paymentMethod" : {
                   "type" : "givex",
                   "number" : "4126491073027401",
                   "cvc" : "737"
                },
-               "merchantAccount" : "YOUR_MERCHANT_ACCOUNT"
-            }
-         },
-         "post-paymentMethods-balance-plastix" : {
-            "summary" : "Retrieve gift card balance",
-            "value" : {
-               "paymentMethod" : {
-                  "type" : "plastix",
-                  "number" : "4010100000000000000",
-                  "cvc" : "73737",
-                  "holderName" : "BALANCE EUR 888"
+               "amount" : {
+                  "currency" : "EUR",
+                  "value" : 1000
                },
                "merchantAccount" : "YOUR_MERCHANT_ACCOUNT"
             }
          },
-         "post-paymentMethods-balance-plastix-200" : {
-            "summary" : "Example response for request 'plastix'",
+         "post-paymentMethods-balance-basic-200" : {
+            "summary" : "Gift card balance greater than amount specified in request",
             "value" : {
-               "additionalData" : {
-                  "nonScheme.transactionLimit" : "5000",
-                  "nonScheme.transactionLimitCcy" : "EUR"
-               },
-               "pspReference" : "851617891188737F",
+               "pspReference" : "KHQC5N7G84BLNK43",
                "resultCode" : "Success",
                "balance" : {
                   "currency" : "EUR",
-                  "value" : 888
+                  "value" : 5000
+               }
+            }
+         },
+         "post-paymentMethods-balance-not-enough" : {
+            "summary" : "Get gift card balance specifying amount of 100 EUR",
+            "value" : {
+               "paymentMethod" : {
+                  "type" : "givex",
+                  "number" : "4126491073027401",
+                  "cvc" : "737"
+               },
+               "amount" : {
+                  "currency" : "EUR",
+                  "value" : 10000
+               },
+               "merchantAccount" : "YOUR_MERCHANT_ACCOUNT"
+            }
+         },
+         "post-paymentMethods-balance-not-enough-200" : {
+            "summary" : "Gift card balance lower than amount specified in request",
+            "value" : {
+               "pspReference" : "FKSPNCQ8HXSKGK82",
+               "resultCode" : "NotEnoughBalance",
+               "balance" : {
+                  "currency" : "EUR",
+                  "value" : 5000
                }
             }
          },
