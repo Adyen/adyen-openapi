@@ -1,6 +1,4 @@
 openapi: 3.1.0
-servers:
-- url: https://balanceplatform-api-test.adyen.com/btl/v3
 info:
   version: '3'
   x-publicVersion: true
@@ -12,12 +10,10 @@ info:
     You can use these webhooks to build your implementation. For example, you can
     use this information to update balances in your own dashboards or to keep track
     of incoming funds.'
-  x-timestamp: '2023-05-15T18:27:47Z'
   termsOfService: https://www.adyen.com/legal/terms-and-conditions
   contact:
     name: Adyen Developer Experience team
-    url: https://www.adyen.help/hc/en-us/community/topics
-    email: developer-experience@adyen.com
+    url: https://github.com/Adyen/adyen-openapi
 x-groups:
 - General
 tags: []
@@ -36,7 +32,7 @@ webhooks:
       x-sortIndex: 0
       x-methodName: transferCreated
       security:
-      - ApiKeyAuth: []
+      - BasicAuth: []
       requestBody:
         content:
           application/json:
@@ -64,7 +60,7 @@ webhooks:
       x-sortIndex: 0
       x-methodName: transferUpdated
       security:
-      - ApiKeyAuth: []
+      - BasicAuth: []
       requestBody:
         content:
           application/json:
@@ -540,7 +536,8 @@ components:
           $ref: '#/components/schemas/Address'
         dateOfBirth:
           description: 'The date of birth of the individual in [ISO-8601](https://www.w3.org/TR/NOTE-datetime)
-            format. For example, **YYYY-MM-DD**.
+            format. For example, **YYYY-MM-DD**. Should not be before 1st January
+            1900.
 
 
             Allowed only when `type` is **individual**.'
@@ -742,153 +739,7 @@ components:
           format: int32
           type: integer
       type: object
-    TransferEvent:
-      properties:
-        amount:
-          x-addedInVersion: '3'
-          description: The original journal amount.
-          $ref: '#/components/schemas/Amount'
-        amountAdjustments:
-          x-addedInVersion: '3'
-          description: The amount adjustments in this transfer.
-          items:
-            $ref: '#/components/schemas/AmountAdjustment'
-          type: array
-        bookingDate:
-          x-addedInVersion: '3'
-          description: The date when the transfer request was sent.
-          format: date-time
-          type: string
-        estimatedArrivalTime:
-          x-addedInVersion: '3'
-          description: The estimated time the beneficiary should have access to the
-            funds.
-          format: date-time
-          type: string
-        id:
-          x-addedInVersion: '3'
-          description: The unique identifier of the transfer event.
-          type: string
-        mutations:
-          x-addedInVersion: '3'
-          description: The list of the balance mutation per event.
-          items:
-            $ref: '#/components/schemas/BalanceMutation'
-          type: array
-        originalAmount:
-          x-addedInVersion: '3'
-          description: The amount in the original currency.
-          $ref: '#/components/schemas/Amount'
-        reason:
-          x-addedInVersion: '3'
-          description: The reason for the transfer status.
-          enum:
-          - amountLimitExceeded
-          - approved
-          - counterpartyAccountBlocked
-          - counterpartyAccountClosed
-          - counterpartyAccountNotFound
-          - counterpartyAddressRequired
-          - counterpartyBankTimedOut
-          - counterpartyBankUnavailable
-          - error
-          - notEnoughBalance
-          - refusedByCounterpartyBank
-          - routeNotFound
-          - unknown
-          type: string
-        status:
-          x-addedInVersion: '3'
-          description: The status of the transfer event.
-          enum:
-          - approvalPending
-          - atmWithdrawal
-          - atmWithdrawalReversalPending
-          - atmWithdrawalReversed
-          - authAdjustmentAuthorised
-          - authAdjustmentError
-          - authAdjustmentRefused
-          - authorised
-          - bankTransfer
-          - bankTransferPending
-          - booked
-          - bookingPending
-          - cancelled
-          - capturePending
-          - captureReversalPending
-          - captureReversed
-          - captured
-          - chargeback
-          - chargebackPending
-          - chargebackReversalPending
-          - chargebackReversed
-          - credited
-          - depositCorrection
-          - depositCorrectionPending
-          - dispute
-          - disputeClosed
-          - disputeExpired
-          - disputeNeedsReview
-          - error
-          - expired
-          - failed
-          - fee
-          - feePending
-          - internalTransfer
-          - internalTransferPending
-          - invoiceDeduction
-          - invoiceDeductionPending
-          - manualCorrectionPending
-          - manuallyCorrected
-          - matchedStatement
-          - matchedStatementPending
-          - merchantPayin
-          - merchantPayinPending
-          - merchantPayinReversed
-          - merchantPayinReversedPending
-          - miscCost
-          - miscCostPending
-          - paymentCost
-          - paymentCostPending
-          - received
-          - refundPending
-          - refundReversalPending
-          - refundReversed
-          - refunded
-          - refused
-          - reserveAdjustment
-          - reserveAdjustmentPending
-          - returned
-          - secondChargeback
-          - secondChargebackPending
-          - undefined
-          type: string
-        transactionId:
-          x-addedInVersion: '3'
-          description: The id of the transaction that is related to this accounting
-            event. Only sent for events of type **accounting** where the balance changes.
-          type: string
-        type:
-          x-addedInVersion: '3'
-          description: 'The type of the transfer event. Possible values: **accounting**,
-            **tracking**.'
-          enum:
-          - accounting
-          - tracking
-          type: string
-        updateDate:
-          x-addedInVersion: '3'
-          description: The date when the tracking status was updated.
-          format: date-time
-          type: string
-        valueDate:
-          x-addedInVersion: '3'
-          description: A future date, when the funds are expected to be deducted from
-            or credited to the balance account.
-          format: date-time
-          type: string
-      type: object
-    TransferNotificationData:
+    TransferData:
       properties:
         accountHolder:
           x-addedInVersion: '3'
@@ -940,6 +791,7 @@ components:
           description: The other party in the transfer.
           $ref: '#/components/schemas/CounterpartyV3'
         creationDate:
+          x-addedInVersion: '3'
           description: The date and time when the event was triggered, in ISO 8601
             extended format. For example, **2020-12-18T10:15:30+01:00**.
           format: date-time
@@ -1176,7 +1028,9 @@ components:
           - captureReversalPending
           - captureReversed
           - captured
+          - capturedExternally
           - chargeback
+          - chargebackExternally
           - chargebackPending
           - chargebackReversalPending
           - chargebackReversed
@@ -1213,6 +1067,7 @@ components:
           - refundReversalPending
           - refundReversed
           - refunded
+          - refundedExternally
           - refused
           - reserveAdjustment
           - reserveAdjustmentPending
@@ -1285,15 +1140,164 @@ components:
             $ref: '#/components/schemas/TransferNotificationValidationFact'
           type: array
       required:
+      - status
       - category
       - amount
-      - status
+      type: object
+    TransferEvent:
+      properties:
+        amount:
+          x-addedInVersion: '3'
+          description: The original journal amount.
+          $ref: '#/components/schemas/Amount'
+        amountAdjustments:
+          x-addedInVersion: '3'
+          description: The amount adjustments in this transfer.
+          items:
+            $ref: '#/components/schemas/AmountAdjustment'
+          type: array
+        bookingDate:
+          x-addedInVersion: '3'
+          description: The date when the transfer request was sent.
+          format: date-time
+          type: string
+        estimatedArrivalTime:
+          x-addedInVersion: '3'
+          description: The estimated time the beneficiary should have access to the
+            funds.
+          format: date-time
+          type: string
+        id:
+          x-addedInVersion: '3'
+          description: The unique identifier of the transfer event.
+          type: string
+        mutations:
+          x-addedInVersion: '3'
+          description: The list of the balance mutation per event.
+          items:
+            $ref: '#/components/schemas/BalanceMutation'
+          type: array
+        originalAmount:
+          x-addedInVersion: '3'
+          description: The amount in the original currency.
+          $ref: '#/components/schemas/Amount'
+        reason:
+          x-addedInVersion: '3'
+          description: The reason for the transfer status.
+          enum:
+          - amountLimitExceeded
+          - approved
+          - counterpartyAccountBlocked
+          - counterpartyAccountClosed
+          - counterpartyAccountNotFound
+          - counterpartyAddressRequired
+          - counterpartyBankTimedOut
+          - counterpartyBankUnavailable
+          - error
+          - notEnoughBalance
+          - refusedByCounterpartyBank
+          - routeNotFound
+          - unknown
+          type: string
+        status:
+          x-addedInVersion: '3'
+          description: The status of the transfer event.
+          enum:
+          - approvalPending
+          - atmWithdrawal
+          - atmWithdrawalReversalPending
+          - atmWithdrawalReversed
+          - authAdjustmentAuthorised
+          - authAdjustmentError
+          - authAdjustmentRefused
+          - authorised
+          - bankTransfer
+          - bankTransferPending
+          - booked
+          - bookingPending
+          - cancelled
+          - capturePending
+          - captureReversalPending
+          - captureReversed
+          - captured
+          - capturedExternally
+          - chargeback
+          - chargebackExternally
+          - chargebackPending
+          - chargebackReversalPending
+          - chargebackReversed
+          - credited
+          - depositCorrection
+          - depositCorrectionPending
+          - dispute
+          - disputeClosed
+          - disputeExpired
+          - disputeNeedsReview
+          - error
+          - expired
+          - failed
+          - fee
+          - feePending
+          - internalTransfer
+          - internalTransferPending
+          - invoiceDeduction
+          - invoiceDeductionPending
+          - manualCorrectionPending
+          - manuallyCorrected
+          - matchedStatement
+          - matchedStatementPending
+          - merchantPayin
+          - merchantPayinPending
+          - merchantPayinReversed
+          - merchantPayinReversedPending
+          - miscCost
+          - miscCostPending
+          - paymentCost
+          - paymentCostPending
+          - received
+          - refundPending
+          - refundReversalPending
+          - refundReversed
+          - refunded
+          - refundedExternally
+          - refused
+          - reserveAdjustment
+          - reserveAdjustmentPending
+          - returned
+          - secondChargeback
+          - secondChargebackPending
+          - undefined
+          type: string
+        transactionId:
+          x-addedInVersion: '3'
+          description: The id of the transaction that is related to this accounting
+            event. Only sent for events of type **accounting** where the balance changes.
+          type: string
+        type:
+          x-addedInVersion: '3'
+          description: 'The type of the transfer event. Possible values: **accounting**,
+            **tracking**.'
+          enum:
+          - accounting
+          - tracking
+          type: string
+        updateDate:
+          x-addedInVersion: '3'
+          description: The date when the tracking status was updated.
+          format: date-time
+          type: string
+        valueDate:
+          x-addedInVersion: '3'
+          description: A future date, when the funds are expected to be deducted from
+            or credited to the balance account.
+          format: date-time
+          type: string
       type: object
     TransferNotificationRequest:
       properties:
         data:
           description: Contains details about the event.
-          $ref: '#/components/schemas/TransferNotificationData'
+          $ref: '#/components/schemas/TransferData'
         environment:
           description: 'The environment from which the webhook originated.
 
@@ -1395,10 +1399,6 @@ components:
       - routingNumber
       type: object
   securitySchemes:
-    ApiKeyAuth:
-      in: header
-      name: X-API-Key
-      type: apiKey
     BasicAuth:
       scheme: basic
       type: http
