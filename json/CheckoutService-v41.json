@@ -3490,7 +3490,7 @@
                   "type" : "string"
                },
                "carRental.daysRented" : {
-                  "description" : "Number of days for which the car is being rented.\n* Format: Numeric\n* maxLength: 2\n* Must not be all spaces",
+                  "description" : "Number of days for which the car is being rented.\n* Format: Numeric\n* maxLength: 4\n* Must not be all spaces",
                   "type" : "string"
                },
                "carRental.fuelCharges" : {
@@ -3566,7 +3566,7 @@
                   "type" : "string"
                },
                "travelEntertainmentAuthData.duration" : {
-                  "description" : "Number of days the car is rented for. This should be included in the auth message.\n* Format: Numeric\n* maxLength: 2",
+                  "description" : "Number of days the car is rented for. This should be included in the auth message.\n* Format: Numeric\n* maxLength: 4",
                   "type" : "string"
                },
                "travelEntertainmentAuthData.market" : {
@@ -3595,16 +3595,6 @@
                   "type" : "string"
                },
                "industryUsage" : {
-                  "x-enum" : [
-                     {
-                        "description" : "An incremental charge is carried out because of a no-show for a guaranteed reservation.",
-                        "value" : "NoShow"
-                     },
-                     {
-                        "description" : "An incremental charge is carried out to process an additional payment after the original services have been rendered and the respective payment has been processed.",
-                        "value" : "DelayedCharge"
-                     }
-                  ],
                   "description" : "In case of [asynchronous authorisation adjustment](https://docs.adyen.com/online-payments/adjust-authorisation#adjust-authorisation), this field denotes why the additional payment is made.\n\nPossible values:\n\n * **NoShow**: An incremental charge is carried out because of a no-show for a guaranteed reservation.\n\n * **DelayedCharge**: An incremental charge is carried out to process an additional payment after the original services have been rendered and the respective payment has been processed.",
                   "enum" : [
                      "NoShow",
@@ -3662,7 +3652,7 @@
          "AdditionalDataLevel23" : {
             "properties" : {
                "enhancedSchemeData.customerReference" : {
-                  "description" : "The customer code, if supplied by a customer.\n\nEncoding: ASCII\n\nMax length: 25 characters\n\nMust not start with a space or be all spaces\n\nMust not be all zeros",
+                  "description" : "The customer code.\n\nEncoding: ASCII\n\nMax length: 25 characters\n\nMust not start with a space or be all spaces\n\nMust not be all zeros",
                   "type" : "string"
                },
                "enhancedSchemeData.destinationCountryCode" : {
@@ -3775,7 +3765,7 @@
                   "type" : "string"
                },
                "lodging.room1.numberOfNights" : {
-                  "description" : "The total number of nights the room is booked for.\n* Format: numeric\n* Must be a number between 0 and 99\n* Max length: 2 characters",
+                  "description" : "The total number of nights the room is booked for.\n* Format: numeric\n* Must be a number between 0 and 99\n* Max length: 4 characters",
                   "type" : "string"
                },
                "lodging.room1.rate" : {
@@ -3791,7 +3781,7 @@
                   "type" : "string"
                },
                "travelEntertainmentAuthData.duration" : {
-                  "description" : "The number of nights. This should be included in the auth message.\n* Format: numeric\n* Max length: 2 characters",
+                  "description" : "The number of nights. This should be included in the auth message.\n* Format: numeric\n* Max length: 4 characters",
                   "type" : "string"
                },
                "travelEntertainmentAuthData.market" : {
@@ -5480,6 +5470,14 @@
                   "format" : "int32",
                   "type" : "integer"
                },
+               "fundOrigin" : {
+                  "description" : "The person or entity funding the money.",
+                  "$ref" : "#/components/schemas/FundOrigin"
+               },
+               "fundRecipient" : {
+                  "description" : "the person or entity receiving the money",
+                  "$ref" : "#/components/schemas/FundRecipient"
+               },
                "installments" : {
                   "description" : "Contains installment settings. For more information, refer to [Installments](https://docs.adyen.com/payment-methods/cards/credit-card-installments).",
                   "$ref" : "#/components/schemas/Installments"
@@ -5775,6 +5773,11 @@
                }
             },
             "required" : [
+               "merchantAccount",
+               "reference",
+               "amount",
+               "paymentMethod",
+               "returnUrl",
                "donationAccount"
             ],
             "type" : "object"
@@ -5967,6 +5970,14 @@
                   "format" : "int32",
                   "type" : "integer"
                },
+               "fundOrigin" : {
+                  "description" : "The person or entity funding the money.",
+                  "$ref" : "#/components/schemas/FundOrigin"
+               },
+               "fundRecipient" : {
+                  "description" : "the person or entity receiving the money",
+                  "$ref" : "#/components/schemas/FundRecipient"
+               },
                "installments" : {
                   "description" : "Contains installment settings. For more information, refer to [Installments](https://docs.adyen.com/payment-methods/cards/credit-card-installments).",
                   "$ref" : "#/components/schemas/Installments"
@@ -6261,6 +6272,13 @@
                   "type" : "boolean"
                }
             },
+            "required" : [
+               "merchantAccount",
+               "reference",
+               "amount",
+               "paymentMethod",
+               "returnUrl"
+            ],
             "type" : "object"
          },
          "CheckoutUtilityRequest" : {
@@ -7060,6 +7078,67 @@
             ],
             "type" : "object"
          },
+         "FundOrigin" : {
+            "properties" : {
+               "billingAddress" : {
+                  "description" : "The address where to send the invoice.",
+                  "$ref" : "#/components/schemas/Address"
+               },
+               "shopperName" : {
+                  "description" : "The name of the person",
+                  "$ref" : "#/components/schemas/Name"
+               }
+            },
+            "type" : "object"
+         },
+         "FundRecipient" : {
+            "properties" : {
+               "billingAddress" : {
+                  "description" : "The address where to send the invoice.",
+                  "$ref" : "#/components/schemas/Address"
+               },
+               "paymentMethod" : {
+                  "description" : "the used paymentMetohd",
+                  "$ref" : "#/components/schemas/CardDetails"
+               },
+               "shopperEmail" : {
+                  "description" : "the email address of the person",
+                  "type" : "string"
+               },
+               "shopperName" : {
+                  "description" : "the name of the person",
+                  "$ref" : "#/components/schemas/Name"
+               },
+               "shopperReference" : {
+                  "description" : "Required for recurring payments. \nYour reference to uniquely identify this shopper, for example user ID or account ID. Minimum length: 3 characters.\n> Your reference must not include personally identifiable information (PII), for example name or email address.",
+                  "maxLength" : 256,
+                  "minLength" : 3,
+                  "type" : "string"
+               },
+               "storedPaymentMethodId" : {
+                  "description" : "This is the `recurringDetailReference` returned in the response when you created the token.",
+                  "maxLength" : 64,
+                  "type" : "string"
+               },
+               "subMerchant" : {
+                  "description" : "Required for Back-to-Back/ purchase driven load in Wallet transactions.\nContains the final merchant who will be receiving the money, also known as subMerchant, information.",
+                  "$ref" : "#/components/schemas/SubMerchant"
+               },
+               "telephoneNumber" : {
+                  "description" : "the telephone number of the person",
+                  "type" : "string"
+               },
+               "walletIdentifier" : {
+                  "description" : "indicates where the money is going",
+                  "type" : "string"
+               },
+               "walletOwnerTaxId" : {
+                  "description" : "indicates the tax identifier of the fund recepient",
+                  "type" : "string"
+               }
+            },
+            "type" : "object"
+         },
          "GenericIssuerPaymentMethodDetails" : {
             "additionalProperties" : false,
             "properties" : {
@@ -7414,6 +7493,11 @@
                   "type" : "string"
                }
             },
+            "required" : [
+               "frequency",
+               "amount",
+               "endsAt"
+            ],
             "type" : "object"
          },
          "MasterpassDetails" : {
@@ -8327,28 +8411,6 @@
                   "type" : "array"
                },
                "status" : {
-                  "x-enum" : [
-                     {
-                        "description" : "The link can be used to make payments.",
-                        "value" : "active"
-                     },
-                     {
-                        "description" : "The shopper is in the process of making the payment. Applies to payment methods with an asynchronous flow.\n\nAdded in v68.",
-                        "value" : "paymentPending"
-                     },
-                     {
-                        "description" : "The shopper completed the payment.\n\nRemoved in v66 and replaced with **completed**.",
-                        "value" : "paid"
-                     },
-                     {
-                        "description" : "The expiry date for the payment link has passed. Shoppers can no longer use the link to make payments.",
-                        "value" : "expired"
-                     },
-                     {
-                        "description" : "The shopper completed the payment.\n\nAdded in v66 and replaces **paid**.",
-                        "value" : "completed"
-                     }
-                  ],
                   "description" : "Status of the payment link. Possible values:\n* **active**: The link can be used to make payments.\n* **expired**: The expiry date for the payment link has passed. Shoppers can no longer use the link to make payments.\n* **paid**: The shopper completed the payment.",
                   "enum" : [
                      "active",
@@ -10239,6 +10301,31 @@
             },
             "type" : "object"
          },
+         "SubMerchant" : {
+            "properties" : {
+               "city" : {
+                  "description" : "The city of the sub-merchant's address.\n* Format: Alphanumeric\n* Maximum length: 13 characters",
+                  "type" : "string"
+               },
+               "country" : {
+                  "description" : "The three-letter country code of the sub-merchant's address. For example, **BRA** for Brazil. \n* Format: [ISO 3166-1 alpha-3](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3)\n* Fixed length: 3 characters",
+                  "type" : "string"
+               },
+               "mcc" : {
+                  "description" : "The sub-merchant's 4-digit Merchant Category Code (MCC). \n* Format: Numeric\n* Fixed length: 4 digits",
+                  "type" : "string"
+               },
+               "name" : {
+                  "description" : "The name of the sub-merchant. Based on scheme specifications, this value will overwrite the shopper statement  that will appear in the card statement.\n* Format: Alphanumeric\n* Maximum length: 22 characters",
+                  "type" : "string"
+               },
+               "taxId" : {
+                  "description" : "The tax ID of the sub-merchant.\n* Format: Numeric\n* Fixed length: 11 digits for the CPF or 14 digits for the CNPJ",
+                  "type" : "string"
+               }
+            },
+            "type" : "object"
+         },
          "ThreeDS2RequestData" : {
             "properties" : {
                "authenticationOnly" : {
@@ -10488,28 +10575,6 @@
          "UpdatePaymentLinkRequest" : {
             "properties" : {
                "status" : {
-                  "x-enum" : [
-                     {
-                        "description" : "The link can be used to make payments.",
-                        "value" : "active"
-                     },
-                     {
-                        "description" : "The shopper is in the process of making the payment. Applies to payment methods with an asynchronous flow.\n\nAdded in v68.",
-                        "value" : "paymentPending"
-                     },
-                     {
-                        "description" : "The shopper completed the payment.\n\nRemoved in v66 and replaced with **completed**.",
-                        "value" : "paid"
-                     },
-                     {
-                        "description" : "The expiry date for the payment link has passed. Shoppers can no longer use the link to make payments.",
-                        "value" : "expired"
-                     },
-                     {
-                        "description" : "The shopper completed the payment.\n\nAdded in v66 and replaces **paid**.",
-                        "value" : "completed"
-                     }
-                  ],
                   "description" : "Status of the payment link. Possible values:\n* **expired**",
                   "enum" : [
                      "expired"
@@ -16060,7 +16125,10 @@
             "summary" : "Payment authorised",
             "value" : {
                "resultCode" : "Authorised",
-               "pspReference" : "V4HZ4RBFJGXXGN82"
+               "pspReference" : "V4HZ4RBFJGXXGN82",
+               "merchantReference" : "Your order number",
+               "shopperLocale" : "nl_NL",
+               "paymentMethod" : "ideal"
             }
          },
          "post-payments-sofort" : {

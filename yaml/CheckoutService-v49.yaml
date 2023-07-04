@@ -2723,7 +2723,7 @@ components:
 
             * Format: Numeric
 
-            * maxLength: 2
+            * maxLength: 4
 
             * Must not be all spaces'
           type: string
@@ -2903,7 +2903,7 @@ components:
 
             * Format: Numeric
 
-            * maxLength: 2'
+            * maxLength: 4'
           type: string
         travelEntertainmentAuthData.market:
           description: 'Indicates what market-specific dataset will be submitted or
@@ -2963,14 +2963,6 @@ components:
             To enable this functionality, contact [Support](https://www.adyen.help/hc/en-us/requests/new).'
           type: string
         industryUsage:
-          x-enum:
-          - description: An incremental charge is carried out because of a no-show
-              for a guaranteed reservation.
-            value: NoShow
-          - description: An incremental charge is carried out to process an additional
-              payment after the original services have been rendered and the respective
-              payment has been processed.
-            value: DelayedCharge
           description: "In case of [asynchronous authorisation adjustment](https://docs.adyen.com/online-payments/adjust-authorisation#adjust-authorisation),\
             \ this field denotes why the additional payment is made.\n\nPossible values:\n\
             \n * **NoShow**: An incremental charge is carried out because of a no-show\
@@ -3090,7 +3082,7 @@ components:
     AdditionalDataLevel23:
       properties:
         enhancedSchemeData.customerReference:
-          description: 'The customer code, if supplied by a customer.
+          description: 'The customer code.
 
 
             Encoding: ASCII
@@ -3410,7 +3402,7 @@ components:
 
             * Must be a number between 0 and 99
 
-            * Max length: 2 characters'
+            * Max length: 4 characters'
           type: string
         lodging.room1.rate:
           description: 'The rate for the room, in [minor units](https://docs.adyen.com/development-resources/currency-codes).
@@ -3445,7 +3437,7 @@ components:
 
             * Format: numeric
 
-            * Max length: 2 characters'
+            * Max length: 4 characters'
           type: string
         travelEntertainmentAuthData.market:
           description: 'Indicates what market-specific dataset will be submitted.
@@ -5258,6 +5250,12 @@ components:
             value can be either positive or negative.
           format: int32
           type: integer
+        fundOrigin:
+          description: The person or entity funding the money.
+          $ref: '#/components/schemas/FundOrigin'
+        fundRecipient:
+          description: the person or entity receiving the money
+          $ref: '#/components/schemas/FundRecipient'
         installments:
           description: Contains installment settings. For more information, refer
             to [Installments](https://docs.adyen.com/payment-methods/cards/credit-card-installments).
@@ -5577,6 +5575,11 @@ components:
           description: Set to true if the payment should be routed to a trusted MID.
           type: boolean
       required:
+      - merchantAccount
+      - reference
+      - amount
+      - paymentMethod
+      - returnUrl
       - donationAccount
       type: object
     CheckoutNativeRedirectAction:
@@ -5802,6 +5805,12 @@ components:
             value can be either positive or negative.
           format: int32
           type: integer
+        fundOrigin:
+          description: The person or entity funding the money.
+          $ref: '#/components/schemas/FundOrigin'
+        fundRecipient:
+          description: the person or entity receiving the money
+          $ref: '#/components/schemas/FundRecipient'
         installments:
           description: Contains installment settings. For more information, refer
             to [Installments](https://docs.adyen.com/payment-methods/cards/credit-card-installments).
@@ -6120,6 +6129,12 @@ components:
           x-addedInVersion: '37'
           description: Set to true if the payment should be routed to a trusted MID.
           type: boolean
+      required:
+      - merchantAccount
+      - reference
+      - amount
+      - paymentMethod
+      - returnUrl
       type: object
     CheckoutQrCodeAction:
       additionalProperties: false
@@ -7082,6 +7097,59 @@ components:
       required:
       - accountScore
       type: object
+    FundOrigin:
+      properties:
+        billingAddress:
+          description: The address where to send the invoice.
+          $ref: '#/components/schemas/Address'
+        shopperName:
+          description: The name of the person
+          $ref: '#/components/schemas/Name'
+      type: object
+    FundRecipient:
+      properties:
+        billingAddress:
+          description: The address where to send the invoice.
+          $ref: '#/components/schemas/Address'
+        paymentMethod:
+          description: the used paymentMetohd
+          $ref: '#/components/schemas/CardDetails'
+        shopperEmail:
+          description: the email address of the person
+          type: string
+        shopperName:
+          description: the name of the person
+          $ref: '#/components/schemas/Name'
+        shopperReference:
+          description: "Required for recurring payments. \nYour reference to uniquely\
+            \ identify this shopper, for example user ID or account ID. Minimum length:\
+            \ 3 characters.\n> Your reference must not include personally identifiable\
+            \ information (PII), for example name or email address."
+          maxLength: 256
+          minLength: 3
+          type: string
+        storedPaymentMethodId:
+          description: This is the `recurringDetailReference` returned in the response
+            when you created the token.
+          maxLength: 64
+          type: string
+        subMerchant:
+          description: 'Required for Back-to-Back/ purchase driven load in Wallet
+            transactions.
+
+            Contains the final merchant who will be receiving the money, also known
+            as subMerchant, information.'
+          $ref: '#/components/schemas/SubMerchant'
+        telephoneNumber:
+          description: the telephone number of the person
+          type: string
+        walletIdentifier:
+          description: indicates where the money is going
+          type: string
+        walletOwnerTaxId:
+          description: indicates the tax identifier of the fund recepient
+          type: string
+      type: object
     GenericIssuerPaymentMethodDetails:
       additionalProperties: false
       properties:
@@ -7422,6 +7490,10 @@ components:
           description: Start date of the billing plan, in YYYY-MM-DD format. By default,
             the transaction date.
           type: string
+      required:
+      - frequency
+      - amount
+      - endsAt
       type: object
     MasterpassDetails:
       additionalProperties: false
@@ -8352,28 +8424,6 @@ components:
             $ref: '#/components/schemas/Split'
           type: array
         status:
-          x-enum:
-          - description: The link can be used to make payments.
-            value: active
-          - description: 'The shopper is in the process of making the payment. Applies
-              to payment methods with an asynchronous flow.
-
-
-              Added in v68.'
-            value: paymentPending
-          - description: 'The shopper completed the payment.
-
-
-              Removed in v66 and replaced with **completed**.'
-            value: paid
-          - description: The expiry date for the payment link has passed. Shoppers
-              can no longer use the link to make payments.
-            value: expired
-          - description: 'The shopper completed the payment.
-
-
-              Added in v66 and replaces **paid**.'
-            value: completed
           description: 'Status of the payment link. Possible values:
 
             * **active**: The link can be used to make payments.
@@ -10601,6 +10651,41 @@ components:
           description: The value can be pre-filled, if available.
           type: string
       type: object
+    SubMerchant:
+      properties:
+        city:
+          description: 'The city of the sub-merchant''s address.
+
+            * Format: Alphanumeric
+
+            * Maximum length: 13 characters'
+          type: string
+        country:
+          description: "The three-letter country code of the sub-merchant's address.\
+            \ For example, **BRA** for Brazil. \n* Format: [ISO 3166-1 alpha-3](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3)\n\
+            * Fixed length: 3 characters"
+          type: string
+        mcc:
+          description: "The sub-merchant's 4-digit Merchant Category Code (MCC). \n\
+            * Format: Numeric\n* Fixed length: 4 digits"
+          type: string
+        name:
+          description: 'The name of the sub-merchant. Based on scheme specifications,
+            this value will overwrite the shopper statement  that will appear in the
+            card statement.
+
+            * Format: Alphanumeric
+
+            * Maximum length: 22 characters'
+          type: string
+        taxId:
+          description: 'The tax ID of the sub-merchant.
+
+            * Format: Numeric
+
+            * Fixed length: 11 digits for the CPF or 14 digits for the CNPJ'
+          type: string
+      type: object
     ThreeDS2RequestData:
       properties:
         acquirerBIN:
@@ -10963,28 +11048,6 @@ components:
     UpdatePaymentLinkRequest:
       properties:
         status:
-          x-enum:
-          - description: The link can be used to make payments.
-            value: active
-          - description: 'The shopper is in the process of making the payment. Applies
-              to payment methods with an asynchronous flow.
-
-
-              Added in v68.'
-            value: paymentPending
-          - description: 'The shopper completed the payment.
-
-
-              Removed in v66 and replaced with **completed**.'
-            value: paid
-          - description: The expiry date for the payment link has passed. Shoppers
-              can no longer use the link to make payments.
-            value: expired
-          - description: 'The shopper completed the payment.
-
-
-              Added in v66 and replaces **paid**.'
-            value: completed
           description: 'Status of the payment link. Possible values:
 
             * **expired**'
@@ -14232,6 +14295,9 @@ components:
       value:
         resultCode: Authorised
         pspReference: V4HZ4RBFJGXXGN82
+        merchantReference: Your order number
+        shopperLocale: nl_NL
+        paymentMethod: ideal
     post-payments-sofort:
       summary: Make a Sofort payment
       value:
