@@ -6099,6 +6099,81 @@ paths:
                 $ref: '#/components/schemas/RestServiceError'
           description: Internal Server Error - the server could not process the request.
   /merchants/{merchantId}/splitConfigurations/{splitConfigurationId}/rules/{ruleId}:
+    delete:
+      tags:
+      - Split configuration - merchant level
+      summary: Delete a split configuration rule
+      description: 'Deletes the split configuration rule specified in the path.
+
+
+        To make this request, your API credential must have the following [role](https://docs.adyen.com/development-resources/api-credentials#api-permissions):
+
+        * Management API - SplitConfiguration read and write'
+      operationId: delete-merchants-merchantId-splitConfigurations-splitConfigurationId-rules-ruleId
+      x-groupName: Split configuration - merchant level
+      x-sortIndex: 9
+      x-methodName: deleteSplitConfigurationRule
+      security:
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      parameters:
+      - description: The unique identifier of the merchant account.
+        name: merchantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - description: The unique identifier of the split configuration.
+        name: splitConfigurationId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: ruleId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SplitConfiguration'
+          description: OK - the request has succeeded.
+        '204':
+          description: No Content - the request has been successfully processed, but
+            there is no additional content.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Bad Request - a problem reading or understanding the request.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unauthorized - authentication required.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Forbidden - insufficient permissions to process the request.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unprocessable Entity - a request validation error.
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Internal Server Error - the server could not process the request.
     patch:
       tags:
       - Split configuration - merchant level
@@ -9333,9 +9408,8 @@ paths:
       - Terminals - terminal level
       summary: Get a list of terminals
       description: "Returns the payment terminals that the API credential has access\
-        \ to and that match the query parameters. \nWhen using `searchQuery`, other\
-        \ query parameters are ignored.\n\nTo make this request, your API credential\
-        \ must have the following [roles](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
+        \ to and that match the query parameters. \nTo make this request, your API\
+        \ credential must have the following [roles](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
         * Management API \u2014 Terminal actions read"
       operationId: get-terminals
       x-groupName: Terminals - terminal level
@@ -9348,6 +9422,14 @@ paths:
       - description: Returns terminals with an ID that contains the specified string.
           If present, other query parameters are ignored.
         name: searchQuery
+        in: query
+        required: false
+        schema:
+          type: string
+      - description: Returns one or more terminals associated with the one-time passwords
+          specified in the request. If this query parameter is used, other query parameters
+          are ignored.
+        name: otpQuery
         in: query
         required: false
         schema:
@@ -10521,7 +10603,8 @@ components:
           type: string
         roles:
           description: List of [roles](https://docs.adyen.com/development-resources/api-credentials#roles-1)
-            of the API credential.
+            for the API credential. Only roles assigned to 'ws@Company.<CompanyName>'
+            can be assigned to other API credentials.
           items:
             type: string
           type: array
@@ -10807,11 +10890,6 @@ components:
             If not specified, the webhook will use `sslVersion`: **TLSv1.2**.'
           enum:
           - HTTP
-          - SSL
-          - SSLv3
-          - TLS
-          - TLSv1
-          - TLSv1.1
           - TLSv1.2
           - TLSv1.3
           example: TLSv1.2
@@ -10874,7 +10952,8 @@ components:
           type: string
         roles:
           description: List of [roles](https://docs.adyen.com/development-resources/api-credentials#roles-1)
-            for the API credential.
+            for the API credential. Only roles assigned to 'ws@Company.<CompanyName>'
+            can be assigned to other API credentials.
           items:
             type: string
           type: array
@@ -11062,11 +11141,6 @@ components:
             If not specified, the webhook will use `sslVersion`: **TLSv1.2**.'
           enum:
           - HTTP
-          - SSL
-          - SSLv3
-          - TLS
-          - TLSv1
-          - TLSv1.1
           - TLSv1.2
           - TLSv1.3
           example: TLSv1.2
@@ -12303,7 +12377,6 @@ components:
             - elocredit
             - elodebit
             - girocard
-            - giropay
             - googlepay
             - hiper
             - hipercard
@@ -12321,6 +12394,7 @@ components:
             - mobilepay
             - multibanco
             - onlineBanking_PL
+            - paybybank
             - paypal
             - payshop
             - swish
@@ -12446,7 +12520,6 @@ components:
           - elocredit
           - elodebit
           - girocard
-          - giropay
           - googlepay
           - hiper
           - hipercard
@@ -12464,6 +12537,7 @@ components:
           - mobilepay
           - multibanco
           - onlineBanking_PL
+          - paybybank
           - paypal
           - payshop
           - swish
@@ -13183,7 +13257,6 @@ components:
           description: The address of the store.
           $ref: '#/components/schemas/StoreLocation'
         businessLineIds:
-          deprecated: true
           description: "The unique identifiers of the [business lines](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/businesslines__resParam_id)\
             \ that the store is associated with.\n If not specified, the business\
             \ line of the merchant account is used. Required when there are multiple\
@@ -13241,7 +13314,6 @@ components:
           description: The address of the store.
           $ref: '#/components/schemas/StoreLocation'
         businessLineIds:
-          deprecated: true
           description: 'The unique identifiers of the [business lines](https://docs.adyen.com/api-explorer/legalentity/latest/post/businessLines#responses-200-id)
             that the store is associated with.
 
@@ -13258,16 +13330,15 @@ components:
             identify the store.
 
 
-            For CNPJ in Brazil, ZIP in Australia and SIRET in France.  This field
-            is conditionally required if the store is in Brazil or France.
+            For CNPJ in Brazil, ZIP in Australia and SIRET in France. This field is
+            conditionally required if the store is in Brazil, Australia or France.
 
 
             For CNPJ the format is 00.000.000/0000-00, can be submitted as just digits,
             or with dots, slash & hyphen.
 
 
-            For Australian stores an optional field used by the Zip payment method,
-            equivalent to their locationId.
+            For Australian stores ZIP an optional field used by the Zip payment method.
 
 
             For SIRET the format is 14 digits.'
@@ -13303,7 +13374,6 @@ components:
           description: The address of the store.
           $ref: '#/components/schemas/StoreLocation'
         businessLineIds:
-          deprecated: true
           description: 'The unique identifiers of the [business lines](https://docs.adyen.com/api-explorer/legalentity/latest/post/businessLines#responses-200-id)
             that the store is associated with.
 
@@ -13320,16 +13390,15 @@ components:
             identify the store.
 
 
-            For CNPJ in Brazil, ZIP in Australia and SIRET in France.  This field
-            is conditionally required if the store is in Brazil or France.
+            For CNPJ in Brazil, ZIP in Australia and SIRET in France. This field is
+            conditionally required if the store is in Brazil, Australia or France.
 
 
             For CNPJ the format is 00.000.000/0000-00, can be submitted as just digits,
             or with dots, slash & hyphen.
 
 
-            For Australian stores an optional field used by the Zip payment method,
-            equivalent to their locationId.
+            For Australian stores ZIP an optional field used by the Zip payment method.
 
 
             For SIRET the format is 14 digits.'
@@ -13922,7 +13991,8 @@ components:
           type: string
         roles:
           description: List of [roles](https://docs.adyen.com/development-resources/api-credentials#roles-1)
-            of the API credential.
+            for the API credential. Only roles assigned to 'ws@Company.<CompanyName>'
+            can be assigned to other API credentials.
           items:
             type: string
           type: array
@@ -14075,11 +14145,6 @@ components:
             If not specified, the webhook will use `sslVersion`: **TLSv1.2**.'
           enum:
           - HTTP
-          - SSL
-          - SSLv3
-          - TLS
-          - TLSv1
-          - TLSv1.1
           - TLSv1.2
           - TLSv1.3
           example: TLSv1.2
@@ -14109,7 +14174,8 @@ components:
           type: string
         roles:
           description: List of [roles](https://docs.adyen.com/development-resources/api-credentials#roles-1)
-            for the API credential.
+            for the API credential. Only roles assigned to 'ws@Company.<CompanyName>'
+            can be assigned to other API credentials.
           items:
             type: string
           type: array
@@ -14223,11 +14289,6 @@ components:
             If not specified, the webhook will use `sslVersion`: **TLSv1.2**.'
           enum:
           - HTTP
-          - SSL
-          - SSLv3
-          - TLS
-          - TLSv1
-          - TLSv1.1
           - TLSv1.2
           - TLSv1.3
           example: TLSv1.2
@@ -14653,11 +14714,6 @@ components:
             If not specified, the webhook will use `sslVersion`: **TLSv1.2**.'
           enum:
           - HTTP
-          - SSL
-          - SSLv3
-          - TLS
-          - TLSv1
-          - TLSv1.1
           - TLSv1.2
           - TLSv1.3
           example: TLSv1.2
