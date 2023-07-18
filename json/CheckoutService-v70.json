@@ -3250,13 +3250,13 @@
             "tags" : [
                "Payments"
             ],
-            "summary" : "Get a synchronous result of a payment session",
-            "description" : "Get a synchronous result of a payment session given a sessionResult.",
+            "summary" : "Get the result of a payment session",
+            "description" : "Returns the status of the payment session with the `sessionId` and `sessionResult` specified in the path.",
             "x-addedInVersion" : "68",
             "operationId" : "get-sessions-sessionId",
             "x-groupName" : "Payments",
             "x-sortIndex" : 2,
-            "x-methodName" : "getSynchronousResultOfPaymentSession",
+            "x-methodName" : "getResultOfPaymentSession",
             "security" : [
                {
                   "BasicAuth" : [
@@ -3278,6 +3278,7 @@
                   }
                },
                {
+                  "description" : "The `sessionResult` value from the Drop-in or Component.",
                   "name" : "sessionResult",
                   "in" : "query",
                   "required" : false,
@@ -3290,6 +3291,11 @@
                "200" : {
                   "content" : {
                      "application/json" : {
+                        "examples" : {
+                           "success" : {
+                              "$ref" : "#/components/examples/get-sessions-sessionId-success-200"
+                           }
+                        },
                         "schema" : {
                            "$ref" : "#/components/schemas/SessionResultResponse"
                         }
@@ -5924,6 +5930,42 @@
             ],
             "type" : "object"
          },
+         "CheckoutDelegatedAuthenticationAction" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "authorisationToken" : {
+                  "description" : "A token needed to authorise a payment.",
+                  "type" : "string"
+               },
+               "paymentData" : {
+                  "description" : "A value that must be submitted to the `/payments/details` endpoint to verify this payment.",
+                  "type" : "string"
+               },
+               "paymentMethodType" : {
+                  "description" : "Specifies the payment method.",
+                  "type" : "string"
+               },
+               "token" : {
+                  "description" : "A token to pass to the delegatedAuthentication component.",
+                  "type" : "string"
+               },
+               "type" : {
+                  "description" : "**delegatedAuthentication**",
+                  "enum" : [
+                     "delegatedAuthentication"
+                  ],
+                  "type" : "string"
+               },
+               "url" : {
+                  "description" : "Specifies the URL to redirect to.",
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "type"
+            ],
+            "type" : "object"
+         },
          "CheckoutDonationPaymentRequest" : {
             "properties" : {
                "accountInfo" : {
@@ -8247,6 +8289,14 @@
                      "$ref" : "#/components/schemas/Split"
                   },
                   "type" : "array"
+               },
+               "subMerchants" : {
+                  "x-addedInVersion" : "70",
+                  "description" : "A List of sub-merchants.",
+                  "items" : {
+                     "$ref" : "#/components/schemas/SubMerchant-2"
+                  },
+                  "type" : "array"
                }
             },
             "required" : [
@@ -10104,6 +10154,14 @@
                      "received"
                   ],
                   "type" : "string"
+               },
+               "subMerchants" : {
+                  "x-addedInVersion" : "70",
+                  "description" : "List of sub-merchants.",
+                  "items" : {
+                     "$ref" : "#/components/schemas/SubMerchant-2"
+                  },
+                  "type" : "array"
                }
             },
             "required" : [
@@ -10988,6 +11046,9 @@
                   "oneOf" : [
                      {
                         "$ref" : "#/components/schemas/CheckoutAwaitAction"
+                     },
+                     {
+                        "$ref" : "#/components/schemas/CheckoutDelegatedAuthenticationAction"
                      },
                      {
                         "$ref" : "#/components/schemas/CheckoutNativeRedirectAction"
@@ -12940,6 +13001,26 @@
             },
             "type" : "object"
          },
+         "SubMerchant-2" : {
+            "properties" : {
+               "address" : {
+                  "$ref" : "#/components/schemas/Address"
+               },
+               "id" : {
+                  "type" : "string"
+               },
+               "mcc" : {
+                  "type" : "string"
+               },
+               "name" : {
+                  "type" : "string"
+               },
+               "taxId" : {
+                  "type" : "string"
+               }
+            },
+            "type" : "object"
+         },
          "ThreeDS2RequestData" : {
             "properties" : {
                "acctInfo" : {
@@ -14112,6 +14193,14 @@
                "status" : "active",
                "url" : "https://test.adyen.link/PL61C53A8B97E6915A",
                "id" : "PL61C53A8B97E6915A"
+            }
+         },
+         "get-sessions-sessionId-success-200" : {
+            "summary" : "Response code: 201. Success.",
+            "description" : "The status of the session with the specified ID.",
+            "value" : {
+               "id" : "CS12345678",
+               "status" : "completed"
             }
          },
          "get-storedPaymentMethods-success-200" : {
