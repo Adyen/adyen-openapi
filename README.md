@@ -85,7 +85,7 @@ We use them in some rare cases when we need to avoid validation issues with open
 
 ## Support
   
-If you have a feature request, or spotted a bug or a technical problem, create a GitHub issue. For other questions, contact our [Team](https://www.adyen.help/hc/en-us/community/topics).
+If you have a feature request, or spotted a bug or a technical problem, create a GitHub issue. For other questions, contact our [Team](https://www.adyen.help/hc/en-us/requests/new).
   
 ## License 
 
