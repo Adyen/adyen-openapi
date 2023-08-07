@@ -5,7 +5,6 @@
       "x-publicVersion" : true,
       "title" : "Configuration webhooks",
       "description" : "Adyen sends webhooks to inform your system about events that occur in your platform. These events include, for example, when an account holder's capabilities are updated, or when a sweep configuration is created or updated. \nWhen an event occurs, Adyen makes an HTTP POST request to a URL on your server and includes the details of the event in the request body.\n\nYou can use these webhooks to build your implementation. For example, you can use this information to update internal statuses when the status of a capability is changed.",
-      "x-timestamp" : "2023-05-30T15:26:37Z",
       "termsOfService" : "https://www.adyen.com/legal/terms-and-conditions",
       "contact" : {
          "name" : "Adyen Developer Experience team",
@@ -35,7 +34,7 @@
             "x-methodName" : "accountHolderCreated",
             "security" : [
                {
-                  "ApiKeyAuth" : [
+                  "BasicAuth" : [
                      ]
                }
             ],
@@ -85,7 +84,7 @@
             "x-methodName" : "accountHolderUpdated",
             "security" : [
                {
-                  "ApiKeyAuth" : [
+                  "BasicAuth" : [
                      ]
                }
             ],
@@ -135,7 +134,7 @@
             "x-methodName" : "balanceAccountCreated",
             "security" : [
                {
-                  "ApiKeyAuth" : [
+                  "BasicAuth" : [
                      ]
                }
             ],
@@ -185,7 +184,7 @@
             "x-methodName" : "balanceAccountUpdated",
             "security" : [
                {
-                  "ApiKeyAuth" : [
+                  "BasicAuth" : [
                      ]
                }
             ],
@@ -235,7 +234,7 @@
             "x-methodName" : "sweepCreated",
             "security" : [
                {
-                  "ApiKeyAuth" : [
+                  "BasicAuth" : [
                      ]
                }
             ],
@@ -285,7 +284,7 @@
             "x-methodName" : "sweepDeleted",
             "security" : [
                {
-                  "ApiKeyAuth" : [
+                  "BasicAuth" : [
                      ]
                }
             ],
@@ -335,7 +334,7 @@
             "x-methodName" : "sweepUpdated",
             "security" : [
                {
-                  "ApiKeyAuth" : [
+                  "BasicAuth" : [
                      ]
                }
             ],
@@ -385,7 +384,7 @@
             "x-methodName" : "cardOrderCreated",
             "security" : [
                {
-                  "ApiKeyAuth" : [
+                  "BasicAuth" : [
                      ]
                }
             ],
@@ -425,7 +424,7 @@
             "x-methodName" : "cardOrderUpdated",
             "security" : [
                {
-                  "ApiKeyAuth" : [
+                  "BasicAuth" : [
                      ]
                }
             ],
@@ -465,7 +464,7 @@
             "x-methodName" : "paymentInstrumentCreated",
             "security" : [
                {
-                  "ApiKeyAuth" : [
+                  "BasicAuth" : [
                      ]
                }
             ],
@@ -515,7 +514,7 @@
             "x-methodName" : "paymentInstrumentUpdated",
             "security" : [
                {
-                  "ApiKeyAuth" : [
+                  "BasicAuth" : [
                      ]
                }
             ],
@@ -590,8 +589,12 @@
                   "additionalProperties" : {
                      "type" : "string"
                   },
-                  "description" : "A set of key and value pairs for general use by the merchant.\nThe keys do not have specific names and may be used for storing miscellaneous data as desired.\n> Note that during an update of metadata, the omission of existing key-value pairs will result in the deletion of those key-value pairs.",
+                  "description" : "A set of key and value pairs for general use.\nThe keys do not have specific names and may be used for storing miscellaneous data as desired.\n> Note that during an update of metadata, the omission of existing key-value pairs will result in the deletion of those key-value pairs.",
                   "type" : "object"
+               },
+               "migratedAccountHolderCode" : {
+                  "description" : "The unique identifier of the migrated account holder in the classic integration.",
+                  "type" : "string"
                },
                "primaryBalanceAccount" : {
                   "description" : "The ID of the account holder's primary balance account. By default, this is set to the first balance account that you create for the account holder. To assign a different balance account, send a PATCH request.",
@@ -876,6 +879,11 @@
                   "description" : "The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes) of the balance.",
                   "type" : "string"
                },
+               "pending" : {
+                  "description" : "The amount pending to be paid out but not yet available in the balance.",
+                  "format" : "int64",
+                  "type" : "integer"
+               },
                "reserved" : {
                   "description" : "The amount reserved for payments that have been authorised, but have not been captured yet.",
                   "format" : "int64",
@@ -920,8 +928,12 @@
                   "additionalProperties" : {
                      "type" : "string"
                   },
-                  "description" : "A set of key and value pairs for general use by the merchant.\nThe keys do not have specific names and may be used for storing miscellaneous data as desired.\n> Note that during an update of metadata, the omission of existing key-value pairs will result in the deletion of those key-value pairs.",
+                  "description" : "A set of key and value pairs for general use.\nThe keys do not have specific names and may be used for storing miscellaneous data as desired.\n> Note that during an update of metadata, the omission of existing key-value pairs will result in the deletion of those key-value pairs.",
                   "type" : "object"
+               },
+               "migratedAccountCode" : {
+                  "description" : "The unique identifier of the account of the migrated account holder in the classic integration.",
+                  "type" : "string"
                },
                "paymentInstruments" : {
                   "description" : "List of [payment instruments](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/paymentInstruments) associated with the balance account.",
@@ -929,6 +941,10 @@
                      "$ref" : "#/components/schemas/PaymentInstrumentReference"
                   },
                   "type" : "array"
+               },
+               "platformPaymentConfiguration" : {
+                  "description" : "Contains key-value pairs to the configure the settlement model in a balance account.",
+                  "$ref" : "#/components/schemas/PlatformPaymentConfiguration"
                },
                "reference" : {
                   "description" : "Your reference for the balance account, maximum 150 characters.",
@@ -1113,7 +1129,7 @@
                   "type" : "string"
                },
                "brandVariant" : {
-                  "description" : "The brand variant of the physical or the virtual card.\n>Contact your Adyen Implementation Manager to get the values that are relevant to your integration. Examples: **visadebit**, **mcprepaid**.",
+                  "description" : "The brand variant of the physical or the virtual card. For example, **visadebit** or **mcprepaid**.\n>Reach out to your Adyen contact to get the values relevant for your integration.",
                   "type" : "string"
                },
                "cardholderName" : {
@@ -1152,6 +1168,10 @@
                },
                "number" : {
                   "description" : "The primary account number (PAN) of the card.\n> The PAN is masked by default and returned only for single-use virtual cards.",
+                  "type" : "string"
+               },
+               "threeDSecure" : {
+                  "description" : "Allocates a specific product range for either a physical or a virtual card. Possible values: **fullySecure**, **secureCorporate**.\n>Reach out to your Adyen contact to get the values relevant for your integration.",
                   "type" : "string"
                }
             },
@@ -1269,25 +1289,22 @@
          },
          "CardOrderItemDeliveryStatus" : {
             "properties" : {
+               "errorMessage" : {
+                  "description" : "Error message.",
+                  "type" : "string"
+               },
                "status" : {
                   "description" : "Status of the delivery.",
                   "enum" : [
                      "created",
                      "delivered",
+                     "notApplicable",
                      "processing",
                      "produced",
                      "rejected",
                      "shipped",
                      "unknown"
                   ],
-                  "type" : "string"
-               },
-               "statusError" : {
-                  "description" : "Error status, if any.",
-                  "type" : "string"
-               },
-               "statusErrorMessage" : {
-                  "description" : "Error message, if any.",
                   "type" : "string"
                },
                "trackingNumber" : {
@@ -1379,30 +1396,6 @@
                "email",
                "phone",
                "address"
-            ],
-            "type" : "object"
-         },
-         "CronSweepSchedule" : {
-            "additionalProperties" : false,
-            "properties" : {
-               "cronExpression" : {
-                  "description" : "A [cron expression](https://en.wikipedia.org/wiki/Cron#CRON_expression) that is used to set the sweep schedule. The schedule uses the time zone of the balance account. For example, **30 17 * * MON** schedules a sweep every Monday at 17:30.\n\nThe expression must have five values separated by a single space in the following order:\n\n* Minute: **0-59**\n\n* Hour: **0-23**\n\n* Day of the month: **1-31**\n\n* Month: **1-12** or **JAN-DEC**\n\n* Day of the week: **0-7** (0 and 7 are Sunday) or **MON-SUN**.\n\nThe following non-standard characters are supported: **&ast;**, **L**, **#**, **W** and **/**. See [crontab guru](https://crontab.guru/) for more examples.",
-                  "type" : "string"
-               },
-               "type" : {
-                  "description" : "The schedule type.\n\nPossible values:\n\n* **cron**: push out funds based on a cron expression.\n\n* **daily**: push out funds daily at 07:00 AM CET.\n\n* **weekly**: push out funds every Monday at 07:00 AM CET.\n\n* **monthly**: push out funds every first of the month at 07:00 AM CET.\n\n* **balance**: pull in funds instantly if the balance is less than or equal to the `triggerAmount`. You can only use this for sweeps of `type` **pull** and when the source is a `merchantAccount` or `transferInstrument`.If the source is transferInstrument, merchant account identifier is still required, with which you want to process the transaction.",
-                  "enum" : [
-                     "daily",
-                     "weekly",
-                     "monthly",
-                     "balance",
-                     "cron"
-                  ],
-                  "type" : "string"
-               }
-            },
-            "required" : [
-               "cronExpression"
             ],
             "type" : "object"
          },
@@ -1502,36 +1495,6 @@
                   "type" : "string"
                },
                "status" : {
-                  "x-enum" : [
-                     {
-                        "description" : "The payment instrument has been requested. This state is applicable when creating physical cards.",
-                        "value" : "Requested"
-                     },
-                     {
-                        "description" : "The payment instrument is active and can be used to make payments.",
-                        "value" : "Active"
-                     },
-                     {
-                        "description" : "The payment instrument is inactive and cannot be used to make payments.",
-                        "value" : "Inactive"
-                     },
-                     {
-                        "description" : "The payment instrument is temporarily suspended and cannot be used to make payments.",
-                        "value" : "Suspended"
-                     },
-                     {
-                        "description" : "The payment instrument is permanently closed. This action cannot be undone.",
-                        "value" : "Closed"
-                     },
-                     {
-                        "description" : "The payment instrument is suspended. Either because it was stolen or lost.",
-                        "value" : "blocked"
-                     },
-                     {
-                        "description" : "The payment instrument is permanently closed. This action cannot be undone.",
-                        "value" : "discarded"
-                     }
-                  ],
                   "description" : "The status of the payment instrument. If a status is not specified when creating a payment instrument, it is set to **Active** by default. However, there can be exceptions for cards based on the `card.formFactor` and the `issuingCountryCode`. For example, when issuing physical cards in the US, the default status is **Requested**.\n\nPossible values: \n\n * **Active**:  The payment instrument is active and can be used to make payments. \n\n * **Requested**: The payment instrument has been requested. This state is applicable for physical cards. \n\n* **Inactive**: The payment instrument is inactive and cannot be used to make payments. \n\n * **Suspended**: The payment instrument is temporarily suspended and cannot be used to make payments. \n\n * **Closed**: The payment instrument is permanently closed. This action cannot be undone. \n\n* **Stolen** \n\n * **Lost**\n\n ",
                   "enum" : [
                      "Active",
@@ -1677,6 +1640,21 @@
             },
             "type" : "object"
          },
+         "PlatformPaymentConfiguration" : {
+            "properties" : {
+               "salesDayClosingTime" : {
+                  "description" : "Specifies at what time a [sales day](https://docs.adyen.com/marketplaces-and-platforms/receive-funds/sales-day-settlement#sales-day) ends.\n\nPossible values: Time in **\"HH:MM\"** format. **HH** ranges from **00** to **07**. **MM** must be **00**.\n\nDefault value: **\"00:00\"**.",
+                  "format" : "time",
+                  "type" : "string"
+               },
+               "settlementDelayDays" : {
+                  "description" : "Specifies after how many business days the funds in a [settlement batch](https://docs.adyen.com/marketplaces-and-platforms/receive-funds/sales-day-settlement#settlement-batch) are made available.\n\nPossible values: **0** to **10**, or **null**.\n* Setting this value to an integer enables [Sales day settlement](https://docs.adyen.com/marketplaces-and-platforms/receive-funds/sales-day-settlement).\n* Setting this value to **null** enables [Pass-through settlement](https://docs.adyen.com/marketplaces-and-platforms/receive-funds/pass-through-settlement).\n\nDefault value: **null**.",
+                  "format" : "int32",
+                  "type" : "integer"
+               }
+            },
+            "type" : "object"
+         },
          "Resource" : {
             "properties" : {
                "balancePlatform" : {
@@ -1711,26 +1689,9 @@
                },
                "schedule" : {
                   "description" : "The schedule when the `triggerAmount` is evaluated. If the balance meets the threshold, funds are pushed out of or pulled in to the balance account.",
-                  "oneOf" : [
-                     {
-                        "$ref" : "#/components/schemas/CronSweepSchedule"
-                     },
-                     {
-                        "$ref" : "#/components/schemas/SweepSchedule"
-                     }
-                  ]
+                  "$ref" : "#/components/schemas/SweepSchedule"
                },
                "status" : {
-                  "x-enum" : [
-                     {
-                        "description" : "The sweep is enabled and funds will be pulled in or pushed out based on the defined configuration",
-                        "value" : "active"
-                     },
-                     {
-                        "description" : "The sweep is disabled and cannot be triggered.",
-                        "value" : "inactive"
-                     }
-                  ],
                   "description" : "The status of the sweep. If not provided, by default, this is set to **active**.\n\nPossible values: \n\n * **active**:  the sweep is enabled and funds will be pulled in or pushed out based on the defined configuration. \n\n * **inactive**: the sweep is disabled and cannot be triggered. \n\n",
                   "enum" : [
                      "active",
@@ -1853,26 +1814,9 @@
                },
                "schedule" : {
                   "description" : "The schedule when the `triggerAmount` is evaluated. If the balance meets the threshold, funds are pushed out of or pulled in to the balance account.",
-                  "oneOf" : [
-                     {
-                        "$ref" : "#/components/schemas/CronSweepSchedule"
-                     },
-                     {
-                        "$ref" : "#/components/schemas/SweepSchedule"
-                     }
-                  ]
+                  "$ref" : "#/components/schemas/SweepSchedule"
                },
                "status" : {
-                  "x-enum" : [
-                     {
-                        "description" : "The sweep is enabled and funds will be pulled in or pushed out based on the defined configuration",
-                        "value" : "active"
-                     },
-                     {
-                        "description" : "The sweep is disabled and cannot be triggered.",
-                        "value" : "inactive"
-                     }
-                  ],
                   "description" : "The status of the sweep. If not provided, by default, this is set to **active**.\n\nPossible values: \n\n * **active**:  the sweep is enabled and funds will be pulled in or pushed out based on the defined configuration. \n\n * **inactive**: the sweep is disabled and cannot be triggered. \n\n",
                   "enum" : [
                      "active",
@@ -1928,10 +1872,13 @@
             "type" : "object"
          },
          "SweepSchedule" : {
-            "additionalProperties" : false,
             "properties" : {
+               "cronExpression" : {
+                  "description" : "A [cron expression](https://en.wikipedia.org/wiki/Cron#CRON_expression) that is used to set the sweep schedule. The schedule uses the time zone of the balance account. \nFor example, **30 17 * * MON** schedules a sweep every Monday at 17:30.\n\nThe expression must have five values separated by a single space in the following order:\n\n* Minute: **0-59**\n\n* Hour: **0-23**\n\n* Day of the month: **1-31**\n\n* Month: **1-12** or **JAN-DEC**\n\n* Day of the week: **0-7** (0 and 7 are Sunday) or **MON-SUN**.\n\nThe following non-standard characters are supported: **&ast;**, **L**, **#**, **W** and **/**. See [crontab guru](https://crontab.guru/) for more examples.\n\nRequired when `type` is **cron**.\n",
+                  "type" : "string"
+               },
                "type" : {
-                  "description" : "The schedule type.\n\nPossible values:\n\n* **cron**: push out funds based on a cron expression.\n\n* **daily**: push out funds daily at 07:00 AM CET.\n\n* **weekly**: push out funds every Monday at 07:00 AM CET.\n\n* **monthly**: push out funds every first of the month at 07:00 AM CET.\n\n* **balance**: pull in funds instantly if the balance is less than or equal to the `triggerAmount`. You can only use this for sweeps of `type` **pull** and when the source is a `merchantAccount` or `transferInstrument`.If the source is transferInstrument, merchant account identifier is still required, with which you want to process the transaction.",
+                  "description" : "The schedule type.\n\nPossible values:\n\n* **cron**: push out funds based on a `cronExpression`.\n\n* **daily**: push out funds daily at 07:00 AM CET.\n\n* **weekly**: push out funds every Monday at 07:00 AM CET.\n\n* **monthly**: push out funds every first of the month at 07:00 AM CET.\n\n* **balance**: pull in funds instantly if the balance is less than or equal to the `triggerAmount`.\nYou can only use this for sweeps of `type` **pull** and when the source is a `merchantAccount` or `transferInstrument`.\nIf the source is transferInstrument, merchant account identifier is still required, with which you want to process the transaction.\n",
                   "enum" : [
                      "daily",
                      "weekly",
@@ -1942,6 +1889,9 @@
                   "type" : "string"
                }
             },
+            "required" : [
+               "type"
+            ],
             "type" : "object"
          },
          "USLocalAccountIdentification" : {
@@ -1986,11 +1936,6 @@
          }
       },
       "securitySchemes" : {
-         "ApiKeyAuth" : {
-            "in" : "header",
-            "name" : "X-API-Key",
-            "type" : "apiKey"
-         },
          "BasicAuth" : {
             "scheme" : "basic",
             "type" : "http"
@@ -1999,7 +1944,9 @@
       "examples" : {
          "WebhookAck" : {
             "summary" : "Acknowledge Webhook",
-            "value" : "[accepted]"
+            "value" : {
+               "notificationResponse" : "[accepted]"
+            }
          },
          "post-balancePlatform.accountHolder.created-balancePlatform-accountHolder-created" : {
             "summary" : "Account holder created",
