@@ -247,7 +247,11 @@ paths:
         This endpoint supports cursor-based pagination. The response returns the first
         page of results, and returns links to the next page when applicable. You can
         use the links to page through the results. The response also returns links
-        to the previous page when applicable.'
+        to the previous page when applicable.
+
+
+        Provide either `balanceAccountId`, `accountHolderId`, or `balancePlatform`
+        when using this endpoint.'
       x-addedInVersion: '1'
       operationId: get-transactions
       x-groupName: Transactions
@@ -582,17 +586,17 @@ components:
       additionalProperties: false
       properties:
         accountNumber:
-          description: The bank account number (without separators or whitespace).
+          description: The bank account number, without separators or whitespace.
           maxLength: 10
           minLength: 1
           type: string
         bankCode:
-          description: The 3-digit Brazilian bank code (with leading zeros).
+          description: The 3-digit bank code, with leading zeros.
           maxLength: 3
           minLength: 3
           type: string
         branchNumber:
-          description: The bank account branch number (without separators or whitespace).
+          description: The bank account branch number, without separators or whitespace.
           maxLength: 4
           minLength: 1
           type: string
@@ -623,6 +627,7 @@ components:
           - $ref: '#/components/schemas/CALocalAccountIdentification'
           - $ref: '#/components/schemas/CZLocalAccountIdentification'
           - $ref: '#/components/schemas/DKLocalAccountIdentification'
+          - $ref: '#/components/schemas/HKLocalAccountIdentification'
           - $ref: '#/components/schemas/HULocalAccountIdentification'
           - $ref: '#/components/schemas/IbanAccountIdentification'
           - $ref: '#/components/schemas/NOLocalAccountIdentification'
@@ -881,6 +886,32 @@ components:
           $ref: '#/components/schemas/Amount'
       required:
       - amount
+      type: object
+    HKLocalAccountIdentification:
+      additionalProperties: false
+      properties:
+        accountNumber:
+          description: The 6- to 19-character bank account number (alphanumeric),
+            without separators or whitespace.
+          maxLength: 19
+          minLength: 6
+          type: string
+        bankCode:
+          description: The 6-digit bank code including the 3-digit bank code and 3-digit
+            branch code, without separators or whitespace.
+          maxLength: 6
+          minLength: 6
+          type: string
+        type:
+          default: hkLocal
+          description: '**hkLocal**'
+          enum:
+          - hkLocal
+          type: string
+      required:
+      - type
+      - accountNumber
+      - bankCode
       type: object
     HULocalAccountIdentification:
       additionalProperties: false
@@ -1354,9 +1385,18 @@ components:
           description: The date the transaction was created.
           format: date-time
           type: string
+        creationDate:
+          description: The date and time when the event was triggered, in ISO 8601
+            extended format. For example, **2020-12-18T10:15:30+01:00**.
+          format: date-time
+          type: string
         description:
           x-addedInVersion: '1'
           description: The `description` from the `/transfers` request.
+          type: string
+        eventId:
+          x-addedInVersion: '3'
+          description: The PSP reference in the journal.
           type: string
         id:
           x-addedInVersion: '1'
@@ -1680,6 +1720,10 @@ components:
           - merchantPayinReversedPending
           - miscCost
           - miscCostPending
+          - operationAuthorized
+          - operationBooked
+          - operationPending
+          - operationReceived
           - paymentCost
           - paymentCostPending
           - received
@@ -2074,8 +2118,8 @@ components:
                 country: US
                 postalCode: '94678'
                 stateOrProvince: CA
-                street: Brannan Street
-                street2: '274'
+                line1: '274'
+                line2: Brannan Street
             accountIdentification:
               type: numberAndBic
               accountNumber: '123456789'
@@ -2111,8 +2155,8 @@ components:
                 country: US
                 postalCode: '94678'
                 stateOrProvince: CA
-                street: Brannan Street
-                street2: '274'
+                line1: '274'
+                line2: Brannan Street
             accountIdentification:
               type: numberAndBic
               accountNumber: '123456789'

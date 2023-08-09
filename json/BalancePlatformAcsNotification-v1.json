@@ -38,6 +38,17 @@
             "requestBody" : {
                "content" : {
                   "application/json" : {
+                     "examples" : {
+                        "balancePlatform-authentication-created-authenticated-challenge" : {
+                           "$ref" : "#/components/examples/post-balancePlatform.authentication.created-balancePlatform-authentication-created-authenticated-challenge"
+                        },
+                        "balancePlatform-authentication-created-authenticated-frictionless" : {
+                           "$ref" : "#/components/examples/post-balancePlatform.authentication.created-balancePlatform-authentication-created-authenticated-frictionless"
+                        },
+                        "balancePlatform-authentication-created-rejected" : {
+                           "$ref" : "#/components/examples/post-balancePlatform.authentication.created-balancePlatform-authentication-created-rejected"
+                        }
+                     },
                      "schema" : {
                         "$ref" : "#/components/schemas/AuthenticationNotificationRequest"
                      }
@@ -48,6 +59,17 @@
                "200" : {
                   "content" : {
                      "application/json" : {
+                        "examples" : {
+                           "balancePlatform-authentication-created-authenticated-challenge" : {
+                              "$ref" : "#/components/examples/WebhookAck"
+                           },
+                           "balancePlatform-authentication-created-authenticated-frictionless" : {
+                              "$ref" : "#/components/examples/WebhookAck"
+                           },
+                           "balancePlatform-authentication-created-rejected" : {
+                              "$ref" : "#/components/examples/WebhookAck"
+                           }
+                        },
                         "schema" : {
                            "$ref" : "#/components/schemas/BalancePlatformNotificationResponse"
                         }
@@ -126,12 +148,15 @@
                   "type" : "string"
                },
                "exemptionIndicator" : {
-                  "description" : "Indicates the exemption type that was applied to the authentication by the issuer, if exemption applied. Possible values:\n\n* **lowValue**\n* **secureCorporate**\n* **trustedBeneficiary**\n* **transactionRiskAnalysis**\n",
+                  "description" : "Indicates the exemption type that was applied to the authentication by the issuer, if exemption applied. Possible values:\n\n* **lowValue**\n* **secureCorporate**\n* **trustedBeneficiary**\n* **transactionRiskAnalysis**\n* **acquirerExemption**\n* **noExemptionApplied**\n* **visaDAFExemption**\n",
                   "enum" : [
                      "lowValue",
                      "secureCorporate",
                      "trustedBeneficiary",
-                     "transactionRiskAnalysis"
+                     "transactionRiskAnalysis",
+                     "acquirerExemption",
+                     "noExemptionApplied",
+                     "visaDAFExemption"
                   ],
                   "type" : "string"
                },
@@ -227,7 +252,6 @@
                "messageVersion",
                "threeDSServerTransID",
                "transStatus",
-               "transStatusReason",
                "createdAt",
                "type",
                "inPSD2Scope",
@@ -409,7 +433,135 @@
          }
       },
       "examples" : {
-         
+         "WebhookAck" : {
+            "summary" : "Acknowledge Webhook",
+            "value" : {
+               "notificationResponse" : "[accepted]"
+            }
+         },
+         "post-balancePlatform.authentication.created-balancePlatform-authentication-created-authenticated-challenge" : {
+            "summary" : "Authentication successful (challenge flow)",
+            "description" : "Example webhook for a successful authentication (challenge flow)",
+            "value" : {
+               "data" : {
+                  "authentication" : {
+                     "acsTransId" : "6a4c1709-a42e-4c7f-96c7-1043adacfc97",
+                     "challenge" : {
+                        "flow" : "OOB",
+                        "lastInteraction" : "2022-12-22T15:49:03+01:00"
+                     },
+                     "challengeIndicator" : "01",
+                     "createdAt" : "2022-12-22T15:45:03+01:00",
+                     "deviceChannel" : "app",
+                     "dsTransID" : "a3b86754-444d-46ca-95a2-ada351d3f42c",
+                     "exemptionIndicator" : "lowValue",
+                     "inPSD2Scope" : true,
+                     "messageCategory" : "payment",
+                     "messageVersion" : "2.2.0",
+                     "riskScore" : 0,
+                     "threeDSServerTransID" : "6edcc246-23ee-4e94-ac5d-8ae620bea7d9",
+                     "transStatus" : "Y",
+                     "type" : "challenge"
+                  },
+                  "balancePlatform" : "YOUR_BALANCE_PLATFORM",
+                  "id" : "497f6eca-6276-4993-bfeb-53cbbbba6f08",
+                  "paymentInstrumentId" : "PI3227C223222B5BPCMFXD2XG",
+                  "purchase" : {
+                     "date" : "2022-12-22T15:49:03+01:00",
+                     "merchantName" : "TeaShop_NL",
+                     "originalAmount" : {
+                        "currency" : "EUR",
+                        "value" : 1000
+                     }
+                  },
+                  "status" : "authenticated"
+               },
+               "environment" : "test",
+               "type" : "balancePlatform.authentication.created"
+            }
+         },
+         "post-balancePlatform.authentication.created-balancePlatform-authentication-created-authenticated-frictionless" : {
+            "summary" : "Authentication successful (frictionless flow)",
+            "description" : "Example webhook for a successful authentication (frictionless flow)",
+            "value" : {
+               "data" : {
+                  "authentication" : {
+                     "acsTransId" : "6a4c1709-a42e-4c7f-96c7-1043adacfc97",
+                     "challengeIndicator" : "01",
+                     "createdAt" : "2022-12-22T15:45:03+01:00",
+                     "deviceChannel" : "app",
+                     "dsTransID" : "a3b86754-444d-46ca-95a2-ada351d3f42c",
+                     "exemptionIndicator" : "lowValue",
+                     "inPSD2Scope" : true,
+                     "messageCategory" : "payment",
+                     "messageVersion" : "2.2.0",
+                     "riskScore" : 0,
+                     "threeDSServerTransID" : "6edcc246-23ee-4e94-ac5d-8ae620bea7d9",
+                     "transStatus" : "Y",
+                     "type" : "frictionless"
+                  },
+                  "balancePlatform" : "YOUR_BALANCE_PLATFORM",
+                  "id" : "497f6eca-6276-4993-bfeb-53cbbbba6f08",
+                  "paymentInstrumentId" : "PI3227C223222B5BPCMFXD2XG",
+                  "purchase" : {
+                     "date" : "2022-12-22T15:49:03+01:00",
+                     "merchantName" : "TeaShop_NL",
+                     "originalAmount" : {
+                        "currency" : "EUR",
+                        "value" : 1000
+                     }
+                  },
+                  "status" : "authenticated"
+               },
+               "environment" : "test",
+               "type" : "balancePlatform.authentication.created"
+            }
+         },
+         "post-balancePlatform.authentication.created-balancePlatform-authentication-created-rejected" : {
+            "summary" : "Authentication rejected",
+            "description" : "Example webhook for a rejected authentication due to exceeded number of retries",
+            "value" : {
+               "data" : {
+                  "balancePlatform" : "YOUR_BALANCE_PLATFORM",
+                  "creationDate" : "2023-01-19T17:07:59+01:00",
+                  "id" : "a8fc7a40-6e48-498a-bdc2-494daf0f490a",
+                  "authentication" : {
+                     "acsTransId" : "a8fc7a40-6e48-498a-bdc2-494daf0f490a",
+                     "challenge" : {
+                        "flow" : "OTP_SMS",
+                        "lastInteraction" : "2023-01-19T17:37:13+01:00",
+                        "phoneNumber" : "******6789",
+                        "resends" : 0,
+                        "retries" : 2
+                     },
+                     "challengeIndicator" : "01",
+                     "createdAt" : "2023-01-19T17:07:17+01:00",
+                     "deviceChannel" : "app",
+                     "dsTransID" : "59de4e30-7f84-4a77-aaf8-1ca493092ef9",
+                     "exemptionIndicator" : "noExemptionApplied",
+                     "inPSD2Scope" : false,
+                     "messageCategory" : "payment",
+                     "messageVersion" : "2.2.0",
+                     "threeDSServerTransID" : "8bc0fdbd-5c8a-4bed-a171-9d10347e7798",
+                     "transStatus" : "N",
+                     "transStatusReason" : "19",
+                     "type" : "challenge"
+                  },
+                  "paymentInstrumentId" : "PI3227C223222B5BPCMFXD2XG",
+                  "purchase" : {
+                     "date" : "2022-12-22T15:49:03+01:00",
+                     "merchantName" : "TeaShop_NL",
+                     "originalAmount" : {
+                        "currency" : "EUR",
+                        "value" : 1000
+                     }
+                  },
+                  "status" : "rejected"
+               },
+               "environment" : "test",
+               "type" : "balancePlatform.authentication.created"
+            }
+         }
       }
    }
 }
