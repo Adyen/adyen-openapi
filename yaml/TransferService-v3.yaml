@@ -5,8 +5,10 @@ info:
   version: '3'
   x-publicVersion: true
   title: Transfers API
-  description: "This API provides endpoints that you can use to transfer funds, whether\
-    \ when [paying out to a transfer instrument](https://docs.adyen.com/marketplaces-and-platforms/payout-to-users/on-demand-payouts),\
+  description: ">Versions 1 and 2 of the Transfers API are deprecated. If you are\
+    \ just starting your implementation, use the latest version.\n\nThis API provides\
+    \ endpoints that you can use to transfer funds, whether when [paying out to a\
+    \ transfer instrument](https://docs.adyen.com/marketplaces-and-platforms/payout-to-users/on-demand-payouts),\
     \ [sending funds to third parties](https://docs.adyen.com/marketplaces-and-platforms/business-accounts/send-receive-funds)\
     \ for users with business bank accounts, or to [request a payout for a grant offer](https://docs.adyen.com/marketplaces-and-platforms/capital).\
     \ The API also supports use cases for [getting transactions for business bank\
@@ -240,18 +242,29 @@ paths:
       tags:
       - Transactions
       summary: Get all transactions
-      description: 'Returns all transactions related to a balance account with a payment
-        instrument of type **bankAccount**.
+      description: '>Versions 1 and 2 of the Transfers API are deprecated. If you
+        are just starting your implementation, use the latest version.
+
+
+        Returns all the transactions related to a balance account, account holder,
+        or balance platform.
+
+
+        When making this request, you must include at least one of the following:
+
+        - `balanceAccountId`
+
+        - `accountHolderId`
+
+        - `balancePlatform`.
 
 
         This endpoint supports cursor-based pagination. The response returns the first
-        page of results, and returns links to the next page when applicable. You can
-        use the links to page through the results. The response also returns links
-        to the previous page when applicable.
+        page of results, and returns links to the next and previous pages when applicable.
+        You can use the links to page through the results.
 
 
-        Provide either `balanceAccountId`, `accountHolderId`, or `balancePlatform`
-        when using this endpoint.'
+        '
       x-addedInVersion: '1'
       operationId: get-transactions
       x-groupName: Transactions
@@ -261,25 +274,50 @@ paths:
       - BasicAuth: []
       - ApiKeyAuth: []
       parameters:
-      - description: Unique identifier of the [balance platform](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/get/balancePlatforms/{id}__queryParam_id).
+      - description: 'The unique identifier of the [balance platform](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/get/balancePlatforms/{id}__queryParam_id).
+
+
+          Required if you don''t provide a `balanceAccountId` or `accountHolderId`.'
         name: balancePlatform
         in: query
         required: false
         schema:
           type: string
-      - description: Unique identifier of the [payment instrument](https://docs.adyen.com/api-explorer/balanceplatform/latest/get/paymentInstruments/_id_).
+      - description: 'The unique identifier of the [payment instrument](https://docs.adyen.com/api-explorer/balanceplatform/latest/get/paymentInstruments/_id_).
+
+
+          To use this parameter, you must also provide a `balanceAccountId`, `accountHolderId`,
+          or `balancePlatform`.
+
+
+          The `paymentInstrumentId` must be related to the `balanceAccountId` or `accountHolderId`
+          that you provide.'
         name: paymentInstrumentId
         in: query
         required: false
         schema:
           type: string
-      - description: Unique identifier of the [account holder](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/get/accountHolders/{id}__queryParam_id).
+      - description: 'The unique identifier of the [account holder](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/get/accountHolders/{id}__queryParam_id).
+
+
+          Required if you don''t provide a `balanceAccountId` or `balancePlatform`.
+
+
+          If you provide a `balanceAccountId`, the `accountHolderId` must be related
+          to the `balanceAccountId`.'
         name: accountHolderId
         in: query
         required: false
         schema:
           type: string
-      - description: Unique identifier of the [balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/get/balanceAccounts/{id}__queryParam_id).
+      - description: 'The unique identifier of the [balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/get/balanceAccounts/{id}__queryParam_id).
+
+
+          Required if you don''t provide an `accountHolderId` or `balancePlatform`.
+
+
+          If you provide an `accountHolderId`, the `balanceAccountId` must be related
+          to the `accountHolderId`.'
         name: balanceAccountId
         in: query
         required: false
@@ -354,7 +392,11 @@ paths:
       tags:
       - Transactions
       summary: Get a transaction
-      description: Returns a transaction.
+      description: '>Versions 1 and 2 of the Transfers API are deprecated. If you
+        are just starting your implementation, use the latest version.
+
+
+        Returns a transaction.'
       x-addedInVersion: '1'
       operationId: get-transactions-id
       x-groupName: Transactions
@@ -378,7 +420,7 @@ paths:
                 success:
                   $ref: '#/components/examples/get-transactions-id-success-200'
               schema:
-                $ref: '#/components/schemas/Transaction'
+                $ref: '#/components/schemas/TransactionData'
           description: OK - the request has succeeded.
         '401':
           content:
@@ -409,7 +451,11 @@ paths:
       tags:
       - Transfers
       summary: Transfer funds
-      description: 'Starts a request to transfer funds to [balance accounts](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts),
+      description: '>Versions 1 and 2 of the Transfers API are deprecated. If you
+        are just starting your implementation, use the latest version.
+
+
+        Starts a request to transfer funds to [balance accounts](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts),
         [transfer instruments](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments),
         or third-party bank accounts. Adyen sends the outcome of the transfer request
         through webhooks.
@@ -442,6 +488,13 @@ paths:
                 $ref: '#/components/examples/post-transfers-payout-to-transfer-instrument'
             schema:
               $ref: '#/components/schemas/TransferInfo'
+      parameters:
+      - description: Header for authenticating through SCA
+        example: SCA realm="Transfer" auth-param1="eyJjaGFsbGVuZ2UiOiJiVlV6ZW5wek0waFNl..."
+        name: WWW-Authenticate
+        in: header
+        schema:
+          type: string
       responses:
         '200':
           content:
@@ -471,8 +524,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RestServiceError'
+                $ref: '#/components/schemas/ServiceError'
           description: Unauthorized - authentication required.
+          headers:
+            auth-param1:
+              $ref: '#/components/headers/auth-param1'
         '403':
           content:
             application/json:
@@ -891,16 +947,15 @@ components:
       additionalProperties: false
       properties:
         accountNumber:
-          description: The 6- to 19-character bank account number (alphanumeric),
-            without separators or whitespace.
-          maxLength: 19
-          minLength: 6
+          description: The 9- to 12-character bank account number (alphanumeric),
+            without separators or whitespace. Starts with the 3-digit branch code.
+          maxLength: 12
+          minLength: 9
           type: string
-        bankCode:
-          description: The 6-digit bank code including the 3-digit bank code and 3-digit
-            branch code, without separators or whitespace.
-          maxLength: 6
-          minLength: 6
+        clearingCode:
+          description: The 3-digit clearing code, without separators or whitespace.
+          maxLength: 3
+          minLength: 3
           type: string
         type:
           default: hkLocal
@@ -911,7 +966,7 @@ components:
       required:
       - type
       - accountNumber
-      - bankCode
+      - clearingCode
       type: object
     HULocalAccountIdentification:
       additionalProperties: false
@@ -996,6 +1051,9 @@ components:
       type: object
     MerchantData:
       properties:
+        acquirerId:
+          description: The unique identifier of the merchant's acquirer.
+          type: string
         mcc:
           description: The merchant category code.
           type: string
@@ -1031,20 +1089,11 @@ components:
       additionalProperties: false
       properties:
         accountNumber:
-          description: The 7-digit bank account number, without separators or whitespace.
-          maxLength: 7
-          minLength: 7
-          type: string
-        accountSuffix:
-          description: The 2- to 3-digit account suffix, without separators or whitespace.
-          maxLength: 3
-          minLength: 2
-          type: string
-        bankCode:
-          description: The 6-digit bank code including the 2-digit bank code and 4-digit
-            branch code, without separators or whitespace.
-          maxLength: 6
-          minLength: 6
+          description: The 15-16 digit bank account number. The first 2 digits are
+            the bank number, the next 4 digits are the branch number, the next 7 digits
+            are the account number, and the final 2-3 digits are the suffix.
+          maxLength: 16
+          minLength: 15
           type: string
         type:
           default: nzLocal
@@ -1055,8 +1104,6 @@ components:
       required:
       - type
       - accountNumber
-      - accountSuffix
-      - bankCode
       type: object
     NameLocation:
       properties:
@@ -1326,6 +1373,25 @@ components:
       - accountNumber
       - bic
       type: object
+    ServiceError:
+      properties:
+        errorCode:
+          description: The error code mapped to the error message.
+          type: string
+        errorType:
+          description: The category of the error.
+          type: string
+        message:
+          description: A short explanation of the issue.
+          type: string
+        pspReference:
+          description: The PSP reference of the payment.
+          type: string
+        status:
+          description: The HTTP response status.
+          format: int32
+          type: integer
+      type: object
     ThresholdRepayment:
       properties:
         amount:
@@ -1334,7 +1400,7 @@ components:
       required:
       - amount
       type: object
-    Transaction:
+    TransactionData:
       properties:
         accountHolderId:
           x-addedInVersion: '1'
@@ -1342,7 +1408,7 @@ components:
           type: string
         amount:
           x-addedInVersion: '1'
-          description: The amount.
+          description: Contains information about the amount of the transaction.
           $ref: '#/components/schemas/Amount'
         balanceAccountId:
           x-addedInVersion: '1'
@@ -1350,11 +1416,11 @@ components:
           type: string
         balancePlatform:
           x-addedInVersion: '1'
-          description: Unique identifier of the balance platform.
+          description: The unique identifier of the balance platform.
           type: string
         bookingDate:
           x-addedInVersion: '1'
-          description: The date the transaction was booked to the balance account.
+          description: The date the transaction was booked into the balance account.
           format: date-time
           type: string
         category:
@@ -1375,6 +1441,7 @@ components:
           - issuedCard
           - migration
           - platformPayment
+          - upgrade
           type: string
         counterparty:
           x-addedInVersion: '3'
@@ -1396,11 +1463,11 @@ components:
           type: string
         eventId:
           x-addedInVersion: '3'
-          description: The PSP reference in the journal.
+          description: The PSP reference of the transaction in the journal.
           type: string
         id:
           x-addedInVersion: '1'
-          description: Unique identifier of the transaction.
+          description: The unique identifier of the transaction.
           type: string
         instructedAmount:
           x-addedInVersion: '1'
@@ -1410,8 +1477,8 @@ components:
           $ref: '#/components/schemas/Amount'
         paymentInstrumentId:
           x-addedInVersion: '1'
-          description: Unique identifier of the payment instrument that was used for
-            the transaction.
+          description: The unique identifier of the payment instrument that was used
+            for the transaction.
           type: string
         reference:
           x-addedInVersion: '1'
@@ -1450,13 +1517,19 @@ components:
           - atmWithdrawal
           - atmWithdrawalReversal
           - balanceAdjustment
+          - balanceMigration
           - balanceRollover
           - bankTransfer
           - capture
           - captureReversal
           - cardTransfer
+          - cashOutFee
+          - cashOutFunding
+          - cashOutInstruction
           - chargeback
+          - chargebackCorrection
           - chargebackReversal
+          - chargebackReversalCorrection
           - depositCorrection
           - fee
           - grant
@@ -1474,6 +1547,7 @@ components:
           - repayment
           - reserveAdjustment
           - secondChargeback
+          - secondChargebackCorrection
           type: string
         valueDate:
           x-addedInVersion: '1'
@@ -1502,7 +1576,7 @@ components:
         data:
           description: Contains the transactions that match the query parameters.
           items:
-            $ref: '#/components/schemas/Transaction'
+            $ref: '#/components/schemas/TransactionData'
           type: array
       type: object
     Transfer:
@@ -1531,7 +1605,7 @@ components:
           type: string
         category:
           x-addedInVersion: '3'
-          description: "The type of transfer.\n\nPossible values:\n\n - **bank**:\
+          description: "The category of transfer.\n\nPossible values:\n\n - **bank**:\
             \ Transfer to a [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments__resParam_id)\
             \ or a bank account.\n\n- **internal**: Transfer to another [balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__resParam_id)\
             \ within your platform.\n\n- **issuedCard**: Transfer initiated by a Adyen-issued\
@@ -1621,7 +1695,8 @@ components:
 
 
             * **internal**: Transfer to an Adyen-issued business bank account (by
-            bank account number/IBAN).'
+            bank account number/IBAN). This will be removed in v4 and replaced with
+            a new field.'
           enum:
           - crossBorder
           - directDebit
@@ -1637,16 +1712,19 @@ components:
           enum:
           - amountLimitExceeded
           - approved
+          - balanceAccountTemporarilyBlockedByTransactionRule
           - counterpartyAccountBlocked
           - counterpartyAccountClosed
           - counterpartyAccountNotFound
           - counterpartyAddressRequired
           - counterpartyBankTimedOut
           - counterpartyBankUnavailable
+          - declinedByTransactionRule
           - error
           - notEnoughBalance
           - refusedByCounterpartyBank
           - routeNotFound
+          - scaFailed
           - unknown
           type: string
         reference:
@@ -1720,10 +1798,6 @@ components:
           - merchantPayinReversedPending
           - miscCost
           - miscCostPending
-          - operationAuthorized
-          - operationBooked
-          - operationPending
-          - operationReceived
           - paymentCost
           - paymentCostPending
           - received
@@ -1787,9 +1861,6 @@ components:
 
             Supported characters for **regular** and **fast** transfers to a US counterparty:
             **[a-z] [A-Z] [0-9] & $ % # @** **~ = + - _ '' " ! ?**'
-          type: string
-        id:
-          description: The ID of the resource.
           type: string
         paymentInstrumentId:
           description: The unique identifier of the source [payment instrument](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/paymentInstruments__resParam_id).
@@ -1973,6 +2044,12 @@ components:
     BasicAuth:
       scheme: basic
       type: http
+  headers:
+    auth-param1:
+      description: Base64-encoded blob of data. You will need auth-param1 when authenticating
+        your user using the SDK.
+      schema:
+        type: string
   examples:
     get-transactions-id-success-200:
       summary: Response code - 200 OK
