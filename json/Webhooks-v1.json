@@ -521,6 +521,46 @@
             }
          }
       },
+      "/EXPIRE" : {
+         "post" : {
+            "tags" : [
+               "Standard"
+            ],
+            "summary" : "Authorisation expired",
+            "description" : "The remaining uncaptured amount expired",
+            "operationId" : "post-EXPIRE",
+            "x-groupName" : "Standard",
+            "x-sortIndex" : 1,
+            "x-methodName" : "authorisationExpired",
+            "security" : [
+               {
+                  "BasicAuth" : [
+                     ]
+               }
+            ],
+            "requestBody" : {
+               "content" : {
+                  "application/json" : {
+                     "schema" : {
+                        "$ref" : "#/components/schemas/ExpireNotificationRequest"
+                     }
+                  }
+               }
+            },
+            "responses" : {
+               "200" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/NotificationResponse"
+                        }
+                     }
+                  },
+                  "description" : "OK - the request has succeeded."
+               }
+            }
+         }
+      },
       "/MANUAL_REVIEW_ACCEPT" : {
          "post" : {
             "tags" : [
@@ -2417,6 +2457,89 @@
             "properties" : {
                "NotificationRequestItem" : {
                   "$ref" : "#/components/schemas/AuthorisationNotificationRequestItem"
+               }
+            }
+         },
+         "ExpireNotificationRequest" : {
+            "properties" : {
+               "live" : {
+                  "description" : "Informs about the origin of the notification. The value is **true** when originating from the live environment, **false** for the test environment.",
+                  "type" : "string"
+               },
+               "notificationItems" : {
+                  "description" : "A container object for the details included in the notification.",
+                  "items" : {
+                     "$ref" : "#/components/schemas/ExpireNotificationRequestItemWrapper"
+                  },
+                  "type" : "array"
+               }
+            },
+            "type" : "object"
+         },
+         "ExpireNotificationRequestItem" : {
+            "properties" : {
+               "additionalData" : {
+                  "description" : "A generic container for extra fields.",
+                  "$ref" : "#/components/schemas/NotificationAdditionalData"
+               },
+               "amount" : {
+                  "description" : "The amount that was originally authorised.",
+                  "$ref" : "#/components/schemas/Amount"
+               },
+               "eventCode" : {
+                  "description" : "The type of event the notification item is for.",
+                  "enum" : [
+                     "EXPIRE"
+                  ],
+                  "type" : "string"
+               },
+               "eventDate" : {
+                  "description" : "The time when the event was generated. Format: ISO 8601; yyyy-MM-DDThh:mm:ssTZD",
+                  "example" : "2021-07-17T13:42:40+01:00",
+                  "format" : "date-time",
+                  "type" : "string"
+               },
+               "merchantAccountCode" : {
+                  "description" : "The merchant account identifier used in the transaction the notification item is for.",
+                  "type" : "string"
+               },
+               "merchantReference" : {
+                  "description" : "Your reference to uniquely identify the payment.",
+                  "type" : "string"
+               },
+               "paymentMethod" : {
+                  "description" : "The payment method used in the transaction.",
+                  "example" : "visa, mc, iDeal",
+                  "type" : "string"
+               },
+               "pspReference" : {
+                  "description" : "Adyen's 16-character unique reference associated with the transaction or request. This value is globally unique. Use it when communicating with us about this request.",
+                  "type" : "string"
+               },
+               "reason" : {
+                  "description" : "If `success` = `false`, then this includes a short message with an explanation for the refusal.",
+                  "type" : "string"
+               },
+               "success" : {
+                  "description" : "Always `true`.",
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "pspReference",
+               "merchantReference",
+               "merchantAccountCode",
+               "eventDate",
+               "eventCode",
+               "amount",
+               "success"
+            ],
+            "type" : "object"
+         },
+         "ExpireNotificationRequestItemWrapper" : {
+            "properties" : {
+               "NotificationRequestItem" : {
+                  "$ref" : "#/components/schemas/ExpireNotificationRequestItem"
                }
             }
          },
