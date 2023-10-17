@@ -2,14 +2,14 @@
    "openapi" : "3.1.0",
    "servers" : [
       {
-         "url" : "https://management-test.adyen.com/v1"
+         "url" : "https://management-test.adyen.com/v3"
       }
    ],
    "info" : {
-      "version" : "1",
+      "version" : "3",
       "x-publicVersion" : true,
       "title" : "Management API",
-      "description" : "Configure and manage your Adyen company and merchant accounts, stores, and payment terminals.\n## Authentication\nEach request to the Management API must be signed with an API key. [Generate your API key](https://docs.adyen.com/development-resources/api-credentials#generate-api-key) in the Customer Area and then set this key to the `X-API-Key` header value.\n\nTo access the live endpoints, you need to generate a new API key in your live Customer Area.\n## Versioning\n\nManagement API handles versioning as part of the endpoint URL. For example, to send a request to version 1 of the `/companies/{companyId}/webhooks` endpoint, use:\n\n```text\nhttps://management-test.adyen.com/v1/companies/{companyId}/webhooks\n```\n\n## Going live\n\nTo access the live endpoints, you need an API key from your live Customer Area. Use this API key to make requests to:\n\n```text\nhttps://management-live.adyen.com/v1\n```",
+      "description" : "Configure and manage your Adyen company and merchant accounts, stores, and payment terminals.\n## Authentication\nEach request to the Management API must be signed with an API key. [Generate your API key](https://docs.adyen.com/development-resources/api-credentials#generate-api-key) in the Customer Area and then set this key to the `X-API-Key` header value.\n\nTo access the live endpoints, you need to generate a new API key in your live Customer Area.\n## Versioning\n\nManagement API handles versioning as part of the endpoint URL. For example, to send a request to version 1 of the `/companies/{companyId}/webhooks` endpoint, use:\n\n```text\nhttps://management-test.adyen.com/v3/companies/{companyId}/webhooks\n```\n\n## Going live\n\nTo access the live endpoints, you need an API key from your live Customer Area. Use this API key to make requests to:\n\n```text\nhttps://management-live.adyen.com/v3\n```",
       "termsOfService" : "https://www.adyen.com/legal/terms-and-conditions",
       "contact" : {
          "name" : "Adyen Developer Experience team",
@@ -437,6 +437,91 @@
                   },
                   "description" : "OK - the request has succeeded."
                },
+               "400" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/RestServiceError"
+                        }
+                     }
+                  },
+                  "description" : "Bad Request - a problem reading or understanding the request."
+               },
+               "401" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/RestServiceError"
+                        }
+                     }
+                  },
+                  "description" : "Unauthorized - authentication required."
+               },
+               "403" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/RestServiceError"
+                        }
+                     }
+                  },
+                  "description" : "Forbidden - insufficient permissions to process the request."
+               },
+               "422" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/RestServiceError"
+                        }
+                     }
+                  },
+                  "description" : "Unprocessable Entity - a request validation error."
+               },
+               "500" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/RestServiceError"
+                        }
+                     }
+                  },
+                  "description" : "Internal Server Error - the server could not process the request."
+               }
+            }
+         },
+         "post" : {
+            "tags" : [
+               "Android files - company level"
+            ],
+            "summary" : "Upload Android App",
+            "description" : "Uploads an Android APK file to Adyen.\nThe maximum APK file size is 200 MB.\nTo make this request, your API credential must have the following [role](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n* Management API—Android files read and write\n\n>By choosing to upload, install, or run any third-party applications on an Adyen payment terminal, you accept full responsibility and liability for any consequences of uploading, installing, or running any such applications.",
+            "x-addedInVersion" : "3",
+            "operationId" : "post-companies-companyId-androidApps",
+            "x-groupName" : "Android files - company level",
+            "x-sortIndex" : 4,
+            "x-methodName" : "uploadAndroidApp",
+            "security" : [
+               {
+                  "BasicAuth" : [
+                     ]
+               },
+               {
+                  "ApiKeyAuth" : [
+                     ]
+               }
+            ],
+            "parameters" : [
+               {
+                  "description" : "The unique identifier of the company account.",
+                  "name" : "companyId",
+                  "in" : "path",
+                  "required" : true,
+                  "schema" : {
+                     "type" : "string"
+                  }
+               }
+            ],
+            "responses" : {
                "400" : {
                   "content" : {
                      "application/json" : {
@@ -7423,9 +7508,6 @@
                "content" : {
                   "application/json" : {
                      "examples" : {
-                        "add-payment-method" : {
-                           "$ref" : "#/components/examples/post-merchants-merchantId-paymentMethodSettings-add-payment-method"
-                        },
                         "add-payment-method-partner-model" : {
                            "$ref" : "#/components/examples/post-merchants-merchantId-paymentMethodSettings-add-payment-method-partner-model"
                         }
@@ -7452,9 +7534,6 @@
                   "content" : {
                      "application/json" : {
                         "examples" : {
-                           "add-payment-method" : {
-                              "$ref" : "#/components/examples/post-merchants-merchantId-paymentMethodSettings-add-payment-method-200"
-                           },
                            "add-payment-method-partner-model" : {
                               "$ref" : "#/components/examples/post-merchants-merchantId-paymentMethodSettings-add-payment-method-partner-model-200"
                            }
@@ -14616,6 +14695,105 @@
             }
          }
       },
+      "/terminals/{terminalId}/reassign" : {
+         "post" : {
+            "tags" : [
+               "Terminals - terminal level"
+            ],
+            "summary" : "Reassign a terminal",
+            "description" : "Reassigns a payment terminal to a company account, merchant account, merchant account inventory, or a store.\n\nTo make this request, your API credential must have the following [role](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n* Management API—Assign Terminal",
+            "x-addedInVersion" : "3",
+            "operationId" : "post-terminals-terminalId-reassign",
+            "x-groupName" : "Terminals - terminal level",
+            "x-sortIndex" : 2,
+            "x-methodName" : "reassignTerminal",
+            "security" : [
+               {
+                  "BasicAuth" : [
+                     ]
+               },
+               {
+                  "ApiKeyAuth" : [
+                     ]
+               }
+            ],
+            "requestBody" : {
+               "content" : {
+                  "application/json" : {
+                     "schema" : {
+                        "$ref" : "#/components/schemas/TerminalReassignmentRequest"
+                     }
+                  }
+               }
+            },
+            "parameters" : [
+               {
+                  "description" : "The unique identifier of the payment terminal.",
+                  "name" : "terminalId",
+                  "in" : "path",
+                  "required" : true,
+                  "schema" : {
+                     "type" : "string"
+                  }
+               }
+            ],
+            "responses" : {
+               "200" : {
+                  "description" : "No Content - look at the actual response code for the status of the request. "
+               },
+               "400" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/RestServiceError"
+                        }
+                     }
+                  },
+                  "description" : "Bad Request - a problem reading or understanding the request."
+               },
+               "401" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/RestServiceError"
+                        }
+                     }
+                  },
+                  "description" : "Unauthorized - authentication required."
+               },
+               "403" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/RestServiceError"
+                        }
+                     }
+                  },
+                  "description" : "Forbidden - insufficient permissions to process the request."
+               },
+               "422" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/RestServiceError"
+                        }
+                     }
+                  },
+                  "description" : "Unprocessable Entity - a request validation error."
+               },
+               "500" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/RestServiceError"
+                        }
+                     }
+                  },
+                  "description" : "Internal Server Error - the server could not process the request."
+               }
+            }
+         }
+      },
       "/terminals/{terminalId}/terminalLogos" : {
          "get" : {
             "tags" : [
@@ -16145,6 +16323,17 @@
                   "description" : "Your description for this webhook configuration.",
                   "type" : "string"
                },
+               "encryptionProtocol" : {
+                  "x-addedInVersion" : "2",
+                  "description" : "SSL version to access the public webhook URL specified in the `url` field. Possible values:\n* **TLSv1.3**\n* **TLSv1.2**\n* **HTTP** - Only allowed on Test environment.\n\nIf not specified, the webhook will use `sslVersion`: **TLSv1.2**.",
+                  "enum" : [
+                     "HTTP",
+                     "TLSv1.2",
+                     "TLSv1.3"
+                  ],
+                  "example" : "TLSv1.2",
+                  "type" : "string"
+               },
                "filterMerchantAccountType" : {
                   "description" : "Shows how merchant accounts are filtered when configuring the webhook. \n\nPossible values:\n*  **allAccounts** : Includes all merchant accounts, and does not require specifying `filterMerchantAccounts`.\n*  **includeAccounts** : The webhook is configured for the merchant accounts listed in `filterMerchantAccounts`.\n*  **excludeAccounts** : The webhook is not configured for the merchant accounts listed in `filterMerchantAccounts`.\n\n",
                   "enum" : [
@@ -16176,16 +16365,6 @@
                "populateSoapActionHeader" : {
                   "description" : "Indicates if the SOAP action header needs to be populated. Default value: **false**.\n\nOnly applies if `communicationFormat`: **soap**.",
                   "type" : "boolean"
-               },
-               "sslVersion" : {
-                  "description" : "SSL version to access the public webhook URL specified in the `url` field. Possible values:\n* **TLSv1.3**\n* **TLSv1.2**\n* **HTTP** - Only allowed on Test environment.\n\nIf not specified, the webhook will use `sslVersion`: **TLSv1.2**.",
-                  "enum" : [
-                     "HTTP",
-                     "TLSv1.2",
-                     "TLSv1.3"
-                  ],
-                  "example" : "TLSv1.2",
-                  "type" : "string"
                },
                "type" : {
                   "description" : "The type of webhook that is being created. Possible values are:\n\n- **standard**\n- **account-settings-notification**\n- **banktransfer-notification**\n- **boletobancario-notification**\n- **directdebit-notification**\n- **ach-notification-of-change-notification**\n- **pending-notification**\n- **ideal-notification**\n- **ideal-pending-notification**\n- **report-notification**\n- **rreq-notification**\n\nFind out more about [standard notification webhooks](https://docs.adyen.com/development-resources/webhooks/understand-notifications#event-codes) and [other types of notifications](https://docs.adyen.com/development-resources/webhooks/understand-notifications#other-notifications).",
@@ -16389,6 +16568,17 @@
                   "description" : "Your description for this webhook configuration.",
                   "type" : "string"
                },
+               "encryptionProtocol" : {
+                  "x-addedInVersion" : "2",
+                  "description" : "SSL version to access the public webhook URL specified in the `url` field. Possible values:\n* **TLSv1.3**\n* **TLSv1.2**\n* **HTTP** - Only allowed on Test environment.\n\nIf not specified, the webhook will use `sslVersion`: **TLSv1.2**.",
+                  "enum" : [
+                     "HTTP",
+                     "TLSv1.2",
+                     "TLSv1.3"
+                  ],
+                  "example" : "TLSv1.2",
+                  "type" : "string"
+               },
                "networkType" : {
                   "description" : "Network type for Terminal API notification webhooks. Possible values:\n* **public**\n* **local**\n\nDefault Value: **public**.",
                   "enum" : [
@@ -16404,16 +16594,6 @@
                "populateSoapActionHeader" : {
                   "description" : "Indicates if the SOAP action header needs to be populated. Default value: **false**.\n\nOnly applies if `communicationFormat`: **soap**.",
                   "type" : "boolean"
-               },
-               "sslVersion" : {
-                  "description" : "SSL version to access the public webhook URL specified in the `url` field. Possible values:\n* **TLSv1.3**\n* **TLSv1.2**\n* **HTTP** - Only allowed on Test environment.\n\nIf not specified, the webhook will use `sslVersion`: **TLSv1.2**.",
-                  "enum" : [
-                     "HTTP",
-                     "TLSv1.2",
-                     "TLSv1.3"
-                  ],
-                  "example" : "TLSv1.2",
-                  "type" : "string"
                },
                "type" : {
                   "description" : "The type of webhook that is being created. Possible values are:\n\n- **standard**\n- **account-settings-notification**\n- **banktransfer-notification**\n- **boletobancario-notification**\n- **directdebit-notification**\n- **ach-notification-of-change-notification**\n- **pending-notification**\n- **ideal-notification**\n- **ideal-pending-notification**\n- **report-notification**\n- **rreq-notification**\n\nFind out more about [standard notification webhooks](https://docs.adyen.com/development-resources/webhooks/understand-notifications#event-codes) and [other types of notifications](https://docs.adyen.com/development-resources/webhooks/understand-notifications#other-notifications).",
@@ -16830,18 +17010,11 @@
             ],
             "type" : "object"
          },
-         "InvalidFieldWrapper" : {
-            "properties" : {
-               "InvalidField" : {
-                  "$ref" : "#/components/schemas/InvalidField"
-               }
-            }
-         },
          "JSONObject" : {
             "properties" : {
                "paths" : {
                   "items" : {
-                     "$ref" : "#/components/schemas/JSONPathWrapper"
+                     "$ref" : "#/components/schemas/JSONPath"
                   },
                   "type" : "array"
                },
@@ -16861,13 +17034,6 @@
                }
             },
             "type" : "object"
-         },
-         "JSONPathWrapper" : {
-            "properties" : {
-               "JSONPath" : {
-                  "$ref" : "#/components/schemas/JSONPath"
-               }
-            }
          },
          "Key" : {
             "properties" : {
@@ -17825,9 +17991,13 @@
                   "description" : "Sofort details.",
                   "$ref" : "#/components/schemas/SofortInfo"
                },
-               "storeId" : {
-                  "description" : "The ID of the [store](https://docs.adyen.com/api-explorer/#/ManagementService/latest/post/stores__resParam_id), if any.",
-                  "type" : "string"
+               "storeIds" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "The unique identifier of the store for which to configure the payment method, if any.",
+                  "items" : {
+                     "type" : "string"
+                  },
+                  "type" : "array"
                },
                "swish" : {
                   "description" : "Swish details.",
@@ -17874,7 +18044,7 @@
                "data" : {
                   "description" : "The list of supported payment methods and their details.",
                   "items" : {
-                     "$ref" : "#/components/schemas/PaymentMethodWrapper"
+                     "$ref" : "#/components/schemas/PaymentMethod"
                   },
                   "type" : "array"
                },
@@ -18079,9 +18249,13 @@
                   "description" : "Sofort details.",
                   "$ref" : "#/components/schemas/SofortInfo"
                },
-               "storeId" : {
-                  "description" : "The ID of the [store](https://docs.adyen.com/api-explorer/#/ManagementService/latest/post/stores__resParam_id), if any.",
-                  "type" : "string"
+               "storeIds" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "The unique identifier of the store for which to configure the payment method, if any.",
+                  "items" : {
+                     "type" : "string"
+                  },
+                  "type" : "array"
                },
                "swish" : {
                   "description" : "Swish details.",
@@ -18159,13 +18333,6 @@
                "type"
             ],
             "type" : "object"
-         },
-         "PaymentMethodWrapper" : {
-            "properties" : {
-               "PaymentMethod" : {
-                  "$ref" : "#/components/schemas/PaymentMethod"
-               }
-            }
          },
          "PayoutSettings" : {
             "properties" : {
@@ -18462,7 +18629,7 @@
                "invalidFields" : {
                   "description" : "Detailed explanation of each validation error, when applicable.",
                   "items" : {
-                     "$ref" : "#/components/schemas/InvalidFieldWrapper"
+                     "$ref" : "#/components/schemas/InvalidField"
                   },
                   "type" : "array"
                },
@@ -18574,16 +18741,6 @@
                "storeId" : {
                   "description" : "The unique ID of the [store](https://docs.adyen.com/api-explorer/#/ManagementService/latest/get/stores). If present, all terminals in the `terminalIds` list must be assigned to this store.",
                   "type" : "string"
-               },
-               "terminalIds" : {
-                  "deprecated" : true,
-                  "x-deprecatedInVersion" : "1",
-                  "x-deprecatedMessage" : "Use `items.terminalId` instead",
-                  "description" : "A list of unique IDs of the terminals that the action applies to.",
-                  "items" : {
-                     "type" : "string"
-                  },
-                  "type" : "array"
                },
                "terminalsWithErrors" : {
                   "additionalProperties" : {
@@ -18959,7 +19116,7 @@
                   "type" : "string"
                },
                "phoneNumber" : {
-                  "description" : "The phone number of the store, including '+' and country code.",
+                  "description" : "The phone number of the store, including '+' and country code in the [E.164](https://en.wikipedia.org/wiki/E.164) format. If passed in a different format, we convert and validate the phone number against E.164. ",
                   "type" : "string"
                },
                "reference" : {
@@ -19008,7 +19165,7 @@
                   "type" : "string"
                },
                "phoneNumber" : {
-                  "description" : "The phone number of the store, including '+' and country code.",
+                  "description" : "The phone number of the store, including '+' and country code in the [E.164](https://en.wikipedia.org/wiki/E.164) format. If passed in a different format, we convert and validate the phone number against E.164. ",
                   "type" : "string"
                },
                "reference" : {
@@ -19058,7 +19215,7 @@
                   "type" : "string"
                },
                "phoneNumber" : {
-                  "description" : "The phone number of the store, including '+' and country code.",
+                  "description" : "The phone number of the store, including '+' and country code in the [E.164](https://en.wikipedia.org/wiki/E.164) format. If passed in a different format, we convert and validate the phone number against E.164. ",
                   "type" : "string"
                },
                "reference" : {
@@ -19164,113 +19321,43 @@
          },
          "Terminal" : {
             "properties" : {
-               "assigned" : {
-                  "deprecated" : true,
-                  "description" : "The [assignment status](https://docs.adyen.com/point-of-sale/automating-terminal-management/assign-terminals-api) of the terminal. If true, the terminal is assigned. If false, the terminal is in inventory and can't be boarded.",
-                  "type" : "boolean"
+               "assignment" : {
+                  "x-addedInVersion" : "2",
+                  "description" : "Indicates the account level to which the terminal is assigned, the [assignment status](https://docs.adyen.com/point-of-sale/automating-terminal-management/assign-terminals-api), and where the terminals is in the process of being reassigned to.",
+                  "$ref" : "#/components/schemas/TerminalAssignment"
                },
-               "bluetoothIp" : {
-                  "deprecated" : true,
-                  "description" : "The Bluetooth IP address of the terminal.",
-                  "type" : "string"
-               },
-               "bluetoothMac" : {
-                  "deprecated" : true,
-                  "description" : "The Bluetooth MAC address of the terminal.",
-                  "type" : "string"
-               },
-               "city" : {
-                  "deprecated" : true,
-                  "description" : "The city where the terminal is located.",
-                  "type" : "string"
-               },
-               "companyAccount" : {
-                  "deprecated" : true,
-                  "description" : "The company account that the terminal is associated with. If this is the only account level shown in the response, the terminal is assigned to the inventory of the company account.",
-                  "type" : "string"
-               },
-               "countryCode" : {
-                  "deprecated" : true,
-                  "description" : "The country code of the country where the terminal is located.",
-                  "type" : "string"
-               },
-               "deviceModel" : {
-                  "deprecated" : true,
-                  "description" : "The model name of the terminal.",
-                  "type" : "string"
-               },
-               "ethernetIp" : {
-                  "deprecated" : true,
-                  "description" : "The ethernet IP address of the terminal.",
-                  "type" : "string"
-               },
-               "ethernetMac" : {
-                  "deprecated" : true,
-                  "description" : "The ethernet MAC address of the terminal.",
-                  "type" : "string"
+               "connectivity" : {
+                  "x-addedInVersion" : "2",
+                  "description" : "Information about bluetooth, cellular, ethernet and wifi connectivity for the terminal.",
+                  "$ref" : "#/components/schemas/TerminalConnectivity"
                },
                "firmwareVersion" : {
                   "description" : "The software release currently in use on the terminal.",
-                  "type" : "string"
-               },
-               "iccid" : {
-                  "deprecated" : true,
-                  "description" : "The integrated circuit card identifier (ICCID) of the SIM card in the terminal.",
                   "type" : "string"
                },
                "id" : {
                   "description" : "The unique identifier of the terminal.",
                   "type" : "string"
                },
-               "lastActivityDateTime" : {
-                  "deprecated" : true,
+               "lastActivityAt" : {
+                  "x-addedInVersion" : "2",
                   "description" : "Date and time of the last activity on the terminal. Not included when the last activity was more than 14 days ago.",
                   "format" : "date-time",
                   "type" : "string"
                },
-               "lastTransactionDateTime" : {
-                  "deprecated" : true,
-                  "description" : "Date and time of the last transaction on the terminal.",
+               "lastTransactionAt" : {
+                  "x-addedInVersion" : "2",
+                  "description" : "Date and time of the last transaction on the terminal. Not included when the last transaction was more than 14 days ago.",
                   "format" : "date-time",
                   "type" : "string"
                },
-               "linkNegotiation" : {
-                  "deprecated" : true,
-                  "description" : "The Ethernet link negotiation that the terminal uses:\n\n- `auto`: Auto-negotiation\n\n- `100full`: 100 Mbps full duplex",
+               "model" : {
+                  "x-addedInVersion" : "2",
+                  "description" : "The model name of the terminal.",
                   "type" : "string"
                },
                "serialNumber" : {
                   "description" : "The serial number of the terminal.",
-                  "type" : "string"
-               },
-               "simStatus" : {
-                  "deprecated" : true,
-                  "description" : "On a terminal that supports 3G or 4G connectivity, indicates the status of the SIM card in the terminal: ACTIVE or INVENTORY.",
-                  "type" : "string"
-               },
-               "status" : {
-                  "deprecated" : true,
-                  "description" : "Indicates when the terminal was last online, whether the terminal is being reassigned, or whether the terminal is turned off. If the terminal was last online more that a week ago, it is also shown as turned off.",
-                  "type" : "string"
-               },
-               "storeStatus" : {
-                  "deprecated" : true,
-                  "description" : "The status of the store that the terminal is assigned to.",
-                  "type" : "string"
-               },
-               "wifiIp" : {
-                  "deprecated" : true,
-                  "description" : "The terminal's IP address in your Wi-Fi network.",
-                  "type" : "string"
-               },
-               "wifiMac" : {
-                  "deprecated" : true,
-                  "description" : "The terminal's MAC address in your Wi-Fi network.",
-                  "type" : "string"
-               },
-               "wifiSsid" : {
-                  "deprecated" : true,
-                  "description" : "The SSID of the Wi-Fi network that your terminal is connected to.",
                   "type" : "string"
                }
             },
@@ -19284,6 +19371,124 @@
                },
                "terminalId" : {
                   "description" : "The unique ID of the terminal that the action applies to.",
+                  "type" : "string"
+               }
+            },
+            "type" : "object"
+         },
+         "TerminalAssignment" : {
+            "properties" : {
+               "companyId" : {
+                  "description" : "The unique identifier of the company account to which terminal is assigned.",
+                  "type" : "string"
+               },
+               "merchantId" : {
+                  "description" : "The unique identifier of the merchant account to which terminal is assigned.",
+                  "type" : "string"
+               },
+               "reassignmentTarget" : {
+                  "description" : "Indicates where the terminal is in the process of being reassigned to.",
+                  "$ref" : "#/components/schemas/TerminalReassignmentTarget"
+               },
+               "status" : {
+                  "description" : "The status of the reassignment. Possible values: \n * `reassignmentInProgress`: the terminal was boarded and is now scheduled to remove the configuration. Wait for the terminal to synchronize with the Adyen platform.\n * `deployed`: the terminal is deployed and reassigned. \n * `inventory`: the terminal is in inventory and cannot process transactions. \n",
+                  "enum" : [
+                     "reassignmentInProgress",
+                     "deployed",
+                     "inventory"
+                  ],
+                  "type" : "string"
+               },
+               "storeId" : {
+                  "description" : "The unique identifier of the store to which terminal is assigned.",
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "companyId",
+               "status"
+            ],
+            "type" : "object"
+         },
+         "TerminalConnectivity" : {
+            "properties" : {
+               "bluetooth" : {
+                  "$ref" : "#/components/schemas/TerminalConnectivityBluetooth"
+               },
+               "cellular" : {
+                  "$ref" : "#/components/schemas/TerminalConnectivityCellular"
+               },
+               "ethernet" : {
+                  "$ref" : "#/components/schemas/TerminalConnectivityEthernet"
+               },
+               "wifi" : {
+                  "$ref" : "#/components/schemas/TerminalConnectivityWifi"
+               }
+            },
+            "type" : "object"
+         },
+         "TerminalConnectivityBluetooth" : {
+            "properties" : {
+               "ipAddress" : {
+                  "description" : "The terminal's Bluetooth IP address.",
+                  "type" : "string"
+               },
+               "macAddress" : {
+                  "description" : "The terminal's Bluetooth MAC address.",
+                  "type" : "string"
+               }
+            },
+            "type" : "object"
+         },
+         "TerminalConnectivityCellular" : {
+            "properties" : {
+               "iccid" : {
+                  "description" : "The integrated circuit card identifier (ICCID) of the SIM card in the terminal.",
+                  "type" : "string"
+               },
+               "status" : {
+                  "description" : "On a terminal that supports 3G or 4G connectivity, indicates the status of the SIM card in the terminal.",
+                  "enum" : [
+                     "activated",
+                     "deactivated",
+                     "deprecated",
+                     "inventory",
+                     "readyForActivation"
+                  ],
+                  "type" : "string"
+               }
+            },
+            "type" : "object"
+         },
+         "TerminalConnectivityEthernet" : {
+            "properties" : {
+               "ipAddress" : {
+                  "description" : "The terminal's ethernet IP address.",
+                  "type" : "string"
+               },
+               "linkNegotiation" : {
+                  "description" : "The ethernet link negotiation that the terminal uses.",
+                  "type" : "string"
+               },
+               "macAddress" : {
+                  "description" : "The terminal's ethernet MAC address.",
+                  "type" : "string"
+               }
+            },
+            "type" : "object"
+         },
+         "TerminalConnectivityWifi" : {
+            "properties" : {
+               "ipAddress" : {
+                  "description" : "The terminal's IP address in the Wi-Fi network.",
+                  "type" : "string"
+               },
+               "macAddress" : {
+                  "description" : "The terminal's MAC address in the Wi-Fi network.",
+                  "type" : "string"
+               },
+               "ssid" : {
+                  "description" : "The SSID of the Wi-Fi network that the terminal is connected to.",
                   "type" : "string"
                }
             },
@@ -19437,6 +19642,51 @@
                   "type" : "array"
                }
             },
+            "type" : "object"
+         },
+         "TerminalReassignmentRequest" : {
+            "properties" : {
+               "companyId" : {
+                  "description" : "The unique identifier of the company account to which the terminal is reassigned.",
+                  "type" : "string"
+               },
+               "inventory" : {
+                  "description" : "Must be specified when reassigning terminals to a merchant account:\n\n- If set to **true**, reassigns terminals to the inventory of the merchant account and the terminals cannot process transactions.\n\n- If set to **false**, reassigns terminals directly to the merchant account and the terminals can process transactions.",
+                  "type" : "boolean"
+               },
+               "merchantId" : {
+                  "description" : "The unique identifier of the merchant account to which the terminal is reassigned. When reassigning terminals to a merchant account, you must specify the `inventory` field.",
+                  "type" : "string"
+               },
+               "storeId" : {
+                  "description" : "The unique identifier of the store to which the terminal is reassigned.",
+                  "type" : "string"
+               }
+            },
+            "type" : "object"
+         },
+         "TerminalReassignmentTarget" : {
+            "properties" : {
+               "companyId" : {
+                  "description" : "The unique identifier of the company account to which the terminal is reassigned.",
+                  "type" : "string"
+               },
+               "inventory" : {
+                  "description" : "Indicates if the terminal is reassigned to the inventory of the merchant account.\n- If **true**, the terminal is in the inventory of the merchant account and cannot process transactions.\n- If **false**, the terminal is reassigned directly to the merchant account and can process transactions.",
+                  "type" : "boolean"
+               },
+               "merchantId" : {
+                  "description" : "The unique identifier of the merchant account to which the terminal is reassigned.",
+                  "type" : "string"
+               },
+               "storeId" : {
+                  "description" : "The unique identifier of the store to which the terminal is reassigned.",
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "inventory"
+            ],
             "type" : "object"
          },
          "TerminalSettings" : {
@@ -19820,6 +20070,17 @@
                   "description" : "Your description for this webhook configuration.",
                   "type" : "string"
                },
+               "encryptionProtocol" : {
+                  "x-addedInVersion" : "2",
+                  "description" : "SSL version to access the public webhook URL specified in the `url` field. Possible values:\n* **TLSv1.3**\n* **TLSv1.2**\n* **HTTP** - Only allowed on Test environment.\n\nIf not specified, the webhook will use `sslVersion`: **TLSv1.2**.",
+                  "enum" : [
+                     "HTTP",
+                     "TLSv1.2",
+                     "TLSv1.3"
+                  ],
+                  "example" : "TLSv1.2",
+                  "type" : "string"
+               },
                "filterMerchantAccountType" : {
                   "description" : "Shows how merchant accounts are filtered when configuring the webhook. Possible values:\n* **includeAccounts**: The webhook is configured for the merchant accounts listed in `filterMerchantAccounts`.\n* **excludeAccounts**: The webhook is not configured for the merchant accounts listed in `filterMerchantAccounts`.\n* **allAccounts**: Includes all merchant accounts, and does not require specifying `filterMerchantAccounts`.",
                   "enum" : [
@@ -19851,16 +20112,6 @@
                "populateSoapActionHeader" : {
                   "description" : "Indicates if the SOAP action header needs to be populated. Default value: **false**.\n\nOnly applies if `communicationFormat`: **soap**.",
                   "type" : "boolean"
-               },
-               "sslVersion" : {
-                  "description" : "SSL version to access the public webhook URL specified in the `url` field. Possible values:\n* **TLSv1.3**\n* **TLSv1.2**\n* **HTTP** - Only allowed on Test environment.\n\nIf not specified, the webhook will use `sslVersion`: **TLSv1.2**.",
-                  "enum" : [
-                     "HTTP",
-                     "TLSv1.2",
-                     "TLSv1.3"
-                  ],
-                  "example" : "TLSv1.2",
-                  "type" : "string"
                },
                "url" : {
                   "description" : "Public URL where webhooks will be sent, for example **https://www.domain.com/webhook-endpoint**.",
@@ -19975,6 +20226,17 @@
                   "description" : "Your description for this webhook configuration.",
                   "type" : "string"
                },
+               "encryptionProtocol" : {
+                  "x-addedInVersion" : "2",
+                  "description" : "SSL version to access the public webhook URL specified in the `url` field. Possible values:\n* **TLSv1.3**\n* **TLSv1.2**\n* **HTTP** - Only allowed on Test environment.\n\nIf not specified, the webhook will use `sslVersion`: **TLSv1.2**.",
+                  "enum" : [
+                     "HTTP",
+                     "TLSv1.2",
+                     "TLSv1.3"
+                  ],
+                  "example" : "TLSv1.2",
+                  "type" : "string"
+               },
                "networkType" : {
                   "description" : "Network type for Terminal API notification webhooks. Possible values:\n* **public**\n* **local**\n\nDefault Value: **public**.",
                   "enum" : [
@@ -19990,16 +20252,6 @@
                "populateSoapActionHeader" : {
                   "description" : "Indicates if the SOAP action header needs to be populated. Default value: **false**.\n\nOnly applies if `communicationFormat`: **soap**.",
                   "type" : "boolean"
-               },
-               "sslVersion" : {
-                  "description" : "SSL version to access the public webhook URL specified in the `url` field. Possible values:\n* **TLSv1.3**\n* **TLSv1.2**\n* **HTTP** - Only allowed on Test environment.\n\nIf not specified, the webhook will use `sslVersion`: **TLSv1.2**.",
-                  "enum" : [
-                     "HTTP",
-                     "TLSv1.2",
-                     "TLSv1.3"
-                  ],
-                  "example" : "TLSv1.2",
-                  "type" : "string"
                },
                "url" : {
                   "description" : "Public URL where webhooks will be sent, for example **https://www.domain.com/webhook-endpoint**.",
@@ -20299,6 +20551,15 @@
             },
             "type" : "object"
          },
+         "UploadAndroidAppResponse" : {
+            "properties" : {
+               "id" : {
+                  "description" : "The unique identifier of the uploaded Android app.",
+                  "type" : "string"
+               }
+            },
+            "type" : "object"
+         },
          "Url" : {
             "properties" : {
                "encrypted" : {
@@ -20450,6 +20711,17 @@
                   "description" : "Your description for this webhook configuration.",
                   "type" : "string"
                },
+               "encryptionProtocol" : {
+                  "x-addedInVersion" : "2",
+                  "description" : "SSL version to access the public webhook URL specified in the `url` field. Possible values:\n* **TLSv1.3**\n* **TLSv1.2**\n* **HTTP** - Only allowed on Test environment.\n\nIf not specified, the webhook will use `sslVersion`: **TLSv1.2**.",
+                  "enum" : [
+                     "HTTP",
+                     "TLSv1.2",
+                     "TLSv1.3"
+                  ],
+                  "example" : "TLSv1.2",
+                  "type" : "string"
+               },
                "filterMerchantAccountType" : {
                   "description" : "Shows how merchant accounts are included in company-level webhooks. Possible values:\n* **includeAccounts**\n* **excludeAccounts**\n* **allAccounts**: Includes all merchant accounts, and does not require specifying `filterMerchantAccounts`.",
                   "enum" : [
@@ -20493,16 +20765,6 @@
                "populateSoapActionHeader" : {
                   "description" : "Indicates if the SOAP action header needs to be populated. Default value: **false**.\n\nOnly applies if `communicationFormat`: **soap**.",
                   "type" : "boolean"
-               },
-               "sslVersion" : {
-                  "description" : "SSL version to access the public webhook URL specified in the `url` field. Possible values:\n* **TLSv1.3**\n* **TLSv1.2**\n* **HTTP** - Only allowed on Test environment.\n\nIf not specified, the webhook will use `sslVersion`: **TLSv1.2**.",
-                  "enum" : [
-                     "HTTP",
-                     "TLSv1.2",
-                     "TLSv1.3"
-                  ],
-                  "example" : "TLSv1.2",
-                  "type" : "string"
                },
                "type" : {
                   "description" : "The type of webhook. Possible values are:\n\n- **standard**\n- **account-settings-notification**\n- **banktransfer-notification**\n- **boletobancario-notification**\n- **directdebit-notification**\n- **ach-notification-of-change-notification**\n- **pending-notification**\n- **ideal-notification**\n- **ideal-pending-notification**\n- **report-notification**\n- **terminal-api-notification**\n\nFind out more about [standard notification webhooks](https://docs.adyen.com/development-resources/webhooks/understand-notifications#event-codes) and [other types of notifications](https://docs.adyen.com/development-resources/webhooks/understand-notifications#other-notifications).",
@@ -24206,45 +24468,48 @@
             "summary" : "List of terminals",
             "description" : "Example response when getting terminals that your API credential has access to.",
             "value" : {
+               "_links" : {
+                  "first" : {
+                     "href" : "https://management-test.adyen.com/v3/terminals?pageNumber=1&pageSize=20"
+                  },
+                  "last" : {
+                     "href" : "https://management-test.adyen.com/v3/terminals?pageNumber=1&pageSize=20"
+                  },
+                  "next" : {
+                     "href" : "https://management-test.adyen.com/v3/terminals?pageNumber=1&pageSize=20"
+                  },
+                  "self" : {
+                     "href" : "https://management-test.adyen.com/v3/terminals?pageNumber=0&pageSize=20"
+                  }
+               },
+               "itemsTotal" : 1,
+               "pagesTotal" : 1,
                "data" : [
                   {
-                     "id" : "S1F2-000150183300032",
-                     "status" : "OnlineToday",
-                     "assigned" : true,
-                     "companyAccount" : "YOUR_COMPANY_ACCOUNT",
-                     "deviceModel" : "S1F2",
-                     "firmwareVersion" : "Castles_Android 1.79.4",
-                     "iccid" : "6006491286999921374",
-                     "lastActivityDateTime" : "2022-08-09T12:44:11+02:00",
+                     "id" : "AMS1-000150183300032",
+                     "model" : "AMS1",
                      "serialNumber" : "000150183300032",
-                     "city" : "Amsterdam",
-                     "countryCode" : "NL",
-                     "storeStatus" : "Active",
-                     "wifiIp" : "198.51.100.1",
-                     "wifiMac" : "C4:6E:00:16:A1:01"
-                  },
-                  {
-                     "id" : "V400m-080020970",
-                     "status" : "onlineLast1Day",
-                     "assigned" : true,
-                     "bluetoothMac" : "a4:60:11:83:0e:00",
-                     "companyAccount" : "YOUR_COMPANY_ACCOUNT",
-                     "deviceModel" : "V400m",
-                     "ethernetMac" : "64:5a:ed:f5:68:55",
-                     "firmwareVersion" : "Verifone_VOS 1.79.4",
-                     "iccid" : "6064364710330000000",
-                     "lastActivityDateTime" : "2022-08-10T14:09:14+02:00",
-                     "serialNumber" : "080-020-970",
-                     "city" : "Amsterdam",
-                     "countryCode" : "NL",
-                     "storeStatus" : "Active",
-                     "wifiIp" : "198.51.100.1",
-                     "wifiMac" : "d0:17:69:7c:02:4d",
-                     "wifiSsid" : "GUEST"
+                     "firmwareVersion" : "Castles_Android 1.89.4",
+                     "assignment" : {
+                        "companyId" : "YOUR_COMPANY_ACCOUNT",
+                        "merchantId" : "YOUR_MERCHANT_ACCOUNT",
+                        "storeId" : "YOUR_STORE_ID",
+                        "status" : "reassignmentInProgress",
+                        "reassignmentTarget" : {
+                           "inventory" : true
+                        }
+                     },
+                     "connectivity" : {
+                        "cellular" : {
+                           "iccid" : "6006491286999921374"
+                        },
+                        "wifi" : {
+                           "ipAddress" : "198.51.100.1",
+                           "macAddress" : "C4:6E:33:26:36:E4"
+                        }
+                     }
                   }
-               ],
-               "itemsTotal" : 2,
-               "pagesTotal" : 1
+               ]
             }
          },
          "get-terminals-terminalId-terminalLogos-success-200" : {
@@ -27453,39 +27718,14 @@
                "password" : "YOUR_PASSWORD"
             }
          },
-         "post-merchants-merchantId-paymentMethodSettings-add-payment-method" : {
-            "summary" : "Request a payment method",
-            "description" : "Example request to add a payment method",
-            "value" : {
-               "type" : "visa",
-               "currencies" : [
-                  "USD"
-               ],
-               "countries" : [
-                  "US"
-               ]
-            }
-         },
-         "post-merchants-merchantId-paymentMethodSettings-add-payment-method-200" : {
-            "summary" : "Response code - 200 OK",
-            "description" : "Example response after sending a request to add a payment method",
-            "value" : {
-               "id" : "PM3227C223224K5FH84M8CBNH",
-               "type" : "visa",
-               "countries" : [
-                  "US"
-               ],
-               "currencies" : [
-                  "USD"
-               ]
-            }
-         },
          "post-merchants-merchantId-paymentMethodSettings-add-payment-method-partner-model" : {
             "summary" : "Request to add Swish",
             "description" : "Example request to add Swish with a partner model setup",
             "value" : {
                "businessLineId" : "BL322KV223222D5F8H2J4BQ6C",
-               "storeId" : "ST322LJ223223K5F4SQNR9XL5",
+               "storeIds" : [
+                  "ST322LJ223223K5F4SQNR9XL5"
+               ],
                "type" : "swish",
                "swish" : {
                   "swishNumber" : "1231111111"
@@ -27504,7 +27744,9 @@
             "value" : {
                "id" : "PM3227C223224K5FH84M8CBNH",
                "businessLineId" : "BL322KV223222D5F8H2J4BQ6C",
-               "storeId" : "ST322LJ223223K5F4SQNR9XL5",
+               "storeIds" : [
+                  "ST322LJ223223K5F4SQNR9XL5"
+               ],
                "type" : "swish",
                "countries" : [
                   "SE"
