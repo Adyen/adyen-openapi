@@ -19,7 +19,11 @@ x-groups:
 - Balance account
 - Payment instrument
 - Card order
-tags: []
+tags:
+- name: Account holder
+- name: Balance account
+- name: Payment instrument
+- name: Card order
 x-staticResponse: response.json
 webhooks:
   balancePlatform.accountHolder.created:
@@ -490,12 +494,6 @@ components:
           description: A JSON object containing the settings that were requested for
             the account holder.
           $ref: '#/components/schemas/CapabilitySettings'
-        transferInstruments:
-          description: 'Contains the status of the transfer instruments associated
-            with this capability. '
-          items:
-            $ref: '#/components/schemas/AccountSupportingEntityCapability'
-          type: array
         verificationStatus:
           description: 'The status of the verification checks for the capability.
 
@@ -555,79 +553,6 @@ components:
       - environment
       - type
       - data
-      type: object
-    AccountSupportingEntityCapability:
-      properties:
-        allowed:
-          description: Indicates whether the supporting entity capability is allowed.
-            Adyen sets this to **true** if the verification is successful and the
-            account holder is permitted to use the capability.
-          type: boolean
-        allowedLevel:
-          description: 'The capability level that is allowed for the account holder.
-
-
-            Possible values: **notApplicable**, **low**, **medium**, **high**.'
-          enum:
-          - high
-          - low
-          - medium
-          - notApplicable
-          type: string
-        enabled:
-          description: Indicates whether the capability is enabled. If **false**,
-            the capability is temporarily disabled for the account holder.
-          type: boolean
-        id:
-          description: The ID of the supporting entity.
-          type: string
-        requested:
-          description: Indicates whether the capability is requested. To check whether
-            the account holder is permitted to use the capability, refer to the `allowed`
-            field.
-          type: boolean
-        requestedLevel:
-          description: 'The requested level of the capability. Some capabilities,
-            such as those used in [card issuing](https://docs.adyen.com/issuing/add-capabilities#capability-levels),
-            have different levels. Levels increase the capability, but also require
-            additional checks and increased monitoring.
-
-
-            Possible values: **notApplicable**, **low**, **medium**, **high**.'
-          enum:
-          - high
-          - low
-          - medium
-          - notApplicable
-          type: string
-        verificationStatus:
-          description: 'The status of the verification checks for the supporting entity
-            capability.
-
-
-            Possible values:
-
-
-            * **pending**: Adyen is running the verification.
-
-
-            * **invalid**: The verification failed. Check if the `errors` array contains
-            more information.
-
-
-            * **valid**: The verification has been successfully completed.
-
-
-            * **rejected**: Adyen has verified the information, but found reasons
-            to not allow the capability.
-
-            '
-          enum:
-          - invalid
-          - pending
-          - rejected
-          - valid
-          type: string
       type: object
     Address:
       properties:
@@ -763,7 +688,9 @@ components:
           description: 'The default three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes)
             of the balance account.
 
-            The default value is **EUR**.'
+            The default value is **EUR**.
+
+            > After a balance account is created, you cannot change its default currency.'
           type: string
         description:
           description: A human-readable description of the balance account, maximum
@@ -1472,7 +1399,7 @@ components:
     PlatformPaymentConfiguration:
       properties:
         salesDayClosingTime:
-          description: 'Specifies at what time a [sales day](https://docs.adyen.com/marketplaces-and-platforms/receive-funds/sales-day-settlement#sales-day)
+          description: 'Specifies at what time a [sales day](https://docs.adyen.com/marketplaces-and-platforms/settle-funds/sales-day-settlement#sales-day)
             ends.
 
 
@@ -1485,15 +1412,15 @@ components:
           type: string
         settlementDelayDays:
           description: 'Specifies after how many business days the funds in a [settlement
-            batch](https://docs.adyen.com/marketplaces-and-platforms/receive-funds/sales-day-settlement#settlement-batch)
+            batch](https://docs.adyen.com/marketplaces-and-platforms/settle-funds/sales-day-settlement#settlement-batch)
             are made available.
 
 
             Possible values: **0** to **10**, or **null**.
 
-            * Setting this value to an integer enables [Sales day settlement](https://docs.adyen.com/marketplaces-and-platforms/receive-funds/sales-day-settlement).
+            * Setting this value to an integer enables [Sales day settlement](https://docs.adyen.com/marketplaces-and-platforms/settle-funds/sales-day-settlement).
 
-            * Setting this value to **null** enables [Pass-through settlement](https://docs.adyen.com/marketplaces-and-platforms/receive-funds/pass-through-settlement).
+            * Setting this value to **null** enables [Pass-through settlement](https://docs.adyen.com/marketplaces-and-platforms/settle-funds/pass-through-settlement).
 
 
             Default value: **null**.'
@@ -1593,16 +1520,19 @@ components:
           enum:
           - amountLimitExceeded
           - approved
+          - balanceAccountTemporarilyBlockedByTransactionRule
           - counterpartyAccountBlocked
           - counterpartyAccountClosed
           - counterpartyAccountNotFound
           - counterpartyAddressRequired
           - counterpartyBankTimedOut
           - counterpartyBankUnavailable
+          - declinedByTransactionRule
           - error
           - notEnoughBalance
           - refusedByCounterpartyBank
           - routeNotFound
+          - scaFailed
           - unknown
           type: string
         schedule:
@@ -1986,6 +1916,12 @@ components:
                 enabled: true
                 requested: true
                 allowed: false
+                transferInstruments:
+                - enabled: true
+                  requested: true
+                  allowed: false
+                  id: SE576BH223222F5GJVKHH6BDT
+                  verificationStatus: pending
                 verificationStatus: pending
               sendToBalanceAccount:
                 enabled: true
@@ -2018,15 +1954,26 @@ components:
                 allowed: false
                 problems:
                 - entity:
-                    id: LE43319330319C8AYX89L2V59
-                    type: LegalEntity
+                    id: SE3222Z223222Q5J4D58K3DWP
+                    type: BankAccount
                   verificationErrors:
                   - code: '2_8037'
-                    message: No bankStatement available to perform verification.
+                    message: '''bankStatement'' was missing.'
                     remediatingActions:
                     - code: '1_703'
                       message: Upload a bank statement
                     type: dataMissing
+                transferInstruments:
+                - enabled: true
+                  requested: true
+                  allowed: true
+                  id: SE576BH223222F5GJVKHH6BDT
+                  verificationStatus: valid
+                - enabled: true
+                  requested: true
+                  allowed: false
+                  id: SE3222Z223222Q5J4D58K3DWP
+                  verificationStatus: invalid
                 verificationStatus: invalid
             id: AH32272223222B5CZW6QZ2V34
             status: Active
