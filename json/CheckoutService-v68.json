@@ -27,22 +27,25 @@
    ],
    "tags" : [
       {
+         "name" : "Payments"
+      },
+      {
+         "name" : "Payment links"
+      },
+      {
          "name" : "Modifications"
+      },
+      {
+         "name" : "Recurring"
       },
       {
          "name" : "Orders"
       },
       {
-         "name" : "Classic Checkout SDK"
-      },
-      {
          "name" : "Utility"
       },
       {
-         "name" : "Payments"
-      },
-      {
-         "name" : "Payment links"
+         "name" : "Classic Checkout SDK"
       }
    ],
    "paths" : {
@@ -1868,6 +1871,9 @@
                         "split" : {
                            "$ref" : "#/components/examples/post-payments-split"
                         },
+                        "split-balanceplatform" : {
+                           "$ref" : "#/components/examples/post-payments-split-balanceplatform"
+                        },
                         "subscription-first-transaction" : {
                            "$ref" : "#/components/examples/post-payments-subscription-first-transaction"
                         }
@@ -1909,8 +1915,8 @@
                            "sofort" : {
                               "$ref" : "#/components/examples/post-payments-sofort-200"
                            },
-                           "split" : {
-                              "$ref" : "#/components/examples/post-payments-split-200"
+                           "split-balanceplatform" : {
+                              "$ref" : "#/components/examples/post-payments-split-balanceplatform-200"
                            },
                            "subscription-first-transaction" : {
                               "$ref" : "#/components/examples/post-payments-subscription-first-transaction-200"
@@ -6320,6 +6326,10 @@
                   "description" : "The text to be shown on the shopper's bank statement.\n We recommend sending a maximum of 22 characters, otherwise banks might truncate the string.\n Allowed characters: **a-z**, **A-Z**, **0-9**, spaces, and special characters **. , ' _ - ? + * /**.",
                   "type" : "string"
                },
+               "showInstallmentAmount" : {
+                  "description" : "Set to true to show the payment amount per installment.",
+                  "type" : "boolean"
+               },
                "socialSecurityNumber" : {
                   "description" : "The shopper's social security number.",
                   "type" : "string"
@@ -6639,6 +6649,10 @@
                "shopperStatement" : {
                   "description" : "The text to be shown on the shopper's bank statement.\n We recommend sending a maximum of 22 characters, otherwise banks might truncate the string.\n Allowed characters: **a-z**, **A-Z**, **0-9**, spaces, and special characters **. , ' _ - ? + * /**.",
                   "type" : "string"
+               },
+               "showInstallmentAmount" : {
+                  "description" : "Set to true to show the payment amount per installment.",
+                  "type" : "boolean"
                },
                "socialSecurityNumber" : {
                   "description" : "The shopper's social security number.",
@@ -8976,6 +8990,7 @@
                      "walley",
                      "walley_b2b",
                      "alma",
+                     "paypo",
                      "molpay_fpx",
                      "konbini",
                      "directEbanking",
@@ -10325,8 +10340,7 @@
                   "type" : "string"
                },
                "returnUrl" : {
-                  "description" : "The URL to return to in case of a redirection.\nThe format depends on the channel. This URL can have a maximum of 1024 characters.\n* For web, include the protocol `http://` or `https://`. You can also include your own additional query parameters, for example, shopper ID or order reference number.\nExample: `https://your-company.com/checkout?shopperOrder=12xy`\n* For iOS, use the custom URL for your app. To know more about setting custom URL schemes, refer to the [Apple Developer documentation](https://developer.apple.com/documentation/uikit/inter-process_communication/allowing_apps_and_websites_to_link_to_your_content/defining_a_custom_url_scheme_for_your_app).\nExample: `my-app://`\n* For Android, use a custom URL handled by an Activity on your app. You can configure it with an [intent filter](https://developer.android.com/guide/components/intents-filters).\nExample: `my-app://your.package.name`",
-                  "maxLength" : 8000,
+                  "description" : "The URL to return to in case of a redirection.\nThe format depends on the channel. \n* For web, include the protocol `http://` or `https://`. You can also include your own additional query parameters, for example, shopper ID or order reference number.\nExample: `https://your-company.com/checkout?shopperOrder=12xy`\n* For iOS, use the custom URL for your app. To know more about setting custom URL schemes, refer to the [Apple Developer documentation](https://developer.apple.com/documentation/uikit/inter-process_communication/allowing_apps_and_websites_to_link_to_your_content/defining_a_custom_url_scheme_for_your_app).\nExample: `my-app://`\n* For Android, use a custom URL handled by an Activity on your app. You can configure it with an [intent filter](https://developer.android.com/guide/components/intents-filters).\nExample: `my-app://your.package.name`",
                   "type" : "string"
                },
                "riskData" : {
@@ -12008,23 +12022,23 @@
          "Split" : {
             "properties" : {
                "account" : {
-                  "description" : "Unique identifier of the account where the split amount should be sent. This is required if `type` is **MarketPlace** or **BalanceAccount**.\n\n",
+                  "description" : "The unique identifier of the account to which the split amount is booked. Required if `type` is **MarketPlace** or **BalanceAccount**.\n\n* [Classic Platforms integration](https://docs.adyen.com/marketplaces-and-platforms/classic): The [`accountCode`](https://docs.adyen.com/api-explorer/Account/latest/post/updateAccount#request-accountCode) of the account to which the split amount is booked.\n* [Balance Platform](https://docs.adyen.com/marketplaces-and-platforms): The [`balanceAccountId`](https://docs.adyen.com/api-explorer/balanceplatform/latest/get/balanceAccounts/_id_#path-id) of the account to which the split amount is booked.",
                   "type" : "string"
                },
                "amount" : {
-                  "description" : "The amount of this split.",
+                  "description" : "The amount of the split item.\n\n* Required for all split types in the [Classic Platforms integration](https://docs.adyen.com/marketplaces-and-platforms/classic).\n* Required if `type` is **BalanceAccount**, **Commission**, **Default**, or **VAT** in your [Balance Platform](https://docs.adyen.com/marketplaces-and-platforms) integration.",
                   "$ref" : "#/components/schemas/SplitAmount"
                },
                "description" : {
-                  "description" : "A description of this split.",
+                  "description" : "Your description for the split item.",
                   "type" : "string"
                },
                "reference" : {
-                  "description" : "Your reference for the split, which you can use to link the split to other operations such as captures and refunds.\n\nThis is required if `type` is **MarketPlace** or **BalanceAccount**. For the other types, we also recommend sending a reference so you can reconcile the split and the associated payment in the transaction overview and in the reports. If the reference is not provided, the split is reported as part of the aggregated [TransferBalance record type](https://docs.adyen.com/reporting/marketpay-payments-accounting-report) in Adyen for Platforms.",
+                  "description" : "Your reference for the split item.\n\nThis is required if `type` is **MarketPlace** ([Classic Platforms integration](https://docs.adyen.com/marketplaces-and-platforms/classic)) or **BalanceAccount** ([Balance Platform](https://docs.adyen.com/marketplaces-and-platforms)). For the other types, we also recommend sending a reference so you can reconcile the split and the associated payment in the transaction overview and in the reports.",
                   "type" : "string"
                },
                "type" : {
-                  "description" : "The type of split.\nPossible values: **Default**, **PaymentFee**, **VAT**, **Commission**, **MarketPlace**, **BalanceAccount**, **Remainder**, **Surcharge**, **Tip**.",
+                  "description" : "The type of the split item.\n\nPossible values:\n\n* [Classic Platforms integration](https://docs.adyen.com/marketplaces-and-platforms/classic): **Commission**, **Default**, **Marketplace**, **PaymentFee**, **VAT**.\n* [Balance Platform](https://docs.adyen.com/marketplaces-and-platforms): **BalanceAccount**, **Commission**, **Default**, **PaymentFee**, **Remainder**, **Surcharge**, **Tip**, **VAT**.",
                   "enum" : [
                      "BalanceAccount",
                      "Commission",
@@ -12040,7 +12054,6 @@
                }
             },
             "required" : [
-               "amount",
                "type"
             ],
             "type" : "object"
@@ -12048,13 +12061,13 @@
          "SplitAmount" : {
             "properties" : {
                "currency" : {
-                  "description" : "The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).\n\nIf this value is not provided, the currency in which the payment is made will be used.",
+                  "description" : "The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes). By default, this is the original payment currency.",
                   "maxLength" : 3,
                   "minLength" : 3,
                   "type" : "string"
                },
                "value" : {
-                  "description" : "The amount in [minor units](https://docs.adyen.com/development-resources/currency-codes).",
+                  "description" : "The value of the split amount, in [minor units](https://docs.adyen.com/development-resources/currency-codes).",
                   "format" : "int64",
                   "type" : "integer"
                }
@@ -13644,7 +13657,7 @@
                "merchantAccount" : "YOUR_MERCHANT_ACCOUNT",
                "donationAccount" : "CHARITY_ACCOUNT",
                "shopperInteraction" : "ContAuth",
-               "shopperReference" : "YOUR_UNIQUE_SHOPPER_ID",
+               "shopperReference" : "YOUR_SHOPPER_REFERENCE",
                "recurringProcessingModel" : "CardOnFile"
             }
          },
@@ -13724,7 +13737,7 @@
                },
                "countryCode" : "BR",
                "merchantAccount" : "YOUR_MERCHANT_ACCOUNT",
-               "shopperReference" : "YOUR_UNIQUE_SHOPPER_ID",
+               "shopperReference" : "YOUR_SHOPPER_REFERENCE",
                "shopperEmail" : "test@email.com",
                "shopperLocale" : "pt-BR",
                "billingAddress" : {
@@ -13775,7 +13788,7 @@
                "reusable" : false,
                "shopperEmail" : "test@email.com",
                "shopperLocale" : "pt-BR",
-               "shopperReference" : "YOUR_UNIQUE_SHOPPER_ID",
+               "shopperReference" : "YOUR_SHOPPER_REFERENCE",
                "id" : "PLE83C39B0A0DE0C1E",
                "status" : "active",
                "url" : "https://test.adyen.link/PLE83C39B0A0DE0C1E"
@@ -17978,7 +17991,7 @@
                   "value" : 17408
                },
                "reference" : "Your order number",
-               "shopperReference" : "YOUR_UNIQUE_SHOPPER_ID",
+               "shopperReference" : "YOUR_SHOPPER_REFERENCE",
                "channel" : "Android",
                "token" : "TOKEN_YOU_GET_FROM_CHECKOUT_SDK",
                "returnUrl" : "app://",
@@ -17996,7 +18009,7 @@
                   "value" : 17408
                },
                "reference" : "Your order number",
-               "shopperReference" : "YOUR_UNIQUE_SHOPPER_ID",
+               "shopperReference" : "YOUR_SHOPPER_REFERENCE",
                "enableOneClick" : true,
                "enableRecurring" : true,
                "channel" : "Web",
@@ -18023,7 +18036,7 @@
                   "value" : 17408
                },
                "reference" : "Your order number",
-               "shopperReference" : "YOUR_UNIQUE_SHOPPER_ID",
+               "shopperReference" : "YOUR_SHOPPER_REFERENCE",
                "channel" : "iOS",
                "token" : "TOKEN_YOU_GET_FROM_CHECKOUT_SDK",
                "returnUrl" : "app://",
@@ -18055,7 +18068,7 @@
                   "split.item2.reference" : "6124146"
                },
                "reference" : "Your order number",
-               "shopperReference" : "YOUR_UNIQUE_SHOPPER_ID",
+               "shopperReference" : "YOUR_SHOPPER_REFERENCE",
                "channel" : "Android",
                "token" : "TOKEN_YOU_GET_FROM_CHECKOUT_SDK",
                "returnUrl" : "app://",
@@ -18073,7 +18086,7 @@
                   "value" : 17408
                },
                "reference" : "Your order number",
-               "shopperReference" : "YOUR_UNIQUE_SHOPPER_ID",
+               "shopperReference" : "YOUR_SHOPPER_REFERENCE",
                "channel" : "Web",
                "html" : true,
                "origin" : "https://www.yourwebsite.com",
@@ -18296,7 +18309,7 @@
                   "encryptedExpiryYear" : "test_2030",
                   "encryptedSecurityCode" : "test_737"
                },
-               "shopperReference" : "YOUR_UNIQUE_SHOPPER_ID",
+               "shopperReference" : "YOUR_SHOPPER_REFERENCE",
                "storePaymentMethod" : true,
                "shopperInteraction" : "Ecommerce",
                "recurringProcessingModel" : "CardOnFile",
@@ -18341,7 +18354,7 @@
                   "holderName" : "John Smith",
                   "cvc" : "737"
                },
-               "shopperReference" : "YOUR_UNIQUE_SHOPPER_ID",
+               "shopperReference" : "YOUR_SHOPPER_REFERENCE",
                "shopperInteraction" : "Ecommerce",
                "recurringProcessingModel" : "CardOnFile",
                "storePaymentMethod" : true,
@@ -18759,6 +18772,44 @@
             }
          },
          "post-payments-split" : {
+            "summary" : "Split a payment in a Classic Platforms integration",
+            "value" : {
+               "paymentMethod" : {
+                  "type" : "scheme",
+                  "number" : "4111111111111111",
+                  "cvc" : "737",
+                  "expiryMonth" : "03",
+                  "expiryYear" : "2030",
+                  "holderName" : "John Smith"
+               },
+               "amount" : {
+                  "value" : 6200,
+                  "currency" : "EUR"
+               },
+               "reference" : "YOUR_ORDER_NUMBER",
+               "merchantAccount" : "YOUR_MERCHANT_ACCOUNT",
+               "returnUrl" : "https://your-company.com/...",
+               "splits" : [
+                  {
+                     "amount" : {
+                        "value" : 6000
+                     },
+                     "type" : "MarketPlace",
+                     "account" : "151272963",
+                     "reference" : "6124145",
+                     "description" : "Porcelain Doll: Eliza (20cm)"
+                  },
+                  {
+                     "amount" : {
+                        "value" : 200
+                     },
+                     "type" : "Commission",
+                     "reference" : "6124146"
+                  }
+               ]
+            }
+         },
+         "post-payments-split-balanceplatform" : {
             "summary" : "Split a payment between balance accounts",
             "value" : {
                "paymentMethod" : {
@@ -18778,12 +18829,13 @@
                "returnUrl" : "https://your-company.com/...",
                "platformChargebackLogic" : {
                   "behavior" : "deductFromOneBalanceAccount",
-                  "targetAccount" : "BA00000000000000000000001"
+                  "targetAccount" : "BA00000000000000000000001",
+                  "costAllocationAccount" : "BA00000000000000000000001"
                },
                "splits" : [
                   {
                      "amount" : {
-                        "value" : 39200
+                        "value" : 39600
                      },
                      "type" : "BalanceAccount",
                      "account" : "BA00000000000000000000001",
@@ -18799,9 +18851,6 @@
                      "description" : "Your description for the commission"
                   },
                   {
-                     "amount" : {
-                        "value" : 400
-                     },
                      "account" : "BA00000000000000000000001",
                      "reference" : "Your reference for the fees",
                      "description" : "Your description for the fees",
@@ -18810,7 +18859,7 @@
                ]
             }
          },
-         "post-payments-split-200" : {
+         "post-payments-split-balanceplatform-200" : {
             "summary" : "Payment split between balance accounts",
             "value" : {
                "additionalData" : {
@@ -18855,7 +18904,7 @@
                   "holderName" : "John Smith",
                   "cvc" : "737"
                },
-               "shopperReference" : "YOUR_UNIQUE_SHOPPER_ID",
+               "shopperReference" : "YOUR_SHOPPER_REFERENCE",
                "storePaymentMethod" : true,
                "shopperInteraction" : "Ecommerce",
                "recurringProcessingModel" : "Subscription",
@@ -18934,7 +18983,7 @@
                   "gender" : "UNKNOWN",
                   "lastName" : "Approved"
                },
-               "shopperReference" : "YOUR_UNIQUE_SHOPPER_ID",
+               "shopperReference" : "YOUR_SHOPPER_REFERENCE",
                "billingAddress" : {
                   "city" : "Ankeborg",
                   "country" : "SE",
@@ -19038,7 +19087,7 @@
                   "gender" : "UNKNOWN",
                   "lastName" : "Approved"
                },
-               "shopperReference" : "YOUR_UNIQUE_SHOPPER_ID",
+               "shopperReference" : "YOUR_SHOPPER_REFERENCE",
                "socialSecurityNumber" : "0108",
                "telephoneNumber" : "+46 840 839 298",
                "sessionData" : "Ab02b4c0!BQABAgBfYI29..."
@@ -19053,7 +19102,7 @@
                   "value" : 100,
                   "currency" : "EUR"
                },
-               "shopperReference" : "YOUR_UNIQUE_SHOPPER_ID",
+               "shopperReference" : "YOUR_SHOPPER_REFERENCE",
                "returnUrl" : "https://your-company.com/checkout?shopperOrder=12xy..",
                "reference" : "YOUR_PAYMENT_REFERENCE",
                "countryCode" : "NL",
@@ -19070,7 +19119,7 @@
                   "currency" : "EUR",
                   "value" : 100
                },
-               "shopperReference" : "YOUR_UNIQUE_SHOPPER_ID",
+               "shopperReference" : "YOUR_SHOPPER_REFERENCE",
                "countryCode" : "NL",
                "expiresAt" : "2022-01-11T13:56:05+01:00",
                "id" : "CSEE37DC1DD751A01F",
