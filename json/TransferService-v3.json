@@ -23,10 +23,10 @@
    ],
    "tags" : [
       {
-         "name" : "Transactions"
+         "name" : "Transfers"
       },
       {
-         "name" : "Transfers"
+         "name" : "Transactions"
       },
       {
          "name" : "Capital"
@@ -542,7 +542,7 @@
             ],
             "parameters" : [
                {
-                  "description" : "Unique identifier of the transaction.",
+                  "description" : "The unique identifier of the transaction.",
                   "name" : "id",
                   "in" : "path",
                   "required" : true,
@@ -561,7 +561,7 @@
                            }
                         },
                         "schema" : {
-                           "$ref" : "#/components/schemas/TransactionData"
+                           "$ref" : "#/components/schemas/Transaction"
                         }
                      }
                   },
@@ -754,6 +754,102 @@
                }
             }
          }
+      },
+      "/transfers/{transferId}/returns" : {
+         "post" : {
+            "tags" : [
+               "Transfers"
+            ],
+            "summary" : "Return a transfer",
+            "description" : "Returns previously transferred funds without creating a new `transferId`.",
+            "x-addedInVersion" : "3",
+            "operationId" : "post-transfers-transferId-returns",
+            "x-groupName" : "Transfers",
+            "x-sortIndex" : 2,
+            "x-methodName" : "returnTransfer",
+            "security" : [
+               {
+                  "BasicAuth" : [
+                     ]
+               },
+               {
+                  "ApiKeyAuth" : [
+                     ]
+               }
+            ],
+            "requestBody" : {
+               "content" : {
+                  "application/json" : {
+                     "schema" : {
+                        "$ref" : "#/components/schemas/ReturnTransferRequest"
+                     }
+                  }
+               }
+            },
+            "parameters" : [
+               {
+                  "description" : "The unique identifier of the transfer to be returned.",
+                  "name" : "transferId",
+                  "in" : "path",
+                  "required" : true,
+                  "schema" : {
+                     "type" : "string"
+                  }
+               }
+            ],
+            "responses" : {
+               "200" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/ReturnTransferResponse"
+                        }
+                     }
+                  },
+                  "description" : "OK - the request has succeeded."
+               },
+               "401" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/RestServiceError"
+                        }
+                     }
+                  },
+                  "description" : "Unauthorized - authentication required."
+               },
+               "403" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/RestServiceError"
+                        }
+                     }
+                  },
+                  "description" : "Forbidden - insufficient permissions to process the request."
+               },
+               "422" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/RestServiceError"
+                        }
+                     }
+                  },
+                  "description" : "Unprocessable Entity - a request validation error."
+               },
+               "500" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/RestServiceError"
+                        }
+                     }
+                  },
+                  "description" : "Internal Server Error - the server could not process the request."
+               }
+            }
+         }
       }
    },
    "components" : {
@@ -806,7 +902,7 @@
             },
             "type" : "object"
          },
-         "Address-2" : {
+         "Address" : {
             "properties" : {
                "city" : {
                   "description" : "The name of the city.",
@@ -900,7 +996,7 @@
             "properties" : {
                "accountHolder" : {
                   "description" : "Information about the owner of the bank account.",
-                  "$ref" : "#/components/schemas/PartyIdentification-2"
+                  "$ref" : "#/components/schemas/PartyIdentification"
                },
                "accountIdentification" : {
                   "description" : "Contains the bank account details. The fields required in this object depend on the country of the bank account and the currency of the transfer.",
@@ -1082,7 +1178,7 @@
                },
                "counterparty" : {
                   "description" : "An object containing the details of the receiving party of the grant. Setting either an `accountHolderId`, `balanceAccountId`, or both is required.",
-                  "$ref" : "#/components/schemas/Counterparty-2"
+                  "$ref" : "#/components/schemas/Counterparty"
                },
                "fee" : {
                   "description" : "An object containing the fee currency and value, in [minor units](https://docs.adyen.com/development-resources/currency-codes).",
@@ -1127,7 +1223,7 @@
             "properties" : {
                "counterparty" : {
                   "description" : "An object containing the details of the receiving party of the grant. Setting either an `accountHolderId`, `balanceAccountId`, or both is required.",
-                  "$ref" : "#/components/schemas/Counterparty-2"
+                  "$ref" : "#/components/schemas/Counterparty"
                },
                "grantAccountId" : {
                   "description" : "The identifier of the grant account used for the grant.",
@@ -1159,7 +1255,7 @@
             ],
             "type" : "object"
          },
-         "Counterparty-2" : {
+         "Counterparty" : {
             "properties" : {
                "accountHolderId" : {
                   "description" : "The identifier of the receiving account holder. The payout will default to the primary balance account of this account holder if no `balanceAccountId` is provided.",
@@ -1261,8 +1357,8 @@
             "additionalProperties" : false,
             "properties" : {
                "accountNumber" : {
-                  "description" : "The 9- to 12-character bank account number (alphanumeric), without separators or whitespace. Starts with the 3-digit branch code.",
-                  "maxLength" : 12,
+                  "description" : "The 9- to 15-character bank account number (alphanumeric), without separators or whitespace. Starts with the 3-digit branch code.",
+                  "maxLength" : 15,
                   "minLength" : 9,
                   "type" : "string"
                },
@@ -1354,31 +1450,6 @@
                "value",
                "message"
             ],
-            "type" : "object"
-         },
-         "JSONObject" : {
-            "properties" : {
-               "paths" : {
-                  "items" : {
-                     "$ref" : "#/components/schemas/JSONPath"
-                  },
-                  "type" : "array"
-               },
-               "rootPath" : {
-                  "$ref" : "#/components/schemas/JSONPath"
-               }
-            },
-            "type" : "object"
-         },
-         "JSONPath" : {
-            "properties" : {
-               "content" : {
-                  "items" : {
-                     "type" : "string"
-                  },
-                  "type" : "array"
-               }
-            },
             "type" : "object"
          },
          "Link" : {
@@ -1562,11 +1633,11 @@
             ],
             "type" : "object"
          },
-         "PartyIdentification-2" : {
+         "PartyIdentification" : {
             "properties" : {
                "address" : {
                   "description" : "Address of the bank account owner.",
-                  "$ref" : "#/components/schemas/Address-2"
+                  "$ref" : "#/components/schemas/Address"
                },
                "dateOfBirth" : {
                   "description" : "The date of birth of the individual in [ISO-8601](https://www.w3.org/TR/NOTE-datetime) format. For example, **YYYY-MM-DD**. Should not be before January 1, 1900.\n\nAllowed only when `type` is **individual**.",
@@ -1710,7 +1781,7 @@
                },
                "response" : {
                   "description" : "JSON response payload.",
-                  "$ref" : "#/components/schemas/JSONObject"
+                  "type" : "object"
                },
                "status" : {
                   "description" : "The HTTP status code.",
@@ -1733,6 +1804,48 @@
                "detail",
                "status"
             ],
+            "type" : "object"
+         },
+         "ReturnTransferRequest" : {
+            "properties" : {
+               "amount" : {
+                  "description" : "Contains information about the amount to be returned.",
+                  "$ref" : "#/components/schemas/Amount"
+               },
+               "reference" : {
+                  "description" : "Your internal reference for the return. If you don't provide this in the request, Adyen generates a unique reference. This reference is used in all communication with you about the instruction status.\n\nWe recommend using a unique value per instruction.\nIf you need to provide multiple references for a transaction, separate them with hyphens (\"-\").\n",
+                  "maxLength" : 80,
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "amount"
+            ],
+            "type" : "object"
+         },
+         "ReturnTransferResponse" : {
+            "properties" : {
+               "id" : {
+                  "description" : "The unique identifier of the return.",
+                  "type" : "string"
+               },
+               "reference" : {
+                  "description" : "Your internal reference for the return.",
+                  "type" : "string"
+               },
+               "status" : {
+                  "description" : "The resulting status of the return.\n\nFor example: **authorised**, **booked**, **error**.",
+                  "enum" : [
+                     "Authorised",
+                     "Declined"
+                  ],
+                  "type" : "string"
+               },
+               "transferId" : {
+                  "description" : "The unique identifier of the original transfer.",
+                  "type" : "string"
+               }
+            },
             "type" : "object"
          },
          "SELocalAccountIdentification" : {
@@ -1834,7 +1947,7 @@
             ],
             "type" : "object"
          },
-         "TransactionData" : {
+         "Transaction" : {
             "properties" : {
                "accountHolderId" : {
                   "x-addedInVersion" : "1",
@@ -1900,6 +2013,9 @@
                },
                "eventId" : {
                   "x-addedInVersion" : "3",
+                  "deprecated" : true,
+                  "x-deprecatedInVersion" : "3",
+                  "x-deprecatedMessage" : "This field will be removed in version 4.",
                   "description" : "The PSP reference of the transaction in the journal.",
                   "type" : "string"
                },
@@ -2014,7 +2130,7 @@
                "data" : {
                   "description" : "Contains the transactions that match the query parameters.",
                   "items" : {
-                     "$ref" : "#/components/schemas/TransactionData"
+                     "$ref" : "#/components/schemas/Transaction"
                   },
                   "type" : "array"
                }
@@ -2104,7 +2220,6 @@
                   "description" : "The priority for the bank transfer. This sets the speed at which the transfer is sent and the fees that you have to pay. Required for transfers with `category` **bank**.\n\nPossible values:\n\n* **regular**: For normal, low-value transactions.\n\n* **fast**: Faster way to transfer funds but has higher fees. Recommended for high-priority, low-value transactions.\n\n* **wire**: Fastest way to transfer funds but has the highest fees. Recommended for high-priority, high-value transactions.\n\n* **instant**: Instant way to transfer funds in [SEPA countries](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).\n\n* **crossBorder**: High-value transfer to a recipient in a different country.\n\n* **internal**: Transfer to an Adyen-issued business bank account (by bank account number/IBAN). This will be removed in v4 and replaced with a new field.",
                   "enum" : [
                      "crossBorder",
-                     "directDebit",
                      "fast",
                      "instant",
                      "internal",
@@ -2270,7 +2385,6 @@
                   "description" : "The priority for the bank transfer. This sets the speed at which the transfer is sent and the fees that you have to pay. Required for transfers with `category` **bank**.\n\nPossible values:\n\n* **regular**: For normal, low-value transactions.\n\n* **fast**: Faster way to transfer funds but has higher fees. Recommended for high-priority, low-value transactions.\n\n* **wire**: Fastest way to transfer funds but has the highest fees. Recommended for high-priority, high-value transactions.\n\n* **instant**: Instant way to transfer funds in [SEPA countries](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).\n\n* **crossBorder**: High-value transfer to a recipient in a different country.\n\n* **internal**: Transfer to an Adyen-issued business bank account (by bank account number/IBAN).",
                   "enum" : [
                      "crossBorder",
-                     "directDebit",
                      "fast",
                      "instant",
                      "internal",
@@ -2379,7 +2493,7 @@
             "properties" : {
                "address" : {
                   "description" : "Address of the bank account owner.",
-                  "$ref" : "#/components/schemas/Address-2"
+                  "$ref" : "#/components/schemas/Address"
                },
                "dateOfBirth" : {
                   "description" : "The date of birth of the individual in [ISO-8601](https://www.w3.org/TR/NOTE-datetime) format. For example, **YYYY-MM-DD**. Should not be before January 1, 1900.\n\nAllowed only when `type` is **individual**.",

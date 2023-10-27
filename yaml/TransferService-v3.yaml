@@ -38,8 +38,8 @@ x-groups:
 - Transactions
 - Capital
 tags:
-- name: Transactions
 - name: Transfers
+- name: Transactions
 - name: Capital
 paths:
   /grants:
@@ -406,7 +406,7 @@ paths:
       - BasicAuth: []
       - ApiKeyAuth: []
       parameters:
-      - description: Unique identifier of the transaction.
+      - description: The unique identifier of the transaction.
         name: id
         in: path
         required: true
@@ -420,7 +420,7 @@ paths:
                 success:
                   $ref: '#/components/examples/get-transactions-id-success-200'
               schema:
-                $ref: '#/components/schemas/TransactionData'
+                $ref: '#/components/schemas/Transaction'
           description: OK - the request has succeeded.
         '401':
           content:
@@ -547,6 +547,63 @@ paths:
               schema:
                 $ref: '#/components/schemas/RestServiceError'
           description: Internal Server Error - the server could not process the request.
+  /transfers/{transferId}/returns:
+    post:
+      tags:
+      - Transfers
+      summary: Return a transfer
+      description: Returns previously transferred funds without creating a new `transferId`.
+      x-addedInVersion: '3'
+      operationId: post-transfers-transferId-returns
+      x-groupName: Transfers
+      x-sortIndex: 2
+      x-methodName: returnTransfer
+      security:
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReturnTransferRequest'
+      parameters:
+      - description: The unique identifier of the transfer to be returned.
+        name: transferId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReturnTransferResponse'
+          description: OK - the request has succeeded.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unauthorized - authentication required.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Forbidden - insufficient permissions to process the request.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unprocessable Entity - a request validation error.
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Internal Server Error - the server could not process the request.
 components:
   schemas:
     AULocalAccountIdentification:
@@ -590,7 +647,7 @@ components:
           - usRoutingNumber
           type: string
       type: object
-    Address-2:
+    Address:
       properties:
         city:
           description: The name of the city.
@@ -672,7 +729,7 @@ components:
       properties:
         accountHolder:
           description: Information about the owner of the bank account.
-          $ref: '#/components/schemas/PartyIdentification-2'
+          $ref: '#/components/schemas/PartyIdentification'
         accountIdentification:
           description: Contains the bank account details. The fields required in this
             object depend on the country of the bank account and the currency of the
@@ -805,7 +862,7 @@ components:
           description: An object containing the details of the receiving party of
             the grant. Setting either an `accountHolderId`, `balanceAccountId`, or
             both is required.
-          $ref: '#/components/schemas/Counterparty-2'
+          $ref: '#/components/schemas/Counterparty'
         fee:
           description: An object containing the fee currency and value, in [minor
             units](https://docs.adyen.com/development-resources/currency-codes).
@@ -844,7 +901,7 @@ components:
           description: An object containing the details of the receiving party of
             the grant. Setting either an `accountHolderId`, `balanceAccountId`, or
             both is required.
-          $ref: '#/components/schemas/Counterparty-2'
+          $ref: '#/components/schemas/Counterparty'
         grantAccountId:
           description: The identifier of the grant account used for the grant.
           type: string
@@ -866,7 +923,7 @@ components:
       required:
       - grants
       type: object
-    Counterparty-2:
+    Counterparty:
       properties:
         accountHolderId:
           description: The identifier of the receiving account holder. The payout
@@ -947,9 +1004,9 @@ components:
       additionalProperties: false
       properties:
         accountNumber:
-          description: The 9- to 12-character bank account number (alphanumeric),
+          description: The 9- to 15-character bank account number (alphanumeric),
             without separators or whitespace. Starts with the 3-digit branch code.
-          maxLength: 12
+          maxLength: 15
           minLength: 9
           type: string
         clearingCode:
@@ -1018,22 +1075,6 @@ components:
       - name
       - value
       - message
-      type: object
-    JSONObject:
-      properties:
-        paths:
-          items:
-            $ref: '#/components/schemas/JSONPath'
-          type: array
-        rootPath:
-          $ref: '#/components/schemas/JSONPath'
-      type: object
-    JSONPath:
-      properties:
-        content:
-          items:
-            type: string
-          type: array
       type: object
     Link:
       properties:
@@ -1175,11 +1216,11 @@ components:
       - type
       - accountNumber
       type: object
-    PartyIdentification-2:
+    PartyIdentification:
       properties:
         address:
           description: Address of the bank account owner.
-          $ref: '#/components/schemas/Address-2'
+          $ref: '#/components/schemas/Address'
         dateOfBirth:
           description: 'The date of birth of the individual in [ISO-8601](https://www.w3.org/TR/NOTE-datetime)
             format. For example, **YYYY-MM-DD**. Should not be before January 1, 1900.
@@ -1304,7 +1345,7 @@ components:
           type: string
         response:
           description: JSON response payload.
-          $ref: '#/components/schemas/JSONObject'
+          type: object
         status:
           description: The HTTP status code.
           format: int32
@@ -1322,6 +1363,49 @@ components:
       - title
       - detail
       - status
+      type: object
+    ReturnTransferRequest:
+      properties:
+        amount:
+          description: Contains information about the amount to be returned.
+          $ref: '#/components/schemas/Amount'
+        reference:
+          description: 'Your internal reference for the return. If you don''t provide
+            this in the request, Adyen generates a unique reference. This reference
+            is used in all communication with you about the instruction status.
+
+
+            We recommend using a unique value per instruction.
+
+            If you need to provide multiple references for a transaction, separate
+            them with hyphens ("-").
+
+            '
+          maxLength: 80
+          type: string
+      required:
+      - amount
+      type: object
+    ReturnTransferResponse:
+      properties:
+        id:
+          description: The unique identifier of the return.
+          type: string
+        reference:
+          description: Your internal reference for the return.
+          type: string
+        status:
+          description: 'The resulting status of the return.
+
+
+            For example: **authorised**, **booked**, **error**.'
+          enum:
+          - Authorised
+          - Declined
+          type: string
+        transferId:
+          description: The unique identifier of the original transfer.
+          type: string
       type: object
     SELocalAccountIdentification:
       additionalProperties: false
@@ -1400,7 +1484,7 @@ components:
       required:
       - amount
       type: object
-    TransactionData:
+    Transaction:
       properties:
         accountHolderId:
           x-addedInVersion: '1'
@@ -1463,6 +1547,9 @@ components:
           type: string
         eventId:
           x-addedInVersion: '3'
+          deprecated: true
+          x-deprecatedInVersion: '3'
+          x-deprecatedMessage: This field will be removed in version 4.
           description: The PSP reference of the transaction in the journal.
           type: string
         id:
@@ -1576,7 +1663,7 @@ components:
         data:
           description: Contains the transactions that match the query parameters.
           items:
-            $ref: '#/components/schemas/TransactionData'
+            $ref: '#/components/schemas/Transaction'
           type: array
       type: object
     Transfer:
@@ -1699,7 +1786,6 @@ components:
             a new field.'
           enum:
           - crossBorder
-          - directDebit
           - fast
           - instant
           - internal
@@ -1896,7 +1982,6 @@ components:
             bank account number/IBAN).'
           enum:
           - crossBorder
-          - directDebit
           - fast
           - instant
           - internal
@@ -1994,7 +2079,7 @@ components:
       properties:
         address:
           description: Address of the bank account owner.
-          $ref: '#/components/schemas/Address-2'
+          $ref: '#/components/schemas/Address'
         dateOfBirth:
           description: 'The date of birth of the individual in [ISO-8601](https://www.w3.org/TR/NOTE-datetime)
             format. For example, **YYYY-MM-DD**. Should not be before January 1, 1900.
