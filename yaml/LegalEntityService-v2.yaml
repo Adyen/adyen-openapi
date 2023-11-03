@@ -600,6 +600,8 @@ paths:
                 $ref: '#/components/examples/post-legalEntities-createLegalEntitySolePropNL'
               createLegalEntitySolePropUS:
                 $ref: '#/components/examples/post-legalEntities-createLegalEntitySolePropUS'
+              createTrustAU:
+                $ref: '#/components/examples/post-legalEntities-createTrustAU'
             schema:
               $ref: '#/components/schemas/LegalEntityInfoRequiredType'
       parameters:
@@ -628,6 +630,8 @@ paths:
                   $ref: '#/components/examples/post-legalEntities-createLegalEntitySolePropNL-200'
                 createLegalEntitySolePropUS:
                   $ref: '#/components/examples/post-legalEntities-createLegalEntitySolePropUS-200'
+                createTrustAU:
+                  $ref: '#/components/examples/post-legalEntities-createTrustAU-200'
               schema:
                 $ref: '#/components/schemas/LegalEntity'
           description: OK - the request has succeeded.
@@ -749,6 +753,10 @@ paths:
                 $ref: '#/components/examples/patch-legalEntities-id-updateLegalEntityOrganization'
               updateLegalEntitySoleProp:
                 $ref: '#/components/examples/patch-legalEntities-id-updateLegalEntitySoleProp'
+              updateTrustMember:
+                $ref: '#/components/examples/patch-legalEntities-id-updateTrustMember'
+              updateTrustMemberExempt:
+                $ref: '#/components/examples/patch-legalEntities-id-updateTrustMemberExempt'
             schema:
               $ref: '#/components/schemas/LegalEntityInfo'
       parameters:
@@ -777,6 +785,10 @@ paths:
                   $ref: '#/components/examples/patch-legalEntities-id-updateLegalEntityOrganization-200'
                 updateLegalEntitySoleProp:
                   $ref: '#/components/examples/patch-legalEntities-id-updateLegalEntitySoleProp-200'
+                updateTrustMember:
+                  $ref: '#/components/examples/patch-legalEntities-id-updateTrustMember-200'
+                updateTrustMemberExempt:
+                  $ref: '#/components/examples/patch-legalEntities-id-updateTrustMemberExempt-200'
               schema:
                 $ref: '#/components/schemas/LegalEntity'
           description: OK - the request has succeeded.
@@ -2771,9 +2783,15 @@ components:
             $ref: '#/components/schemas/TransferInstrumentReference'
           readOnly: true
           type: array
+        trust:
+          description: Information about the trust. Required if `type` is **trust**.
+          $ref: '#/components/schemas/Trust'
         type:
-          description: "The type of legal entity.\n\n Possible values: **individual**,\
-            \ **organization**, or **soleProprietorship**."
+          description: 'The type of legal entity.
+
+
+            Possible values: **individual**, **organization**, **soleProprietorship**,
+            or **trust**.'
           enum:
           - individual
           - organization
@@ -2818,6 +2836,16 @@ components:
             - For **soleProprietorship**, `name`.'
           readOnly: true
           type: string
+        settlorExemptionReason:
+          description: 'Defines the Kyc Exemption Reason for a Settlor associated
+            with a trust.
+
+
+            For example, **professionalServiceProvider**, **deceased**, or **contributionBelowThreshold**.'
+          items:
+            type: string
+          readOnly: true
+          type: array
         type:
           description: 'Defines the relationship of the legal entity to the current
             legal entity.
@@ -2827,14 +2855,28 @@ components:
             **director**, **signatory**, or **ultimateParentCompany**.
 
 
-            Possible values for sole proprietorships: **soleProprietorship**.'
+            Possible values for sole proprietorships: **soleProprietorship**.
+
+
+            Possible value for trusts: **trust**
+
+
+            Possible values for trust members: **definedBeneficiary**, **protector**,
+            **secondaryTrustee**, **settlor**, **uboThroughControl**, or **uboThroughOwnership**.'
           enum:
+          - definedBeneficiary
+          - director
           - pciSignatory
+          - protector
+          - secondaryTrustee
+          - settlor
           - signatory
           - soleProprietorship
+          - trust
           - uboThroughControl
           - uboThroughOwnership
           - ultimateParentCompany
+          - undefinedBeneficiary
           type: string
       required:
       - legalEntityId
@@ -2961,9 +3003,15 @@ components:
           description: Information about the sole proprietorship. Required if `type`
             is **soleProprietorship**.
           $ref: '#/components/schemas/SoleProprietorship'
+        trust:
+          description: Information about the trust. Required if `type` is **trust**.
+          $ref: '#/components/schemas/Trust'
         type:
-          description: "The type of legal entity.\n\n Possible values: **individual**,\
-            \ **organization**, or **soleProprietorship**."
+          description: 'The type of legal entity.
+
+
+            Possible values: **individual**, **organization**, **soleProprietorship**,
+            or **trust**.'
           enum:
           - individual
           - organization
@@ -3006,9 +3054,12 @@ components:
           description: Information about the sole proprietorship. Required if `type`
             is **soleProprietorship**.
           $ref: '#/components/schemas/SoleProprietorship'
+        trust:
+          description: Information about the trust. Required if `type` is **trust**.
+          $ref: '#/components/schemas/Trust'
         type:
           description: "The type of legal entity.\n\n Possible values: **individual**,\
-            \ **organization**, or **soleProprietorship**."
+            \ **organization**, **soleProprietorship**, or **trust**."
           enum:
           - individual
           - organization
@@ -3374,6 +3425,12 @@ components:
         registrationNumber:
           description: The registration number.
           type: string
+        taxInformation:
+          x-addedInVersion: '2'
+          description: The tax information of the entity.
+          items:
+            $ref: '#/components/schemas/TaxInformation'
+          type: array
         vatAbsenceReason:
           description: 'The reason for not providing a VAT number.
 
@@ -3647,6 +3704,99 @@ components:
       required:
       - id
       - accountIdentifier
+      type: object
+    Trust:
+      properties:
+        countryOfGoverningLaw:
+          description: The two-character [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)
+            country code of the governing country.
+          type: string
+        dateOfIncorporation:
+          x-addedInVersion: '2'
+          description: The date when the legal arrangement was incorporated in YYYY-MM-DD
+            format.
+          type: string
+        doingBusinessAs:
+          description: The registered name, if different from the `name`.
+          type: string
+        name:
+          description: The legal name.
+          type: string
+        principalPlaceOfBusiness:
+          description: The business address. Required if the principal place of business
+            is different from the `registeredAddress`.
+          $ref: '#/components/schemas/Address'
+        registeredAddress:
+          description: The address registered at the registrar, such as the Chamber
+            of Commerce.
+          $ref: '#/components/schemas/Address'
+        registrationNumber:
+          description: The registration number.
+          type: string
+        taxInformation:
+          x-addedInVersion: '2'
+          description: The tax information of the entity.
+          items:
+            $ref: '#/components/schemas/TaxInformation'
+          type: array
+        type:
+          description: 'Type of trust.
+
+
+            Possible values for Australian trusts: **cashManagementTrust**, **corporateUnitTrust**,
+            **deceasedEstate**, **discretionaryInvestmentTrust**, **discretionaryServicesManagementTrust**,
+            **discretionaryTradingTrust**, **firstHomeSaverAccountsTrust**, **fixedTrust**,
+            **fixedUnitTrust**, **hybridTrust**, **listedPublicUnitTrust**, **otherTrust**,
+            **pooledSuperannuationTrust**, **publicTradingTrust**, **unlistedPublicUnitTrust**.'
+          enum:
+          - cashManagementTrust
+          - corporateUnitTrust
+          - deceasedEstate
+          - discretionaryInvestmentTrust
+          - discretionaryServicesManagementTrust
+          - discretionaryTradingTrust
+          - firstHomeSaverAccountsTrust
+          - fixedTrust
+          - fixedUnitTrust
+          - hybridTrust
+          - listedPublicUnitTrust
+          - otherTrust
+          - pooledSuperannuationTrust
+          - publicTradingTrust
+          - unlistedPublicUnitTrust
+          type: string
+        undefinedBeneficiaryInfo:
+          x-addedInVersion: '2'
+          description: The undefined beneficiary information of the entity.
+          items:
+            $ref: '#/components/schemas/UndefinedBeneficiary'
+          type: array
+        vatAbsenceReason:
+          description: 'The reason for not providing a VAT number.
+
+
+            Possible values: **industryExemption**, **belowTaxThreshold**.'
+          enum:
+          - industryExemption
+          - belowTaxThreshold
+          type: string
+        vatNumber:
+          description: The VAT number.
+          type: string
+      required:
+      - name
+      - countryOfGoverningLaw
+      - registeredAddress
+      - type
+      type: object
+    UndefinedBeneficiary:
+      properties:
+        description:
+          description: The details of the undefined beneficiary.
+          type: string
+        reference:
+          description: The reference of the undefined beneficiary.
+          type: string
       type: object
     VerificationError:
       properties:
@@ -4201,6 +4351,83 @@ components:
             street: Simon Carmiggeltstraat 6 - 50
         type: individual
         id: LE00000000000000000000001
+    patch-legalEntities-id-updateTrustMember:
+      summary: Associate a trust member with a trust
+      description: Example request associating a trust member with a trust
+      value:
+        entityAssociations:
+        - legalEntityId: LE00000000000000000000002
+          type: protector
+    patch-legalEntities-id-updateTrustMember-200:
+      summary: Trust member associated
+      description: Example response for associating a trust member with a trust
+      value:
+        entityAssociations:
+        - associatorId: LE00000000000000000000001
+          legalEntityId: LE00000000000000000000002
+          name: Simone Hopper
+          type: protector
+        trust:
+          name: Example Trust
+          type: fixedUnitTrust
+          doingBusinessAs: West's Store
+          countryOfGoverningLaw: AU
+          taxInformation:
+          - country: AU
+            type: ABN
+            number: '12345678901'
+          registeredAddress:
+            street: Winfield Avenue
+            city: Sydney
+            postalCode: '1197'
+            stateOrProvince: NSW
+            country: AU
+          undefinedBeneficiaryInfo:
+          - description: My future children
+        type: trust
+        id: LE00000000000000000000001
+    patch-legalEntities-id-updateTrustMemberExempt:
+      summary: Associate an exempt settlor with a trust
+      description: Example request associating an exempt settlor with a trust
+      value:
+        entityAssociations:
+        - legalEntityId: LE00000000000000000000002
+          type: settlor
+          entityType: individual
+          settlorExemptionReason:
+          - deceased
+          - professionalServiceProvider
+    patch-legalEntities-id-updateTrustMemberExempt-200:
+      summary: Exempt settlor associated
+      description: Example response for associating an exempt settlor with a trust
+      value:
+        entityAssociations:
+        - associatorId: LE00000000000000000000001
+          legalEntityId: LE00000000000000000000002
+          type: settlor
+          entityType: individual
+          settlorExemptionReason:
+          - deceased
+          - professionalServiceProvider
+        trust:
+          name: Example Trust
+          type: fixedUnitTrust
+          doingBusinessAs: West's Store
+          countryOfGoverningLaw: AU
+          taxInformation:
+          - country: AU
+            type: ABN
+            number: '12345678901'
+          registeredAddress:
+            street: Winfield Avenue
+            city: Sydney
+            postalCode: '1197'
+            stateOrProvince: NSW
+            country: AU
+          undefinedBeneficiaryInfo:
+          - description: My future children
+        type: trust
+        id: LE00000000000000000000001
     patch-transferInstruments-id-updateTransferInstrument:
       summary: Update a transfer instrument
       description: Example request for updating a transfer instrument
@@ -4500,6 +4727,52 @@ components:
             street: 71 5th Avenue
             street2: 11th floor
         id: LE00000000000000000000001
+    post-legalEntities-createTrustAU:
+      summary: Create a legal entity for a trust in Australia
+      description: Example request for creating a legal entity for a trust in Australia
+      value:
+        type: trust
+        trust:
+          name: Example Trust
+          type: fixedUnitTrust
+          doingBusinessAs: West's Store
+          countryOfGoverningLaw: AU
+          taxInformation:
+          - country: AU
+            type: ABN
+            number: '12345678123'
+          registeredAddress:
+            street: Winfield Avenue
+            city: Sydney
+            postalCode: '1197'
+            stateOrProvince: NSW
+            country: AU
+          undefinedBeneficiaryInfo:
+          - description: My future children
+    post-legalEntities-createTrustAU-200:
+      summary: Trust legal entity created
+      description: Example response for creating a legal entity for a trust in Australia
+      value:
+        trust:
+          countryOfGoverningLaw: AU
+          doingBusinessAs: West's Store
+          name: Example Trust
+          registeredAddress:
+            city: Sydney
+            country: AU
+            postalCode: '1197'
+            stateOrProvince: NSW
+            street: Winfield Avenue
+          taxInformation:
+          - country: AU
+            number: '12345678901'
+            type: ABN
+          type: fixedUnitTrust
+          undefinedBeneficiaryInfo:
+          - description: My future children
+            reference: SE322KH223222J5HJ6JRB75HQ
+        type: trust
+        id: LE322KH223222J5HJ6JRB75C5
     post-legalEntities-id-onboardingLinks-createOnboardingLink:
       summary: Create a hosted onboarding link
       description: Example request for creating a hosted onboarding link
