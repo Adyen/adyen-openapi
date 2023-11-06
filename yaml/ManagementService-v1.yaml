@@ -22,7 +22,7 @@ info:
 
 
     Management API handles versioning as part of the endpoint URL. For example, to
-    send a request to version 1 of the `/companies/{companyId}/webhooks` endpoint,
+    send a request to this version of the `/companies/{companyId}/webhooks` endpoint,
     use:
 
 
@@ -44,7 +44,13 @@ info:
 
     https://management-live.adyen.com/v1
 
-    ```'
+    ```
+
+
+    ## Release notes
+
+    Have a look at the [release notes](https://docs.adyen.com/release-notes/management-api)
+    to find out what changed in this version!'
   termsOfService: https://www.adyen.com/legal/terms-and-conditions
   contact:
     name: Adyen Developer Experience team
@@ -2030,7 +2036,10 @@ paths:
       description: "Creates an order for payment terminal products for the company\
         \ identified in the path.\n\nTo make this request, your API credential must\
         \ have the following [role](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
-        * Management API\u2014Terminal ordering read and write"
+        * Management API\u2014Terminal ordering read and write\n>Requests to the Management\
+        \ API test endpoint do not create actual orders for test terminals. To order\
+        \ test terminals, you need to [submit a sales order](https://docs.adyen.com/point-of-sale/managing-terminals/order-terminals/#sales-order-steps)\
+        \ in your Customer Area."
       operationId: post-companies-companyId-terminalOrders
       x-groupName: Terminal orders - company level
       x-sortIndex: 6
@@ -3623,6 +3632,61 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AllowedOrigin'
+          description: OK - the request has succeeded.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Bad Request - a problem reading or understanding the request.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unauthorized - authentication required.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Forbidden - insufficient permissions to process the request.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unprocessable Entity - a request validation error.
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Internal Server Error - the server could not process the request.
+  /me/generateClientKey:
+    post:
+      tags:
+      - My API credential
+      summary: Generate a client key
+      description: "Generates a new [client key](https://docs.adyen.com/development-resources/client-side-authentication/)\
+        \ used to authenticate requests from your payment environment.\nYou can use\
+        \ the new client key a few minutes after generating it.\nThe old client key\
+        \ stops working 24 hours after generating a new one.\n\nTo make this request,\
+        \ your API credential must have the following [role](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
+        * Management API\u2014API credentials read and write"
+      operationId: post-me-generateClientKey
+      x-groupName: My API credential
+      x-sortIndex: 0
+      x-methodName: generateClientKey
+      security:
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerateClientKeyResponse'
           description: OK - the request has succeeded.
         '400':
           content:
@@ -7431,7 +7495,10 @@ paths:
       description: "Creates an order for payment terminal products for the merchant\
         \ account identified in the path.\n\nTo make this request, your API credential\
         \ must have the following [role](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
-        * Management API\u2014Terminal ordering read and write"
+        * Management API\u2014Terminal ordering read and write\n>Requests to the Management\
+        \ API test endpoint do not create actual orders for test terminals. To order\
+        \ test terminals, you need to [submit a sales order](https://docs.adyen.com/point-of-sale/managing-terminals/order-terminals/#sales-order-steps)\
+        \ in your Customer Area."
       operationId: post-merchants-merchantId-terminalOrders
       x-groupName: Terminal orders - merchant level
       x-sortIndex: 6
@@ -7577,7 +7644,7 @@ paths:
       description: "Updates the terminal products order identified in the path.\n\
         Updating is only possible while the order has the status **Placed**.\n\nThe\
         \ request body only needs to contain what you want to change. \nHowever, to\
-        \ update the products in the `items` array, you must provice the entire array.\
+        \ update the products in the `items` array, you must provide the entire array.\
         \ For example, if the array has three items:\n To remove one item, the array\
         \ must include the remaining two items. Or to add one item, the array must\
         \ include all four items.\n\nTo make this request, your API credential must\
@@ -11554,25 +11621,7 @@ components:
         InvalidField:
           $ref: '#/components/schemas/InvalidField'
     JSONObject:
-      properties:
-        paths:
-          items:
-            $ref: '#/components/schemas/JSONPathWrapper'
-          type: array
-        rootPath:
-          $ref: '#/components/schemas/JSONPath'
       type: object
-    JSONPath:
-      properties:
-        content:
-          items:
-            type: string
-          type: array
-      type: object
-    JSONPathWrapper:
-      properties:
-        JSONPath:
-          $ref: '#/components/schemas/JSONPath'
     Key:
       properties:
         identifier:
@@ -11835,6 +11884,12 @@ components:
       required:
       - itemsTotal
       - pagesTotal
+      type: object
+    Localization:
+      properties:
+        language:
+          description: Language of the terminal.
+          type: string
       type: object
     Logo:
       properties:
@@ -13895,6 +13950,9 @@ components:
         hardware:
           description: Settings for terminal hardware features.
           $ref: '#/components/schemas/Hardware'
+        localization:
+          description: Settings for localization.
+          $ref: '#/components/schemas/Localization'
         nexo:
           description: Settings for a Terminal API integration.
           $ref: '#/components/schemas/Nexo'
