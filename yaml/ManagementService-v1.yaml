@@ -10072,6 +10072,21 @@ components:
             $ref: '#/components/schemas/AllowedOrigin'
           type: array
       type: object
+    AmexInfo:
+      properties:
+        midNumber:
+          description: 'MID number. Format: 10 numeric characters'
+          type: string
+        serviceLevel:
+          description: Service level
+          enum:
+          - noContract
+          - gatewayContract
+          - paymentDesignatorContract
+          type: string
+      required:
+      - serviceLevel
+      type: object
     Amount:
       properties:
         currency:
@@ -12314,6 +12329,9 @@ components:
           description: Indicates whether receiving payments is allowed. This value
             is set to **true** by Adyen after screening your merchant account.
           type: boolean
+        amex:
+          description: Amex details.
+          $ref: '#/components/schemas/AmexInfo'
         applePay:
           description: Apple Pay details.
           $ref: '#/components/schemas/ApplePayInfo'
@@ -12530,6 +12548,9 @@ components:
         afterpayTouch:
           description: Afterpay Touch details.
           $ref: '#/components/schemas/AfterpayTouchInfo'
+        amex:
+          description: Amex details.
+          $ref: '#/components/schemas/AmexInfo'
         applePay:
           description: Apple Pay details.
           $ref: '#/components/schemas/ApplePayInfo'
@@ -13507,8 +13528,8 @@ components:
             and on the shopper receipt.
           type: string
         splitConfiguration:
-          description: Rules for Adyen for Platform merchants to [split commission
-            fees](https://docs.adyen.com/marketplaces-and-platforms/classic/split-configuration-for-stores).
+          description: Rules for Adyen for Platforms merchants to split the transaction
+            amount and fees.
           $ref: '#/components/schemas/StoreSplitConfiguration'
         status:
           description: "The status of the store. Possible values are:\n\n- **active**.\
@@ -13572,7 +13593,8 @@ components:
             Maximum length: 22 characters; can''t be all numbers.'
           type: string
         splitConfiguration:
-          description: The configuration of the split.
+          description: Rules for Adyen for Platforms merchants to split the transaction
+            amount and fees.
           $ref: '#/components/schemas/StoreSplitConfiguration'
       required:
       - description
@@ -13633,7 +13655,8 @@ components:
             Maximum length: 22 characters; can''t be all numbers.'
           type: string
         splitConfiguration:
-          description: The configuration of the split.
+          description: Rules for Adyen for Platforms merchants to split the transaction
+            amount and fees.
           $ref: '#/components/schemas/StoreSplitConfiguration'
       required:
       - description
@@ -13675,12 +13698,12 @@ components:
     StoreSplitConfiguration:
       properties:
         balanceAccountId:
-          description: The [balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/get/balanceAccounts/{id}__queryParam_id)
-            linked to the account holder.
+          description: The [unique identifier of the balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/get/balanceAccounts/{id}__queryParam_id)
+            to which the split amount must be booked, depending on the defined [split
+            logic](https://docs.adyen.com/api-explorer/Management/latest/post/merchants/_merchantId_/splitConfigurations#request-rules-splitLogic).
           type: string
         splitConfigurationId:
-          description: The UUID of the [split configuration](https://docs.adyen.com/marketplaces-and-platforms/classic/split-configuration-for-stores)
-            from the Customer Area.
+          description: The unique identifier of the [split configuration profile](https://docs.adyen.com/marketplaces-and-platforms/automatic-split-configuration/create-split-configuration/).
           type: string
       type: object
     Surcharge:
@@ -14838,9 +14861,12 @@ components:
           description: 'When using the Zip payment method: The location ID that Zip
             has assigned to your store.'
           type: string
+        phoneNumber:
+          description: The phone number of the store, including '+' and country code.
+          type: string
         splitConfiguration:
-          description: Rules for Adyen for Platform merchants to split commission
-            fees.
+          description: Rules for Adyen for Platforms merchants to split the transaction
+            amount and fees.
           $ref: '#/components/schemas/StoreSplitConfiguration'
         status:
           description: "The status of the store. Possible values are:\n\n- **active**:\
@@ -14933,8 +14959,6 @@ components:
           type: string
       required:
       - logo
-      type: object
-    Void:
       type: object
     Webhook:
       properties:

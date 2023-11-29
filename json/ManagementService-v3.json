@@ -7593,8 +7593,11 @@
                "content" : {
                   "application/json" : {
                      "examples" : {
-                        "add-payment-method-partner-model" : {
-                           "$ref" : "#/components/examples/post-merchants-merchantId-paymentMethodSettings-add-payment-method-partner-model"
+                        "01.add-payment-method-visa" : {
+                           "$ref" : "#/components/examples/post-merchants-merchantId-paymentMethodSettings-01.add-payment-method-visa"
+                        },
+                        "02.add-payment-method-partner-model" : {
+                           "$ref" : "#/components/examples/post-merchants-merchantId-paymentMethodSettings-02.add-payment-method-partner-model"
                         }
                      },
                      "schema" : {
@@ -7619,8 +7622,11 @@
                   "content" : {
                      "application/json" : {
                         "examples" : {
-                           "add-payment-method-partner-model" : {
-                              "$ref" : "#/components/examples/post-merchants-merchantId-paymentMethodSettings-add-payment-method-partner-model-200"
+                           "01.add-payment-method-visa" : {
+                              "$ref" : "#/components/examples/post-merchants-merchantId-paymentMethodSettings-01.add-payment-method-visa-200"
+                           },
+                           "02.add-payment-method-partner-model" : {
+                              "$ref" : "#/components/examples/post-merchants-merchantId-paymentMethodSettings-02.add-payment-method-partner-model-200"
                            }
                         },
                         "schema" : {
@@ -15464,6 +15470,27 @@
             },
             "type" : "object"
          },
+         "AmexInfo" : {
+            "properties" : {
+               "midNumber" : {
+                  "description" : "MID number. Format: 10 numeric characters",
+                  "type" : "string"
+               },
+               "serviceLevel" : {
+                  "description" : "Service level",
+                  "enum" : [
+                     "noContract",
+                     "gatewayContract",
+                     "paymentDesignatorContract"
+                  ],
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "serviceLevel"
+            ],
+            "type" : "object"
+         },
          "Amount" : {
             "properties" : {
                "currency" : {
@@ -17941,6 +17968,10 @@
                   "description" : "Indicates whether receiving payments is allowed. This value is set to **true** by Adyen after screening your merchant account.",
                   "type" : "boolean"
                },
+               "amex" : {
+                  "description" : "Amex details.",
+                  "$ref" : "#/components/schemas/AmexInfo"
+               },
                "applePay" : {
                   "description" : "Apple Pay details.",
                   "$ref" : "#/components/schemas/ApplePayInfo"
@@ -18200,6 +18231,10 @@
                "afterpayTouch" : {
                   "description" : "Afterpay Touch details.",
                   "$ref" : "#/components/schemas/AfterpayTouchInfo"
+               },
+               "amex" : {
+                  "description" : "Amex details.",
+                  "$ref" : "#/components/schemas/AmexInfo"
                },
                "applePay" : {
                   "description" : "Apple Pay details.",
@@ -19200,7 +19235,7 @@
                   "type" : "string"
                },
                "splitConfiguration" : {
-                  "description" : "Rules for Adyen for Platform merchants to [split commission fees](https://docs.adyen.com/marketplaces-and-platforms/classic/split-configuration-for-stores).",
+                  "description" : "Rules for Adyen for Platforms merchants to split the transaction amount and fees.",
                   "$ref" : "#/components/schemas/StoreSplitConfiguration"
                },
                "status" : {
@@ -19249,7 +19284,7 @@
                   "type" : "string"
                },
                "splitConfiguration" : {
-                  "description" : "The configuration of the split.",
+                  "description" : "Rules for Adyen for Platforms merchants to split the transaction amount and fees.",
                   "$ref" : "#/components/schemas/StoreSplitConfiguration"
                }
             },
@@ -19299,7 +19334,7 @@
                   "type" : "string"
                },
                "splitConfiguration" : {
-                  "description" : "The configuration of the split.",
+                  "description" : "Rules for Adyen for Platforms merchants to split the transaction amount and fees.",
                   "$ref" : "#/components/schemas/StoreSplitConfiguration"
                }
             },
@@ -19351,11 +19386,11 @@
          "StoreSplitConfiguration" : {
             "properties" : {
                "balanceAccountId" : {
-                  "description" : "The [balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/get/balanceAccounts/{id}__queryParam_id) linked to the account holder.",
+                  "description" : "The [unique identifier of the balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/get/balanceAccounts/{id}__queryParam_id) to which the split amount must be booked, depending on the defined [split logic](https://docs.adyen.com/api-explorer/Management/latest/post/merchants/_merchantId_/splitConfigurations#request-rules-splitLogic).",
                   "type" : "string"
                },
                "splitConfigurationId" : {
-                  "description" : "The UUID of the [split configuration](https://docs.adyen.com/marketplaces-and-platforms/classic/split-configuration-for-stores) from the Customer Area.",
+                  "description" : "The unique identifier of the [split configuration profile](https://docs.adyen.com/marketplaces-and-platforms/automatic-split-configuration/create-split-configuration/).",
                   "type" : "string"
                }
             },
@@ -20612,8 +20647,12 @@
                   "description" : "When using the Zip payment method: The location ID that Zip has assigned to your store.",
                   "type" : "string"
                },
+               "phoneNumber" : {
+                  "description" : "The phone number of the store, including '+' and country code in the [E.164](https://en.wikipedia.org/wiki/E.164) format. If passed in a different format, we convert and validate the phone number against E.164. ",
+                  "type" : "string"
+               },
                "splitConfiguration" : {
-                  "description" : "Rules for Adyen for Platform merchants to split commission fees.",
+                  "description" : "Rules for Adyen for Platforms merchants to split the transaction amount and fees.",
                   "$ref" : "#/components/schemas/StoreSplitConfiguration"
                },
                "status" : {
@@ -20735,9 +20774,6 @@
             "required" : [
                "logo"
             ],
-            "type" : "object"
-         },
-         "Void" : {
             "type" : "object"
          },
          "Webhook" : {
@@ -27795,7 +27831,43 @@
                "password" : "YOUR_PASSWORD"
             }
          },
-         "post-merchants-merchantId-paymentMethodSettings-add-payment-method-partner-model" : {
+         "post-merchants-merchantId-paymentMethodSettings-01.add-payment-method-visa" : {
+            "summary" : "Request to add Visa",
+            "description" : "Example request to add Visa as the payment method",
+            "value" : {
+               "type" : "visa",
+               "businessLineId" : "BL322KV223222D5F8H2J4BQ6C",
+               "storeIds" : [
+                  "ST322LJ223223K5F4SQNR9XL5"
+               ],
+               "currencies" : [
+                  "EUR"
+               ],
+               "countries" : [
+                  "NL"
+               ]
+            }
+         },
+         "post-merchants-merchantId-paymentMethodSettings-01.add-payment-method-visa-200" : {
+            "summary" : "Response code - 200 OK",
+            "description" : "Example response after sending a request to add Visa as a payment method",
+            "value" : {
+               "businessLineId" : "BL322KV223222D5F8H2J4BQ6C",
+               "id" : "PM3227C223224K5FH84M8CBNH",
+               "type" : "visa",
+               "storeId" : "ST322LJ223223K5F4SQNR9XL5",
+               "enabled" : true,
+               "countries" : [
+                  "NL"
+               ],
+               "currencies" : [
+                  "EUR"
+               ],
+               "allowed" : false,
+               "verificationStatus" : "pending"
+            }
+         },
+         "post-merchants-merchantId-paymentMethodSettings-02.add-payment-method-partner-model" : {
             "summary" : "Request to add Swish",
             "description" : "Example request to add Swish with a partner model setup",
             "value" : {
@@ -27815,7 +27887,7 @@
                ]
             }
          },
-         "post-merchants-merchantId-paymentMethodSettings-add-payment-method-partner-model-200" : {
+         "post-merchants-merchantId-paymentMethodSettings-02.add-payment-method-partner-model-200" : {
             "summary" : "Response code - 200 OK",
             "description" : "Example response after sending a request to add Swish in a partner model setup",
             "value" : {
