@@ -11,9 +11,6 @@
          "url" : "https://github.com/Adyen/adyen-openapi"
       }
    },
-   "x-groups" : [
-      "General"
-   ],
    "tags" : [
       {
          "name" : "General"
@@ -30,7 +27,6 @@
             "description" : "Adyen sends this webhook when there are fund movements on your platform.",
             "x-addedInVersion" : "1",
             "operationId" : "post-balancePlatform.transfer.created",
-            "x-groupName" : "General",
             "x-sortIndex" : 0,
             "x-methodName" : "transferCreated",
             "security" : [
@@ -71,7 +67,6 @@
             "description" : "Adyen sends this webhook when the status of a transfer changes. Use the `data.id` to track the original transfer resource in the [balancePlatform.transfer.created](https://docs.adyen.com/api-explorer/transfer-webhooks/1/post/balancePlatform.transfer.created) webhook.\n\nThe `status` field indicates the event that triggered the webhook. \n\n",
             "x-addedInVersion" : "1",
             "operationId" : "post-balancePlatform.transfer.updated",
-            "x-groupName" : "General",
             "x-sortIndex" : 0,
             "x-methodName" : "transferUpdated",
             "security" : [
@@ -635,6 +630,11 @@
          "IssuedCard" : {
             "additionalProperties" : false,
             "properties" : {
+               "authorisationType" : {
+                  "x-addedInVersion" : "4",
+                  "description" : "The authorisation type. For example, **defaultAuthorisation**, **preAuthorisation**, **finalAuthorisation**",
+                  "type" : "string"
+               },
                "panEntryMode" : {
                   "x-addedInVersion" : "4",
                   "description" : "Indicates the method used for entering the PAN to initiate a transaction.\n\nPossible values: **manual**, **chip**, **magstripe**, **contactless**, **cof**, **ecommerce**, **token**.",
@@ -668,6 +668,16 @@
                   "x-addedInVersion" : "4",
                   "description" : "If you are using relayed authorisation, this object contains information from the relayed authorisation response from your server.",
                   "$ref" : "#/components/schemas/RelayedAuthorisationData"
+               },
+               "schemeTraceId" : {
+                  "x-addedInVersion" : "4",
+                  "description" : "The identifier of the original payment provided by the scheme. The Id could be alphanumeric or numeric depending on the scheme. The schemeTraceID should be referring to an original schemeUniqueTransactionID provided in an earlier payment (not necessarily processed by Adyen). Instances of available schemeTraceId is authAdjustment or recurring payments.",
+                  "type" : "string"
+               },
+               "schemeUniqueTransactionId" : {
+                  "x-addedInVersion" : "4",
+                  "description" : "The unique identifier created by the scheme. The ID could be alphanumeric or numeric depending on the scheme.",
+                  "type" : "string"
                },
                "type" : {
                   "default" : "issuedCard",
@@ -969,6 +979,7 @@
                },
                "reference" : {
                   "description" : "A unique reference to identify the party or counterparty involved in transfers. This identifier ensures consistency and uniqueness throughout all transactions initiated to and from the same party. For example, your client's unique wallet or payee ID.",
+                  "maxLength" : 150,
                   "type" : "string"
                },
                "type" : {
@@ -1323,7 +1334,7 @@
                "counterparty" : {
                   "x-addedInVersion" : "3",
                   "description" : "The other party in the transfer.",
-                  "$ref" : "#/components/schemas/CounterpartyV3"
+                  "$ref" : "#/components/schemas/TransferNotificationCounterParty"
                },
                "creationDate" : {
                   "x-addedInVersion" : "3",
@@ -1606,16 +1617,6 @@
                   ],
                   "type" : "string"
                },
-               "schemeTraceID" : {
-                  "x-addedInVersion" : "3",
-                  "description" : "SchemeTraceID retrieved from scheme.",
-                  "type" : "string"
-               },
-               "schemeUniqueTransactionID" : {
-                  "x-addedInVersion" : "3",
-                  "description" : "SchemeUniqueTransactionID retrieved from scheme.",
-                  "type" : "string"
-               },
                "status" : {
                   "x-addedInVersion" : "3",
                   "description" : "The status of the transfer event.",
@@ -1711,6 +1712,60 @@
                   "x-addedInVersion" : "3",
                   "description" : "A future date, when the funds are expected to be deducted from or credited to the balance account.",
                   "format" : "date-time",
+                  "type" : "string"
+               }
+            },
+            "type" : "object"
+         },
+         "TransferNotificationCounterParty" : {
+            "properties" : {
+               "balanceAccountId" : {
+                  "description" : "Unique identifier of the [balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__resParam_id).",
+                  "type" : "string"
+               },
+               "bankAccount" : {
+                  "description" : "Contains information about the bank account.",
+                  "$ref" : "#/components/schemas/BankAccountV3"
+               },
+               "merchant" : {
+                  "description" : "Contains information about the merchant.",
+                  "$ref" : "#/components/schemas/TransferNotificationMerchantData"
+               },
+               "transferInstrumentId" : {
+                  "description" : "Unique identifier of the [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments__resParam_id).",
+                  "type" : "string"
+               }
+            },
+            "type" : "object"
+         },
+         "TransferNotificationMerchantData" : {
+            "properties" : {
+               "acquirerId" : {
+                  "description" : "The unique identifier of the merchant's acquirer.",
+                  "type" : "string"
+               },
+               "city" : {
+                  "description" : "The city where the merchant is located.",
+                  "type" : "string"
+               },
+               "country" : {
+                  "description" : "The country where the merchant is located.",
+                  "type" : "string"
+               },
+               "mcc" : {
+                  "description" : "The merchant category code.",
+                  "type" : "string"
+               },
+               "merchantId" : {
+                  "description" : "The merchant identifier.",
+                  "type" : "string"
+               },
+               "name" : {
+                  "description" : "The name of the merchant's shop or service.",
+                  "type" : "string"
+               },
+               "postalCode" : {
+                  "description" : "The merchant postal code.",
                   "type" : "string"
                }
             },

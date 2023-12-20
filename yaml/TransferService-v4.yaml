@@ -33,10 +33,6 @@ info:
   contact:
     name: Adyen Developer Experience team
     url: https://github.com/Adyen/adyen-openapi
-x-groups:
-- Transfers
-- Transactions
-- Capital
 tags:
 - name: Transfers
 - name: Transactions
@@ -50,10 +46,10 @@ paths:
       description: Returns a list of grants with status and outstanding balances.
       x-addedInVersion: '3'
       operationId: get-grants
-      x-groupName: Capital
       x-sortIndex: 2
       x-methodName: getCapitalAccount
       security:
+      - clientKey: []
       - BasicAuth: []
       - ApiKeyAuth: []
       parameters:
@@ -113,10 +109,10 @@ paths:
       description: Requests the payout of the selected grant offer.
       x-addedInVersion: '3'
       operationId: post-grants
-      x-groupName: Capital
       x-sortIndex: 1
       x-methodName: requestGrantPayout
       security:
+      - clientKey: []
       - BasicAuth: []
       - ApiKeyAuth: []
       requestBody:
@@ -181,10 +177,10 @@ paths:
       description: Returns the details of a capital account specified in the path.
       x-addedInVersion: '3'
       operationId: get-grants-id
-      x-groupName: Capital
       x-sortIndex: 3
       x-methodName: getGrantReferenceDetails
       security:
+      - clientKey: []
       - BasicAuth: []
       - ApiKeyAuth: []
       parameters:
@@ -267,10 +263,10 @@ paths:
         '
       x-addedInVersion: '1'
       operationId: get-transactions
-      x-groupName: Transactions
       x-sortIndex: 1
       x-methodName: getAllTransactions
       security:
+      - clientKey: []
       - BasicAuth: []
       - ApiKeyAuth: []
       parameters:
@@ -399,14 +395,14 @@ paths:
         Returns a transaction.'
       x-addedInVersion: '1'
       operationId: get-transactions-id
-      x-groupName: Transactions
       x-sortIndex: 2
       x-methodName: getTransaction
       security:
+      - clientKey: []
       - BasicAuth: []
       - ApiKeyAuth: []
       parameters:
-      - description: Unique identifier of the transaction.
+      - description: The unique identifier of the transaction.
         name: id
         in: path
         required: true
@@ -466,10 +462,10 @@ paths:
         will set these up for you.'
       x-addedInVersion: '2'
       operationId: post-transfers
-      x-groupName: Transfers
       x-sortIndex: 1
       x-methodName: transferFunds
       security:
+      - clientKey: []
       - BasicAuth: []
       - ApiKeyAuth: []
       requestBody:
@@ -547,18 +543,18 @@ paths:
               schema:
                 $ref: '#/components/schemas/RestServiceError'
           description: Internal Server Error - the server could not process the request.
-  /transfers/{id}/returns:
+  /transfers/{transferId}/returns:
     post:
       tags:
       - Transfers
       summary: Return a transfer
       description: Returns previously transferred funds without creating a new `transferId`.
       x-addedInVersion: '3'
-      operationId: post-transfers-id-returns
-      x-groupName: Transfers
+      operationId: post-transfers-transferId-returns
       x-sortIndex: 2
       x-methodName: returnTransfer
       security:
+      - clientKey: []
       - BasicAuth: []
       - ApiKeyAuth: []
       requestBody:
@@ -568,7 +564,7 @@ paths:
               $ref: '#/components/schemas/ReturnTransferRequest'
       parameters:
       - description: The unique identifier of the transfer to be returned.
-        name: id
+        name: transferId
         in: path
         required: true
         schema:
@@ -580,13 +576,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ReturnTransferResponse'
           description: OK - the request has succeeded.
-        '202':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ReturnTransferResponse'
-          description: Accepted - the request has been accepted for processing, but
-            the processing has not been completed.
         '401':
           content:
             application/json:
@@ -1151,6 +1140,11 @@ components:
     IssuedCard:
       additionalProperties: false
       properties:
+        authorisationType:
+          x-addedInVersion: '4'
+          description: The authorisation type. For example, **defaultAuthorisation**,
+            **preAuthorisation**, **finalAuthorisation**
+          type: string
         panEntryMode:
           x-addedInVersion: '4'
           description: 'Indicates the method used for entering the PAN to initiate
@@ -1187,6 +1181,19 @@ components:
           description: If you are using relayed authorisation, this object contains
             information from the relayed authorisation response from your server.
           $ref: '#/components/schemas/RelayedAuthorisationData'
+        schemeTraceId:
+          x-addedInVersion: '4'
+          description: The identifier of the original payment provided by the scheme.
+            The Id could be alphanumeric or numeric depending on the scheme. The schemeTraceID
+            should be referring to an original schemeUniqueTransactionID provided
+            in an earlier payment (not necessarily processed by Adyen). Instances
+            of available schemeTraceId is authAdjustment or recurring payments.
+          type: string
+        schemeUniqueTransactionId:
+          x-addedInVersion: '4'
+          description: The unique identifier created by the scheme. The ID could be
+            alphanumeric or numeric depending on the scheme.
+          type: string
         type:
           default: issuedCard
           description: '**issuedCard**'
@@ -1200,6 +1207,8 @@ components:
           items:
             $ref: '#/components/schemas/TransferNotificationValidationFact'
           type: array
+      type: object
+    JSONObject:
       type: object
     Link:
       properties:
@@ -1374,6 +1383,7 @@ components:
             in transfers. This identifier ensures consistency and uniqueness throughout
             all transactions initiated to and from the same party. For example, your
             client's unique wallet or payee ID.
+          maxLength: 150
           type: string
         type:
           default: unknown
@@ -1528,7 +1538,7 @@ components:
           type: string
         response:
           description: JSON response payload.
-          type: object
+          $ref: '#/components/schemas/JSONObject'
         status:
           description: The HTTP status code.
           format: int32
@@ -1581,7 +1591,7 @@ components:
           description: 'The resulting status of the return.
 
 
-            For example: **authorised**, **booked**, **error**.'
+            Possible values: **Authorised**, **Declined**.'
           enum:
           - Authorised
           - Declined
@@ -1989,6 +1999,7 @@ components:
 
             Supported characters for **regular** and **fast** transfers to a US counterparty:
             **[a-z] [A-Z] [0-9] & $ % # @** **~ = + - _ '' " ! ?**'
+          maxLength: 140
           type: string
         paymentInstrumentId:
           description: The unique identifier of the source [payment instrument](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/paymentInstruments__resParam_id).
@@ -2159,6 +2170,7 @@ components:
             in transfers. This identifier ensures consistency and uniqueness throughout
             all transactions initiated to and from the same party. For example, your
             client's unique wallet or payee ID.
+          maxLength: 150
           type: string
         type:
           default: unknown
@@ -2180,6 +2192,10 @@ components:
     BasicAuth:
       scheme: basic
       type: http
+    clientKey:
+      in: query
+      name: clientKey
+      type: apiKey
   headers:
     auth-param1:
       description: Base64-encoded blob of data. You will need auth-param1 when authenticating
