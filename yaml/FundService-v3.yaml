@@ -24,16 +24,13 @@ info:
     \ using a version suffix in the endpoint URL. This suffix has the following format:\
     \ \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://cal-test.adyen.com/cal/services/Fund/v3/accountHolderBalance\n\
     ```"
-  x-timestamp: '2023-05-30T15:27:19Z'
   termsOfService: https://www.adyen.com/legal/terms-and-conditions
   contact:
     name: Adyen Developer Experience team
     url: https://github.com/Adyen/adyen-openapi
-x-groups:
-- General
-- Migration
 tags:
 - name: General
+- name: Migration
 paths:
   /accountHolderBalance:
     post:
@@ -44,7 +41,6 @@ paths:
         balances are organized according by currencies. This mean that an account
         may have multiple balances: one for each currency.'
       operationId: post-accountHolderBalance
-      x-groupName: General
       x-sortIndex: 1
       x-methodName: accountHolderBalance
       security:
@@ -114,7 +110,6 @@ paths:
         Transactions are listed in chronological order, with the most recent transaction
         first.
       operationId: post-accountHolderTransactionList
-      x-groupName: General
       x-sortIndex: 2
       x-methodName: accountHolderTransactionList
       security:
@@ -186,7 +181,6 @@ paths:
         \ notification webhook.\n\n To learn more about direct debits, see [Top up\
         \ accounts](https://docs.adyen.com/marketplaces-and-platforms/classic/top-up-accounts)."
       operationId: post-debitAccountHolder
-      x-groupName: General
       x-sortIndex: 8
       x-methodName: debitAccountHolder
       security:
@@ -255,7 +249,6 @@ paths:
       description: Pays out a specified amount from an account to the bank account
         of account holder.
       operationId: post-payoutAccountHolder
-      x-groupName: General
       x-sortIndex: 3
       x-methodName: payoutAccountHolder
       security:
@@ -321,7 +314,6 @@ paths:
       description: 'Refunds funds transferred from one account to another. Both accounts
         must be in the same platform, but can have different account holders. '
       operationId: post-refundFundsTransfer
-      x-groupName: General
       x-sortIndex: 5
       x-methodName: refundFundsTransfer
       security:
@@ -391,7 +383,6 @@ paths:
         accounts remain in the accounts to which they were sent as designated by the
         original payment's split details.
       operationId: post-refundNotPaidOutTransfers
-      x-groupName: General
       x-sortIndex: 7
       x-methodName: refundNotPaidOutTransfers
       security:
@@ -462,7 +453,6 @@ paths:
         A series of benefactor/beneficiaries may not exceed four beneficiaries and
         may not have a cycle in it.
       operationId: post-setupBeneficiary
-      x-groupName: General
       x-sortIndex: 6
       x-methodName: setupBeneficiary
       security:
@@ -530,7 +520,6 @@ paths:
         transfer must include a transfer code, which should be determined by the platform,
         in compliance with local regulations.
       operationId: post-transferFunds
-      x-groupName: General
       x-sortIndex: 4
       x-methodName: transferFunds
       security:
@@ -704,6 +693,7 @@ components:
           items:
             enum:
             - BalanceNotPaidOutTransfer
+            - BalancePlatformFundTransfer
             - BalancePlatformSweep
             - BalancePlatformSweepReturned
             - Chargeback
@@ -727,15 +717,19 @@ components:
             - DebitedReversed
             - DepositCorrectionCredited
             - DepositCorrectionDebited
+            - DepositCorrectionReceived
             - Fee
+            - FeeReceived
             - FundTransfer
             - FundTransferReversed
             - InvoiceDeductionCredited
             - InvoiceDeductionDebited
+            - InvoiceDeductionReceived
             - ManualCorrected
             - ManualCorrectionCredited
             - ManualCorrectionDebited
             - MerchantPayin
+            - MerchantPayinReceived
             - MerchantPayinReversed
             - Payout
             - PayoutReversed
@@ -1316,70 +1310,86 @@ components:
     Split:
       properties:
         account:
-          description: 'Unique identifier of the account where the split amount should
-            be sent. This is required if `type` is **MarketPlace** or **BalanceAccount**.
+          description: 'The unique identifier of the account to which the split amount
+            is booked. Required if `type` is **MarketPlace** or **BalanceAccount**.
 
 
-            '
+            * [Classic Platforms integration](https://docs.adyen.com/marketplaces-and-platforms/classic):
+            The [`accountCode`](https://docs.adyen.com/api-explorer/Account/latest/post/updateAccount#request-accountCode)
+            of the account to which the split amount is booked.
+
+            * [Balance Platform](https://docs.adyen.com/marketplaces-and-platforms):
+            The [`balanceAccountId`](https://docs.adyen.com/api-explorer/balanceplatform/latest/get/balanceAccounts/_id_#path-id)
+            of the account to which the split amount is booked.'
           type: string
         amount:
-          description: The amount of this split.
+          description: 'The amount of the split item.
+
+
+            * Required for all split types in the [Classic Platforms integration](https://docs.adyen.com/marketplaces-and-platforms/classic).
+
+            * Required if `type` is **BalanceAccount**, **Commission**, **Default**,
+            or **VAT** in your [Balance Platform](https://docs.adyen.com/marketplaces-and-platforms)
+            integration.'
           $ref: '#/components/schemas/SplitAmount'
         description:
-          description: A description of this split.
+          description: Your description for the split item.
           type: string
         reference:
-          description: 'Your reference for the split, which you can use to link the
-            split to other operations such as captures and refunds.
+          description: 'Your unique reference for the split item.
 
 
-            This is required if `type` is **MarketPlace** or **BalanceAccount**. For
-            the other types, we also recommend sending a reference so you can reconcile
-            the split and the associated payment in the transaction overview and in
-            the reports. If the reference is not provided, the split is reported as
-            part of the aggregated [TransferBalance record type](https://docs.adyen.com/reporting/marketpay-payments-accounting-report)
-            in Adyen for Platforms.'
+            This is required if `type` is **MarketPlace** ([Classic Platforms integration](https://docs.adyen.com/marketplaces-and-platforms/classic))
+            or **BalanceAccount** ([Balance Platform](https://docs.adyen.com/marketplaces-and-platforms)).
+
+
+            For the other types, we also recommend providing a **unique** reference
+            so you can reconcile the split and the associated payment in the transaction
+            overview and in the reports.'
           type: string
         type:
-          description: 'The type of split.
+          description: 'The type of the split item.
 
-            Possible values: **Default**, **PaymentFee**, **VAT**, **Commission**,
-            **MarketPlace**, **BalanceAccount**, **Remainder**, **Surcharge**, **Tip**.'
+
+            Possible values:
+
+
+            * [Classic Platforms integration](https://docs.adyen.com/marketplaces-and-platforms/classic):
+            **Commission**, **Default**, **Marketplace**, **PaymentFee**, **VAT**.
+
+            * [Balance Platform](https://docs.adyen.com/marketplaces-and-platforms):
+            **BalanceAccount**, **Commission**, **Default**, **PaymentFee**, **Remainder**,
+            **Surcharge**, **Tip**, **VAT**.'
           enum:
+          - AcquiringFees
+          - AdyenCommission
+          - AdyenFees
+          - AdyenMarkup
           - BalanceAccount
           - Commission
           - Default
+          - Interchange
           - MarketPlace
           - PaymentFee
-          - PaymentFeeAcquiring
-          - PaymentFeeAdyen
-          - PaymentFeeAdyenCommission
-          - PaymentFeeAdyenMarkup
-          - PaymentFeeInterchange
-          - PaymentFeeSchemeFee
           - Remainder
+          - SchemeFee
           - Surcharge
           - Tip
           - VAT
-          - Verification
           type: string
       required:
-      - amount
       - type
       type: object
     SplitAmount:
       properties:
         currency:
-          description: 'The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).
-
-
-            If this value is not provided, the currency in which the payment is made
-            will be used.'
+          description: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).
+            By default, this is the original payment currency.
           maxLength: 3
           minLength: 3
           type: string
         value:
-          description: The amount in [minor units](https://docs.adyen.com/development-resources/currency-codes).
+          description: The value of the split amount, in [minor units](https://docs.adyen.com/development-resources/currency-codes).
           format: int64
           type: integer
       required:
@@ -1444,6 +1454,7 @@ components:
             `ManualCorrected`.'
           enum:
           - BalanceNotPaidOutTransfer
+          - BalancePlatformFundTransfer
           - BalancePlatformSweep
           - BalancePlatformSweepReturned
           - Chargeback
@@ -1467,15 +1478,19 @@ components:
           - DebitedReversed
           - DepositCorrectionCredited
           - DepositCorrectionDebited
+          - DepositCorrectionReceived
           - Fee
+          - FeeReceived
           - FundTransfer
           - FundTransferReversed
           - InvoiceDeductionCredited
           - InvoiceDeductionDebited
+          - InvoiceDeductionReceived
           - ManualCorrected
           - ManualCorrectionCredited
           - ManualCorrectionDebited
           - MerchantPayin
+          - MerchantPayinReceived
           - MerchantPayinReversed
           - Payout
           - PayoutReversed
