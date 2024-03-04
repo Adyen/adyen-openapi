@@ -9,7 +9,7 @@
       "version" : "4",
       "x-publicVersion" : true,
       "title" : "Transfers API",
-      "description" : ">Versions 1 and 2 of the Transfers API are deprecated. If you are just starting your implementation, use the latest version.\n\nThis API provides endpoints that you can use to transfer funds, whether when [paying out to a transfer instrument](https://docs.adyen.com/marketplaces-and-platforms/payout-to-users/on-demand-payouts), [sending funds to third parties](https://docs.adyen.com/marketplaces-and-platforms/business-accounts/send-receive-funds) for users with business bank accounts, or to [request a payout for a grant offer](https://docs.adyen.com/marketplaces-and-platforms/capital). The API also supports use cases for [getting transactions for business bank accounts](https://docs.adyen.com/marketplaces-and-platforms/business-accounts/transactions-api) and getting [grants and its outstanding balances](https://docs.adyen.com/marketplaces-and-platforms/capital#get-balances). .\n\n## Authentication\nYour Adyen contact will provide your API credential and an API key. To connect to the API, add an `X-API-Key` header with the API key as the value, for example:\n\n ```\ncurl\n-H \"Content-Type: application/json\" \\\n-H \"X-API-Key: YOUR_API_KEY\" \\\n...\n```\n\nAlternatively, you can use the username and password to connect to the API using basic authentication. For example:\n\n```\ncurl\n-H \"Content-Type: application/json\" \\\n-U \"ws@BalancePlatform.YOUR_BALANCE_PLATFORM\":\"YOUR_WS_PASSWORD\" \\\n...\n```\n## Roles and permissions\nTo use the Transfers API, you need an additional role for your API credential. Transfers must also be enabled for the source balance account. Your Adyen contact will set up the roles and permissions for you.\n## Versioning\nThe Transfers API supports [versioning](https://docs.adyen.com/development-resources/versioning) using a version suffix in the endpoint URL. This suffix has the following format: \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://balanceplatform-api-test.adyen.com/btl/v4/transfers\n```\n## Going live\nWhen going live, your Adyen contact will provide your API credential for the live environment. You can then use the username and password to send requests to `https://balanceplatform-api-live.adyen.com/btl/v4`.\n\n",
+      "description" : ">Versions 1 and 2 of the Transfers API are deprecated. If you are just starting your implementation, use the latest version.\n\nThis API provides endpoints that you can use to transfer funds, whether when [paying out to a transfer instrument](https://docs.adyen.com/marketplaces-and-platforms/payout-to-users/on-demand-payouts), [sending funds to third parties](https://docs.adyen.com/marketplaces-and-platforms/business-accounts/send-receive-funds) for users with business bank accounts, or to [request a payout for a grant offer](https://docs.adyen.com/marketplaces-and-platforms/capital). The API also supports use cases for [getting transactions for business bank accounts](https://docs.adyen.com/marketplaces-and-platforms/business-accounts/transactions-api) and getting [grants and its outstanding balances](https://docs.adyen.com/marketplaces-and-platforms/capital#get-balances). \n\n## Authentication\nYour Adyen contact will provide your API credential and an API key. To connect to the API, add an `X-API-Key` header with the API key as the value, for example:\n\n ```\ncurl\n-H \"Content-Type: application/json\" \\\n-H \"X-API-Key: YOUR_API_KEY\" \\\n...\n```\n\nAlternatively, you can use the username and password to connect to the API using basic authentication. For example:\n\n```\ncurl\n-H \"Content-Type: application/json\" \\\n-U \"ws@BalancePlatform.YOUR_BALANCE_PLATFORM\":\"YOUR_WS_PASSWORD\" \\\n...\n```\n## Roles and permissions\nTo use the Transfers API, you need an additional role for your API credential. Transfers must also be enabled for the source balance account. Your Adyen contact will set up the roles and permissions for you.\n## Versioning\nThe Transfers API supports [versioning](https://docs.adyen.com/development-resources/versioning) using a version suffix in the endpoint URL. This suffix has the following format: \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://balanceplatform-api-test.adyen.com/btl/v4/transfers\n```\n## Going live\nWhen going live, your Adyen contact will provide your API credential for the live environment. You can then use the username and password to send requests to `https://balanceplatform-api-live.adyen.com/btl/v4`.\n\n",
       "termsOfService" : "https://www.adyen.com/legal/terms-and-conditions",
       "contact" : {
          "name" : "Adyen Developer Experience team",
@@ -621,6 +621,223 @@
          }
       },
       "/transfers" : {
+         "get" : {
+            "tags" : [
+               "Transfers"
+            ],
+            "summary" : "Get all transfers",
+            "description" : "Returns all the transfers related to a balance account, account holder, or balance platform.\n\nWhen making this request, you must include at least one of the following:\n- `balanceAccountId`\n- `accountHolderId`\n- `balancePlatform`.\n\nThis endpoint supports cursor-based pagination. The response returns the first page of results, and returns links to the next and previous pages when applicable. You can use the links to page through the results.\n\n",
+            "x-addedInVersion" : "4",
+            "operationId" : "get-transfers",
+            "x-sortIndex" : 3,
+            "x-methodName" : "getAllTransfers",
+            "security" : [
+               {
+                  "clientKey" : [
+                     ]
+               },
+               {
+                  "BasicAuth" : [
+                     ]
+               },
+               {
+                  "ApiKeyAuth" : [
+                     ]
+               }
+            ],
+            "parameters" : [
+               {
+                  "description" : "The unique identifier of the [balance platform](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/get/balancePlatforms/{id}__queryParam_id).\n\nRequired if you don't provide a `balanceAccountId` or `accountHolderId`.",
+                  "name" : "balancePlatform",
+                  "in" : "query",
+                  "required" : false,
+                  "schema" : {
+                     "type" : "string"
+                  }
+               },
+               {
+                  "description" : "The unique identifier of the [account holder](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/get/accountHolders/{id}__queryParam_id).\n\nRequired if you don't provide a `balanceAccountId` or `balancePlatform`.\n\nIf you provide a `balanceAccountId`, the `accountHolderId` must be related to the `balanceAccountId`.",
+                  "name" : "accountHolderId",
+                  "in" : "query",
+                  "required" : false,
+                  "schema" : {
+                     "type" : "string"
+                  }
+               },
+               {
+                  "description" : "The unique identifier of the [balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/get/balanceAccounts/{id}__queryParam_id).\n\nRequired if you don't provide an `accountHolderId` or `balancePlatform`.\n\nIf you provide an `accountHolderId`, the `balanceAccountId` must be related to the `accountHolderId`.",
+                  "name" : "balanceAccountId",
+                  "in" : "query",
+                  "required" : false,
+                  "schema" : {
+                     "type" : "string"
+                  }
+               },
+               {
+                  "description" : "The unique identifier of the [payment instrument](https://docs.adyen.com/api-explorer/balanceplatform/latest/get/paymentInstruments/_id_).\n\nTo use this parameter, you must also provide a `balanceAccountId`, `accountHolderId`, or `balancePlatform`.\n\nThe `paymentInstrumentId` must be related to the `balanceAccountId` or `accountHolderId` that you provide.",
+                  "name" : "paymentInstrumentId",
+                  "in" : "query",
+                  "required" : false,
+                  "schema" : {
+                     "type" : "string"
+                  }
+               },
+               {
+                  "description" : "The reference you provided in the POST [/transfers](https://docs.adyen.com/api-explorer/transfers/latest/post/transfers) request",
+                  "name" : "reference",
+                  "in" : "query",
+                  "required" : false,
+                  "schema" : {
+                     "type" : "string"
+                  }
+               },
+               {
+                  "description" : "The type of transfer.\n\nPossible values:\n\n - **bank**: Transfer to a [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments__resParam_id) or a bank account.\n\n- **internal**: Transfer to another [balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__resParam_id) within your platform.\n\n- **issuedCard**: Transfer initiated by a Adyen-issued card.\n\n- **platformPayment**: Fund movements related to payments that are acquired for your users.",
+                  "name" : "category",
+                  "in" : "query",
+                  "required" : false,
+                  "schema" : {
+                     "x-enum" : [
+                        {
+                           "value" : "topUp"
+                        },
+                        {
+                           "value" : "platformPayment"
+                        },
+                        {
+                           "value" : "internal"
+                        },
+                        {
+                           "value" : "bank"
+                        },
+                        {
+                           "value" : "issuedCard"
+                        },
+                        {
+                           "value" : "grants"
+                        },
+                        {
+                           "value" : "migration"
+                        },
+                        {
+                           "value" : "card"
+                        },
+                        {
+                           "value" : "upgrade"
+                        }
+                     ],
+                     "enum" : [
+                        "bank",
+                        "card",
+                        "grants",
+                        "internal",
+                        "issuedCard",
+                        "migration",
+                        "platformPayment",
+                        "topUp",
+                        "upgrade"
+                     ],
+                     "type" : "string"
+                  }
+               },
+               {
+                  "description" : "Only include transfers that have been created on or after this point in time. The value must be in ISO 8601 format. For example, **2021-05-30T15:07:40Z**.",
+                  "name" : "createdSince",
+                  "in" : "query",
+                  "required" : true,
+                  "schema" : {
+                     "format" : "date-time",
+                     "type" : "string"
+                  }
+               },
+               {
+                  "description" : "Only include transfers that have been created on or before this point in time. The value must be in ISO 8601 format. For example, **2021-05-30T15:07:40Z**.",
+                  "name" : "createdUntil",
+                  "in" : "query",
+                  "required" : true,
+                  "schema" : {
+                     "format" : "date-time",
+                     "type" : "string"
+                  }
+               },
+               {
+                  "description" : "The `cursor` returned in the links of the previous response.",
+                  "name" : "cursor",
+                  "in" : "query",
+                  "required" : false,
+                  "schema" : {
+                     "type" : "string"
+                  }
+               },
+               {
+                  "description" : "The number of items returned per page, maximum of 100 items. By default, the response returns 10 items per page.",
+                  "name" : "limit",
+                  "in" : "query",
+                  "required" : false,
+                  "schema" : {
+                     "format" : "int32",
+                     "type" : "integer"
+                  }
+               }
+            ],
+            "responses" : {
+               "200" : {
+                  "content" : {
+                     "application/json" : {
+                        "examples" : {
+                           "success" : {
+                              "$ref" : "#/components/examples/get-transfers-success-200"
+                           }
+                        },
+                        "schema" : {
+                           "$ref" : "#/components/schemas/FindTransfersResponse"
+                        }
+                     }
+                  },
+                  "description" : "OK - the request has succeeded."
+               },
+               "401" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/RestServiceError"
+                        }
+                     }
+                  },
+                  "description" : "Unauthorized - authentication required."
+               },
+               "403" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/RestServiceError"
+                        }
+                     }
+                  },
+                  "description" : "Forbidden - insufficient permissions to process the request."
+               },
+               "422" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/RestServiceError"
+                        }
+                     }
+                  },
+                  "description" : "Unprocessable Entity - a request validation error."
+               },
+               "500" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/RestServiceError"
+                        }
+                     }
+                  },
+                  "description" : "Internal Server Error - the server could not process the request."
+               }
+            }
+         },
          "post" : {
             "tags" : [
                "Transfers"
@@ -683,36 +900,26 @@
                }
             ],
             "responses" : {
-               "200" : {
+               "202" : {
                   "content" : {
                      "application/json" : {
                         "examples" : {
                            "payout-cross-border" : {
-                              "$ref" : "#/components/examples/post-transfers-payout-cross-border-200"
+                              "$ref" : "#/components/examples/post-transfers-payout-cross-border-202"
                            },
                            "payout-local-transfer-sepa" : {
-                              "$ref" : "#/components/examples/post-transfers-payout-local-transfer-sepa-200"
+                              "$ref" : "#/components/examples/post-transfers-payout-local-transfer-sepa-202"
                            },
                            "payout-local-transfer-us" : {
-                              "$ref" : "#/components/examples/post-transfers-payout-local-transfer-us-200"
+                              "$ref" : "#/components/examples/post-transfers-payout-local-transfer-us-202"
                            },
                            "payout-to-balance-account" : {
-                              "$ref" : "#/components/examples/post-transfers-payout-to-balance-account-200"
+                              "$ref" : "#/components/examples/post-transfers-payout-to-balance-account-202"
                            },
                            "payout-to-transfer-instrument" : {
-                              "$ref" : "#/components/examples/post-transfers-payout-to-transfer-instrument-200"
+                              "$ref" : "#/components/examples/post-transfers-payout-to-transfer-instrument-202"
                            }
                         },
-                        "schema" : {
-                           "$ref" : "#/components/schemas/Transfer"
-                        }
-                     }
-                  },
-                  "description" : "OK - the request has succeeded."
-               },
-               "202" : {
-                  "content" : {
-                     "application/json" : {
                         "schema" : {
                            "$ref" : "#/components/schemas/Transfer"
                         }
@@ -734,6 +941,101 @@
                         "$ref" : "#/components/headers/auth-param1"
                      }
                   }
+               },
+               "403" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/RestServiceError"
+                        }
+                     }
+                  },
+                  "description" : "Forbidden - insufficient permissions to process the request."
+               },
+               "422" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/RestServiceError"
+                        }
+                     }
+                  },
+                  "description" : "Unprocessable Entity - a request validation error."
+               },
+               "500" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/RestServiceError"
+                        }
+                     }
+                  },
+                  "description" : "Internal Server Error - the server could not process the request."
+               }
+            }
+         }
+      },
+      "/transfers/{id}" : {
+         "get" : {
+            "tags" : [
+               "Transfers"
+            ],
+            "summary" : "Get a transfer",
+            "description" : "Returns a transfer.",
+            "x-addedInVersion" : "4",
+            "operationId" : "get-transfers-id",
+            "x-sortIndex" : 4,
+            "x-methodName" : "getTransfer",
+            "security" : [
+               {
+                  "clientKey" : [
+                     ]
+               },
+               {
+                  "BasicAuth" : [
+                     ]
+               },
+               {
+                  "ApiKeyAuth" : [
+                     ]
+               }
+            ],
+            "parameters" : [
+               {
+                  "description" : "Unique identifier of the transfer.",
+                  "name" : "id",
+                  "in" : "path",
+                  "required" : true,
+                  "schema" : {
+                     "type" : "string"
+                  }
+               }
+            ],
+            "responses" : {
+               "200" : {
+                  "content" : {
+                     "application/json" : {
+                        "examples" : {
+                           "success" : {
+                              "$ref" : "#/components/examples/get-transfers-id-success-200"
+                           }
+                        },
+                        "schema" : {
+                           "$ref" : "#/components/schemas/TransferData"
+                        }
+                     }
+                  },
+                  "description" : "OK - the request has succeeded."
+               },
+               "401" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/RestServiceError"
+                        }
+                     }
+                  },
+                  "description" : "Unauthorized - authentication required."
                },
                "403" : {
                   "content" : {
@@ -885,6 +1187,12 @@
                   "minLength" : 6,
                   "type" : "string"
                },
+               "formFactor" : {
+                  "default" : "physical",
+                  "description" : "The form factor of the account.\n\nPossible values: **physical**, **virtual**. Default value: **physical**.",
+                  "nullable" : true,
+                  "type" : "string"
+               },
                "type" : {
                   "default" : "auLocal",
                   "description" : "**auLocal**",
@@ -970,6 +1278,33 @@
             ],
             "type" : "object"
          },
+         "AmountAdjustment" : {
+            "properties" : {
+               "amount" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "The adjustment amount.",
+                  "$ref" : "#/components/schemas/Amount"
+               },
+               "amountAdjustmentType" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "The type of markup that is applied to an authorised payment.\n\nPossible values: **exchange**, **forexMarkup**, **authHoldReserve**, **atmMarkup**.",
+                  "enum" : [
+                     "atmMarkup",
+                     "authHoldReserve",
+                     "exchange",
+                     "forexMarkup"
+                  ],
+                  "type" : "string"
+               },
+               "basepoints" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "The basepoints associated with the applied markup.",
+                  "format" : "int32",
+                  "type" : "integer"
+               }
+            },
+            "type" : "object"
+         },
          "BRLocalAccountIdentification" : {
             "additionalProperties" : false,
             "properties" : {
@@ -991,6 +1326,12 @@
                   "minLength" : 1,
                   "type" : "string"
                },
+               "formFactor" : {
+                  "default" : "physical",
+                  "description" : "The form factor of the account.\n\nPossible values: **physical**, **virtual**. Default value: **physical**.",
+                  "nullable" : true,
+                  "type" : "string"
+               },
                "type" : {
                   "default" : "brLocal",
                   "description" : "**brLocal**",
@@ -1006,6 +1347,34 @@
                "accountNumber",
                "bankCode"
             ],
+            "type" : "object"
+         },
+         "BalanceMutation" : {
+            "properties" : {
+               "balance" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "The amount in the payment's currency that is debited or credited on the balance accounting register.",
+                  "format" : "int64",
+                  "type" : "integer"
+               },
+               "currency" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).",
+                  "type" : "string"
+               },
+               "received" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "The amount in the payment's currency that is debited or credited on the received accounting register.",
+                  "format" : "int64",
+                  "type" : "integer"
+               },
+               "reserved" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "The amount in the payment's currency that is debited or credited on the reserved accounting register.",
+                  "format" : "int64",
+                  "type" : "integer"
+               }
+            },
             "type" : "object"
          },
          "BankAccountV3" : {
@@ -1119,6 +1488,12 @@
                   ],
                   "type" : "string"
                },
+               "formFactor" : {
+                  "default" : "physical",
+                  "description" : "The form factor of the account.\n\nPossible values: **physical**, **virtual**. Default value: **physical**.",
+                  "nullable" : true,
+                  "type" : "string"
+               },
                "institutionNumber" : {
                   "description" : "The 3-digit institution number, without separators or whitespace.",
                   "maxLength" : 3,
@@ -1161,6 +1536,12 @@
                   "description" : "The 4-digit bank code (Kód banky), without separators or whitespace.",
                   "maxLength" : 4,
                   "minLength" : 4,
+                  "type" : "string"
+               },
+               "formFactor" : {
+                  "default" : "physical",
+                  "description" : "The form factor of the account.\n\nPossible values: **physical**, **virtual**. Default value: **physical**.",
+                  "nullable" : true,
                   "type" : "string"
                },
                "type" : {
@@ -1368,6 +1749,12 @@
                   "minLength" : 4,
                   "type" : "string"
                },
+               "formFactor" : {
+                  "default" : "physical",
+                  "description" : "The form factor of the account.\n\nPossible values: **physical**, **virtual**. Default value: **physical**.",
+                  "nullable" : true,
+                  "type" : "string"
+               },
                "type" : {
                   "default" : "dkLocal",
                   "description" : "**dkLocal**",
@@ -1396,6 +1783,22 @@
             ],
             "type" : "object"
          },
+         "FindTransfersResponse" : {
+            "properties" : {
+               "_links" : {
+                  "description" : "Contains links to the next and previous page whenever applicable.",
+                  "$ref" : "#/components/schemas/Links"
+               },
+               "data" : {
+                  "description" : "Contains the transfers that match the query parameters.",
+                  "items" : {
+                     "$ref" : "#/components/schemas/TransferData"
+                  },
+                  "type" : "array"
+               }
+            },
+            "type" : "object"
+         },
          "HKLocalAccountIdentification" : {
             "additionalProperties" : false,
             "properties" : {
@@ -1409,6 +1812,12 @@
                   "description" : "The 3-digit clearing code, without separators or whitespace.",
                   "maxLength" : 3,
                   "minLength" : 3,
+                  "type" : "string"
+               },
+               "formFactor" : {
+                  "default" : "physical",
+                  "description" : "The form factor of the account.\n\nPossible values: **physical**, **virtual**. Default value: **physical**.",
+                  "nullable" : true,
                   "type" : "string"
                },
                "type" : {
@@ -1436,6 +1845,12 @@
                   "minLength" : 24,
                   "type" : "string"
                },
+               "formFactor" : {
+                  "default" : "physical",
+                  "description" : "The form factor of the account.\n\nPossible values: **physical**, **virtual**. Default value: **physical**.",
+                  "nullable" : true,
+                  "type" : "string"
+               },
                "type" : {
                   "default" : "huLocal",
                   "description" : "**huLocal**",
@@ -1454,6 +1869,12 @@
          "IbanAccountIdentification" : {
             "additionalProperties" : false,
             "properties" : {
+               "formFactor" : {
+                  "default" : "physical",
+                  "description" : "The form factor of the account.\n\nPossible values: **physical**, **virtual**. Default value: **physical**.",
+                  "nullable" : true,
+                  "type" : "string"
+               },
                "iban" : {
                   "description" : "The international bank account number as defined in the [ISO-13616](https://www.iso.org/standard/81090.html) standard.",
                   "type" : "string"
@@ -1596,6 +2017,7 @@
          "Link" : {
             "properties" : {
                "href" : {
+                  "description" : "The link to the resource.",
                   "type" : "string"
                }
             },
@@ -1639,6 +2061,103 @@
             },
             "type" : "object"
          },
+         "Modification" : {
+            "properties" : {
+               "direction" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "The direction of the money movement.",
+                  "type" : "string"
+               },
+               "id" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "Our reference for the modification.",
+                  "type" : "string"
+               },
+               "reference" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "Your reference for the modification, used internally within your platform.",
+                  "type" : "string"
+               },
+               "status" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "The status of the transfer event.",
+                  "enum" : [
+                     "approvalPending",
+                     "atmWithdrawal",
+                     "atmWithdrawalReversalPending",
+                     "atmWithdrawalReversed",
+                     "authAdjustmentAuthorised",
+                     "authAdjustmentError",
+                     "authAdjustmentRefused",
+                     "authorised",
+                     "bankTransfer",
+                     "bankTransferPending",
+                     "booked",
+                     "bookingPending",
+                     "cancelled",
+                     "capturePending",
+                     "captureReversalPending",
+                     "captureReversed",
+                     "captured",
+                     "capturedExternally",
+                     "chargeback",
+                     "chargebackExternally",
+                     "chargebackPending",
+                     "chargebackReversalPending",
+                     "chargebackReversed",
+                     "credited",
+                     "depositCorrection",
+                     "depositCorrectionPending",
+                     "dispute",
+                     "disputeClosed",
+                     "disputeExpired",
+                     "disputeNeedsReview",
+                     "error",
+                     "expired",
+                     "failed",
+                     "fee",
+                     "feePending",
+                     "internalTransfer",
+                     "internalTransferPending",
+                     "invoiceDeduction",
+                     "invoiceDeductionPending",
+                     "manualCorrectionPending",
+                     "manuallyCorrected",
+                     "matchedStatement",
+                     "matchedStatementPending",
+                     "merchantPayin",
+                     "merchantPayinPending",
+                     "merchantPayinReversed",
+                     "merchantPayinReversedPending",
+                     "miscCost",
+                     "miscCostPending",
+                     "paymentCost",
+                     "paymentCostPending",
+                     "received",
+                     "refundPending",
+                     "refundReversalPending",
+                     "refundReversed",
+                     "refunded",
+                     "refundedExternally",
+                     "refused",
+                     "rejected",
+                     "reserveAdjustment",
+                     "reserveAdjustmentPending",
+                     "returned",
+                     "secondChargeback",
+                     "secondChargebackPending",
+                     "undefined"
+                  ],
+                  "type" : "string"
+               },
+               "type" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "The type of transfer modification.",
+                  "type" : "string"
+               }
+            },
+            "type" : "object"
+         },
          "NOLocalAccountIdentification" : {
             "additionalProperties" : false,
             "properties" : {
@@ -1646,6 +2165,12 @@
                   "description" : "The 11-digit bank account number, without separators or whitespace.",
                   "maxLength" : 11,
                   "minLength" : 11,
+                  "type" : "string"
+               },
+               "formFactor" : {
+                  "default" : "physical",
+                  "description" : "The form factor of the account.\n\nPossible values: **physical**, **virtual**. Default value: **physical**.",
+                  "nullable" : true,
                   "type" : "string"
                },
                "type" : {
@@ -1670,6 +2195,12 @@
                   "description" : "The 15-16 digit bank account number. The first 2 digits are the bank number, the next 4 digits are the branch number, the next 7 digits are the account number, and the final 2-3 digits are the suffix.",
                   "maxLength" : 16,
                   "minLength" : 15,
+                  "type" : "string"
+               },
+               "formFactor" : {
+                  "default" : "physical",
+                  "description" : "The form factor of the account.\n\nPossible values: **physical**, **virtual**. Default value: **physical**.",
+                  "nullable" : true,
                   "type" : "string"
                },
                "type" : {
@@ -1734,6 +2265,12 @@
                   "minLength" : 8,
                   "type" : "string"
                },
+               "formFactor" : {
+                  "default" : "physical",
+                  "description" : "The form factor of the account.\n\nPossible values: **physical**, **virtual**. Default value: **physical**.",
+                  "nullable" : true,
+                  "type" : "string"
+               },
                "type" : {
                   "default" : "numberAndBic",
                   "description" : "**numberAndBic**",
@@ -1757,6 +2294,12 @@
                   "description" : "The 26-digit bank account number ([Numer rachunku](https://pl.wikipedia.org/wiki/Numer_Rachunku_Bankowego)), without separators or whitespace.",
                   "maxLength" : 26,
                   "minLength" : 26,
+                  "type" : "string"
+               },
+               "formFactor" : {
+                  "default" : "physical",
+                  "description" : "The form factor of the account.\n\nPossible values: **physical**, **virtual**. Default value: **physical**.",
+                  "nullable" : true,
                   "type" : "string"
                },
                "type" : {
@@ -2077,6 +2620,12 @@
                   "minLength" : 4,
                   "type" : "string"
                },
+               "formFactor" : {
+                  "default" : "physical",
+                  "description" : "The form factor of the account.\n\nPossible values: **physical**, **virtual**. Default value: **physical**.",
+                  "nullable" : true,
+                  "type" : "string"
+               },
                "type" : {
                   "default" : "seLocal",
                   "description" : "**seLocal**",
@@ -2106,6 +2655,12 @@
                   "description" : "The bank's 8- or 11-character BIC or SWIFT code.",
                   "maxLength" : 11,
                   "minLength" : 8,
+                  "type" : "string"
+               },
+               "formFactor" : {
+                  "default" : "physical",
+                  "description" : "The form factor of the account.\n\nPossible values: **physical**, **virtual**. Default value: **physical**.",
+                  "nullable" : true,
                   "type" : "string"
                },
                "type" : {
@@ -2211,7 +2766,7 @@
                "transfer" : {
                   "x-addedInVersion" : "4",
                   "description" : "Contains information about the transfer related to the transaction.",
-                  "$ref" : "#/components/schemas/TransferData"
+                  "$ref" : "#/components/schemas/TransferView"
                },
                "valueDate" : {
                   "x-addedInVersion" : "1",
@@ -2230,6 +2785,91 @@
                "valueDate",
                "balancePlatform"
             ],
+            "type" : "object"
+         },
+         "TransactionEventViolation" : {
+            "properties" : {
+               "reason" : {
+                  "description" : "An explanation about why the transaction rule failed.",
+                  "type" : "string"
+               },
+               "transactionRule" : {
+                  "description" : "Contains information about the transaction rule.",
+                  "$ref" : "#/components/schemas/TransactionRuleReference"
+               },
+               "transactionRuleSource" : {
+                  "description" : "Contains the type and ID of the resource to which the transaction rule is linked.",
+                  "$ref" : "#/components/schemas/TransactionRuleSource"
+               }
+            },
+            "type" : "object"
+         },
+         "TransactionRuleReference" : {
+            "properties" : {
+               "description" : {
+                  "description" : "The description of the resource.",
+                  "type" : "string"
+               },
+               "id" : {
+                  "description" : "The unique identifier of the resource.",
+                  "type" : "string"
+               },
+               "outcomeType" : {
+                  "x-addedInVersion" : "4",
+                  "description" : "The outcome type of the rule.",
+                  "type" : "string"
+               },
+               "reference" : {
+                  "description" : "The reference for the resource.",
+                  "type" : "string"
+               },
+               "score" : {
+                  "x-addedInVersion" : "4",
+                  "description" : "The score of the rule in case it's a scoreBased rule.",
+                  "format" : "int32",
+                  "type" : "integer"
+               }
+            },
+            "type" : "object"
+         },
+         "TransactionRuleSource" : {
+            "properties" : {
+               "id" : {
+                  "description" : "ID of the resource, when applicable.",
+                  "type" : "string"
+               },
+               "type" : {
+                  "description" : "Indicates the type of resource for which the transaction rule is defined.\n\nPossible values:\n\n * **PaymentInstrumentGroup**\n\n* **PaymentInstrument**\n\n* **BalancePlatform**\n\n* **EntityUsageConfiguration**\n\n* **PlatformRule**: The transaction rule is a platform-wide rule imposed by Adyen.",
+                  "type" : "string"
+               }
+            },
+            "type" : "object"
+         },
+         "TransactionRulesResult" : {
+            "properties" : {
+               "advice" : {
+                  "description" : "The advice given by the Risk analysis.",
+                  "type" : "string"
+               },
+               "allHardBlockRulesPassed" : {
+                  "x-addedInVersion" : "4",
+                  "description" : "Indicates whether the transaction passed the evaluation for all hardblock rules",
+                  "type" : "boolean"
+               },
+               "score" : {
+                  "description" : "The score of the Risk analysis.",
+                  "format" : "int32",
+                  "type" : "integer"
+               },
+               "triggeredTransactionRules" : {
+                  "x-addedInVersion" : "4",
+                  "description" : "Array containing all the transaction rules that the transaction triggered.",
+                  "items" : {
+                     "$ref" : "#/components/schemas/TransactionEventViolation"
+                  },
+                  "type" : "array"
+               }
+            },
             "type" : "object"
          },
          "TransactionSearchResponse" : {
@@ -2425,12 +3065,56 @@
                      "refunded",
                      "refundedExternally",
                      "refused",
+                     "rejected",
                      "reserveAdjustment",
                      "reserveAdjustmentPending",
                      "returned",
                      "secondChargeback",
                      "secondChargebackPending",
                      "undefined"
+                  ],
+                  "type" : "string"
+               },
+               "type" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "The type of transfer or transaction. For example, **refund**, **payment**, **internalTransfer**, **bankTransfer**.",
+                  "enum" : [
+                     "atmWithdrawal",
+                     "atmWithdrawalReversal",
+                     "balanceAdjustment",
+                     "balanceMigration",
+                     "balanceRollover",
+                     "bankDirectDebit",
+                     "bankTransfer",
+                     "capture",
+                     "captureReversal",
+                     "cardTransfer",
+                     "cashOutFee",
+                     "cashOutFunding",
+                     "cashOutInstruction",
+                     "chargeback",
+                     "chargebackCorrection",
+                     "chargebackReversal",
+                     "chargebackReversalCorrection",
+                     "depositCorrection",
+                     "fee",
+                     "grant",
+                     "installment",
+                     "installmentReversal",
+                     "internalDirectDebit",
+                     "internalTransfer",
+                     "invoiceDeduction",
+                     "leftover",
+                     "manualCorrection",
+                     "miscCost",
+                     "payment",
+                     "paymentCost",
+                     "refund",
+                     "refundReversal",
+                     "repayment",
+                     "reserveAdjustment",
+                     "secondChargeback",
+                     "secondChargebackCorrection"
                   ],
                   "type" : "string"
                }
@@ -2445,19 +3129,450 @@
          },
          "TransferData" : {
             "properties" : {
+               "accountHolder" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "The account holder associated with the balance account used in the transfer.",
+                  "$ref" : "#/components/schemas/ResourceReference"
+               },
+               "amount" : {
+                  "x-addedInVersion" : "1",
+                  "description" : "The amount of the transfer.",
+                  "$ref" : "#/components/schemas/Amount"
+               },
+               "balanceAccount" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "Contains information about the balance account involved in the transfer.",
+                  "$ref" : "#/components/schemas/ResourceReference"
+               },
+               "balancePlatform" : {
+                  "description" : "The unique identifier of the balance platform.",
+                  "type" : "string"
+               },
+               "balances" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "The list of the latest balance statuses in the transfer.",
+                  "items" : {
+                     "$ref" : "#/components/schemas/BalanceMutation"
+                  },
+                  "type" : "array"
+               },
+               "category" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "The category of transfer.\n\nPossible values:\n\n - **bank**: Transfer to a [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments__resParam_id) or a bank account.\n\n- **internal**: Transfer to another [balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__resParam_id) within your platform.\n\n- **issuedCard**: Transfer initiated by a Adyen-issued card.\n\n- **platformPayment**: Fund movements related to payments that are acquired for your users.",
+                  "enum" : [
+                     "bank",
+                     "internal",
+                     "issuedCard",
+                     "platformPayment"
+                  ],
+                  "type" : "string"
+               },
+               "categoryData" : {
+                  "x-addedInVersion" : "4",
+                  "description" : "The relevant data according to the transfer category.",
+                  "oneOf" : [
+                     {
+                        "$ref" : "#/components/schemas/BankCategoryData"
+                     },
+                     {
+                        "$ref" : "#/components/schemas/InternalCategoryData"
+                     },
+                     {
+                        "$ref" : "#/components/schemas/IssuedCard"
+                     },
+                     {
+                        "$ref" : "#/components/schemas/PlatformPayment"
+                     }
+                  ]
+               },
+               "counterparty" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "The other party in the transfer.",
+                  "$ref" : "#/components/schemas/TransferNotificationCounterParty"
+               },
+               "creationDate" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "The date and time when the event was triggered, in ISO 8601 extended format. For example, **2020-12-18T10:15:30+01:00**.",
+                  "format" : "date-time",
+                  "type" : "string"
+               },
+               "description" : {
+                  "x-addedInVersion" : "1",
+                  "description" : "Your description for the transfer. It is used by most banks as the transfer description. We recommend sending a maximum of 140 characters, otherwise the description may be truncated.\n\nSupported characters: **[a-z] [A-Z] [0-9] / - ?** **: ( ) . , ' + Space**\n\nSupported characters for **regular** and **fast** transfers to a US counterparty: **[a-z] [A-Z] [0-9] & $ % # @** **~ = + - _ ' \" ! ?**",
+                  "type" : "string"
+               },
+               "direction" : {
+                  "x-addedInVersion" : "2",
+                  "description" : "The direction of the transfer.\n\nPossible values: **incoming**, **outgoing**.",
+                  "enum" : [
+                     "incoming",
+                     "outgoing"
+                  ],
+                  "type" : "string"
+               },
+               "events" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "The list of events leading up to the current status of the transfer.",
+                  "items" : {
+                     "$ref" : "#/components/schemas/TransferEvent"
+                  },
+                  "type" : "array"
+               },
                "id" : {
                   "description" : "The ID of the resource.",
                   "type" : "string"
                },
+               "paymentInstrument" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "Contains information about the payment instrument used in the transfer.",
+                  "$ref" : "#/components/schemas/PaymentInstrument"
+               },
+               "reason" : {
+                  "x-addedInVersion" : "2",
+                  "description" : "Additional information about the status of the transfer.",
+                  "enum" : [
+                     "amountLimitExceeded",
+                     "approved",
+                     "balanceAccountTemporarilyBlockedByTransactionRule",
+                     "counterpartyAccountBlocked",
+                     "counterpartyAccountClosed",
+                     "counterpartyAccountNotFound",
+                     "counterpartyAddressRequired",
+                     "counterpartyBankTimedOut",
+                     "counterpartyBankUnavailable",
+                     "declinedByTransactionRule",
+                     "error",
+                     "notEnoughBalance",
+                     "refusedByCounterpartyBank",
+                     "routeNotFound",
+                     "scaFailed",
+                     "unknown"
+                  ],
+                  "type" : "string"
+               },
                "reference" : {
-                  "x-addedInVersion" : "4",
-                  "description" : "The [`reference`](https://docs.adyen.com/api-explorer/#/transfers/latest/post/transfers__reqParam_reference) from the `/transfers` request. If you haven't provided any, Adyen generates a unique reference.",
+                  "x-addedInVersion" : "2",
+                  "description" : "Your reference for the transfer, used internally within your platform. If you don't provide this in the request, Adyen generates a unique reference.",
+                  "maxLength" : 80,
+                  "type" : "string"
+               },
+               "referenceForBeneficiary" : {
+                  "x-addedInVersion" : "2",
+                  "description" : " A reference that is sent to the recipient. This reference is also sent in all webhooks related to the transfer, so you can use it to track statuses for both the source and recipient of funds.\n\n Supported characters: **a-z**, **A-Z**, **0-9**. The maximum length depends on the `category`.\n\n- **internal**: 80 characters\n\n- **bank**: 35 characters when transferring to an IBAN, 15 characters for others.",
+                  "maxLength" : 80,
+                  "type" : "string"
+               },
+               "sequenceNumber" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "The sequence number of the transfer notification. The numbers start from 1 and increase with each new notification for a specific transfer.\n\nIt can help you restore the correct sequence of events even if they arrive out of order.",
+                  "format" : "int32",
+                  "type" : "integer"
+               },
+               "status" : {
+                  "x-addedInVersion" : "2",
+                  "description" : "The result of the transfer.\n\n For example, **authorised**, **refused**, or **error**.",
+                  "enum" : [
+                     "approvalPending",
+                     "atmWithdrawal",
+                     "atmWithdrawalReversalPending",
+                     "atmWithdrawalReversed",
+                     "authAdjustmentAuthorised",
+                     "authAdjustmentError",
+                     "authAdjustmentRefused",
+                     "authorised",
+                     "bankTransfer",
+                     "bankTransferPending",
+                     "booked",
+                     "bookingPending",
+                     "cancelled",
+                     "capturePending",
+                     "captureReversalPending",
+                     "captureReversed",
+                     "captured",
+                     "capturedExternally",
+                     "chargeback",
+                     "chargebackExternally",
+                     "chargebackPending",
+                     "chargebackReversalPending",
+                     "chargebackReversed",
+                     "credited",
+                     "depositCorrection",
+                     "depositCorrectionPending",
+                     "dispute",
+                     "disputeClosed",
+                     "disputeExpired",
+                     "disputeNeedsReview",
+                     "error",
+                     "expired",
+                     "failed",
+                     "fee",
+                     "feePending",
+                     "internalTransfer",
+                     "internalTransferPending",
+                     "invoiceDeduction",
+                     "invoiceDeductionPending",
+                     "manualCorrectionPending",
+                     "manuallyCorrected",
+                     "matchedStatement",
+                     "matchedStatementPending",
+                     "merchantPayin",
+                     "merchantPayinPending",
+                     "merchantPayinReversed",
+                     "merchantPayinReversedPending",
+                     "miscCost",
+                     "miscCostPending",
+                     "paymentCost",
+                     "paymentCostPending",
+                     "received",
+                     "refundPending",
+                     "refundReversalPending",
+                     "refundReversed",
+                     "refunded",
+                     "refundedExternally",
+                     "refused",
+                     "rejected",
+                     "reserveAdjustment",
+                     "reserveAdjustmentPending",
+                     "returned",
+                     "secondChargeback",
+                     "secondChargebackPending",
+                     "undefined"
+                  ],
+                  "type" : "string"
+               },
+               "tracking" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "The tracking information for the transfer.",
+                  "$ref" : "#/components/schemas/TransferNotificationTransferTracking"
+               },
+               "transactionRulesResult" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "Contains the results of the evaluation of the transaction rules.",
+                  "$ref" : "#/components/schemas/TransactionRulesResult"
+               },
+               "type" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "The type of transfer or transaction. For example, **refund**, **payment**, **internalTransfer**, **bankTransfer**.",
+                  "enum" : [
+                     "atmWithdrawal",
+                     "atmWithdrawalReversal",
+                     "balanceAdjustment",
+                     "balanceMigration",
+                     "balanceRollover",
+                     "bankDirectDebit",
+                     "bankTransfer",
+                     "capture",
+                     "captureReversal",
+                     "cardTransfer",
+                     "cashOutFee",
+                     "cashOutFunding",
+                     "cashOutInstruction",
+                     "chargeback",
+                     "chargebackCorrection",
+                     "chargebackReversal",
+                     "chargebackReversalCorrection",
+                     "depositCorrection",
+                     "fee",
+                     "grant",
+                     "installment",
+                     "installmentReversal",
+                     "internalDirectDebit",
+                     "internalTransfer",
+                     "invoiceDeduction",
+                     "leftover",
+                     "manualCorrection",
+                     "miscCost",
+                     "payment",
+                     "paymentCost",
+                     "refund",
+                     "refundReversal",
+                     "repayment",
+                     "reserveAdjustment",
+                     "secondChargeback",
+                     "secondChargebackCorrection"
+                  ],
                   "type" : "string"
                }
             },
             "required" : [
-               "reference"
+               "status",
+               "category",
+               "amount"
             ],
+            "type" : "object"
+         },
+         "TransferEvent" : {
+            "properties" : {
+               "amount" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "The original journal amount.",
+                  "$ref" : "#/components/schemas/Amount"
+               },
+               "amountAdjustments" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "The amount adjustments in this transfer.",
+                  "items" : {
+                     "$ref" : "#/components/schemas/AmountAdjustment"
+                  },
+                  "type" : "array"
+               },
+               "bookingDate" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "The date when the transfer request was sent.",
+                  "format" : "date-time",
+                  "type" : "string"
+               },
+               "estimatedArrivalTime" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "The estimated time the beneficiary should have access to the funds.",
+                  "format" : "date-time",
+                  "type" : "string"
+               },
+               "id" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "The unique identifier of the transfer event.",
+                  "type" : "string"
+               },
+               "modification" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "Payment modification.",
+                  "$ref" : "#/components/schemas/Modification"
+               },
+               "mutations" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "The list of the balance mutation per event.",
+                  "items" : {
+                     "$ref" : "#/components/schemas/BalanceMutation"
+                  },
+                  "type" : "array"
+               },
+               "originalAmount" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "The amount in the original currency.",
+                  "$ref" : "#/components/schemas/Amount"
+               },
+               "reason" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "The reason for the transfer status.",
+                  "enum" : [
+                     "amountLimitExceeded",
+                     "approved",
+                     "balanceAccountTemporarilyBlockedByTransactionRule",
+                     "counterpartyAccountBlocked",
+                     "counterpartyAccountClosed",
+                     "counterpartyAccountNotFound",
+                     "counterpartyAddressRequired",
+                     "counterpartyBankTimedOut",
+                     "counterpartyBankUnavailable",
+                     "declinedByTransactionRule",
+                     "error",
+                     "notEnoughBalance",
+                     "refusedByCounterpartyBank",
+                     "routeNotFound",
+                     "scaFailed",
+                     "unknown"
+                  ],
+                  "type" : "string"
+               },
+               "status" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "The status of the transfer event.",
+                  "enum" : [
+                     "approvalPending",
+                     "atmWithdrawal",
+                     "atmWithdrawalReversalPending",
+                     "atmWithdrawalReversed",
+                     "authAdjustmentAuthorised",
+                     "authAdjustmentError",
+                     "authAdjustmentRefused",
+                     "authorised",
+                     "bankTransfer",
+                     "bankTransferPending",
+                     "booked",
+                     "bookingPending",
+                     "cancelled",
+                     "capturePending",
+                     "captureReversalPending",
+                     "captureReversed",
+                     "captured",
+                     "capturedExternally",
+                     "chargeback",
+                     "chargebackExternally",
+                     "chargebackPending",
+                     "chargebackReversalPending",
+                     "chargebackReversed",
+                     "credited",
+                     "depositCorrection",
+                     "depositCorrectionPending",
+                     "dispute",
+                     "disputeClosed",
+                     "disputeExpired",
+                     "disputeNeedsReview",
+                     "error",
+                     "expired",
+                     "failed",
+                     "fee",
+                     "feePending",
+                     "internalTransfer",
+                     "internalTransferPending",
+                     "invoiceDeduction",
+                     "invoiceDeductionPending",
+                     "manualCorrectionPending",
+                     "manuallyCorrected",
+                     "matchedStatement",
+                     "matchedStatementPending",
+                     "merchantPayin",
+                     "merchantPayinPending",
+                     "merchantPayinReversed",
+                     "merchantPayinReversedPending",
+                     "miscCost",
+                     "miscCostPending",
+                     "paymentCost",
+                     "paymentCostPending",
+                     "received",
+                     "refundPending",
+                     "refundReversalPending",
+                     "refundReversed",
+                     "refunded",
+                     "refundedExternally",
+                     "refused",
+                     "rejected",
+                     "reserveAdjustment",
+                     "reserveAdjustmentPending",
+                     "returned",
+                     "secondChargeback",
+                     "secondChargebackPending",
+                     "undefined"
+                  ],
+                  "type" : "string"
+               },
+               "transactionId" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "The id of the transaction that is related to this accounting event. Only sent for events of type **accounting** where the balance changes.",
+                  "type" : "string"
+               },
+               "type" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "The type of the transfer event. Possible values: **accounting**, **tracking**.",
+                  "enum" : [
+                     "accounting",
+                     "tracking"
+                  ],
+                  "type" : "string"
+               },
+               "updateDate" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "The date when the tracking status was updated.",
+                  "format" : "date-time",
+                  "type" : "string"
+               },
+               "valueDate" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "A future date, when the funds are expected to be deducted from or credited to the balance account.",
+                  "format" : "date-time",
+                  "type" : "string"
+               }
+            },
             "type" : "object"
          },
          "TransferInfo" : {
@@ -2536,6 +3651,79 @@
             ],
             "type" : "object"
          },
+         "TransferNotificationCounterParty" : {
+            "properties" : {
+               "balanceAccountId" : {
+                  "description" : "Unique identifier of the [balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__resParam_id).",
+                  "type" : "string"
+               },
+               "bankAccount" : {
+                  "description" : "Contains information about the bank account.",
+                  "$ref" : "#/components/schemas/BankAccountV3"
+               },
+               "merchant" : {
+                  "description" : "Contains information about the merchant.",
+                  "$ref" : "#/components/schemas/TransferNotificationMerchantData"
+               },
+               "transferInstrumentId" : {
+                  "description" : "Unique identifier of the [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments__resParam_id).",
+                  "type" : "string"
+               }
+            },
+            "type" : "object"
+         },
+         "TransferNotificationMerchantData" : {
+            "properties" : {
+               "acquirerId" : {
+                  "description" : "The unique identifier of the merchant's acquirer.",
+                  "type" : "string"
+               },
+               "city" : {
+                  "description" : "The city where the merchant is located.",
+                  "type" : "string"
+               },
+               "country" : {
+                  "description" : "The country where the merchant is located.",
+                  "type" : "string"
+               },
+               "mcc" : {
+                  "description" : "The merchant category code.",
+                  "type" : "string"
+               },
+               "merchantId" : {
+                  "description" : "The merchant identifier.",
+                  "type" : "string"
+               },
+               "name" : {
+                  "description" : "The name of the merchant's shop or service.",
+                  "type" : "string"
+               },
+               "postalCode" : {
+                  "description" : "The merchant postal code.",
+                  "type" : "string"
+               }
+            },
+            "type" : "object"
+         },
+         "TransferNotificationTransferTracking" : {
+            "properties" : {
+               "estimatedArrivalTime" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "The estimated time the beneficiary should have access to the funds.",
+                  "format" : "date-time",
+                  "type" : "string"
+               },
+               "status" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "The tracking status of the transfer.",
+                  "enum" : [
+                     "credited"
+                  ],
+                  "type" : "string"
+               }
+            },
+            "type" : "object"
+         },
          "TransferNotificationValidationFact" : {
             "properties" : {
                "result" : {
@@ -2549,6 +3737,23 @@
             },
             "type" : "object"
          },
+         "TransferView" : {
+            "properties" : {
+               "id" : {
+                  "description" : "The ID of the resource.",
+                  "type" : "string"
+               },
+               "reference" : {
+                  "x-addedInVersion" : "4",
+                  "description" : "The [`reference`](https://docs.adyen.com/api-explorer/#/transfers/latest/post/transfers__reqParam_reference) from the `/transfers` request. If you haven't provided any, Adyen generates a unique reference.",
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "reference"
+            ],
+            "type" : "object"
+         },
          "UKLocalAccountIdentification" : {
             "additionalProperties" : false,
             "properties" : {
@@ -2556,6 +3761,12 @@
                   "description" : "The 8-digit bank account number, without separators or whitespace.",
                   "maxLength" : 8,
                   "minLength" : 8,
+                  "type" : "string"
+               },
+               "formFactor" : {
+                  "default" : "physical",
+                  "description" : "The form factor of the account.\n\nPossible values: **physical**, **virtual**. Default value: **physical**.",
+                  "nullable" : true,
                   "type" : "string"
                },
                "sortCode" : {
@@ -2596,6 +3807,12 @@
                      "checking",
                      "savings"
                   ],
+                  "type" : "string"
+               },
+               "formFactor" : {
+                  "default" : "physical",
+                  "description" : "The form factor of the account.\n\nPossible values: **physical**, **virtual**. Default value: **physical**.",
+                  "nullable" : true,
                   "type" : "string"
                },
                "routingNumber" : {
@@ -2827,6 +4044,275 @@
                }
             }
          },
+         "get-transfers-id-success-200" : {
+            "summary" : "Response code - 200 OK",
+            "description" : "Example response for a transfer",
+            "value" : {
+               "balancePlatform" : "YOUR_BALANCE_PLATFORM",
+               "creationDate" : "2021-05-03T15:20:06+02:00",
+               "id" : "1W1UG35QQEBJLHZ8",
+               "accountHolder" : {
+                  "description" : "S. Eller - Staff 123",
+                  "id" : "AH32272223222B5CZW6QZ2V34"
+               },
+               "amount" : {
+                  "currency" : "EUR",
+                  "value" : 5400
+               },
+               "balanceAccount" : {
+                  "description" : "My Balance Account",
+                  "id" : "BA3227C223222B5B9SCR82TMV"
+               },
+               "category" : "internal",
+               "categoryData" : {
+                  "type" : "internal"
+               },
+               "counterparty" : {
+                  "balanceAccountId" : "BA00000000000000000000001"
+               },
+               "description" : "Your description",
+               "direction" : "outgoing",
+               "reason" : "approved",
+               "reference" : "312M2060T6S4UOIF",
+               "status" : "booked",
+               "balances" : [
+                  {
+                     "balance" : -5400,
+                     "currency" : "EUR",
+                     "received" : 0,
+                     "reserved" : 0
+                  }
+               ],
+               "events" : [
+                  {
+                     "bookingDate" : "2021-05-03T14:53:39+01:00",
+                     "id" : "EVJN4233Q22322375JQ72V55G92ZXF",
+                     "mutations" : [
+                        {
+                           "currency" : "EUR",
+                           "received" : -5400
+                        }
+                     ],
+                     "status" : "received",
+                     "type" : "accounting",
+                     "valueDate" : "2021-05-03T14:53:39+01:00"
+                  },
+                  {
+                     "bookingDate" : "2021-05-03T14:53:39+01:00",
+                     "id" : "EVJN4233Q22322375JQ72V55GB4TPV",
+                     "mutations" : [
+                        {
+                           "currency" : "EUR",
+                           "received" : 5400,
+                           "reserved" : -5400
+                        }
+                     ],
+                     "status" : "authorised",
+                     "type" : "accounting",
+                     "valueDate" : "2021-05-03T14:53:39+01:00"
+                  },
+                  {
+                     "bookingDate" : "2021-05-03T14:53:39+01:00",
+                     "id" : "EVJN4233Q22322375JQ72V55GD53HZ",
+                     "mutations" : [
+                        {
+                           "balance" : -5400,
+                           "currency" : "EUR",
+                           "received" : 0,
+                           "reserved" : 5400
+                        }
+                     ],
+                     "status" : "booked",
+                     "transactionId" : "EVJN4233Q22322375JQ72V55GD53HZEUR",
+                     "type" : "accounting",
+                     "valueDate" : "2021-05-03T14:53:39+01:00"
+                  }
+               ],
+               "sequenceNumber" : 3,
+               "type" : "internalTransfer"
+            }
+         },
+         "get-transfers-success-200" : {
+            "summary" : "Response code - 200 OK",
+            "description" : "Example response for a list of transfers",
+            "value" : {
+               "data" : [
+                  {
+                     "balancePlatform" : "YOUR_BALANCE_PLATFORM",
+                     "creationDate" : "2021-05-03T15:20:06+02:00",
+                     "id" : "1W1UG35QQEBJLHZ8",
+                     "accountHolder" : {
+                        "description" : "S. Eller - Staff 123",
+                        "id" : "AH32272223222B5CZW6QZ2V34"
+                     },
+                     "amount" : {
+                        "currency" : "EUR",
+                        "value" : 5400
+                     },
+                     "balanceAccount" : {
+                        "description" : "My Balance Account",
+                        "id" : "BA3227C223222B5B9SCR82TMV"
+                     },
+                     "category" : "internal",
+                     "categoryData" : {
+                        "type" : "internal"
+                     },
+                     "counterparty" : {
+                        "balanceAccountId" : "BA00000000000000000000001"
+                     },
+                     "description" : "Your description",
+                     "direction" : "outgoing",
+                     "reason" : "approved",
+                     "reference" : "312M2060T6S4UOIF",
+                     "status" : "booked",
+                     "balances" : [
+                        {
+                           "balance" : -5400,
+                           "currency" : "EUR",
+                           "received" : 0,
+                           "reserved" : 0
+                        }
+                     ],
+                     "events" : [
+                        {
+                           "bookingDate" : "2021-05-03T14:53:39+01:00",
+                           "id" : "EVJN4233Q22322375JQ72V55G92ZXF",
+                           "mutations" : [
+                              {
+                                 "currency" : "EUR",
+                                 "received" : -5400
+                              }
+                           ],
+                           "status" : "received",
+                           "type" : "accounting",
+                           "valueDate" : "2021-05-03T14:53:39+01:00"
+                        },
+                        {
+                           "bookingDate" : "2021-05-03T14:53:39+01:00",
+                           "id" : "EVJN4233Q22322375JQ72V55GB4TPV",
+                           "mutations" : [
+                              {
+                                 "currency" : "EUR",
+                                 "received" : 5400,
+                                 "reserved" : -5400
+                              }
+                           ],
+                           "status" : "authorised",
+                           "type" : "accounting",
+                           "valueDate" : "2021-05-03T14:53:39+01:00"
+                        },
+                        {
+                           "bookingDate" : "2021-05-03T14:53:39+01:00",
+                           "id" : "EVJN4233Q22322375JQ72V55GD53HZ",
+                           "mutations" : [
+                              {
+                                 "balance" : -5400,
+                                 "currency" : "EUR",
+                                 "received" : 0,
+                                 "reserved" : 5400
+                              }
+                           ],
+                           "status" : "booked",
+                           "transactionId" : "EVJN4233Q22322375JQ72V55GD53HZEUR",
+                           "type" : "accounting",
+                           "valueDate" : "2021-05-03T14:53:39+01:00"
+                        }
+                     ],
+                     "sequenceNumber" : 3,
+                     "type" : "internalTransfer"
+                  },
+                  {
+                     "balancePlatform" : "YOUR_BALANCE_PLATFORM",
+                     "creationDate" : "2021-08-02T15:20:06+02:00",
+                     "id" : "312M2060T5Z3YWYQ",
+                     "accountHolder" : {
+                        "description" : "S. Doe - Staff 124",
+                        "id" : "AH443397232222B5CZW6QZ2V34"
+                     },
+                     "amount" : {
+                        "currency" : "EUR",
+                        "value" : 15000
+                     },
+                     "balanceAccount" : {
+                        "description" : "My Balance Account",
+                        "id" : "BA3227C2582222B5B9SCR82VHM"
+                     },
+                     "category" : "internal",
+                     "categoryData" : {
+                        "type" : "internal"
+                     },
+                     "counterparty" : {
+                        "balanceAccountId" : "BA00000000000000000000001"
+                     },
+                     "description" : "Your description",
+                     "direction" : "outgoing",
+                     "reason" : "approved",
+                     "reference" : "312M2060T6S4UOIF",
+                     "status" : "booked",
+                     "balances" : [
+                        {
+                           "balance" : -15000,
+                           "currency" : "EUR",
+                           "received" : 0,
+                           "reserved" : 0
+                        }
+                     ],
+                     "events" : [
+                        {
+                           "bookingDate" : "2021-08-02T14:53:39+01:00",
+                           "id" : "EVJN4233Q22322375JQ72V55G92ZXF",
+                           "mutations" : [
+                              {
+                                 "currency" : "EUR",
+                                 "received" : -15000
+                              }
+                           ],
+                           "status" : "received",
+                           "type" : "accounting",
+                           "valueDate" : "2021-08-02T14:53:39+01:00"
+                        },
+                        {
+                           "bookingDate" : "2021-08-02T14:53:39+01:00",
+                           "id" : "EVJN4233Q22322375JQ72V55GB4TPV",
+                           "mutations" : [
+                              {
+                                 "currency" : "EUR",
+                                 "received" : 15000,
+                                 "reserved" : -15000
+                              }
+                           ],
+                           "status" : "authorised",
+                           "type" : "accounting",
+                           "valueDate" : "2021-08-02T14:53:39+01:00"
+                        },
+                        {
+                           "bookingDate" : "2021-08-02T14:53:39+01:00",
+                           "id" : "EVASDFOUPASFDHSADFA6SN65FG6TD53HZ",
+                           "mutations" : [
+                              {
+                                 "balance" : -15000,
+                                 "currency" : "EUR",
+                                 "received" : 0,
+                                 "reserved" : 15000
+                              }
+                           ],
+                           "status" : "booked",
+                           "transactionId" : "EVJN4233Q22322375JQ6SN65FG6TFTEUR",
+                           "type" : "accounting",
+                           "valueDate" : "2021-08-02T14:53:39+01:00"
+                        }
+                     ],
+                     "sequenceNumber" : 3,
+                     "type" : "internalTransfer"
+                  }
+               ],
+               "_links" : {
+                  "next" : {
+                     "href" : "https://balanceplatform-api-test.adyen.com/btl/v4/transfers?balancePlatform=YOUR_BALANCE_PLATFORM&createdUntil=2021-12-21T00%3A00%3A00Z&createdSince=2021-03-21T00%3A00%3A00Z&limit=2&cursor=S2B-TSAjOkIrYlIlbjdqe0RreHRyM32lKRSxubXBHRkhHL2E32XitQQz5SfzpucD5HbHwpM1p6NDR1eXVQLFF6MmY33J32sobDxQYT90MHIud1hwLnd6JitcX32xJ"
+                  }
+               }
+            }
+         },
          "post-grants-requestGrant" : {
             "summary" : "Request grant payout to a balance account",
             "description" : "Example request for grant payout",
@@ -2908,8 +4394,8 @@
                "description" : "Your description for the transfer"
             }
          },
-         "post-transfers-payout-cross-border-200" : {
-            "summary" : "Response code - 200 OK",
+         "post-transfers-payout-cross-border-202" : {
+            "summary" : "Response code - 202 Accepted",
             "description" : "Example response for a transfers request",
             "value" : {
                "id" : "1W1UG35U8A9J5ZLG",
@@ -2992,8 +4478,8 @@
                "description" : "Your description for the transfer"
             }
          },
-         "post-transfers-payout-local-transfer-sepa-200" : {
-            "summary" : "Response code - 200 OK",
+         "post-transfers-payout-local-transfer-sepa-202" : {
+            "summary" : "Response code - 202 Accepted",
             "description" : "Example response for a transfers request",
             "value" : {
                "id" : "1W1UG35U8A9J5ZLG",
@@ -3068,8 +4554,8 @@
                "description" : "Your description for the transfer"
             }
          },
-         "post-transfers-payout-local-transfer-us-200" : {
-            "summary" : "Response code - 200 OK",
+         "post-transfers-payout-local-transfer-us-202" : {
+            "summary" : "Response code - 202 Accepted",
             "description" : "Example response for a transfers request",
             "value" : {
                "id" : "1W1UG35U8A9J5ZLG",
@@ -3135,8 +4621,8 @@
                "description" : "Your description for the transfer"
             }
          },
-         "post-transfers-payout-to-balance-account-200" : {
-            "summary" : "Response code - 200 OK",
+         "post-transfers-payout-to-balance-account-202" : {
+            "summary" : "Response code - 202 Accepted",
             "description" : "Example response for a transfers request",
             "value" : {
                "id" : "1W1UG35U8A9J5ZLG",
@@ -3185,8 +4671,8 @@
                "description" : "Your description for the transfer"
             }
          },
-         "post-transfers-payout-to-transfer-instrument-200" : {
-            "summary" : "Response code - 200 OK",
+         "post-transfers-payout-to-transfer-instrument-202" : {
+            "summary" : "Response code - 202 Accepted",
             "description" : "Example response for a transfers request",
             "value" : {
                "id" : "1W1UG35U8A9J5ZLG",
