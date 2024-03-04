@@ -1,6 +1,6 @@
 openapi: 3.1.0
 info:
-  version: '1'
+  version: '2'
   x-publicVersion: true
   title: Configuration webhooks
   description: "Adyen sends webhooks to inform your system about events that occur\
@@ -377,18 +377,18 @@ components:
           type: string
         status:
           description: "The status of the account holder.\n\nPossible values: \n\n\
-            \ * **Active**: The account holder is active. This is the default status\
-            \ when creating an account holder. \n\n * **Inactive (Deprecated)**: The\
+            \ * **active**: The account holder is active. This is the default status\
+            \ when creating an account holder. \n\n * **inactive (Deprecated)**: The\
             \ account holder is temporarily inactive due to missing KYC details. You\
             \ can set the account back to active by providing the missing KYC details.\
-            \ \n\n * **Suspended**: The account holder is permanently deactivated\
-            \ by Adyen. This action cannot be undone. \n\n* **Closed**: The account\
+            \ \n\n * **suspended**: The account holder is permanently deactivated\
+            \ by Adyen. This action cannot be undone. \n\n* **closed**: The account\
             \ holder is permanently deactivated by you. This action cannot be undone."
           enum:
-          - Active
-          - Closed
-          - Inactive
-          - Suspended
+          - active
+          - closed
+          - inactive
+          - suspended
           type: string
         timeZone:
           description: 'The time zone of the account holder. For example, **Europe/Amsterdam**.
@@ -762,12 +762,6 @@ components:
           description: The unique identifier of the account of the migrated account
             holder in the classic integration.
           type: string
-        paymentInstruments:
-          description: List of [payment instruments](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/paymentInstruments)
-            associated with the balance account.
-          items:
-            $ref: '#/components/schemas/PaymentInstrumentReference'
-          type: array
         platformPaymentConfiguration:
           description: Contains key-value pairs to the configure the settlement model
             in a balance account.
@@ -777,13 +771,13 @@ components:
           maxLength: 150
           type: string
         status:
-          description: "The status of the balance account, set to **Active** by default.\
+          description: "The status of the balance account, set to **active** by default.\
             \ \n"
           enum:
-          - Active
-          - Closed
-          - Inactive
-          - Suspended
+          - active
+          - closed
+          - inactive
+          - suspended
           type: string
         timeZone:
           description: 'The time zone of the balance account. For example, **Europe/Amsterdam**.
@@ -1002,8 +996,9 @@ components:
             response for single-use virtual cards.'
           type: string
         deliveryContact:
+          x-addedInVersion: '2'
           description: The delivery contact (name and address) for physical card delivery.
-          $ref: '#/components/schemas/Contact'
+          $ref: '#/components/schemas/DeliveryContact'
         expiration:
           description: The expiration date of the card.
           $ref: '#/components/schemas/Expiry'
@@ -1186,33 +1181,6 @@ components:
       - type
       - data
       type: object
-    Contact:
-      properties:
-        address:
-          description: The address of the contact.
-          $ref: '#/components/schemas/Address'
-        email:
-          description: The e-mail address of the contact.
-          type: string
-        fullPhoneNumber:
-          description: 'The phone number of the contact provided as a single string.  It
-            will be handled as a landline phone.
-
-            **Examples:** "0031 6 11 22 33 44", "+316/1122-3344", "(0031) 611223344"'
-          type: string
-        name:
-          description: The name of the contact.
-          $ref: '#/components/schemas/Name'
-        personalData:
-          description: Personal data of the contact.
-          $ref: '#/components/schemas/PersonalData'
-        phoneNumber:
-          description: The phone number of the contact.
-          $ref: '#/components/schemas/PhoneNumber'
-        webAddress:
-          description: The URL of the website of the contact.
-          type: string
-      type: object
     ContactDetails:
       properties:
         address:
@@ -1230,6 +1198,74 @@ components:
       required:
       - email
       - phone
+      - address
+      type: object
+    DeliveryAddress:
+      properties:
+        city:
+          description: The name of the city.
+          type: string
+        country:
+          description: 'The two-character ISO-3166-1 alpha-2 country code. For example,
+            **US**.
+
+            >If you don''t know the country or are not collecting the country from
+            the shopper, provide `country` as `ZZ`.'
+          type: string
+        line1:
+          description: The street name. For example, if the address is "Rokin 49",
+            provide "Rokin".
+          type: string
+        line2:
+          description: The house number or name. For example, if the address is "Rokin
+            49", provide "49".
+          type: string
+        line3:
+          description: Optional information about the address.
+          type: string
+        postalCode:
+          description: 'The postal code.
+
+            Maximum length:
+
+            * 5 digits for an address in the US.
+
+            * 10 characters for an address in all other countries.'
+          type: string
+        stateOrProvince:
+          description: 'The two-letterISO 3166-2 state or province code. For example,
+            **CA** in the US or **ON** in Canada.
+
+            > Required for the US and Canada.'
+          type: string
+      required:
+      - country
+      type: object
+    DeliveryContact:
+      properties:
+        address:
+          description: The address of the contact.
+          $ref: '#/components/schemas/DeliveryAddress'
+        email:
+          description: The email address of the contact.
+          type: string
+        fullPhoneNumber:
+          description: 'The full phone number of the contact provided as a single
+            string. It will be handled as a landline phone.
+
+            **Examples:** "0031 6 11 22 33 44", "+316/1122-3344", "(0031) 611223344"'
+          type: string
+        name:
+          description: The name of the contact.
+          $ref: '#/components/schemas/Name'
+        phoneNumber:
+          description: The phone number of the contact.
+          $ref: '#/components/schemas/PhoneNumber'
+        webAddress:
+          description: The URL of the contact's website.
+          type: string
+      required:
+      - name
       - address
       type: object
     Expiry:
@@ -1326,28 +1362,42 @@ components:
           type: string
         status:
           description: "The status of the payment instrument. If a status is not specified\
-            \ when creating a payment instrument, it is set to **Active** by default.\
+            \ when creating a payment instrument, it is set to **active** by default.\
             \ However, there can be exceptions for cards based on the `card.formFactor`\
             \ and the `issuingCountryCode`. For example, when issuing physical cards\
-            \ in the US, the default status is **Requested**.\n\nPossible values:\
-            \ \n\n * **Active**:  The payment instrument is active and can be used\
-            \ to make payments. \n\n * **Requested**: The payment instrument has been\
-            \ requested. This state is applicable for physical cards. \n\n* **Inactive**:\
-            \ The payment instrument is inactive and cannot be used to make payments.\
-            \ \n\n * **Suspended**: The payment instrument is temporarily suspended\
-            \ and cannot be used to make payments. \n\n * **Closed**: The payment\
-            \ instrument is permanently closed. This action cannot be undone. \n\n\
-            * **Stolen** \n\n * **Lost**\n\n "
+            \ in the US, the default status is **inactive**.\n\nPossible values: \n\
+            \n * **active**:  The payment instrument is active and can be used to\
+            \ make payments. \n\n * **inactive**: The payment instrument is inactive\
+            \ and cannot be used to make payments. \n\n * **suspended**: The payment\
+            \ instrument is suspended, either because it was stolen or lost. \n\n\
+            \ * **closed**: The payment instrument is permanently closed. This action\
+            \ cannot be undone. \n\n"
           enum:
-          - Active
-          - Closed
-          - Inactive
-          - Lost
-          - Requested
-          - Stolen
-          - Suspended
-          - blocked
-          - discarded
+          - active
+          - closed
+          - inactive
+          - suspended
+          type: string
+        statusReason:
+          x-addedInVersion: '2'
+          description: 'The reason for the status of the payment instrument.
+
+
+            Possible values: **accountClosure**, **damaged**, **endOfLife**, **expired**,
+            **lost**, **stolen**, **suspectedFraud**, **transactionRule**, **other**.
+
+            If the reason is **other**, you must also send the `statusComment` parameter
+            describing the status change.'
+          enum:
+          - accountClosure
+          - damaged
+          - endOfLife
+          - expired
+          - lost
+          - other
+          - stolen
+          - suspectedFraud
+          - transactionRule
           type: string
         type:
           description: 'Type of payment instrument.
@@ -1374,14 +1424,6 @@ components:
             that triggered the event.
           $ref: '#/components/schemas/PaymentInstrument'
       type: object
-    PaymentInstrumentReference:
-      properties:
-        id:
-          description: The unique identifier of the payment instrument.
-          type: string
-      required:
-      - id
-      type: object
     PaymentNotificationRequest:
       properties:
         data:
@@ -1404,25 +1446,6 @@ components:
       - type
       - data
       type: object
-    PersonalData:
-      properties:
-        dateOfBirth:
-          description: 'The date of birth of the person.
-
-            The date should be in ISO-8601 format yyyy-mm-dd (e.g. 2000-01-31).'
-          type: string
-        idNumber:
-          description: An ID number of the person.
-          type: string
-        nationality:
-          description: 'The nationality of the person represented by a two-character
-            country code.
-
-            >The permitted country codes are defined in ISO-3166-1 alpha-2 (e.g. ''NL'').'
-          maxLength: 2
-          minLength: 2
-          type: string
-      type: object
     Phone:
       properties:
         number:
@@ -1433,8 +1456,8 @@ components:
         type:
           description: "Type of phone number.\nPossible values: \n**Landline**, **Mobile**.\n"
           enum:
-          - Landline
-          - Mobile
+          - landline
+          - mobile
           type: string
       required:
       - number
@@ -1557,6 +1580,17 @@ components:
       type: object
     SweepConfigurationV2:
       properties:
+        category:
+          x-addedInVersion: '2'
+          description: "The type of transfer that results from the sweep.\n\nPossible\
+            \ values:\n\n - **bank**: Sweep to a [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments__resParam_id).\n\
+            \n- **internal**: Transfer to another [balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__resParam_id)\
+            \ within your platform.\n\nRequired when setting `priorities`."
+          enum:
+          - bank
+          - internal
+          - platformPayment
+          type: string
         counterparty:
           description: 'The destination or the source of the funds, depending on the
             sweep `type`.
@@ -1583,6 +1617,51 @@ components:
         id:
           description: The unique identifier of the sweep.
           type: string
+        priorities:
+          x-addedInVersion: '2'
+          description: 'The list of priorities for the bank transfer. This sets the
+            speed at which the transfer is sent and the fees that you have to pay.
+            You can provide multiple priorities. Adyen will try to pay out using the
+            priority listed first, and if that''s not possible, it moves on to the
+            next option in the order of provided priorities.
+
+
+            Possible values:
+
+
+            * **regular**: For normal, low-value transactions.
+
+
+            * **fast**: Faster way to transfer funds but has higher fees. Recommended
+            for high-priority, low-value transactions.
+
+
+            * **wire**: Fastest way to transfer funds but has the highest fees. Recommended
+            for high-priority, high-value transactions.
+
+
+            * **instant**: Instant way to transfer funds in [SEPA countries](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).
+
+
+            * **crossBorder**: High-value transfer to a recipient in a different country.
+
+
+            * **internal**: Transfer to an Adyen-issued business bank account (by
+            bank account number/IBAN).
+
+
+            Set `category` to **bank**. For more details, see [optional priorities
+            setup](https://docs.adyen.com/marketplaces-and-platforms/payout-to-users/scheduled-payouts#optional-priorities-setup).'
+          items:
+            enum:
+            - crossBorder
+            - fast
+            - instant
+            - internal
+            - regular
+            - wire
+            type: string
+          type: array
         reason:
           description: The reason for disabling the sweep.
           enum:
@@ -2070,7 +2149,7 @@ components:
               email: test@adyen.com
               phone:
                 number: 0612345678
-                type: Mobile
+                type: mobile
               address:
                 houseNumberOrName: '23'
                 city: Amsterdam
@@ -2078,7 +2157,7 @@ components:
                 postalCode: '12345'
                 street: Main Street 1
             description: Shelly Eller
-            legalEntityId: LE00000000000000000000001
+            legalEntityId: LE00000000000000000001
             reference: YOUR_REFERENCE-2412C
             capabilities:
               issueCard:
@@ -2106,8 +2185,8 @@ components:
                 requested: true
                 allowed: false
                 verificationStatus: pending
-            id: AH00000000000000000000001
-            status: Active
+            id: AH00000000000000000001
+            status: active
         environment: test
         type: balancePlatform.accountHolder.created
     post-balancePlatform.accountHolder.created-balancePlatform-accountHolder-created-lem-v3:
@@ -2118,7 +2197,7 @@ components:
         data:
           balancePlatform: YOUR_BALANCE_PLATFORM
           accountHolder:
-            legalEntityId: LE00000000000000000000001
+            legalEntityId: LE00000000000000000001
             reference: YOUR_REFERENCE-2412C
             capabilities:
               sendToTransferInstrument:
@@ -2127,7 +2206,7 @@ components:
                 allowed: false
                 problems:
                 - entity:
-                    id: LE00000000000000000000001
+                    id: LE00000000000000000001
                     type: LegalEntity
                   verificationErrors:
                   - code: '2_902'
@@ -2137,7 +2216,7 @@ components:
                       message: Accept TOS
                     type: invalidInput
                 - entity:
-                    id: SE00000000000000000000001
+                    id: SE00000000000000000001
                     type: BankAccount
                   verificationErrors:
                   - code: '2_8037'
@@ -2147,7 +2226,7 @@ components:
                       message: Upload a bank statement
                     type: dataMissing
                 - entity:
-                    id: SE00000000000000000000002
+                    id: SE00000000000000000002
                     type: BankAccount
                   verificationErrors:
                   - code: '2_8037'
@@ -2157,7 +2236,7 @@ components:
                       message: Upload a bank statement
                     type: dataMissing
                 - entity:
-                    id: LE00000000000000000000001
+                    id: LE00000000000000000001
                     type: LegalEntity
                   verificationErrors:
                   - code: '2_8189'
@@ -2190,16 +2269,16 @@ components:
                 - enabled: true
                   requested: true
                   allowed: false
-                  id: SE00000000000000000000001
+                  id: SE00000000000000000001
                   verificationStatus: pending
                 - enabled: true
                   requested: true
                   allowed: false
-                  id: SE00000000000000000000002
+                  id: SE00000000000000000002
                   verificationStatus: pending
                 verificationStatus: pending
-            id: AH00000000000000000000001
-            status: Active
+            id: AH00000000000000000001
+            status: active
         environment: live
         type: balancePlatform.accountHolder.created
     post-balancePlatform.accountHolder.updated-balancePlatform-accountHolder-updated:
@@ -2211,7 +2290,7 @@ components:
           balancePlatform: YOUR_BALANCE_PLATFORM
           accountHolder:
             description: Shelly Eller
-            legalEntityId: LE00000000000000000000001
+            legalEntityId: LE00000000000000000001
             reference: YOUR_REFERENCE-2412C
             capabilities:
               sendToTransferInstrument:
@@ -2220,7 +2299,7 @@ components:
                 allowed: false
                 problems:
                 - entity:
-                    id: LE00000000000000000000001
+                    id: LE00000000000000000001
                     type: BankAccount
                   verificationErrors:
                   - code: '2_8037'
@@ -2230,8 +2309,8 @@ components:
                       message: Upload a bank statement
                     type: dataMissing
                 verificationStatus: invalid
-            id: AH00000000000000000000001
-            status: Active
+            id: AH00000000000000000001
+            status: active
         environment: test
         type: balancePlatform.accountHolder.updated
     post-balancePlatform.accountHolder.updated-balancePlatform-accountHolder-updated-lem-v3:
@@ -2242,7 +2321,7 @@ components:
         data:
           balancePlatform: YOUR_BALANCE_PLATFORM
           accountHolder:
-            legalEntityId: LE00000000000000000000001
+            legalEntityId: LE00000000000000000001
             reference: YOUR_REFERENCE-2412C
             capabilities:
               sendToTransferInstrument:
@@ -2251,7 +2330,7 @@ components:
                 allowed: false
                 problems:
                 - entity:
-                    id: LE00000000000000000000001
+                    id: LE00000000000000000001
                     type: LegalEntity
                   verificationErrors:
                   - code: '2_902'
@@ -2261,7 +2340,7 @@ components:
                       message: Accept TOS
                     type: invalidInput
                 - entity:
-                    id: SE00000000000000000000001
+                    id: SE00000000000000000001
                     type: BankAccount
                   verificationErrors:
                   - code: '2_8037'
@@ -2271,7 +2350,7 @@ components:
                       message: Upload a bank statement
                     type: dataMissing
                 - entity:
-                    id: SE00000000000000000000002
+                    id: SE00000000000000000002
                     type: BankAccount
                   verificationErrors:
                   - code: '2_8037'
@@ -2281,7 +2360,7 @@ components:
                       message: Upload a bank statement
                     type: dataMissing
                 - entity:
-                    id: LE00000000000000000000001
+                    id: LE00000000000000000001
                     type: LegalEntity
                   verificationErrors:
                   - code: '2_8189'
@@ -2314,16 +2393,16 @@ components:
                 - enabled: true
                   requested: true
                   allowed: false
-                  id: SE00000000000000000000001
+                  id: SE00000000000000000001
                   verificationStatus: pending
                 - enabled: true
                   requested: true
                   allowed: false
-                  id: SE00000000000000000000002
+                  id: SE00000000000000000002
                   verificationStatus: pending
                 verificationStatus: pending
-            id: AH00000000000000000000001
-            status: Active
+            id: AH00000000000000000001
+            status: active
         environment: live
         type: balancePlatform.accountHolder.updated
     post-balancePlatform.balanceAccount.created-balancePlatform-balanceAccount-created:
@@ -2336,7 +2415,7 @@ components:
             accountHolderId: AH00000000000000000001
             defaultCurrencyCode: EUR
             id: BA00000000000000000001
-            status: Active
+            status: active
         environment: test
         type: balancePlatform.balanceAccount.created
     post-balancePlatform.balanceAccount.updated-balancePlatform-balanceAccount-updated:
@@ -2349,7 +2428,7 @@ components:
             accountHolderId: AH00000000000000000001
             defaultCurrencyCode: EUR
             id: BA00000000000000000001
-            status: Active
+            status: active
             timeZone: Europe/Amsterdam
         environment: test
         type: balancePlatform.balanceAccount.updated
@@ -2435,7 +2514,7 @@ components:
             balanceAccountId: BA00000000000000000001
             description: C. Holden - card
             issuingCountryCode: GB
-            status: Active
+            status: active
             type: card
             card:
               cardholderName: Carl Holden
@@ -2461,7 +2540,7 @@ components:
             balanceAccountId: BA00000000000000000001
             description: C. Holden - card
             issuingCountryCode: GB
-            status: Suspended
+            status: suspended
             type: card
             card:
               cardholderName: Carl Holden
