@@ -882,7 +882,7 @@ paths:
                 add-allowed-origin:
                   $ref: '#/components/examples/post-companies-companyId-apiCredentials-apiCredentialId-allowedOrigins-add-allowed-origin-200'
               schema:
-                $ref: '#/components/schemas/AllowedOriginsResponse'
+                $ref: '#/components/schemas/AllowedOrigin'
           description: OK - the request has succeeded.
         '400':
           content:
@@ -4335,7 +4335,7 @@ paths:
                 add-allowed-origin:
                   $ref: '#/components/examples/post-merchants-merchantId-apiCredentials-apiCredentialId-allowedOrigins-add-allowed-origin-200'
               schema:
-                $ref: '#/components/schemas/AllowedOriginsResponse'
+                $ref: '#/components/schemas/AllowedOrigin'
           description: OK - the request has succeeded.
         '204':
           description: No Content - the request has been successfully processed, but
@@ -13187,8 +13187,8 @@ components:
     SplitConfigurationLogic:
       properties:
         acquiringFees:
-          description: 'Specifies the logic to apply when booking the transaction
-            fees. Should be combined with adyenFees.
+          description: 'Deducts the acquiring fees (the aggregated amount of interchange
+            and scheme fee) from the specified balance account.
 
 
             Possible values: **deductFromLiableAccount**, **deductFromOneBalanceAccount**.'
@@ -13197,12 +13197,14 @@ components:
           - deductFromOneBalanceAccount
           type: string
         additionalCommission:
-          description: Contains the logic used to calculate your user's commission,
-            booked directly to their balance account.
+          description: Defines whether to book an additional commission for payments
+            to your user's balance account. The commission amount can be defined as
+            a fixed amount (specified in minor units), a percentage (specified in
+            basis points), or both.
           $ref: '#/components/schemas/AdditionalCommission'
         adyenCommission:
-          description: 'Specifies the logic to apply when booking the transaction
-            fees. Should be combined with schemeFee, interchange & adyenMarkup.
+          description: 'Deducts the transaction fee due to Adyen under [blended rates](https://www.adyen.com/knowledge-hub/guides/payments-training-guide/get-the-best-from-your-card-processing)
+            from the specified balance account.
 
 
             Possible values: **deductFromLiableAccount**, **deductFromOneBalanceAccount**.'
@@ -13211,8 +13213,8 @@ components:
           - deductFromOneBalanceAccount
           type: string
         adyenFees:
-          description: 'Specifies the logic to apply when booking the transaction
-            fees. Should be combined with acquiringFees.
+          description: 'Deducts the fees due to Adyen (markup or commission) from
+            the specified balance account.
 
 
             Possible values: **deductFromLiableAccount**, **deductFromOneBalanceAccount**.'
@@ -13221,8 +13223,9 @@ components:
           - deductFromOneBalanceAccount
           type: string
         adyenMarkup:
-          description: 'Specifies the logic to apply when booking the transaction
-            fees. Should be combined with schemeFee, adyenCommission & interchange.
+          description: 'Deducts the transaction fee due to Adyen under [Interchange
+            ++ pricing](https://www.adyen.com/what-is-interchange) from the specified
+            balance account.
 
 
             Possible values: **deductFromLiableAccount**, **deductFromOneBalanceAccount**.'
@@ -13231,7 +13234,8 @@ components:
           - deductFromOneBalanceAccount
           type: string
         chargeback:
-          description: 'Specifies the logic to apply when booking the chargeback amount.
+          description: 'Specifies how and from which balance account(s) to deduct
+            the chargeback amount.
 
 
             Possible values: **deductFromLiableAccount**, **deductFromOneBalanceAccount**,
@@ -13242,8 +13246,7 @@ components:
           - deductAccordingToSplitRatio
           type: string
         chargebackCostAllocation:
-          description: 'Specifies the logic to apply when allocating the chargeback
-            costs.
+          description: 'Deducts the chargeback costs from the specified balance account.
 
 
             Possible values: **deductFromLiableAccount**, **deductFromOneBalanceAccount**'
@@ -13252,12 +13255,13 @@ components:
           - deductFromOneBalanceAccount
           type: string
         commission:
-          description: Contains the logic used to the calculate your platform's commission,
-            booked to your liable balance account.
+          description: Defines your platform's commission for the processed payments
+            as a fixed amount (specified in minor units), a percentage (specified
+            in basis points), or both. The commission is booked to your platform's
+            liable balance account.
           $ref: '#/components/schemas/Commission'
         interchange:
-          description: 'Specifies the logic to apply when booking the transaction
-            fees. Should be combined with schemeFee, adyenCommission & adyenMarkup.
+          description: 'Deducts the interchange fee from specified balance account.
 
 
             Possible values: **deductFromLiableAccount**, **deductFromOneBalanceAccount**.'
@@ -13266,8 +13270,37 @@ components:
           - deductFromOneBalanceAccount
           type: string
         paymentFee:
-          description: 'Specifies the logic to apply when booking the transaction
-            fees. Cannot be combined with other fees.
+          description: 'Deducts all transaction fees incurred by the payment from
+            the specified balance account. The transaction fees include the acquiring
+            fees (interchange and scheme fee), and the fees due to Adyen (markup or
+            commission). You can book any and all these fees to different balance
+            account by specifying other transaction fee parameters in your split configuration
+            profile:
+
+
+            - [`adyenCommission`](https://docs.adyen.com/api-explorer/Management/latest/post/merchants/(merchantId)/splitConfigurations#request-rules-splitLogic-adyenCommission):
+            The transaction fee due to Adyen under [blended rates](https://www.adyen.com/knowledge-hub/guides/payments-training-guide/get-the-best-from-your-card-processing).
+
+            - [`adyenMarkup`](https://docs.adyen.com/api-explorer/Management/latest/post/merchants/(merchantId)/splitConfigurations#request-rules-splitLogic-adyenMarkup):
+            The transaction fee due to Adyen under [Interchange ++ pricing](https://www.adyen.com/what-is-interchange).
+
+            - [`schemeFee`](https://docs.adyen.com/api-explorer/Management/latest/post/merchants/(merchantId)/splitConfigurations#request-rules-splitLogic-schemeFee):
+            The fee paid to the card scheme for using their network.
+
+            - [`interchange`](https://docs.adyen.com/api-explorer/Management/latest/post/merchants/(merchantId)/splitConfigurations#request-rules-splitLogic-interchange):
+            The fee paid to the issuer for each payment transaction made with the
+            card network.
+
+            - [`adyenFees`](https://docs.adyen.com/api-explorer/Management/latest/post/merchants/(merchantId)/splitConfigurations#request-rules-splitLogic-adyenFees):
+            The aggregated amount of Adyen''s commission and markup.
+
+            - [`acquiringFees`](https://docs.adyen.com/api-explorer/Management/latest/post/merchants/(merchantId)/splitConfigurations#request-rules-splitLogic-acquiringFees):
+            The aggregated amount of the interchange and scheme fees.
+
+
+            If you don''t include at least one transaction fee type in the `splitLogic`
+            object, Adyen updates the payment request with the `paymentFee` parameter,
+            booking all transaction fees to your platform''s liable balance account.
 
 
             Possible values: **deductFromLiableAccount**, **deductFromOneBalanceAccount**.'
@@ -13275,9 +13308,21 @@ components:
           - deductFromLiableAccount
           - deductFromOneBalanceAccount
           type: string
+        refund:
+          description: 'Specifies how and from which balance account(s) to deduct
+            the refund amount.
+
+
+            Possible values: **deductFromLiableAccount**, **deductFromOneBalanceAccount**,
+            **deductAccordingToSplitRatio**'
+          enum:
+          - deductFromLiableAccount
+          - deductFromOneBalanceAccount
+          - deductAccordingToSplitRatio
+          type: string
         remainder:
-          description: 'Specifies the logic to apply when booking the amount left
-            over after currency conversion.
+          description: 'Books the amount left over after currency conversion to the
+            specified balance account.
 
 
             Possible values: **addToLiableAccount**, **addToOneBalanceAccount**.'
@@ -13286,8 +13331,7 @@ components:
           - addToOneBalanceAccount
           type: string
         schemeFee:
-          description: 'Specifies the logic to apply when booking the transaction
-            fees. Should be combined with interchange, adyenCommission & adyenMarkup.
+          description: 'Deducts the scheme fee from the specified balance account.
 
 
             Possible values: **deductFromLiableAccount**, **deductFromOneBalanceAccount**.'
@@ -13296,12 +13340,12 @@ components:
           - deductFromOneBalanceAccount
           type: string
         splitLogicId:
-          description: Unique identifier of the split logic that is applied when the
-            split configuration conditions are met.
+          description: Unique identifier of the collection of split instructions that
+            are applied when the rule conditions are met.
           readOnly: true
           type: string
         surcharge:
-          description: 'Specifies the logic to apply when booking the surcharge amount.
+          description: 'Books the surcharge amount to the specified balance account.
 
 
             Possible values: **addToLiableAccount**, **addToOneBalanceAccount**'
@@ -13310,7 +13354,7 @@ components:
           - addToOneBalanceAccount
           type: string
         tip:
-          description: 'Specifies the logic to apply when booking tips (gratuity).
+          description: 'Books the tips (gratuity) to the specified balance account.
 
 
             Possible values: **addToLiableAccount**, **addToOneBalanceAccount**.'
@@ -14605,8 +14649,8 @@ components:
     UpdateSplitConfigurationLogicRequest:
       properties:
         acquiringFees:
-          description: 'Specifies the logic to apply when booking the transaction
-            fees. Should be combined with adyenFees.
+          description: 'Deducts the acquiring fees (the aggregated amount of interchange
+            and scheme fee) from the specified balance account.
 
 
             Possible values: **deductFromLiableAccount**, **deductFromOneBalanceAccount**.'
@@ -14615,12 +14659,14 @@ components:
           - deductFromOneBalanceAccount
           type: string
         additionalCommission:
-          description: Contains the logic used to calculate your user's commission,
-            booked directly to their balance account.
+          description: Defines whether to book an additional commission for payments
+            to your user's balance account. The commission amount can be defined as
+            a fixed amount (specified in minor units), a percentage (specified in
+            basis points), or both.
           $ref: '#/components/schemas/AdditionalCommission'
         adyenCommission:
-          description: 'Specifies the logic to apply when booking the transaction
-            fees. Should be combined with schemeFee, interchange & adyenMarkup.
+          description: 'Deducts the transaction fee due to Adyen under [blended rates](https://www.adyen.com/knowledge-hub/guides/payments-training-guide/get-the-best-from-your-card-processing)
+            from the specified balance account.
 
 
             Possible values: **deductFromLiableAccount**, **deductFromOneBalanceAccount**.'
@@ -14629,8 +14675,8 @@ components:
           - deductFromOneBalanceAccount
           type: string
         adyenFees:
-          description: 'Specifies the logic to apply when booking the transaction
-            fees. Should be combined with acquiringFees.
+          description: 'Deducts the fees due to Adyen (markup or commission) from
+            the specified balance account.
 
 
             Possible values: **deductFromLiableAccount**, **deductFromOneBalanceAccount**.'
@@ -14639,8 +14685,9 @@ components:
           - deductFromOneBalanceAccount
           type: string
         adyenMarkup:
-          description: 'Specifies the logic to apply when booking the transaction
-            fees. Should be combined with schemeFee, adyenCommission & interchange.
+          description: 'Deducts the transaction fee due to Adyen under [Interchange
+            ++ pricing](https://www.adyen.com/what-is-interchange) from the specified
+            balance account.
 
 
             Possible values: **deductFromLiableAccount**, **deductFromOneBalanceAccount**.'
@@ -14649,7 +14696,8 @@ components:
           - deductFromOneBalanceAccount
           type: string
         chargeback:
-          description: 'Specifies the logic to apply when booking the chargeback amount.
+          description: 'Specifies how and from which balance account(s) to deduct
+            the chargeback amount.
 
 
             Possible values: **deductFromLiableAccount**, **deductFromOneBalanceAccount**,
@@ -14660,8 +14708,7 @@ components:
           - deductAccordingToSplitRatio
           type: string
         chargebackCostAllocation:
-          description: 'Specifies the logic to apply when allocating the chargeback
-            costs.
+          description: 'Deducts the chargeback costs from the specified balance account.
 
 
             Possible values: **deductFromLiableAccount**, **deductFromOneBalanceAccount**'
@@ -14670,12 +14717,13 @@ components:
           - deductFromOneBalanceAccount
           type: string
         commission:
-          description: Contains the logic used to the calculate your platform's commission,
-            booked to your liable balance account.
+          description: Defines your platform's commission for the processed payments
+            as a fixed amount (specified in minor units), a percentage (specified
+            in basis points), or both. The commission is booked to your platform's
+            liable balance account.
           $ref: '#/components/schemas/Commission'
         interchange:
-          description: 'Specifies the logic to apply when booking the transaction
-            fees. Should be combined with schemeFee, adyenCommission & adyenMarkup.
+          description: 'Deducts the interchange fee from specified balance account.
 
 
             Possible values: **deductFromLiableAccount**, **deductFromOneBalanceAccount**.'
@@ -14684,8 +14732,37 @@ components:
           - deductFromOneBalanceAccount
           type: string
         paymentFee:
-          description: 'Specifies the logic to apply when booking the transaction
-            fees. Cannot be combined with other fees.
+          description: 'Deducts all transaction fees incurred by the payment from
+            the specified balance account. The transaction fees include the acquiring
+            fees (interchange and scheme fee), and the fees due to Adyen (markup or
+            commission). You can book any and all these fees to different balance
+            account by specifying other transaction fee parameters in your split configuration
+            profile:
+
+
+            - [`adyenCommission`](https://docs.adyen.com/api-explorer/Management/latest/post/merchants/(merchantId)/splitConfigurations#request-rules-splitLogic-adyenCommission):
+            The transaction fee due to Adyen under [blended rates](https://www.adyen.com/knowledge-hub/guides/payments-training-guide/get-the-best-from-your-card-processing).
+
+            - [`adyenMarkup`](https://docs.adyen.com/api-explorer/Management/latest/post/merchants/(merchantId)/splitConfigurations#request-rules-splitLogic-adyenMarkup):
+            The transaction fee due to Adyen under [Interchange ++ pricing](https://www.adyen.com/what-is-interchange).
+
+            - [`schemeFee`](https://docs.adyen.com/api-explorer/Management/latest/post/merchants/(merchantId)/splitConfigurations#request-rules-splitLogic-schemeFee):
+            The fee paid to the card scheme for using their network.
+
+            - [`interchange`](https://docs.adyen.com/api-explorer/Management/latest/post/merchants/(merchantId)/splitConfigurations#request-rules-splitLogic-interchange):
+            The fee paid to the issuer for each payment transaction made with the
+            card network.
+
+            - [`adyenFees`](https://docs.adyen.com/api-explorer/Management/latest/post/merchants/(merchantId)/splitConfigurations#request-rules-splitLogic-adyenFees):
+            The aggregated amount of Adyen''s commission and markup.
+
+            - [`acquiringFees`](https://docs.adyen.com/api-explorer/Management/latest/post/merchants/(merchantId)/splitConfigurations#request-rules-splitLogic-acquiringFees):
+            The aggregated amount of the interchange and scheme fees.
+
+
+            If you don''t include at least one transaction fee type in the `splitLogic`
+            object, Adyen updates the payment request with the `paymentFee` parameter,
+            booking all transaction fees to your platform''s liable balance account.
 
 
             Possible values: **deductFromLiableAccount**, **deductFromOneBalanceAccount**.'
@@ -14693,9 +14770,21 @@ components:
           - deductFromLiableAccount
           - deductFromOneBalanceAccount
           type: string
+        refund:
+          description: 'Specifies how and from which balance account(s) to deduct
+            the refund amount.
+
+
+            Possible values: **deductFromLiableAccount**, **deductFromOneBalanceAccount**,
+            **deductAccordingToSplitRatio**'
+          enum:
+          - deductFromLiableAccount
+          - deductFromOneBalanceAccount
+          - deductAccordingToSplitRatio
+          type: string
         remainder:
-          description: 'Specifies the logic to apply when booking the amount left
-            over after currency conversion.
+          description: 'Books the amount left over after currency conversion to the
+            specified balance account.
 
 
             Possible values: **addToLiableAccount**, **addToOneBalanceAccount**.'
@@ -14704,8 +14793,7 @@ components:
           - addToOneBalanceAccount
           type: string
         schemeFee:
-          description: 'Specifies the logic to apply when booking the transaction
-            fees. Should be combined with interchange, adyenCommission & adyenMarkup.
+          description: 'Deducts the scheme fee from the specified balance account.
 
 
             Possible values: **deductFromLiableAccount**, **deductFromOneBalanceAccount**.'
@@ -14714,12 +14802,12 @@ components:
           - deductFromOneBalanceAccount
           type: string
         splitLogicId:
-          description: Unique identifier of the split logic that is applied when the
-            split configuration conditions are met.
+          description: Unique identifier of the collection of split instructions that
+            are applied when the rule conditions are met.
           readOnly: true
           type: string
         surcharge:
-          description: 'Specifies the logic to apply when booking the surcharge amount.
+          description: 'Books the surcharge amount to the specified balance account.
 
 
             Possible values: **addToLiableAccount**, **addToOneBalanceAccount**'
@@ -14728,7 +14816,7 @@ components:
           - addToOneBalanceAccount
           type: string
         tip:
-          description: 'Specifies the logic to apply when booking tips (gratuity).
+          description: 'Books the tips (gratuity) to the specified balance account.
 
 
             Possible values: **addToLiableAccount**, **addToOneBalanceAccount**.'
