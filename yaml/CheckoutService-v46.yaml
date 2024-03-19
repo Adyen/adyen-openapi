@@ -1998,6 +1998,37 @@ paths:
               schema:
                 $ref: '#/components/schemas/ServiceError'
           description: Internal Server Error - the server could not process the request.
+  /storedPaymentMethods:
+    post:
+      tags:
+      - Recurring
+      summary: Create a token to store payment details
+      description: Creates a token to store the shopper's payment details. This token
+        can be used for the shopper's future payments.
+      operationId: post-storedPaymentMethods
+      x-sortIndex: 1
+      x-methodName: storedPaymentMethods
+      security:
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoredPaymentMethodRequest'
+      parameters:
+      - $ref: '#/components/parameters/Idempotency-Key'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoredPaymentMethodResource'
+          description: Created - the request has been fulfilled and has resulted in
+            one or more new resources being created.
+          headers:
+            Idempotency-Key:
+              $ref: '#/components/headers/Idempotency-Key'
 components:
   schemas:
     AccountInfo:
@@ -7789,6 +7820,48 @@ components:
           description: The unique code of the group.
           type: string
       type: object
+    PaymentMethodToStore:
+      additionalProperties: false
+      properties:
+        brand:
+          description: 'Secondary brand of the card. For example: **plastix**, **hmclub**.'
+          type: string
+        cvc:
+          description: The card verification code. Only collect raw card data if you
+            are [fully PCI compliant](https://docs.adyen.com/development-resources/pci-dss-compliance-guide).
+          type: string
+        encryptedCardNumber:
+          description: The encrypted card number.
+          maxLength: 15000
+          type: string
+        encryptedExpiryMonth:
+          description: The encrypted card expiry month.
+          maxLength: 15000
+          type: string
+        encryptedExpiryYear:
+          description: The encrypted card expiry year.
+          maxLength: 15000
+          type: string
+        encryptedSecurityCode:
+          description: The encrypted card verification code.
+          maxLength: 15000
+          type: string
+        expiryMonth:
+          description: The card expiry month. Only collect raw card data if you are
+            [fully PCI compliant](https://docs.adyen.com/development-resources/pci-dss-compliance-guide).
+          type: string
+        expiryYear:
+          description: The card expiry year. Only collect raw card data if you are
+            [fully PCI compliant](https://docs.adyen.com/development-resources/pci-dss-compliance-guide).
+          type: string
+        holderName:
+          description: The name of the card holder.
+          type: string
+        number:
+          description: The card number. Only collect raw card data if you are [fully
+            PCI compliant](https://docs.adyen.com/development-resources/pci-dss-compliance-guide).
+          type: string
+      type: object
     PaymentMethodsGroup:
       additionalProperties: false
       properties:
@@ -10443,6 +10516,89 @@ components:
           - truemoney
           type: string
       title: Stored Payment Method
+      type: object
+    StoredPaymentMethodRequest:
+      additionalProperties: false
+      properties:
+        merchantAccount:
+          description: The merchant account identifier, with which you want to process
+            the transaction.
+          type: string
+        paymentMethod:
+          description: Contains the information required to store a payment method.
+          $ref: '#/components/schemas/PaymentMethodToStore'
+        shopperEmail:
+          description: The shopper's email address. We recommend that you provide
+            this data, as it is used in velocity fraud checks.
+          type: string
+        shopperIP:
+          description: The IP address of a shopper.
+          type: string
+        shopperReference:
+          description: A unique identifier for the shopper (for example, user ID or
+            account ID).
+          type: string
+      required:
+      - merchantAccount
+      - shopperReference
+      - paymentMethod
+      type: object
+    StoredPaymentMethodResource:
+      additionalProperties: false
+      properties:
+        brand:
+          description: The brand of the card.
+          type: string
+        expiryMonth:
+          description: The month the card expires.
+          type: string
+        expiryYear:
+          description: The year the card expires, for example **2022**.
+          type: string
+        holderName:
+          description: The unique payment method code.
+          type: string
+        iban:
+          description: The IBAN of the bank account.
+          type: string
+        id:
+          description: A unique identifier of this stored payment method.
+          type: string
+        lastFour:
+          description: The last four digits of the PAN.
+          type: string
+        name:
+          description: The display name of the stored payment method.
+          type: string
+        networkTxReference:
+          description: 'Returned in the response if you are not tokenizing with Adyen
+            and are using the Merchant-initiated transactions (MIT) framework from
+            Mastercard or Visa.
+
+
+            This contains either the Mastercard Trace ID or the Visa Transaction ID.'
+          type: string
+        shopperEmail:
+          description: "The shopper\u2019s email address."
+          type: string
+        shopperReference:
+          description: 'Your reference to uniquely identify this shopper, for example
+            user ID or account ID. Minimum length: 3 characters.
+
+            > Your reference must not include personally identifiable information
+            (PII), for example name or email address.'
+          maxLength: 256
+          minLength: 3
+          type: string
+        supportedShopperInteractions:
+          description: The supported shopper interactions for this stored payment
+            method.
+          items:
+            type: string
+          type: array
+        type:
+          description: The type of payment method.
+          type: string
       type: object
     SubInputDetail:
       additionalProperties: false

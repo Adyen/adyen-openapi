@@ -3212,6 +3212,57 @@
                   "description" : "OK - the request has succeeded."
                }
             }
+         },
+         "post" : {
+            "tags" : [
+               "Recurring"
+            ],
+            "summary" : "Create a token to store payment details",
+            "description" : "Creates a token to store the shopper's payment details. This token can be used for the shopper's future payments.",
+            "operationId" : "post-storedPaymentMethods",
+            "x-sortIndex" : 1,
+            "x-methodName" : "storedPaymentMethods",
+            "security" : [
+               {
+                  "BasicAuth" : [
+                     ]
+               },
+               {
+                  "ApiKeyAuth" : [
+                     ]
+               }
+            ],
+            "requestBody" : {
+               "content" : {
+                  "application/json" : {
+                     "schema" : {
+                        "$ref" : "#/components/schemas/StoredPaymentMethodRequest"
+                     }
+                  }
+               }
+            },
+            "parameters" : [
+               {
+                  "$ref" : "#/components/parameters/Idempotency-Key"
+               }
+            ],
+            "responses" : {
+               "201" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/StoredPaymentMethodResource"
+                        }
+                     }
+                  },
+                  "description" : "Created - the request has been fulfilled and has resulted in one or more new resources being created.",
+                  "headers" : {
+                     "Idempotency-Key" : {
+                        "$ref" : "#/components/headers/Idempotency-Key"
+                     }
+                  }
+               }
+            }
          }
       },
       "/storedPaymentMethods/{storedPaymentMethodId}" : {
@@ -10591,6 +10642,56 @@
             ],
             "type" : "object"
          },
+         "PaymentMethodToStore" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "brand" : {
+                  "description" : "Secondary brand of the card. For example: **plastix**, **hmclub**.",
+                  "type" : "string"
+               },
+               "cvc" : {
+                  "description" : "The card verification code. Only collect raw card data if you are [fully PCI compliant](https://docs.adyen.com/development-resources/pci-dss-compliance-guide).",
+                  "type" : "string"
+               },
+               "encryptedCardNumber" : {
+                  "description" : "The encrypted card number.",
+                  "maxLength" : 15000,
+                  "type" : "string"
+               },
+               "encryptedExpiryMonth" : {
+                  "description" : "The encrypted card expiry month.",
+                  "maxLength" : 15000,
+                  "type" : "string"
+               },
+               "encryptedExpiryYear" : {
+                  "description" : "The encrypted card expiry year.",
+                  "maxLength" : 15000,
+                  "type" : "string"
+               },
+               "encryptedSecurityCode" : {
+                  "description" : "The encrypted card verification code.",
+                  "maxLength" : 15000,
+                  "type" : "string"
+               },
+               "expiryMonth" : {
+                  "description" : "The card expiry month. Only collect raw card data if you are [fully PCI compliant](https://docs.adyen.com/development-resources/pci-dss-compliance-guide).",
+                  "type" : "string"
+               },
+               "expiryYear" : {
+                  "description" : "The card expiry year. Only collect raw card data if you are [fully PCI compliant](https://docs.adyen.com/development-resources/pci-dss-compliance-guide).",
+                  "type" : "string"
+               },
+               "holderName" : {
+                  "description" : "The name of the card holder.",
+                  "type" : "string"
+               },
+               "number" : {
+                  "description" : "The card number. Only collect raw card data if you are [fully PCI compliant](https://docs.adyen.com/development-resources/pci-dss-compliance-guide).",
+                  "type" : "string"
+               }
+            },
+            "type" : "object"
+         },
          "PaymentMethodsRequest" : {
             "additionalProperties" : false,
             "properties" : {
@@ -13337,6 +13438,48 @@
                }
             },
             "title" : "Stored Payment Method",
+            "type" : "object"
+         },
+         "StoredPaymentMethodRequest" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "merchantAccount" : {
+                  "description" : "The merchant account identifier, with which you want to process the transaction.",
+                  "type" : "string"
+               },
+               "paymentMethod" : {
+                  "description" : "Contains the information required to store a payment method.",
+                  "$ref" : "#/components/schemas/PaymentMethodToStore"
+               },
+               "recurringProcessingModel" : {
+                  "x-addedInVersion" : "70",
+                  "description" : "Defines a recurring payment type. Required when creating a token to store payment details.\nAllowed values:\n* `Subscription` – A transaction for a fixed or variable amount, which follows a fixed schedule.\n* `CardOnFile` – With a card-on-file (CoF) transaction, card details are stored to enable one-click or omnichannel journeys, or simply to streamline the checkout process. Any subscription not following a fixed schedule is also considered a card-on-file transaction.\n* `UnscheduledCardOnFile` – An unscheduled card-on-file (UCoF) transaction is a transaction that occurs on a non-fixed schedule and/or have variable amounts. For example, automatic top-ups when a cardholder's balance drops below a certain amount.\n",
+                  "enum" : [
+                     "CardOnFile",
+                     "Subscription",
+                     "UnscheduledCardOnFile"
+                  ],
+                  "type" : "string"
+               },
+               "shopperEmail" : {
+                  "description" : "The shopper's email address. We recommend that you provide this data, as it is used in velocity fraud checks.",
+                  "type" : "string"
+               },
+               "shopperIP" : {
+                  "description" : "The IP address of a shopper.",
+                  "type" : "string"
+               },
+               "shopperReference" : {
+                  "description" : "A unique identifier for the shopper (for example, user ID or account ID).",
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "merchantAccount",
+               "shopperReference",
+               "paymentMethod",
+               "recurringProcessingModel"
+            ],
             "type" : "object"
          },
          "StoredPaymentMethodResource" : {
