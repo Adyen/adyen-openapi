@@ -1997,6 +1997,85 @@ paths:
               schema:
                 $ref: '#/components/schemas/ServiceError'
           description: Internal Server Error - the server could not process the request.
+  /paypal/updateOrder:
+    post:
+      tags:
+      - Utility
+      summary: Updates the order for PayPal Express Checkout
+      description: Updates the order for PayPal Express Checkout. This can be used
+        to update the PayPal lightbox with an updated amount and delivery methods
+        based on the delivery address.
+      operationId: post-paypal-updateOrder
+      x-sortIndex: 3
+      x-methodName: updatesOrderForPaypalExpressCheckout
+      security:
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaypalUpdateOrderRequest'
+      parameters:
+      - $ref: '#/components/parameters/Idempotency-Key'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaypalUpdateOrderResponse'
+          description: OK - the request has succeeded.
+          headers:
+            Idempotency-Key:
+              $ref: '#/components/headers/Idempotency-Key'
+        '400':
+          content:
+            application/json:
+              examples:
+                generic:
+                  $ref: '#/components/examples/generic-400'
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Bad Request - a problem reading or understanding the request.
+        '401':
+          content:
+            application/json:
+              examples:
+                generic:
+                  $ref: '#/components/examples/generic-401'
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Unauthorized - authentication required.
+        '403':
+          content:
+            application/json:
+              examples:
+                generic:
+                  $ref: '#/components/examples/generic-403'
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Forbidden - insufficient permissions to process the request.
+        '422':
+          content:
+            application/json:
+              examples:
+                generic:
+                  $ref: '#/components/examples/generic-422'
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Unprocessable Entity - a request validation error.
+          headers:
+            Idempotency-Key:
+              $ref: '#/components/headers/Idempotency-Key'
+        '500':
+          content:
+            application/json:
+              examples:
+                generic:
+                  $ref: '#/components/examples/generic-500'
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Internal Server Error - the server could not process the request.
   /sessions:
     post:
       tags:
@@ -6695,6 +6774,29 @@ components:
       - postalCode
       - country
       type: object
+    DeliveryMethod:
+      additionalProperties: false
+      properties:
+        amount:
+          description: The cost of this delivery method.
+          $ref: '#/components/schemas/Amount'
+        description:
+          description: The name of the delivery method as shown to the shopper.
+          type: string
+        reference:
+          description: The reference of the delivery method.
+          type: string
+        selected:
+          description: If you display the PayPal lightbox with delivery methods, set
+            to **true** for the delivery method that is selected. Only one delivery
+            method can be selected at a time.
+          type: boolean
+        type:
+          description: The type of the delivery method.
+          enum:
+          - Shipping
+          type: string
+      type: object
     DeviceRenderOptions:
       additionalProperties: false
       properties:
@@ -11305,6 +11407,46 @@ components:
       - merchantReference
       - paymentMethod
       - shopperLocale
+      type: object
+    PaypalUpdateOrderRequest:
+      additionalProperties: false
+      properties:
+        amount:
+          description: The updated final payment amount. This amount is the item total
+            plus the shipping costs of the selected `deliveryMethod`.
+          $ref: '#/components/schemas/Amount'
+        deliveryMethods:
+          description: The list of new delivery methods and the cost of each.
+          items:
+            $ref: '#/components/schemas/DeliveryMethod'
+          type: array
+        paymentData:
+          description: The `paymentData` from the client side. This value changes
+            every time you make a `/paypal/updateOrder` request.
+          type: string
+        pspReference:
+          description: The original `pspReference` from the `/payments` response.
+          type: string
+        sessionId:
+          description: The original `sessionId` from the `/sessions` response.
+          type: string
+      type: object
+    PaypalUpdateOrderResponse:
+      additionalProperties: false
+      properties:
+        paymentData:
+          description: The updated paymentData.
+          type: string
+        status:
+          description: The status of the request. This indicates whether the order
+            was successfully updated with PayPal.
+          enum:
+          - error
+          - success
+          type: string
+      required:
+      - paymentData
+      - status
       type: object
     Phone:
       additionalProperties: false
