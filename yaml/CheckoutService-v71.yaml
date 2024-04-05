@@ -5648,6 +5648,49 @@ components:
           type: string
       title: Card
       type: object
+    CashAppDetails:
+      additionalProperties: false
+      properties:
+        cashtag:
+          description: Cash App issued cashtag for recurring payment
+          type: string
+        checkoutAttemptId:
+          x-addedInVersion: '68'
+          description: The checkout attempt identifier.
+          type: string
+        customerId:
+          description: Cash App issued customerId for recurring payment
+          type: string
+        grantId:
+          description: Cash App issued grantId for one time payment
+          type: string
+        onFileGrantId:
+          description: Cash App issued onFileGrantId for recurring payment
+          type: string
+        recurringDetailReference:
+          deprecated: true
+          x-deprecatedInVersion: '49'
+          x-deprecatedMessage: Use `storedPaymentMethodId` instead.
+          description: This is the `recurringDetailReference` returned in the response
+            when you created the token.
+          type: string
+        requestId:
+          description: Cash App request id
+          type: string
+        storedPaymentMethodId:
+          x-addedInVersion: '49'
+          description: This is the `recurringDetailReference` returned in the response
+            when you created the token.
+          maxLength: 64
+          type: string
+        type:
+          default: cashapp
+          description: cashapp
+          enum:
+          - cashapp
+          type: string
+      title: Stored Payment Method
+      type: object
     CellulantDetails:
       additionalProperties: false
       properties:
@@ -5859,8 +5902,15 @@ components:
             * **revolving**'
           items:
             enum:
+            - buynow_paylater
+            - interes_refund_prctg
+            - interest_bonus
+            - nointeres_refund_prctg
+            - nointerest_bonus
+            - refund_prctg
             - regular
             - revolving
+            - with_interest
             type: string
           type: array
         preselectedValue:
@@ -8072,8 +8122,15 @@ components:
             * **revolving**'
           items:
             enum:
+            - buynow_paylater
+            - interes_refund_prctg
+            - interest_bonus
+            - nointeres_refund_prctg
+            - nointerest_bonus
+            - refund_prctg
             - regular
             - revolving
+            - with_interest
             type: string
           type: array
         preselectedValue:
@@ -8095,28 +8152,44 @@ components:
     Installments:
       additionalProperties: false
       properties:
+        extra:
+          x-addedInVersion: '68'
+          description: 'Defines the bonus percentage, refund percentage or if the
+            transaction is Buy now Pay later.
+
+            Used for [card installments in Mexico](https://docs.adyen.com/payment-methods/cards/credit-card-installments/#getting-paid-mexico)
+
+            '
+          format: int32
+          type: integer
         plan:
           x-addedInVersion: '64'
           description: 'The installment plan, used for [card installments in Japan](https://docs.adyen.com/payment-methods/cards/credit-card-installments#make-a-payment-japan).
-            By default, this is set to **regular**. Possible values:
 
-            * **regular**
+            and [mexico](https://docs.adyen.com/payment-methods/cards/credit-card-installments/#getting-paid-mexico).
 
-            * **revolving**
+            By default, this is set to **regular**.
 
             '
           enum:
+          - buynow_paylater
+          - interes_refund_prctg
+          - interest_bonus
+          - nointeres_refund_prctg
+          - nointerest_bonus
+          - refund_prctg
           - regular
           - revolving
+          - with_interest
           type: string
         value:
-          description: 'Defines the number of installments. Its value needs to be
-            greater than zero.
-
+          description: 'Defines the number of installments.
 
             Usually, the maximum allowed number of installments is capped. For example,
             it may not be possible to split a payment in more than 24 installments.
-            The acquirer sets this upper limit, so its value may vary.'
+            The acquirer sets this upper limit, so its value may vary.
+
+            This value can be zero for Installments processed in Mexico'
           format: int32
           type: integer
       required:
@@ -10699,6 +10772,7 @@ components:
           - $ref: '#/components/schemas/BillDeskDetails'
           - $ref: '#/components/schemas/BlikDetails'
           - $ref: '#/components/schemas/CardDetails'
+          - $ref: '#/components/schemas/CashAppDetails'
           - $ref: '#/components/schemas/CellulantDetails'
           - $ref: '#/components/schemas/DokuDetails'
           - $ref: '#/components/schemas/DotpayDetails'
