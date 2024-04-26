@@ -320,6 +320,7 @@ webhooks:
 components:
   schemas:
     AccountHolder:
+      additionalProperties: false
       properties:
         balancePlatform:
           description: The unique identifier of the [balance platform](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/get/balancePlatforms/{id}__queryParam_id)
@@ -339,7 +340,7 @@ components:
           description: Contact details of the account holder.
           $ref: '#/components/schemas/ContactDetails'
         description:
-          description: Your description for the account holder, maximum 300 characters.
+          description: Your description for the account holder.
           maxLength: 300
           type: string
         id:
@@ -372,7 +373,7 @@ components:
             request.
           type: string
         reference:
-          description: Your reference for the account holder, maximum 150 characters.
+          description: Your reference for the account holder.
           maxLength: 150
           type: string
         status:
@@ -407,6 +408,7 @@ components:
       - id
       type: object
     AccountHolderCapability:
+      additionalProperties: false
       properties:
         allowed:
           description: Indicates whether the capability is allowed. Adyen sets this
@@ -496,6 +498,7 @@ components:
           type: string
       type: object
     AccountHolderNotificationData:
+      additionalProperties: false
       properties:
         accountHolder:
           description: Contains information about the account holder resource that
@@ -506,6 +509,7 @@ components:
           type: string
       type: object
     AccountHolderNotificationRequest:
+      additionalProperties: false
       properties:
         data:
           description: Contains event details.
@@ -528,6 +532,7 @@ components:
       - data
       type: object
     AccountSupportingEntityCapability:
+      additionalProperties: false
       properties:
         allowed:
           description: Indicates whether the supporting entity capability is allowed.
@@ -601,6 +606,7 @@ components:
           type: string
       type: object
     Address:
+      additionalProperties: false
       properties:
         city:
           description: 'The name of the city. Maximum length: 3000 characters.'
@@ -642,6 +648,7 @@ components:
       - country
       type: object
     Amount:
+      additionalProperties: false
       properties:
         currency:
           description: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).
@@ -657,6 +664,7 @@ components:
       - currency
       type: object
     Authentication:
+      additionalProperties: false
       properties:
         email:
           description: The email address where the one-time password (OTP) is sent.
@@ -690,13 +698,16 @@ components:
           $ref: '#/components/schemas/Phone'
       type: object
     Balance:
+      additionalProperties: false
       properties:
         available:
-          description: The remaining amount available for spending.
+          description: The current balance minus any reserved balance.
           format: int64
           type: integer
         balance:
-          description: The total amount in the balance.
+          description: The current balance of funds in the balance account. These
+            are the funds from all transactions with a value date in the past that
+            have not yet been paid out.
           format: int64
           type: integer
         currency:
@@ -704,13 +715,21 @@ components:
             of the balance.
           type: string
         pending:
-          description: The amount pending to be paid out but not yet available in
-            the balance.
+          description: 'The amount of funds that Adyen has processed for this account,
+            but will be settled in a future date.
+
+
+            For more information, see how to settle funds for users in your [platform](https://docs.adyen.com/platforms/settle-funds)
+            and [marketplace](https://docs.adyen.com/marketplaces/settle-funds).'
           format: int64
           type: integer
         reserved:
-          description: The amount reserved for payments that have been authorised,
-            but have not been captured yet.
+          description: 'The amount reserved for payments that have been [authorised](https://docs.adyen.com/issuing/payment-stages/#authorised),
+            but not yet [captured](https://docs.adyen.com/issuing/payment-stages/#captured)
+            by the merchant.
+
+
+            Applies only to [Adyen-issued cards](https://docs.adyen.com/issuing).'
           format: int64
           type: integer
       required:
@@ -720,6 +739,7 @@ components:
       - available
       type: object
     BalanceAccount:
+      additionalProperties: false
       properties:
         accountHolderId:
           description: The unique identifier of the [account holder](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/accountHolders__resParam_id)
@@ -796,6 +816,7 @@ components:
       - id
       type: object
     BalanceAccountNotificationData:
+      additionalProperties: false
       properties:
         balanceAccount:
           $ref: '#/components/schemas/BalanceAccount'
@@ -804,6 +825,7 @@ components:
           type: string
       type: object
     BalanceAccountNotificationRequest:
+      additionalProperties: false
       properties:
         data:
           description: Contains event details.
@@ -826,13 +848,57 @@ components:
       - data
       type: object
     BalancePlatformNotificationResponse:
+      additionalProperties: false
       properties:
         notificationResponse:
           description: Respond with **HTTP 200 OK** and `[accepted]` in the response
             body to [accept the webhook](https://docs.adyen.com/development-resources/webhooks#accept-notifications).
           type: string
       type: object
+    BankAccountDTO:
+      additionalProperties: false
+      properties:
+        accountNumber:
+          description: The bank account number, without separators or whitespace.
+          type: string
+        accountType:
+          default: checking
+          description: 'The bank account type.
+
+
+            Possible values: **checking** or **savings**. Defaults to **checking**.'
+          type: string
+        formFactor:
+          default: physical
+          description: "Business accounts with a `formFactor` value of **physical**\
+            \ are business accounts issued under the central bank of that country.\
+            \ The default value is **physical** for NL, US, and UK business accounts.\
+            \ \n\nAdyen creates a local IBAN for business accounts when the `formFactor`\
+            \ value is set to **virtual**. The local IBANs that are supported are\
+            \ for DE and FR, which reference a physical NL account, with funds being\
+            \ routed through the central bank of NL."
+          type: string
+        iban:
+          description: The international bank account number as defined in the [ISO-13616](https://www.iso.org/standard/81090.html)
+            standard.
+          type: string
+        routingNumber:
+          description: The [routing number](https://en.wikipedia.org/wiki/ABA_routing_transit_number),
+            without separators or whitespace.
+          type: string
+        sortCode:
+          description: The [sort code](https://en.wikipedia.org/wiki/Sort_code), without
+            separators or whitespace.
+          type: string
+        type:
+          default: iban
+          description: '**iban** or **usLocal** or **ukLocal**'
+          type: string
+      required:
+      - type
+      type: object
     BulkAddress:
+      additionalProperties: false
       properties:
         city:
           description: The name of the city.
@@ -878,6 +944,7 @@ components:
       - country
       type: object
     CapabilityProblem:
+      additionalProperties: false
       properties:
         entity:
           description: Contains the type of the entity and the corresponding ID.
@@ -889,6 +956,7 @@ components:
           type: array
       type: object
     CapabilityProblemEntity:
+      additionalProperties: false
       properties:
         documents:
           description: List of document IDs to which the verification errors related
@@ -913,6 +981,7 @@ components:
           type: string
       type: object
     CapabilityProblemEntity-recursive:
+      additionalProperties: false
       properties:
         documents:
           description: List of document IDs to which the verification errors related
@@ -934,6 +1003,7 @@ components:
       required: []
       type: object
     CapabilitySettings:
+      additionalProperties: false
       properties:
         amountPerIndustry:
           additionalProperties:
@@ -964,6 +1034,7 @@ components:
           $ref: '#/components/schemas/Amount'
       type: object
     Card:
+      additionalProperties: false
       properties:
         authentication:
           description: Contains the card user's password and mobile phone number.
@@ -1039,6 +1110,7 @@ components:
       - number
       type: object
     CardConfiguration:
+      additionalProperties: false
       properties:
         activation:
           description: Overrides the activation label design ID defined in the `configurationProfileId`.
@@ -1110,6 +1182,7 @@ components:
       - configurationProfileId
       type: object
     CardOrderItem:
+      additionalProperties: false
       properties:
         balancePlatform:
           description: The unique identifier of the balance platform.
@@ -1144,6 +1217,7 @@ components:
           type: string
       type: object
     CardOrderItemDeliveryStatus:
+      additionalProperties: false
       properties:
         errorMessage:
           description: An error message.
@@ -1165,6 +1239,7 @@ components:
           type: string
       type: object
     CardOrderNotificationRequest:
+      additionalProperties: false
       properties:
         data:
           description: Contains event details.
@@ -1187,6 +1262,7 @@ components:
       - data
       type: object
     Contact:
+      additionalProperties: false
       properties:
         address:
           description: The address of the contact.
@@ -1214,6 +1290,7 @@ components:
           type: string
       type: object
     ContactDetails:
+      additionalProperties: false
       properties:
         address:
           description: The address of the account holder.
@@ -1233,6 +1310,7 @@ components:
       - address
       type: object
     Expiry:
+      additionalProperties: false
       properties:
         month:
           description: The month in which the card will expire.
@@ -1244,14 +1322,6 @@ components:
     IbanAccountIdentification:
       additionalProperties: false
       properties:
-        formFactor:
-          default: physical
-          description: 'The form factor of the account.
-
-
-            Possible values: **physical**, **virtual**. Default value: **physical**.'
-          nullable: true
-          type: string
         iban:
           description: The international bank account number as defined in the [ISO-13616](https://www.iso.org/standard/81090.html)
             standard.
@@ -1267,6 +1337,7 @@ components:
       - iban
       type: object
     Name:
+      additionalProperties: false
       properties:
         firstName:
           description: The first name.
@@ -1281,6 +1352,7 @@ components:
       - lastName
       type: object
     PaymentInstrument:
+      additionalProperties: false
       properties:
         additionalBankAccountIdentifications:
           description: Contains optional, additional business account details. Returned
@@ -1296,10 +1368,7 @@ components:
         bankAccount:
           description: Contains the business account details. Returned when you create
             a payment instrument with `type` **bankAccount**.
-          oneOf:
-          - $ref: '#/components/schemas/IbanAccountIdentification'
-          - $ref: '#/components/schemas/UKLocalAccountIdentification'
-          - $ref: '#/components/schemas/USLocalAccountIdentification'
+          $ref: '#/components/schemas/BankAccountDTO'
         card:
           description: Contains information about the card payment instrument. Returned
             when you create a payment instrument with `type` **card**.
@@ -1365,6 +1434,7 @@ components:
       - id
       type: object
     PaymentInstrumentNotificationData:
+      additionalProperties: false
       properties:
         balancePlatform:
           description: The unique identifier of the balance platform.
@@ -1375,6 +1445,7 @@ components:
           $ref: '#/components/schemas/PaymentInstrument'
       type: object
     PaymentInstrumentReference:
+      additionalProperties: false
       properties:
         id:
           description: The unique identifier of the payment instrument.
@@ -1383,6 +1454,7 @@ components:
       - id
       type: object
     PaymentNotificationRequest:
+      additionalProperties: false
       properties:
         data:
           description: Contains event details.
@@ -1405,6 +1477,7 @@ components:
       - data
       type: object
     PersonalData:
+      additionalProperties: false
       properties:
         dateOfBirth:
           description: 'The date of birth of the person.
@@ -1424,6 +1497,7 @@ components:
           type: string
       type: object
     Phone:
+      additionalProperties: false
       properties:
         number:
           description: "The full phone number provided as a single string. \nFor example,\
@@ -1441,6 +1515,7 @@ components:
       - type
       type: object
     PhoneNumber:
+      additionalProperties: false
       properties:
         phoneCountryCode:
           description: 'The two-character ISO-3166-1 alpha-2 country code of the phone
@@ -1465,10 +1540,11 @@ components:
           type: string
       type: object
     PlatformPaymentConfiguration:
+      additionalProperties: false
       properties:
         salesDayClosingTime:
-          description: 'Specifies at what time a [sales day](https://docs.adyen.com/marketplaces-and-platforms/settle-funds/sales-day-settlement#sales-day)
-            ends.
+          description: 'Specifies at what time a [sales day](https://docs.adyen.com/platforms/settle-funds/sales-day-settlement#sales-day)
+            ends for this account.
 
 
             Possible values: Time in **"HH:MM"** format. **HH** ranges from **00**
@@ -1480,15 +1556,19 @@ components:
           type: string
         settlementDelayDays:
           description: 'Specifies after how many business days the funds in a [settlement
-            batch](https://docs.adyen.com/marketplaces-and-platforms/settle-funds/sales-day-settlement#settlement-batch)
-            are made available.
+            batch](https://docs.adyen.com/platforms/settle-funds/sales-day-settlement#settlement-batch)
+            are made available in this balance account.
 
 
             Possible values: **0** to **10**, or **null**.
 
-            * Setting this value to an integer enables [Sales day settlement](https://docs.adyen.com/marketplaces-and-platforms/settle-funds/sales-day-settlement).
+            * Setting this value to an integer enables Sales day settlement in this
+            balance account. See how Sales day settlement works in your [marketplace](https://docs.adyen.com/marketplaces/settle-funds/sales-day-settlement)
+            or [platform](https://docs.adyen.com/platforms/settle-funds/sales-day-settlement).
 
-            * Setting this value to **null** enables [Pass-through settlement](https://docs.adyen.com/marketplaces-and-platforms/settle-funds/pass-through-settlement).
+            * Setting this value to **null** enables Pass-through settlement in this
+            balance account. See how Pass-through settlement works in your [marketplace](https://docs.adyen.com/marketplaces/settle-funds/pass-through-settlement)
+            or [platform](https://docs.adyen.com/platforms/settle-funds/pass-through-settlement).
 
 
             Default value: **null**.'
@@ -1496,6 +1576,7 @@ components:
           type: integer
       type: object
     RemediatingAction:
+      additionalProperties: false
       properties:
         code:
           description: The remediating action code.
@@ -1505,6 +1586,7 @@ components:
           type: string
       type: object
     Resource:
+      additionalProperties: false
       properties:
         balancePlatform:
           description: The unique identifier of the balance platform.
@@ -1519,6 +1601,7 @@ components:
           type: string
       type: object
     SweepConfigurationNotificationData:
+      additionalProperties: false
       properties:
         accountId:
           description: The unique identifier of the balance account for which the
@@ -1533,6 +1616,7 @@ components:
           $ref: '#/components/schemas/SweepConfigurationV2'
       type: object
     SweepConfigurationNotificationRequest:
+      additionalProperties: false
       properties:
         data:
           description: Contains event details.
@@ -1556,6 +1640,7 @@ components:
       - data
       type: object
     SweepConfigurationV2:
+      additionalProperties: false
       properties:
         counterparty:
           description: 'The destination or the source of the funds, depending on the
@@ -1598,10 +1683,20 @@ components:
           - declinedByTransactionRule
           - error
           - notEnoughBalance
+          - pendingApproval
           - refusedByCounterpartyBank
           - routeNotFound
           - scaFailed
           - unknown
+          type: string
+        reference:
+          description: Your reference for the sweep configuration.
+          maxLength: 80
+          type: string
+        referenceForBeneficiary:
+          description: The reference sent to or received from the counterparty. Only
+            alphanumeric characters are allowed.
+          maxLength: 80
           type: string
         schedule:
           description: The schedule when the `triggerAmount` is evaluated. If the
@@ -1659,6 +1754,7 @@ components:
       - counterparty
       type: object
     SweepCounterparty:
+      additionalProperties: false
       properties:
         balanceAccountId:
           description: "The unique identifier of the destination or source [balance\
@@ -1676,16 +1772,21 @@ components:
         transferInstrumentId:
           description: 'The unique identifier of the destination or source [transfer
             instrument](https://docs.adyen.com/api-explorer/legalentity/latest/post/transferInstruments#responses-200-id)
-            depending on the sweep `type`
+            depending on the sweep `type`.
 
 
-            . To [set up automated top-up sweeps to balance accounts](https://docs.adyen.com/marketplaces-and-platforms/top-up-balance-account/#before-you-begin),
+            To set up automated top-up sweeps to balance accounts in your [marketplace](https://docs.adyen.com/marketplaces/top-up-balance-account/#before-you-begin)
+            or [platform](https://docs.adyen.com/platforms/top-up-balance-account/#before-you-begin),
             use this parameter in combination with a `merchantAccount` and a sweep
-            `type` of **pull**. Top-up sweeps start a direct debit request from the
-            source transfer instrument. Contact Adyen Support to enable this feature.'
+            `type` of **pull**.
+
+
+            Top-up sweeps start a direct debit request from the source transfer instrument.
+            Contact Adyen Support to enable this feature.'
           type: string
       type: object
     SweepSchedule:
+      additionalProperties: false
       properties:
         cronExpression:
           description: "A [cron expression](https://en.wikipedia.org/wiki/Cron#CRON_expression)\
@@ -1738,83 +1839,8 @@ components:
       required:
       - type
       type: object
-    UKLocalAccountIdentification:
-      additionalProperties: false
-      properties:
-        accountNumber:
-          description: The 8-digit bank account number, without separators or whitespace.
-          maxLength: 8
-          minLength: 8
-          type: string
-        formFactor:
-          default: physical
-          description: 'The form factor of the account.
-
-
-            Possible values: **physical**, **virtual**. Default value: **physical**.'
-          nullable: true
-          type: string
-        sortCode:
-          description: The 6-digit [sort code](https://en.wikipedia.org/wiki/Sort_code),
-            without separators or whitespace.
-          maxLength: 6
-          minLength: 6
-          type: string
-        type:
-          default: ukLocal
-          description: '**ukLocal**'
-          enum:
-          - ukLocal
-          type: string
-      required:
-      - type
-      - accountNumber
-      - sortCode
-      type: object
-    USLocalAccountIdentification:
-      additionalProperties: false
-      properties:
-        accountNumber:
-          description: The bank account number, without separators or whitespace.
-          maxLength: 18
-          minLength: 2
-          type: string
-        accountType:
-          default: checking
-          description: 'The bank account type.
-
-
-            Possible values: **checking** or **savings**. Defaults to **checking**.'
-          enum:
-          - checking
-          - savings
-          type: string
-        formFactor:
-          default: physical
-          description: 'The form factor of the account.
-
-
-            Possible values: **physical**, **virtual**. Default value: **physical**.'
-          nullable: true
-          type: string
-        routingNumber:
-          description: The 9-digit [routing number](https://en.wikipedia.org/wiki/ABA_routing_transit_number),
-            without separators or whitespace.
-          maxLength: 9
-          minLength: 9
-          type: string
-        type:
-          default: usLocal
-          description: '**usLocal**'
-          enum:
-          - usLocal
-          type: string
-      required:
-      - type
-      - accountNumber
-      - routingNumber
-      type: object
     VerificationDeadline:
+      additionalProperties: false
       properties:
         capabilities:
           description: The names of the capabilities to be disallowed.
@@ -1888,6 +1914,7 @@ components:
       - capabilities
       type: object
     VerificationError:
+      additionalProperties: false
       properties:
         capabilities:
           description: Contains the capabilities that the verification error applies
@@ -1973,6 +2000,7 @@ components:
           type: string
       type: object
     VerificationError-recursive:
+      additionalProperties: false
       properties:
         capabilities:
           description: Contains the capabilities that the verification error applies

@@ -38,6 +38,8 @@ tags:
 - name: Card orders
 - name: Manage card PIN
 - name: Transfer routes
+- name: SCA device management
+- name: Manage SCA devices
 paths:
   /accountHolders:
     post:
@@ -383,7 +385,8 @@ paths:
       - Account holders
       summary: Get a tax form
       description: Generates a tax form for account holders operating in the US. For
-        more information, refer to [Providing tax forms](https://docs.adyen.com/marketplaces-and-platforms/us-tax-forms/).
+        more information, refer to US tax forms for [marketplaces](https://docs.adyen.com/marketplaces/us-tax-forms/)
+        or [platforms](https://docs.adyen.com/platforms/us-tax-forms/) .
       x-addedInVersion: '2'
       operationId: get-accountHolders-id-taxForms
       x-sortIndex: 5
@@ -1661,7 +1664,7 @@ paths:
       tags:
       - Grant accounts
       summary: Get a grant account
-      description: Returns the details of the [grant account](https://docs.adyen.com/marketplaces-and-platforms/capital#grant-account).
+      description: Returns the details of the [grant account](https://docs.adyen.com/platforms/capital#grant-account).
       x-addedInVersion: '1'
       operationId: get-grantAccounts-id
       x-sortIndex: 1
@@ -1734,7 +1737,7 @@ paths:
       tags:
       - Grant offers
       summary: Get all available grant offers
-      description: Returns a list of all [grant offers](https://docs.adyen.com/marketplaces-and-platforms/capital#grant-offers)
+      description: Returns a list of all [grant offers](https://docs.adyen.com/platforms/capital#grant-offers)
         available for `accountHolderId` specified as a query parameter.
       x-addedInVersion: '2'
       operationId: get-grantOffers
@@ -2245,7 +2248,7 @@ paths:
       description: "Creates a payment instrument to issue a physical card, a virtual\
         \ card, or a business account to your user.\n\n For more information, refer\
         \ to [Issue cards](https://docs.adyen.com/issuing/create-cards) or [Issue\
-        \ business accounts](https://docs.adyen.com/marketplaces-and-platforms/business-accounts)."
+        \ business accounts](https://docs.adyen.com/platforms/business-accounts)."
       x-addedInVersion: '1'
       operationId: post-paymentInstruments
       x-sortIndex: 1
@@ -3049,6 +3052,340 @@ paths:
               schema:
                 $ref: '#/components/schemas/RestServiceError'
           description: Internal Server Error - the server could not process the request.
+  /registeredDevices:
+    get:
+      tags:
+      - Manage SCA devices
+      summary: Get a list of registered SCA devices
+      description: Get a paginated list of the SCA devices you have currently registered
+        for a specific payment instrument.
+      x-addedInVersion: '1'
+      operationId: get-registeredDevices
+      x-sortIndex: 3
+      x-methodName: listRegisteredScaDevices
+      security:
+      - clientKey: []
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      parameters:
+      - description: The unique identifier of a payment instrument. It limits the
+          returned list to SCA devices associated to this payment instrument.
+        name: paymentInstrumentId
+        in: query
+        required: true
+        schema:
+          type: string
+      - description: 'The index of the page to retrieve. The index of the first page
+          is 0 (zero).
+
+
+          Default: 0.'
+        name: pageNumber
+        in: query
+        required: false
+        schema:
+          format: int32
+          type: integer
+      - description: 'The number of items to have on a page.
+
+
+          Default: 20. Maximum: 100.'
+        name: pageSize
+        in: query
+        required: false
+        schema:
+          format: int32
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchRegisteredDevicesResponse'
+          description: OK - the request has succeeded.
+        '400':
+          content:
+            application/json:
+              examples:
+                generic:
+                  $ref: '#/components/examples/generic-400'
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Bad Request - a problem reading or understanding the request.
+        '401':
+          content:
+            application/json:
+              examples:
+                generic:
+                  $ref: '#/components/examples/generic-401'
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unauthorized - authentication required.
+        '403':
+          content:
+            application/json:
+              examples:
+                generic:
+                  $ref: '#/components/examples/generic-403'
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Forbidden - insufficient permissions to process the request.
+        '422':
+          content:
+            application/json:
+              examples:
+                generic:
+                  $ref: '#/components/examples/generic-422'
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unprocessable Entity - a request validation error.
+        '500':
+          content:
+            application/json:
+              examples:
+                generic:
+                  $ref: '#/components/examples/generic-500'
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Internal Server Error - the server could not process the request.
+    post:
+      tags:
+      - Manage SCA devices
+      summary: Initiate the registration of an SCA device
+      description: 'Initiates the registration of a user''s device for Strong Customer
+        Authentication (SCA). You can register SCA devices for [business accounts](https://docs.adyen.com/platforms/business-accounts/sca/register-devices)
+        or [Adyen-issued cards](https://docs.adyen.com/issuing/3d-secure/oob-auth-sdk/register-devices).
+
+
+        For a successful request, the device must be eligible for SCA.'
+      x-addedInVersion: '1'
+      operationId: post-registeredDevices
+      x-sortIndex: 1
+      x-methodName: initiateRegistrationOfScaDevice
+      security:
+      - clientKey: []
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterSCARequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterSCAResponse'
+          description: OK - the request has succeeded.
+        '400':
+          content:
+            application/json:
+              examples:
+                generic:
+                  $ref: '#/components/examples/generic-400'
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Bad Request - a problem reading or understanding the request.
+        '401':
+          content:
+            application/json:
+              examples:
+                generic:
+                  $ref: '#/components/examples/generic-401'
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unauthorized - authentication required.
+        '403':
+          content:
+            application/json:
+              examples:
+                generic:
+                  $ref: '#/components/examples/generic-403'
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Forbidden - insufficient permissions to process the request.
+        '422':
+          content:
+            application/json:
+              examples:
+                generic:
+                  $ref: '#/components/examples/generic-422'
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unprocessable Entity - a request validation error.
+        '500':
+          content:
+            application/json:
+              examples:
+                generic:
+                  $ref: '#/components/examples/generic-500'
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Internal Server Error - the server could not process the request.
+  /registeredDevices/{id}:
+    delete:
+      tags:
+      - Manage SCA devices
+      summary: Delete a registration of an SCA device
+      description: Deletes an SCA device from the list of registered devices of a
+        specific payment instrument.
+      x-addedInVersion: '1'
+      operationId: delete-registeredDevices-id
+      x-sortIndex: 4
+      x-methodName: deleteRegistrationOfScaDevice
+      security:
+      - clientKey: []
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      parameters:
+      - description: The unique identifier of the SCA device.
+        name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      - description: The unique identifier of the payment instrument linked to the
+          SCA device.
+        name: paymentInstrumentId
+        in: query
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: 'No Content - look at the actual response code for the status
+            of the request. '
+        '400':
+          content:
+            application/json:
+              examples:
+                generic:
+                  $ref: '#/components/examples/generic-400'
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Bad Request - a problem reading or understanding the request.
+        '401':
+          content:
+            application/json:
+              examples:
+                generic:
+                  $ref: '#/components/examples/generic-401'
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unauthorized - authentication required.
+        '403':
+          content:
+            application/json:
+              examples:
+                generic:
+                  $ref: '#/components/examples/generic-403'
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Forbidden - insufficient permissions to process the request.
+        '422':
+          content:
+            application/json:
+              examples:
+                generic:
+                  $ref: '#/components/examples/generic-422'
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unprocessable Entity - a request validation error.
+        '500':
+          content:
+            application/json:
+              examples:
+                generic:
+                  $ref: '#/components/examples/generic-500'
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Internal Server Error - the server could not process the request.
+    patch:
+      tags:
+      - Manage SCA devices
+      summary: Complete the registration of an SCA device
+      description: 'Completes the registration of an SCA device by validating the
+        authentication data of the device. You can register SCA devices for [business
+        accounts](https://docs.adyen.com/platforms/business-accounts/sca) or [Adyen-issued
+        cards](https://docs.adyen.com/issuing/3d-secure/oob-auth-sdk).
+
+
+        '
+      x-addedInVersion: '1'
+      operationId: patch-registeredDevices-id
+      x-sortIndex: 2
+      x-methodName: completeRegistrationOfScaDevice
+      security:
+      - clientKey: []
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterSCARequest'
+      parameters:
+      - description: The unique identifier of the SCA device. You obtain this `id`
+          in the response of a POST&nbsp;[/registeredDevices](https://docs.adyen.com/api-explorer/balanceplatform/2/post/registeredDevices#responses-200-id)
+          request.
+        name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterSCAFinalResponse'
+          description: OK - the request has succeeded.
+        '400':
+          content:
+            application/json:
+              examples:
+                generic:
+                  $ref: '#/components/examples/generic-400'
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Bad Request - a problem reading or understanding the request.
+        '401':
+          content:
+            application/json:
+              examples:
+                generic:
+                  $ref: '#/components/examples/generic-401'
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unauthorized - authentication required.
+        '403':
+          content:
+            application/json:
+              examples:
+                generic:
+                  $ref: '#/components/examples/generic-403'
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Forbidden - insufficient permissions to process the request.
+        '422':
+          content:
+            application/json:
+              examples:
+                generic:
+                  $ref: '#/components/examples/generic-422'
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Unprocessable Entity - a request validation error.
+        '500':
+          content:
+            application/json:
+              examples:
+                generic:
+                  $ref: '#/components/examples/generic-500'
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+          description: Internal Server Error - the server could not process the request.
   /transactionRules:
     post:
       tags:
@@ -3538,14 +3875,6 @@ components:
           maxLength: 6
           minLength: 6
           type: string
-        formFactor:
-          default: physical
-          description: 'The form factor of the account.
-
-
-            Possible values: **physical**, **virtual**. Default value: **physical**.'
-          nullable: true
-          type: string
         type:
           default: auLocal
           description: '**auLocal**'
@@ -3558,6 +3887,7 @@ components:
       - bsbCode
       type: object
     AccountHolder:
+      additionalProperties: false
       properties:
         balancePlatform:
           description: The unique identifier of the [balance platform](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/get/balancePlatforms/{id}__queryParam_id)
@@ -3577,7 +3907,7 @@ components:
           description: Contact details of the account holder.
           $ref: '#/components/schemas/ContactDetails'
         description:
-          description: Your description for the account holder, maximum 300 characters.
+          description: Your description for the account holder.
           maxLength: 300
           type: string
         id:
@@ -3612,22 +3942,19 @@ components:
             request.
           type: string
         reference:
-          description: Your reference for the account holder, maximum 150 characters.
+          description: Your reference for the account holder.
           maxLength: 150
           type: string
         status:
           description: "The status of the account holder.\n\nPossible values: \n\n\
             \ * **active**: The account holder is active. This is the default status\
-            \ when creating an account holder. \n\n * **inactive (Deprecated)**: The\
-            \ account holder is temporarily inactive due to missing KYC details. You\
-            \ can set the account back to active by providing the missing KYC details.\
-            \ \n\n * **suspended**: The account holder is permanently deactivated\
-            \ by Adyen. This action cannot be undone. \n\n* **closed**: The account\
-            \ holder is permanently deactivated by you. This action cannot be undone."
+            \ when creating an account holder. \n\n * **suspended**: The account holder\
+            \ is permanently deactivated by Adyen. This action cannot be undone. \n\
+            \n* **closed**: The account holder is permanently deactivated by you.\
+            \ This action cannot be undone."
           enum:
           - active
           - closed
-          - inactive
           - suspended
           type: string
         timeZone:
@@ -3648,6 +3975,7 @@ components:
       - id
       type: object
     AccountHolderCapability:
+      additionalProperties: false
       properties:
         allowed:
           description: Indicates whether the capability is allowed. Adyen sets this
@@ -3744,6 +4072,7 @@ components:
           type: string
       type: object
     AccountHolderInfo:
+      additionalProperties: false
       properties:
         balancePlatform:
           description: The unique identifier of the [balance platform](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/get/balancePlatforms/{id}__queryParam_id)
@@ -3763,7 +4092,7 @@ components:
           description: Contact details of the account holder.
           $ref: '#/components/schemas/ContactDetails'
         description:
-          description: Your description for the account holder, maximum 300 characters.
+          description: Your description for the account holder.
           maxLength: 300
           type: string
         legalEntityId:
@@ -3788,7 +4117,7 @@ components:
           readOnly: true
           type: string
         reference:
-          description: Your reference for the account holder, maximum 150 characters.
+          description: Your reference for the account holder.
           maxLength: 150
           type: string
         timeZone:
@@ -3801,6 +4130,7 @@ components:
       - legalEntityId
       type: object
     AccountHolderUpdateRequest:
+      additionalProperties: false
       properties:
         balancePlatform:
           description: The unique identifier of the [balance platform](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/get/balancePlatforms/{id}__queryParam_id)
@@ -3820,7 +4150,7 @@ components:
           description: Contact details of the account holder.
           $ref: '#/components/schemas/ContactDetails'
         description:
-          description: Your description for the account holder, maximum 300 characters.
+          description: Your description for the account holder.
           maxLength: 300
           type: string
         metadata:
@@ -3846,22 +4176,19 @@ components:
             request.
           type: string
         reference:
-          description: Your reference for the account holder, maximum 150 characters.
+          description: Your reference for the account holder.
           maxLength: 150
           type: string
         status:
           description: "The status of the account holder.\n\nPossible values: \n\n\
             \ * **active**: The account holder is active. This is the default status\
-            \ when creating an account holder. \n\n * **inactive (Deprecated)**: The\
-            \ account holder is temporarily inactive due to missing KYC details. You\
-            \ can set the account back to active by providing the missing KYC details.\
-            \ \n\n * **suspended**: The account holder is permanently deactivated\
-            \ by Adyen. This action cannot be undone. \n\n* **closed**: The account\
-            \ holder is permanently deactivated by you. This action cannot be undone."
+            \ when creating an account holder. \n\n * **suspended**: The account holder\
+            \ is permanently deactivated by Adyen. This action cannot be undone. \n\
+            \n* **closed**: The account holder is permanently deactivated by you.\
+            \ This action cannot be undone."
           enum:
           - active
           - closed
-          - inactive
           - suspended
           type: string
         timeZone:
@@ -3879,6 +4206,7 @@ components:
           type: array
       type: object
     AccountSupportingEntityCapability:
+      additionalProperties: false
       properties:
         allowed:
           description: Indicates whether the supporting entity capability is allowed.
@@ -3956,6 +4284,7 @@ components:
           type: string
       type: object
     ActiveNetworkTokensRestriction:
+      additionalProperties: false
       properties:
         operation:
           description: Defines how the condition must be evaluated.
@@ -3968,6 +4297,7 @@ components:
       - operation
       type: object
     AdditionalBankIdentification:
+      additionalProperties: false
       properties:
         code:
           description: The value of the additional bank identification.
@@ -3984,6 +4314,7 @@ components:
           type: string
       type: object
     Address:
+      additionalProperties: false
       properties:
         city:
           description: 'The name of the city. Maximum length: 3000 characters.'
@@ -4052,6 +4383,7 @@ components:
       - type
       type: object
     Amount:
+      additionalProperties: false
       properties:
         currency:
           description: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).
@@ -4090,6 +4422,7 @@ components:
       - type
       type: object
     Authentication:
+      additionalProperties: false
       properties:
         email:
           description: The email address where the one-time password (OTP) is sent.
@@ -4140,14 +4473,6 @@ components:
           maxLength: 4
           minLength: 1
           type: string
-        formFactor:
-          default: physical
-          description: 'The form factor of the account.
-
-
-            Possible values: **physical**, **virtual**. Default value: **physical**.'
-          nullable: true
-          type: string
         type:
           default: brLocal
           description: '**brLocal**'
@@ -4161,13 +4486,16 @@ components:
       - bankCode
       type: object
     Balance:
+      additionalProperties: false
       properties:
         available:
-          description: The remaining amount available for spending.
+          description: The current balance minus any reserved balance.
           format: int64
           type: integer
         balance:
-          description: The total amount in the balance.
+          description: The current balance of funds in the balance account. These
+            are the funds from all transactions with a value date in the past that
+            have not yet been paid out.
           format: int64
           type: integer
         currency:
@@ -4175,13 +4503,21 @@ components:
             of the balance.
           type: string
         pending:
-          description: The amount pending to be paid out but not yet available in
-            the balance.
+          description: 'The amount of funds that Adyen has processed for this account,
+            but will be settled in a future date.
+
+
+            For more information, see how to settle funds for users in your [platform](https://docs.adyen.com/platforms/settle-funds)
+            and [marketplace](https://docs.adyen.com/marketplaces/settle-funds).'
           format: int64
           type: integer
         reserved:
-          description: The amount reserved for payments that have been authorised,
-            but have not been captured yet.
+          description: 'The amount reserved for payments that have been [authorised](https://docs.adyen.com/issuing/payment-stages/#authorised),
+            but not yet [captured](https://docs.adyen.com/issuing/payment-stages/#captured)
+            by the merchant.
+
+
+            Applies only to [Adyen-issued cards](https://docs.adyen.com/issuing).'
           format: int64
           type: integer
       required:
@@ -4191,6 +4527,7 @@ components:
       - available
       type: object
     BalanceAccount:
+      additionalProperties: false
       properties:
         accountHolderId:
           description: The unique identifier of the [account holder](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/accountHolders__resParam_id)
@@ -4262,6 +4599,7 @@ components:
       - id
       type: object
     BalanceAccountBase:
+      additionalProperties: false
       properties:
         accountHolderId:
           description: The unique identifier of the [account holder](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/accountHolders__resParam_id)
@@ -4328,6 +4666,7 @@ components:
       - id
       type: object
     BalanceAccountInfo:
+      additionalProperties: false
       properties:
         accountHolderId:
           description: The unique identifier of the [account holder](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/accountHolders__resParam_id)
@@ -4381,15 +4720,16 @@ components:
       - accountHolderId
       type: object
     BalanceAccountUpdateRequest:
+      additionalProperties: false
       properties:
         accountHolderId:
           description: The unique identifier of the [account holder](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/accountHolders__resParam_id)
             associated with the balance account.
           type: string
         description:
-          description: A human-readable description of the balance account, maximum
-            300 characters. You can use this parameter to distinguish between multiple
-            balance accounts under an account holder.
+          description: A human-readable description of the balance account. You can
+            use this parameter to distinguish between multiple balance accounts under
+            an account holder.
           maxLength: 300
           type: string
         metadata:
@@ -4408,7 +4748,7 @@ components:
             in a balance account.
           $ref: '#/components/schemas/PlatformPaymentConfiguration'
         reference:
-          description: Your reference to the balance account, maximum 150 characters.
+          description: Your reference to the balance account.
           maxLength: 150
           type: string
         status:
@@ -4417,7 +4757,7 @@ components:
             is **active**.
 
 
-            Possible values: **active**, **inactive**, **closed**, **suspended**.'
+            Possible values: **active**, **closed**, **suspended**.'
           enum:
           - active
           - closed
@@ -4432,9 +4772,10 @@ components:
           type: string
       type: object
     BalancePlatform:
+      additionalProperties: false
       properties:
         description:
-          description: Your description of the balance platform, maximum 300 characters.
+          description: Your description of the balance platform.
           maxLength: 300
           type: string
         id:
@@ -4450,6 +4791,7 @@ components:
       - id
       type: object
     BalanceSweepConfigurationsResponse:
+      additionalProperties: false
       properties:
         hasNext:
           description: Indicates whether there are more items on the next page.
@@ -4468,6 +4810,7 @@ components:
       - hasNext
       type: object
     BankAccount:
+      additionalProperties: false
       properties:
         accountIdentification:
           description: Contains the bank account details. The fields required in this
@@ -4492,6 +4835,48 @@ components:
           - $ref: '#/components/schemas/USLocalAccountIdentification'
       required:
       - accountIdentification
+      type: object
+    BankAccountDTO:
+      additionalProperties: false
+      properties:
+        accountNumber:
+          description: The bank account number, without separators or whitespace.
+          type: string
+        accountType:
+          default: checking
+          description: 'The bank account type.
+
+
+            Possible values: **checking** or **savings**. Defaults to **checking**.'
+          type: string
+        formFactor:
+          default: physical
+          description: "Business accounts with a `formFactor` value of **physical**\
+            \ are business accounts issued under the central bank of that country.\
+            \ The default value is **physical** for NL, US, and UK business accounts.\
+            \ \n\nAdyen creates a local IBAN for business accounts when the `formFactor`\
+            \ value is set to **virtual**. The local IBANs that are supported are\
+            \ for DE and FR, which reference a physical NL account, with funds being\
+            \ routed through the central bank of NL."
+          type: string
+        iban:
+          description: The international bank account number as defined in the [ISO-13616](https://www.iso.org/standard/81090.html)
+            standard.
+          type: string
+        routingNumber:
+          description: The [routing number](https://en.wikipedia.org/wiki/ABA_routing_transit_number),
+            without separators or whitespace.
+          type: string
+        sortCode:
+          description: The [sort code](https://en.wikipedia.org/wiki/Sort_code), without
+            separators or whitespace.
+          type: string
+        type:
+          default: iban
+          description: '**iban** or **usLocal** or **ukLocal**'
+          type: string
+      required:
+      - type
       type: object
     BankAccountIdentificationTypeRequirement:
       additionalProperties: false
@@ -4534,6 +4919,7 @@ components:
       - type
       type: object
     BankAccountIdentificationValidationRequest:
+      additionalProperties: false
       properties:
         accountIdentification:
           description: Bank account identification.
@@ -4558,17 +4944,26 @@ components:
       - accountIdentification
       type: object
     BankAccountModel:
+      additionalProperties: false
       properties:
         formFactor:
-          description: Form factor of the bank account - **virtual** or **physical**
-            (default)
+          default: physical
+          description: "Business accounts with a `formFactor` value of **physical**\
+            \ are business accounts issued under the central bank of that country.\
+            \ The default value is **physical** for NL, US, and UK business accounts.\
+            \ \n\nAdyen creates a local IBAN for business accounts when the `formFactor`\
+            \ value is set to **virtual**. The local IBANs that are supported are\
+            \ for DE and FR, which reference a physical NL account, with funds being\
+            \ routed through the central bank of NL."
           enum:
           - physical
           - unknown
           - virtual
+          nullable: true
           type: string
       type: object
     BankIdentification:
+      additionalProperties: false
       properties:
         country:
           description: Two-character [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)
@@ -4581,13 +4976,15 @@ components:
           description: 'The type of the identification.
 
 
-            Possible values: **iban**, **routingNumber**.'
+            Possible values: **iban**, **routingNumber**, **sortCode**.'
           enum:
           - iban
           - routingNumber
+          - sortCode
           type: string
       type: object
     BrandVariantsRestriction:
+      additionalProperties: false
       properties:
         operation:
           description: Defines how the condition must be evaluated.
@@ -4608,6 +5005,7 @@ components:
       - operation
       type: object
     BulkAddress:
+      additionalProperties: false
       properties:
         city:
           description: The name of the city.
@@ -4671,14 +5069,6 @@ components:
           - checking
           - savings
           type: string
-        formFactor:
-          default: physical
-          description: 'The form factor of the account.
-
-
-            Possible values: **physical**, **virtual**. Default value: **physical**.'
-          nullable: true
-          type: string
         institutionNumber:
           description: The 3-digit institution number, without separators or whitespace.
           maxLength: 3
@@ -4721,14 +5111,6 @@ components:
           maxLength: 4
           minLength: 4
           type: string
-        formFactor:
-          default: physical
-          description: 'The form factor of the account.
-
-
-            Possible values: **physical**, **virtual**. Default value: **physical**.'
-          nullable: true
-          type: string
         type:
           default: czLocal
           description: '**czLocal**'
@@ -4741,6 +5123,7 @@ components:
       - bankCode
       type: object
     CapabilityProblem:
+      additionalProperties: false
       properties:
         entity:
           description: Contains the type of the entity and the corresponding ID.
@@ -4752,6 +5135,7 @@ components:
           type: array
       type: object
     CapabilityProblemEntity:
+      additionalProperties: false
       properties:
         documents:
           description: List of document IDs to which the verification errors related
@@ -4776,6 +5160,7 @@ components:
           type: string
       type: object
     CapabilityProblemEntity-recursive:
+      additionalProperties: false
       properties:
         documents:
           description: List of document IDs to which the verification errors related
@@ -4797,6 +5182,7 @@ components:
       required: []
       type: object
     CapabilitySettings:
+      additionalProperties: false
       properties:
         amountPerIndustry:
           additionalProperties:
@@ -4827,6 +5213,7 @@ components:
           $ref: '#/components/schemas/Amount'
       type: object
     CapitalBalance:
+      additionalProperties: false
       properties:
         currency:
           description: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).
@@ -4850,6 +5237,7 @@ components:
       - currency
       type: object
     CapitalGrantAccount:
+      additionalProperties: false
       properties:
         balances:
           description: The balances of the grant account.
@@ -4870,6 +5258,7 @@ components:
           type: array
       type: object
     Card:
+      additionalProperties: false
       properties:
         authentication:
           description: Contains the card user's password and mobile phone number.
@@ -4947,6 +5336,7 @@ components:
       - number
       type: object
     CardConfiguration:
+      additionalProperties: false
       properties:
         activation:
           description: Overrides the activation label design ID defined in the `configurationProfileId`.
@@ -5018,6 +5408,7 @@ components:
       - configurationProfileId
       type: object
     CardInfo:
+      additionalProperties: false
       properties:
         authentication:
           description: Contains the card user's password and mobile phone number.
@@ -5072,6 +5463,7 @@ components:
       - brandVariant
       type: object
     CardOrder:
+      additionalProperties: false
       properties:
         beginDate:
           description: The date when the card order is created.
@@ -5114,6 +5506,7 @@ components:
           type: string
       type: object
     CardOrderItem:
+      additionalProperties: false
       properties:
         balancePlatform:
           description: The unique identifier of the balance platform.
@@ -5149,6 +5542,7 @@ components:
           type: string
       type: object
     CardOrderItemDeliveryStatus:
+      additionalProperties: false
       properties:
         errorMessage:
           description: An error message.
@@ -5170,6 +5564,7 @@ components:
           type: string
       type: object
     ContactDetails:
+      additionalProperties: false
       properties:
         address:
           description: The address of the account holder.
@@ -5189,15 +5584,17 @@ components:
       - address
       type: object
     Counterparty:
+      additionalProperties: false
       properties:
         bankAccount:
           description: Contains information about the bank account.
           $ref: '#/components/schemas/BankAccount'
         transferInstrumentId:
-          description: Unique identifier of the [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments__resParam_id).
+          description: The unique identifier of the [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments__resParam_id).
           type: string
       type: object
     CounterpartyBankRestriction:
+      additionalProperties: false
       properties:
         operation:
           description: Defines how the condition must be evaluated.
@@ -5211,6 +5608,7 @@ components:
       - operation
       type: object
     CountriesRestriction:
+      additionalProperties: false
       properties:
         operation:
           description: Defines how the condition must be evaluated.
@@ -5225,6 +5623,7 @@ components:
       - operation
       type: object
     CreateSweepConfigurationV2:
+      additionalProperties: false
       properties:
         category:
           x-addedInVersion: '2'
@@ -5265,8 +5664,8 @@ components:
           description: 'The list of priorities for the bank transfer. This sets the
             speed at which the transfer is sent and the fees that you have to pay.
             You can provide multiple priorities. Adyen will try to pay out using the
-            priority listed first, and if that''s not possible, it moves on to the
-            next option in the order of provided priorities.
+            priority you list first. If that''s not possible, it moves on to the next
+            option in the order of your provided priorities.
 
 
             Possible values:
@@ -5293,8 +5692,9 @@ components:
             bank account number/IBAN).
 
 
-            Set `category` to **bank**. For more details, see [optional priorities
-            setup](https://docs.adyen.com/marketplaces-and-platforms/payout-to-users/scheduled-payouts#optional-priorities-setup).'
+            Set `category` to **bank**. For more details, see optional priorities
+            setup for [marketplaces](https://docs.adyen.com/marketplaces/payout-to-users/scheduled-payouts#optional-priorities-setup)
+            or [platforms](https://docs.adyen.com/platforms/payout-to-users/scheduled-payouts#optional-priorities-setup).'
           items:
             enum:
             - crossBorder
@@ -5320,11 +5720,21 @@ components:
           - declinedByTransactionRule
           - error
           - notEnoughBalance
+          - pendingApproval
           - refusedByCounterpartyBank
           - routeNotFound
           - scaFailed
           - unknown
           readOnly: true
+          type: string
+        reference:
+          description: Your reference for the sweep configuration.
+          maxLength: 80
+          type: string
+        referenceForBeneficiary:
+          description: The reference sent to or received from the counterparty. Only
+            alphanumeric characters are allowed.
+          maxLength: 80
           type: string
         schedule:
           description: The schedule when the `triggerAmount` is evaluated. If the
@@ -5395,14 +5805,6 @@ components:
           maxLength: 4
           minLength: 4
           type: string
-        formFactor:
-          default: physical
-          description: 'The form factor of the account.
-
-
-            Possible values: **physical**, **virtual**. Default value: **physical**.'
-          nullable: true
-          type: string
         type:
           default: dkLocal
           description: '**dkLocal**'
@@ -5415,6 +5817,7 @@ components:
       - bankCode
       type: object
     DayOfWeekRestriction:
+      additionalProperties: false
       properties:
         operation:
           description: Defines how the condition must be evaluated.
@@ -5442,7 +5845,19 @@ components:
       required:
       - operation
       type: object
+    DelegatedAuthenticationData:
+      additionalProperties: false
+      properties:
+        sdkOutput:
+          description: A base64-encoded block with the data required to register the
+            SCA device. You obtain this information by using our authentication SDK.
+          maxLength: 20000
+          type: string
+      required:
+      - sdkOutput
+      type: object
     DeliveryAddress:
+      additionalProperties: false
       properties:
         city:
           description: The name of the city.
@@ -5455,15 +5870,20 @@ components:
             the shopper, provide `country` as `ZZ`.'
           type: string
         line1:
-          description: The street name. For example, if the address is "Rokin 49",
-            provide "Rokin".
+          description: 'The name of the street. Do not include the number of the building.
+
+
+            For example, if the address is Simon Carmiggeltstraat 6-50, provide **Simon
+            Carmiggeltstraat**.'
           type: string
         line2:
-          description: The house number or name. For example, if the address is "Rokin
-            49", provide "49".
+          description: 'The number of the building.
+
+
+            For example, if the address is Simon Carmiggeltstraat 6-50, provide **6-50**.'
           type: string
         line3:
-          description: Optional information about the address.
+          description: Additional information about the delivery address.
           type: string
         postalCode:
           description: 'The postal code.
@@ -5475,7 +5895,7 @@ components:
             * 10 characters for an address in all other countries.'
           type: string
         stateOrProvince:
-          description: 'The two-letterISO 3166-2 state or province code. For example,
+          description: 'The two-letter ISO 3166-2 state or province code. For example,
             **CA** in the US or **ON** in Canada.
 
             > Required for the US and Canada.'
@@ -5484,10 +5904,15 @@ components:
       - country
       type: object
     DeliveryContact:
+      additionalProperties: false
       properties:
         address:
           description: The address of the contact.
           $ref: '#/components/schemas/DeliveryAddress'
+        company:
+          x-addedInVersion: '2'
+          description: The company name of the contact.
+          type: string
         email:
           description: The email address of the contact.
           type: string
@@ -5510,7 +5935,33 @@ components:
       - name
       - address
       type: object
+    Device:
+      additionalProperties: false
+      properties:
+        id:
+          description: The unique identifier of the SCA device.
+          type: string
+        name:
+          description: The name of the SCA device. You can show this name to your
+            user to help them identify the device.
+          type: string
+        paymentInstrumentId:
+          description: The unique identifier of the payment instrument that is associated
+            with the SCA device.
+          type: string
+        type:
+          description: 'The type of device.
+
+
+            Possible values: **ios**, **android**, **browser**.'
+          enum:
+          - ios
+          - android
+          - browser
+          type: string
+      type: object
     DeviceInfo:
+      additionalProperties: false
       properties:
         cardCaptureTechnology:
           description: The technology used to capture the card details.
@@ -5550,6 +6001,7 @@ components:
           type: string
       type: object
     DifferentCurrenciesRestriction:
+      additionalProperties: false
       properties:
         operation:
           description: Defines how the condition must be evaluated.
@@ -5575,6 +6027,7 @@ components:
       - operation
       type: object
     Duration:
+      additionalProperties: false
       properties:
         unit:
           description: 'The unit of time. You can only use **minutes** and **hours**
@@ -5599,6 +6052,7 @@ components:
           type: integer
       type: object
     EntryModesRestriction:
+      additionalProperties: false
       properties:
         operation:
           description: Defines how the condition must be evaluated.
@@ -5629,6 +6083,7 @@ components:
       - operation
       type: object
     Expiry:
+      additionalProperties: false
       properties:
         month:
           description: The month in which the card will expire.
@@ -5638,6 +6093,7 @@ components:
           type: string
       type: object
     Fee:
+      additionalProperties: false
       properties:
         amount:
           description: An object containing the fee amount.
@@ -5646,6 +6102,7 @@ components:
       - amount
       type: object
     GetNetworkTokenResponse:
+      additionalProperties: false
       properties:
         token:
           description: The details of the network token.
@@ -5654,6 +6111,7 @@ components:
       - token
       type: object
     GetTaxFormResponse:
+      additionalProperties: false
       properties:
         content:
           description: The content of the tax form in Base64 format.
@@ -5676,12 +6134,14 @@ components:
       - content
       type: object
     GrantLimit:
+      additionalProperties: false
       properties:
         amount:
           description: The amount available on the grant account.
           $ref: '#/components/schemas/Amount'
       type: object
     GrantOffer:
+      additionalProperties: false
       properties:
         accountHolderId:
           description: The identifier of the account holder to which the grant is
@@ -5718,6 +6178,7 @@ components:
       - accountHolderId
       type: object
     GrantOffers:
+      additionalProperties: false
       properties:
         grantOffers:
           description: A list of available grant offers.
@@ -5741,14 +6202,6 @@ components:
           maxLength: 3
           minLength: 3
           type: string
-        formFactor:
-          default: physical
-          description: 'The form factor of the account.
-
-
-            Possible values: **physical**, **virtual**. Default value: **physical**.'
-          nullable: true
-          type: string
         type:
           default: hkLocal
           description: '**hkLocal**'
@@ -5768,14 +6221,6 @@ components:
           maxLength: 24
           minLength: 24
           type: string
-        formFactor:
-          default: physical
-          description: 'The form factor of the account.
-
-
-            Possible values: **physical**, **virtual**. Default value: **physical**.'
-          nullable: true
-          type: string
         type:
           default: huLocal
           description: '**huLocal**'
@@ -5786,17 +6231,15 @@ components:
       - type
       - accountNumber
       type: object
+    Href:
+      additionalProperties: false
+      properties:
+        href:
+          type: string
+      type: object
     IbanAccountIdentification:
       additionalProperties: false
       properties:
-        formFactor:
-          default: physical
-          description: 'The form factor of the account.
-
-
-            Possible values: **physical**, **virtual**. Default value: **physical**.'
-          nullable: true
-          type: string
         iban:
           description: The international bank account number as defined in the [ISO-13616](https://www.iso.org/standard/81090.html)
             standard.
@@ -5812,6 +6255,7 @@ components:
       - iban
       type: object
     InternationalTransactionRestriction:
+      additionalProperties: false
       properties:
         operation:
           description: Defines how the condition must be evaluated.
@@ -5836,6 +6280,7 @@ components:
       - operation
       type: object
     InvalidField:
+      additionalProperties: false
       properties:
         message:
           description: Description of the validation error.
@@ -5853,7 +6298,27 @@ components:
       type: object
     JSONObject:
       type: object
+    Link:
+      additionalProperties: false
+      properties:
+        first:
+          description: The link to the first page of the list.
+          $ref: '#/components/schemas/Href'
+        last:
+          description: The link to the last page of the list.
+          $ref: '#/components/schemas/Href'
+        next:
+          description: The link to the next page of the list.
+          $ref: '#/components/schemas/Href'
+        previous:
+          description: The link to the previous page of the list.
+          $ref: '#/components/schemas/Href'
+        self:
+          description: The link to the list page you are currently viewing.
+          $ref: '#/components/schemas/Href'
+      type: object
     ListNetworkTokensResponse:
+      additionalProperties: false
       properties:
         networkTokens:
           description: List of network tokens.
@@ -5862,6 +6327,7 @@ components:
           type: array
       type: object
     MatchingTransactionsRestriction:
+      additionalProperties: false
       properties:
         operation:
           description: Defines how the condition must be evaluated.
@@ -5874,6 +6340,7 @@ components:
       - operation
       type: object
     MccsRestriction:
+      additionalProperties: false
       properties:
         operation:
           description: Defines how the condition must be evaluated.
@@ -5887,6 +6354,7 @@ components:
       - operation
       type: object
     MerchantAcquirerPair:
+      additionalProperties: false
       properties:
         acquirerId:
           description: The acquirer ID.
@@ -5896,6 +6364,7 @@ components:
           type: string
       type: object
     MerchantNamesRestriction:
+      additionalProperties: false
       properties:
         operation:
           description: Defines how the condition must be evaluated.
@@ -5908,6 +6377,7 @@ components:
       - operation
       type: object
     MerchantsRestriction:
+      additionalProperties: false
       properties:
         operation:
           description: Defines how the condition must be evaluated.
@@ -5927,14 +6397,6 @@ components:
           description: The 11-digit bank account number, without separators or whitespace.
           maxLength: 11
           minLength: 11
-          type: string
-        formFactor:
-          default: physical
-          description: 'The form factor of the account.
-
-
-            Possible values: **physical**, **virtual**. Default value: **physical**.'
-          nullable: true
           type: string
         type:
           default: noLocal
@@ -5956,14 +6418,6 @@ components:
           maxLength: 16
           minLength: 15
           type: string
-        formFactor:
-          default: physical
-          description: 'The form factor of the account.
-
-
-            Possible values: **physical**, **virtual**. Default value: **physical**.'
-          nullable: true
-          type: string
         type:
           default: nzLocal
           description: '**nzLocal**'
@@ -5975,6 +6429,7 @@ components:
       - accountNumber
       type: object
     Name:
+      additionalProperties: false
       properties:
         firstName:
           description: The first name.
@@ -5989,6 +6444,7 @@ components:
       - lastName
       type: object
     NetworkToken:
+      additionalProperties: false
       properties:
         brandVariant:
           description: The card brand variant of the payment instrument associated
@@ -6043,14 +6499,6 @@ components:
           maxLength: 11
           minLength: 8
           type: string
-        formFactor:
-          default: physical
-          description: 'The form factor of the account.
-
-
-            Possible values: **physical**, **virtual**. Default value: **physical**.'
-          nullable: true
-          type: string
         type:
           default: numberAndBic
           description: '**numberAndBic**'
@@ -6071,14 +6519,6 @@ components:
           maxLength: 26
           minLength: 26
           type: string
-        formFactor:
-          default: physical
-          description: 'The form factor of the account.
-
-
-            Possible values: **physical**, **virtual**. Default value: **physical**.'
-          nullable: true
-          type: string
         type:
           default: plLocal
           description: '**plLocal**'
@@ -6090,6 +6530,7 @@ components:
       - accountNumber
       type: object
     PaginatedAccountHoldersResponse:
+      additionalProperties: false
       properties:
         accountHolders:
           description: List of account holders.
@@ -6108,6 +6549,7 @@ components:
       - hasNext
       type: object
     PaginatedBalanceAccountsResponse:
+      additionalProperties: false
       properties:
         balanceAccounts:
           description: List of balance accounts.
@@ -6126,6 +6568,7 @@ components:
       - hasNext
       type: object
     PaginatedGetCardOrderItemResponse:
+      additionalProperties: false
       properties:
         data:
           description: List of card order items in the card order batch.
@@ -6144,6 +6587,7 @@ components:
       - hasNext
       type: object
     PaginatedGetCardOrderResponse:
+      additionalProperties: false
       properties:
         cardOrders:
           description: Contains objects with information about card orders.
@@ -6161,6 +6605,7 @@ components:
       - hasNext
       type: object
     PaginatedPaymentInstrumentsResponse:
+      additionalProperties: false
       properties:
         hasNext:
           description: Indicates whether there are more items on the next page.
@@ -6179,8 +6624,12 @@ components:
       - hasNext
       type: object
     PaymentInstrument:
+      additionalProperties: false
       properties:
         additionalBankAccountIdentifications:
+          deprecated: true
+          x-deprecatedInVersion: '2'
+          x-deprecatedMessage: Please use `bankAccount` object instead
           description: Contains optional, additional business account details. Returned
             when you create a payment instrument with `type` **bankAccount**.
           items:
@@ -6194,10 +6643,7 @@ components:
         bankAccount:
           description: Contains the business account details. Returned when you create
             a payment instrument with `type` **bankAccount**.
-          oneOf:
-          - $ref: '#/components/schemas/IbanAccountIdentification'
-          - $ref: '#/components/schemas/UKLocalAccountIdentification'
-          - $ref: '#/components/schemas/USLocalAccountIdentification'
+          $ref: '#/components/schemas/BankAccountDTO'
         card:
           description: Contains information about the card payment instrument. Returned
             when you create a payment instrument with `type` **card**.
@@ -6277,14 +6723,14 @@ components:
       - id
       type: object
     PaymentInstrumentGroup:
+      additionalProperties: false
       properties:
         balancePlatform:
           description: The unique identifier of the [balance platform](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/get/balancePlatforms/{id}__queryParam_id)
             to which the payment instrument group belongs.
           type: string
         description:
-          description: Your description for the payment instrument group, maximum
-            300 characters.
+          description: Your description for the payment instrument group.
           maxLength: 300
           type: string
         id:
@@ -6296,8 +6742,7 @@ components:
           description: Properties of the payment instrument group.
           type: object
         reference:
-          description: Your reference for the payment instrument group, maximum 150
-            characters.
+          description: Your reference for the payment instrument group.
           maxLength: 150
           type: string
         txVariant:
@@ -6308,14 +6753,14 @@ components:
       - txVariant
       type: object
     PaymentInstrumentGroupInfo:
+      additionalProperties: false
       properties:
         balancePlatform:
           description: The unique identifier of the [balance platform](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/get/balancePlatforms/{id}__queryParam_id)
             to which the payment instrument group belongs.
           type: string
         description:
-          description: Your description for the payment instrument group, maximum
-            300 characters.
+          description: Your description for the payment instrument group.
           maxLength: 300
           type: string
         properties:
@@ -6324,8 +6769,7 @@ components:
           description: Properties of the payment instrument group.
           type: object
         reference:
-          description: Your reference for the payment instrument group, maximum 150
-            characters.
+          description: Your reference for the payment instrument group.
           maxLength: 150
           type: string
         txVariant:
@@ -6336,6 +6780,7 @@ components:
       - txVariant
       type: object
     PaymentInstrumentInfo:
+      additionalProperties: false
       properties:
         balanceAccountId:
           description: The unique identifier of the [balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/v1/post/balanceAccounts__resParam_id)
@@ -6457,6 +6902,7 @@ components:
       - type
       type: object
     PaymentInstrumentRevealInfo:
+      additionalProperties: false
       properties:
         cvc:
           description: The CVC2 value of the card.
@@ -6473,6 +6919,7 @@ components:
       - cvc
       type: object
     PaymentInstrumentRevealRequest:
+      additionalProperties: false
       properties:
         encryptedKey:
           description: The symmetric session key that you encrypted with the [public
@@ -6488,6 +6935,7 @@ components:
       - encryptedKey
       type: object
     PaymentInstrumentRevealResponse:
+      additionalProperties: false
       properties:
         encryptedData:
           description: The data encrypted using the `encryptedKey`.
@@ -6496,6 +6944,7 @@ components:
       - encryptedData
       type: object
     PaymentInstrumentUpdateRequest:
+      additionalProperties: false
       properties:
         balanceAccountId:
           description: 'The unique identifier of the balance account associated with
@@ -6554,6 +7003,7 @@ components:
           type: string
       type: object
     Phone:
+      additionalProperties: false
       properties:
         number:
           description: "The full phone number provided as a single string. \nFor example,\
@@ -6571,6 +7021,7 @@ components:
       - type
       type: object
     PhoneNumber:
+      additionalProperties: false
       properties:
         phoneCountryCode:
           description: 'The two-character ISO-3166-1 alpha-2 country code of the phone
@@ -6595,6 +7046,7 @@ components:
           type: string
       type: object
     PinChangeRequest:
+      additionalProperties: false
       properties:
         encryptedKey:
           description: The symmetric session key that you encrypted with the [public
@@ -6618,6 +7070,7 @@ components:
       - encryptedPinBlock
       type: object
     PinChangeResponse:
+      additionalProperties: false
       properties:
         status:
           description: 'The status of the request for PIN change.
@@ -6633,10 +7086,11 @@ components:
       - status
       type: object
     PlatformPaymentConfiguration:
+      additionalProperties: false
       properties:
         salesDayClosingTime:
-          description: 'Specifies at what time a [sales day](https://docs.adyen.com/marketplaces-and-platforms/settle-funds/sales-day-settlement#sales-day)
-            ends.
+          description: 'Specifies at what time a [sales day](https://docs.adyen.com/platforms/settle-funds/sales-day-settlement#sales-day)
+            ends for this account.
 
 
             Possible values: Time in **"HH:MM"** format. **HH** ranges from **00**
@@ -6648,15 +7102,19 @@ components:
           type: string
         settlementDelayDays:
           description: 'Specifies after how many business days the funds in a [settlement
-            batch](https://docs.adyen.com/marketplaces-and-platforms/settle-funds/sales-day-settlement#settlement-batch)
-            are made available.
+            batch](https://docs.adyen.com/platforms/settle-funds/sales-day-settlement#settlement-batch)
+            are made available in this balance account.
 
 
             Possible values: **0** to **10**, or **null**.
 
-            * Setting this value to an integer enables [Sales day settlement](https://docs.adyen.com/marketplaces-and-platforms/settle-funds/sales-day-settlement).
+            * Setting this value to an integer enables Sales day settlement in this
+            balance account. See how Sales day settlement works in your [marketplace](https://docs.adyen.com/marketplaces/settle-funds/sales-day-settlement)
+            or [platform](https://docs.adyen.com/platforms/settle-funds/sales-day-settlement).
 
-            * Setting this value to **null** enables [Pass-through settlement](https://docs.adyen.com/marketplaces-and-platforms/settle-funds/pass-through-settlement).
+            * Setting this value to **null** enables Pass-through settlement in this
+            balance account. See how Pass-through settlement works in your [marketplace](https://docs.adyen.com/marketplaces/settle-funds/pass-through-settlement)
+            or [platform](https://docs.adyen.com/platforms/settle-funds/pass-through-settlement).
 
 
             Default value: **null**.'
@@ -6664,6 +7122,7 @@ components:
           type: integer
       type: object
     ProcessingTypesRestriction:
+      additionalProperties: false
       properties:
         operation:
           description: Defines how the condition must be evaluated.
@@ -6693,6 +7152,7 @@ components:
       - operation
       type: object
     PublicKeyResponse:
+      additionalProperties: false
       properties:
         publicKey:
           description: The public key you need for encrypting a symmetric session
@@ -6705,7 +7165,48 @@ components:
       - publicKey
       - publicKeyExpiryDate
       type: object
+    RegisterSCAFinalResponse:
+      additionalProperties: false
+      properties:
+        success:
+          description: Specifies if the registration was initiated successfully.
+          type: boolean
+      type: object
+    RegisterSCARequest:
+      additionalProperties: false
+      properties:
+        paymentInstrumentId:
+          description: The unique identifier of the payment instrument for which you
+            are registering the SCA device.
+          type: string
+        strongCustomerAuthentication:
+          description: Contains information required to register the SCA device.
+          $ref: '#/components/schemas/DelegatedAuthenticationData'
+      required:
+      - paymentInstrumentId
+      - strongCustomerAuthentication
+      type: object
+    RegisterSCAResponse:
+      additionalProperties: false
+      properties:
+        id:
+          description: The unique identifier of the SCA device you are registering.
+          type: string
+        paymentInstrumentId:
+          description: The unique identifier of the payment instrument for which you
+            are registering the SCA device.
+          type: string
+        sdkInput:
+          description: A string that you must pass to the authentication SDK to continue
+            with the registration process.
+          maxLength: 20000
+          type: string
+        success:
+          description: Specifies if the registration was initiated successfully.
+          type: boolean
+      type: object
     RemediatingAction:
+      additionalProperties: false
       properties:
         code:
           description: The remediating action code.
@@ -6715,6 +7216,7 @@ components:
           type: string
       type: object
     Repayment:
+      additionalProperties: false
       properties:
         basisPoints:
           description: The repayment that is deducted daily from incoming net volume,
@@ -6732,6 +7234,7 @@ components:
       - basisPoints
       type: object
     RepaymentTerm:
+      additionalProperties: false
       properties:
         estimatedDays:
           description: The estimated term for repaying the grant, in days.
@@ -6746,6 +7249,7 @@ components:
       - estimatedDays
       type: object
     RestServiceError:
+      additionalProperties: false
       properties:
         detail:
           description: A human-readable explanation specific to this occurrence of
@@ -6789,6 +7293,7 @@ components:
       - status
       type: object
     RevealPinRequest:
+      additionalProperties: false
       properties:
         encryptedKey:
           description: The symmetric session key that you encrypted with the [public
@@ -6804,6 +7309,7 @@ components:
       - encryptedKey
       type: object
     RevealPinResponse:
+      additionalProperties: false
       properties:
         encryptedPinBlock:
           description: The encrypted [PIN block](https://www.pcisecuritystandards.org/glossary/pin-block).
@@ -6814,6 +7320,31 @@ components:
       required:
       - encryptedPinBlock
       - token
+      type: object
+    RiskScores:
+      additionalProperties: false
+      properties:
+        mastercard:
+          description: Transaction risk score provided by Mastercard. Values provided
+            by Mastercard range between 0 (lowest risk) to 998 (highest risk).
+          format: int32
+          type: integer
+        visa:
+          description: Transaction risk score provided by Visa. Values provided by
+            Visa range between 01 (lowest risk) to 99 (highest risk).
+          format: int32
+          type: integer
+      type: object
+    RiskScoresRestriction:
+      additionalProperties: false
+      properties:
+        operation:
+          description: Defines how the condition must be evaluated.
+          type: string
+        value:
+          $ref: '#/components/schemas/RiskScores'
+      required:
+      - operation
       type: object
     SELocalAccountIdentification:
       additionalProperties: false
@@ -6829,14 +7360,6 @@ components:
             without separators or whitespace.
           maxLength: 5
           minLength: 4
-          type: string
-        formFactor:
-          default: physical
-          description: 'The form factor of the account.
-
-
-            Possible values: **physical**, **virtual**. Default value: **physical**.'
-          nullable: true
           type: string
         type:
           default: seLocal
@@ -6863,14 +7386,6 @@ components:
           maxLength: 11
           minLength: 8
           type: string
-        formFactor:
-          default: physical
-          description: 'The form factor of the account.
-
-
-            Possible values: **physical**, **virtual**. Default value: **physical**.'
-          nullable: true
-          type: string
         type:
           default: sgLocal
           description: '**sgLocal**'
@@ -6882,6 +7397,7 @@ components:
       - bic
       type: object
     SameAmountRestriction:
+      additionalProperties: false
       properties:
         operation:
           description: Defines how the condition must be evaluated.
@@ -6892,6 +7408,7 @@ components:
       - operation
       type: object
     SameCounterpartyRestriction:
+      additionalProperties: false
       properties:
         operation:
           description: Defines how the condition must be evaluated.
@@ -6901,7 +7418,30 @@ components:
       required:
       - operation
       type: object
+    SearchRegisteredDevicesResponse:
+      additionalProperties: false
+      properties:
+        data:
+          description: Contains a list of registered SCA devices and their corresponding
+            details.
+          items:
+            $ref: '#/components/schemas/Device'
+          type: array
+        itemsTotal:
+          description: The total amount of registered SCA devices that match the query
+            parameters.
+          format: int32
+          type: integer
+        link:
+          description: Contains links to the list pages.
+          $ref: '#/components/schemas/Link'
+        pagesTotal:
+          description: The total amount of list pages.
+          format: int32
+          type: integer
+      type: object
     StringMatch:
+      additionalProperties: false
       properties:
         operation:
           description: 'The type of string matching operation. Possible values:  **startsWith**,
@@ -6917,6 +7457,7 @@ components:
           type: string
       type: object
     SweepConfigurationV2:
+      additionalProperties: false
       properties:
         category:
           x-addedInVersion: '2'
@@ -6961,8 +7502,8 @@ components:
           description: 'The list of priorities for the bank transfer. This sets the
             speed at which the transfer is sent and the fees that you have to pay.
             You can provide multiple priorities. Adyen will try to pay out using the
-            priority listed first, and if that''s not possible, it moves on to the
-            next option in the order of provided priorities.
+            priority you list first. If that''s not possible, it moves on to the next
+            option in the order of your provided priorities.
 
 
             Possible values:
@@ -6989,8 +7530,9 @@ components:
             bank account number/IBAN).
 
 
-            Set `category` to **bank**. For more details, see [optional priorities
-            setup](https://docs.adyen.com/marketplaces-and-platforms/payout-to-users/scheduled-payouts#optional-priorities-setup).'
+            Set `category` to **bank**. For more details, see optional priorities
+            setup for [marketplaces](https://docs.adyen.com/marketplaces/payout-to-users/scheduled-payouts#optional-priorities-setup)
+            or [platforms](https://docs.adyen.com/platforms/payout-to-users/scheduled-payouts#optional-priorities-setup).'
           items:
             enum:
             - crossBorder
@@ -7016,11 +7558,21 @@ components:
           - declinedByTransactionRule
           - error
           - notEnoughBalance
+          - pendingApproval
           - refusedByCounterpartyBank
           - routeNotFound
           - scaFailed
           - unknown
           readOnly: true
+          type: string
+        reference:
+          description: Your reference for the sweep configuration.
+          maxLength: 80
+          type: string
+        referenceForBeneficiary:
+          description: The reference sent to or received from the counterparty. Only
+            alphanumeric characters are allowed.
+          maxLength: 80
           type: string
         schedule:
           description: The schedule when the `triggerAmount` is evaluated. If the
@@ -7078,6 +7630,7 @@ components:
       - counterparty
       type: object
     SweepCounterparty:
+      additionalProperties: false
       properties:
         balanceAccountId:
           description: "The unique identifier of the destination or source [balance\
@@ -7095,16 +7648,21 @@ components:
         transferInstrumentId:
           description: 'The unique identifier of the destination or source [transfer
             instrument](https://docs.adyen.com/api-explorer/legalentity/latest/post/transferInstruments#responses-200-id)
-            depending on the sweep `type`
+            depending on the sweep `type`.
 
 
-            . To [set up automated top-up sweeps to balance accounts](https://docs.adyen.com/marketplaces-and-platforms/top-up-balance-account/#before-you-begin),
+            To set up automated top-up sweeps to balance accounts in your [marketplace](https://docs.adyen.com/marketplaces/top-up-balance-account/#before-you-begin)
+            or [platform](https://docs.adyen.com/platforms/top-up-balance-account/#before-you-begin),
             use this parameter in combination with a `merchantAccount` and a sweep
-            `type` of **pull**. Top-up sweeps start a direct debit request from the
-            source transfer instrument. Contact Adyen Support to enable this feature.'
+            `type` of **pull**.
+
+
+            Top-up sweeps start a direct debit request from the source transfer instrument.
+            Contact Adyen Support to enable this feature.'
           type: string
       type: object
     SweepSchedule:
+      additionalProperties: false
       properties:
         cronExpression:
           description: "A [cron expression](https://en.wikipedia.org/wiki/Cron#CRON_expression)\
@@ -7158,6 +7716,7 @@ components:
       - type
       type: object
     ThresholdRepayment:
+      additionalProperties: false
       properties:
         amount:
           description: The amount to be repaid on a 30-day basis.
@@ -7166,6 +7725,7 @@ components:
       - amount
       type: object
     TimeOfDay:
+      additionalProperties: false
       properties:
         endTime:
           description: 'The end time in a time-only ISO-8601 extended offset format.
@@ -7183,6 +7743,7 @@ components:
           type: string
       type: object
     TimeOfDayRestriction:
+      additionalProperties: false
       properties:
         operation:
           description: Defines how the condition must be evaluated.
@@ -7193,6 +7754,7 @@ components:
       - operation
       type: object
     TotalAmountRestriction:
+      additionalProperties: false
       properties:
         operation:
           description: Defines how the condition must be evaluated.
@@ -7204,6 +7766,7 @@ components:
       - operation
       type: object
     TransactionRule:
+      additionalProperties: false
       properties:
         aggregationLevel:
           x-addedInVersion: '2'
@@ -7221,7 +7784,7 @@ components:
             **accountHolder**, **balancePlatform**.'
           type: string
         description:
-          description: Your description for the transaction rule, maximum 300 characters.
+          description: Your description for the transaction rule.
           maxLength: 300
           type: string
         endDate:
@@ -7257,9 +7820,10 @@ components:
           - enforceSCA
           - hardBlock
           - scoreBased
+          - timedBlock
           type: string
         reference:
-          description: Your reference for the transaction rule, maximum 150 characters.
+          description: Your reference for the transaction rule.
           maxLength: 150
           type: string
         requestType:
@@ -7332,6 +7896,7 @@ components:
       - ruleRestrictions
       type: object
     TransactionRuleEntityKey:
+      additionalProperties: false
       properties:
         entityReference:
           description: The unique identifier of the resource.
@@ -7345,6 +7910,7 @@ components:
           type: string
       type: object
     TransactionRuleInfo:
+      additionalProperties: false
       properties:
         aggregationLevel:
           x-addedInVersion: '2'
@@ -7362,7 +7928,7 @@ components:
             **accountHolder**, **balancePlatform**.'
           type: string
         description:
-          description: Your description for the transaction rule, maximum 300 characters.
+          description: Your description for the transaction rule.
           maxLength: 300
           type: string
         endDate:
@@ -7395,9 +7961,10 @@ components:
           - enforceSCA
           - hardBlock
           - scoreBased
+          - timedBlock
           type: string
         reference:
-          description: Your reference for the transaction rule, maximum 150 characters.
+          description: Your reference for the transaction rule.
           maxLength: 150
           type: string
         requestType:
@@ -7470,6 +8037,7 @@ components:
       - ruleRestrictions
       type: object
     TransactionRuleInterval:
+      additionalProperties: false
       properties:
         dayOfMonth:
           x-addedInVersion: '2'
@@ -7516,15 +8084,15 @@ components:
             \ during which the rule conditions and limits apply, and how often counters\
             \ are reset.\n\nPossible values:\n  * **perTransaction**: conditions are\
             \ evaluated and the counters are reset for every transaction.\n * **daily**:\
-            \ the counters are reset daily at 00:00:00 UTC.\n * **weekly**: the counters\
-            \ are reset every Monday at 00:00:00 UTC. \n * **monthly**: the counters\
-            \ reset every first day of the month at 00:00:00 UTC. \n * **lifetime**:\
+            \ the counters are reset daily at 00:00:00 CET.\n * **weekly**: the counters\
+            \ are reset every Monday at 00:00:00 CET. \n * **monthly**: the counters\
+            \ reset every first day of the month at 00:00:00 CET. \n * **lifetime**:\
             \ conditions are applied to the lifetime of the payment instrument.\n\
             \ * **rolling**: conditions are applied and the counters are reset based\
             \ on a `duration`. If the reset date and time are not provided, Adyen\
             \ applies the default reset time similar to fixed intervals. For example,\
             \ if the duration is every two weeks, the counter resets every third Monday\
-            \ at 00:00:00 UTC.\n * **sliding**: conditions are applied and the counters\
+            \ at 00:00:00 CET.\n * **sliding**: conditions are applied and the counters\
             \ are reset based on the current time and a `duration` that you specify."
           enum:
           - daily
@@ -7539,12 +8107,14 @@ components:
       - type
       type: object
     TransactionRuleResponse:
+      additionalProperties: false
       properties:
         transactionRule:
           description: The transaction rule.
           $ref: '#/components/schemas/TransactionRule'
       type: object
     TransactionRuleRestrictions:
+      additionalProperties: false
       properties:
         activeNetworkTokens:
           description: 'The total number of tokens that a card can have across different
@@ -7626,6 +8196,17 @@ components:
 
             Supported operations: **anyMatch**, **noneMatch**.'
           $ref: '#/components/schemas/ProcessingTypesRestriction'
+        riskScores:
+          description: 'Risk scores provided by specific sources. The same operation
+            applies to all scores.
+
+
+            Current sources available: **visa**, **mastercard**
+
+
+            Supported operations: **equals**, **notEquals**, **greaterThanOrEqualTo**,
+            **greaterThan**, **lessThanOrEqualTo**, **lessThan**.'
+          $ref: '#/components/schemas/RiskScoresRestriction'
         sameAmountRestriction:
           description: 'Checks if a user has recently sent the same amount of funds
             in multiple transfers.
@@ -7677,6 +8258,7 @@ components:
           $ref: '#/components/schemas/TotalAmountRestriction'
       type: object
     TransactionRulesResponse:
+      additionalProperties: false
       properties:
         transactionRules:
           description: List of transaction rules.
@@ -7685,6 +8267,7 @@ components:
           type: array
       type: object
     TransferRoute:
+      additionalProperties: false
       properties:
         category:
           description: " The type of transfer.\n\n Possible values:\n\n  - **bank**:\
@@ -7756,6 +8339,7 @@ components:
           type: array
       type: object
     TransferRouteRequest:
+      additionalProperties: false
       properties:
         balanceAccountId:
           description: 'The unique identifier of the source [balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__resParam_id).
@@ -7829,6 +8413,7 @@ components:
       - category
       type: object
     TransferRouteResponse:
+      additionalProperties: false
       properties:
         transferRoutes:
           description: List of available priorities for a transfer, along with requirements.
@@ -7844,14 +8429,6 @@ components:
           description: The 8-digit bank account number, without separators or whitespace.
           maxLength: 8
           minLength: 8
-          type: string
-        formFactor:
-          default: physical
-          description: 'The form factor of the account.
-
-
-            Possible values: **physical**, **virtual**. Default value: **physical**.'
-          nullable: true
           type: string
         sortCode:
           description: The 6-digit [sort code](https://en.wikipedia.org/wiki/Sort_code),
@@ -7888,14 +8465,6 @@ components:
           - checking
           - savings
           type: string
-        formFactor:
-          default: physical
-          description: 'The form factor of the account.
-
-
-            Possible values: **physical**, **virtual**. Default value: **physical**.'
-          nullable: true
-          type: string
         routingNumber:
           description: The 9-digit [routing number](https://en.wikipedia.org/wiki/ABA_routing_transit_number),
             without separators or whitespace.
@@ -7914,6 +8483,7 @@ components:
       - routingNumber
       type: object
     UpdateNetworkTokenRequest:
+      additionalProperties: false
       properties:
         status:
           description: 'The new status of the network token. Possible values: **active**,
@@ -7926,8 +8496,12 @@ components:
           type: string
       type: object
     UpdatePaymentInstrument:
+      additionalProperties: false
       properties:
         additionalBankAccountIdentifications:
+          deprecated: true
+          x-deprecatedInVersion: '2'
+          x-deprecatedMessage: Please use `bankAccount` object instead
           description: Contains optional, additional business account details. Returned
             when you create a payment instrument with `type` **bankAccount**.
           items:
@@ -7941,10 +8515,7 @@ components:
         bankAccount:
           description: Contains the business account details. Returned when you create
             a payment instrument with `type` **bankAccount**.
-          oneOf:
-          - $ref: '#/components/schemas/IbanAccountIdentification'
-          - $ref: '#/components/schemas/UKLocalAccountIdentification'
-          - $ref: '#/components/schemas/USLocalAccountIdentification'
+          $ref: '#/components/schemas/BankAccountDTO'
         card:
           description: Contains information about the card payment instrument. Returned
             when you create a payment instrument with `type` **card**.
@@ -8030,6 +8601,7 @@ components:
       - id
       type: object
     UpdateSweepConfigurationV2:
+      additionalProperties: false
       properties:
         category:
           x-addedInVersion: '2'
@@ -8074,8 +8646,8 @@ components:
           description: 'The list of priorities for the bank transfer. This sets the
             speed at which the transfer is sent and the fees that you have to pay.
             You can provide multiple priorities. Adyen will try to pay out using the
-            priority listed first, and if that''s not possible, it moves on to the
-            next option in the order of provided priorities.
+            priority you list first. If that''s not possible, it moves on to the next
+            option in the order of your provided priorities.
 
 
             Possible values:
@@ -8102,8 +8674,9 @@ components:
             bank account number/IBAN).
 
 
-            Set `category` to **bank**. For more details, see [optional priorities
-            setup](https://docs.adyen.com/marketplaces-and-platforms/payout-to-users/scheduled-payouts#optional-priorities-setup).'
+            Set `category` to **bank**. For more details, see optional priorities
+            setup for [marketplaces](https://docs.adyen.com/marketplaces/payout-to-users/scheduled-payouts#optional-priorities-setup)
+            or [platforms](https://docs.adyen.com/platforms/payout-to-users/scheduled-payouts#optional-priorities-setup).'
           items:
             enum:
             - crossBorder
@@ -8129,11 +8702,21 @@ components:
           - declinedByTransactionRule
           - error
           - notEnoughBalance
+          - pendingApproval
           - refusedByCounterpartyBank
           - routeNotFound
           - scaFailed
           - unknown
           readOnly: true
+          type: string
+        reference:
+          description: Your reference for the sweep configuration.
+          maxLength: 80
+          type: string
+        referenceForBeneficiary:
+          description: The reference sent to or received from the counterparty. Only
+            alphanumeric characters are allowed.
+          maxLength: 80
           type: string
         schedule:
           description: The schedule when the `triggerAmount` is evaluated. If the
@@ -8186,6 +8769,7 @@ components:
           type: string
       type: object
     VerificationDeadline:
+      additionalProperties: false
       properties:
         capabilities:
           description: The names of the capabilities to be disallowed.
@@ -8262,6 +8846,7 @@ components:
       - capabilities
       type: object
     VerificationError:
+      additionalProperties: false
       properties:
         capabilities:
           description: Contains the capabilities that the verification error applies
@@ -8347,6 +8932,7 @@ components:
           type: string
       type: object
     VerificationError-recursive:
+      additionalProperties: false
       properties:
         capabilities:
           description: Contains the capabilities that the verification error applies
