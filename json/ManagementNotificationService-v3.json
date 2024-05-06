@@ -17,6 +17,9 @@
       },
       {
          "name" : "Payment method"
+      },
+      {
+         "name" : "Terminal management"
       }
    ],
    "x-staticResponse" : "response.json",
@@ -241,6 +244,46 @@
                      "application/json" : {
                         "schema" : {
                            "$ref" : "#/components/schemas/PaymentMethodNotificationResponse"
+                        }
+                     }
+                  },
+                  "description" : "OK - the request has succeeded."
+               }
+            }
+         }
+      },
+      "terminalSettings.modified" : {
+         "post" : {
+            "tags" : [
+               "Terminal management"
+            ],
+            "summary" : "Terminal settings updated",
+            "description" : "A request to [update terminal settings](https://docs.adyen.com/api-explorer/Management/latest/patch/terminals/(terminalId)/terminalSettings) was completed.",
+            "x-addedInVersion" : "1",
+            "operationId" : "post-terminalSettings.modified",
+            "x-sortIndex" : 1,
+            "x-methodName" : "terminalSettingsUpdated",
+            "security" : [
+               {
+                  "BasicAuth" : [
+                     ]
+               }
+            ],
+            "requestBody" : {
+               "content" : {
+                  "application/json" : {
+                     "schema" : {
+                        "$ref" : "#/components/schemas/TerminalSettingsNotificationRequest"
+                     }
+                  }
+               }
+            },
+            "responses" : {
+               "200" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/TerminalSettingsNotificationResponse"
                         }
                      }
                   },
@@ -689,6 +732,86 @@
                },
                "message" : {
                   "description" : "A description of how you can resolve the verification error.",
+                  "type" : "string"
+               }
+            },
+            "type" : "object"
+         },
+         "TerminalSettingsData" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "companyId" : {
+                  "description" : "The unique identifier of the company account.",
+                  "type" : "string"
+               },
+               "merchantId" : {
+                  "description" : "The unique identifier of the merchant account.",
+                  "type" : "string"
+               },
+               "storeId" : {
+                  "description" : "The unique identifier of the store.",
+                  "type" : "string"
+               },
+               "terminalId" : {
+                  "description" : "The unique identifier of the terminal.",
+                  "type" : "string"
+               },
+               "updateSource" : {
+                  "description" : "Indicates whether the terminal settings were updated using the Customer Area or the Management API.",
+                  "enum" : [
+                     "Customer Area",
+                     "Management Api"
+                  ],
+                  "type" : "string"
+               },
+               "user" : {
+                  "description" : "The user that updated the terminal settings. Can be Adyen or your API credential username.",
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "user",
+               "updateSource"
+            ],
+            "type" : "object"
+         },
+         "TerminalSettingsNotificationRequest" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "createdAt" : {
+                  "description" : "Timestamp for when the webhook was created.",
+                  "format" : "date-time",
+                  "type" : "string"
+               },
+               "data" : {
+                  "description" : "Contains event details.",
+                  "$ref" : "#/components/schemas/TerminalSettingsData"
+               },
+               "environment" : {
+                  "description" : "The environment from which the webhook originated.\n\nPossible values: **test**, **live**.",
+                  "type" : "string"
+               },
+               "type" : {
+                  "description" : "Type of notification.",
+                  "enum" : [
+                     "terminalSettings.modified"
+                  ],
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "environment",
+               "createdAt",
+               "data",
+               "type"
+            ],
+            "type" : "object"
+         },
+         "TerminalSettingsNotificationResponse" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "notificationResponse" : {
+                  "description" : "Respond with **HTTP 200 OK** and `[accepted]` in the response body to [accept the webhook](https://docs.adyen.com/development-resources/webhooks#accept-notifications).",
                   "type" : "string"
                }
             },
