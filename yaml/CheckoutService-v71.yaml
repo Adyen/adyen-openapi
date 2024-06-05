@@ -6000,6 +6000,34 @@ components:
             type: integer
           type: array
       type: object
+    CheckoutSessionThreeDS2RequestData:
+      additionalProperties: false
+      properties:
+        homePhone:
+          description: The home phone number provided by the Cardholder.
+          $ref: '#/components/schemas/Phone'
+        mobilePhone:
+          description: The mobile phone number provided by the Cardholder.
+          $ref: '#/components/schemas/Phone'
+        threeDSRequestorChallengeInd:
+          description: "Indicates whether a challenge is requested for this transaction.\
+            \ Possible values:\n* **01** \u2014 No preference\n* **02** \u2014 No\
+            \ challenge requested\n* **03** \u2014 Challenge requested (3DS Requestor\
+            \ preference)\n* **04** \u2014 Challenge requested (Mandate)\n* **05**\
+            \ \u2014 No challenge (transactional risk analysis is already performed)\n\
+            * **06** \u2014 Data Only"
+          enum:
+          - '01'
+          - '02'
+          - '03'
+          - '04'
+          - '05'
+          - '06'
+          type: string
+        workPhone:
+          description: The work phone number provided by the Cardholder.
+          $ref: '#/components/schemas/Phone'
+      type: object
     CheckoutThreeDS2Action:
       additionalProperties: false
       properties:
@@ -6563,6 +6591,10 @@ components:
           description: Sets a custom theme for [Hosted Checkout](https://docs.adyen.com/online-payments/build-your-integration/?platform=Web&integration=Hosted+Checkout).
             The value can be any of the **Theme ID** values from your Customer Area.
           type: string
+        threeDS2RequestData:
+          description: Request fields for 3D Secure 2. To check if any of the following
+            fields are required for your integration, refer to [Online payments](https://docs.adyen.com/online-payments).
+          $ref: '#/components/schemas/CheckoutSessionThreeDS2RequestData'
         threeDSAuthenticationOnly:
           deprecated: true
           x-deprecatedInVersion: '69'
@@ -6980,6 +7012,10 @@ components:
           description: Sets a custom theme for [Hosted Checkout](https://docs.adyen.com/online-payments/build-your-integration/?platform=Web&integration=Hosted+Checkout).
             The value can be any of the **Theme ID** values from your Customer Area.
           type: string
+        threeDS2RequestData:
+          description: Request fields for 3D Secure 2. To check if any of the following
+            fields are required for your integration, refer to [Online payments](https://docs.adyen.com/online-payments).
+          $ref: '#/components/schemas/CheckoutSessionThreeDS2RequestData'
         threeDSAuthenticationOnly:
           deprecated: true
           x-deprecatedInVersion: '69'
@@ -9831,6 +9867,11 @@ components:
             payment page is rendered according to the theme set as default in your
             Customer Area.
           type: string
+        threeDS2RequestData:
+          description: The cardholder phone number need to be part of the authentication
+            message for payment data. It is a requirement for Visa Secure Authentication
+            Data Field Mandate effective August 2024.
+          $ref: '#/components/schemas/CheckoutSessionThreeDS2RequestData'
       required:
       - amount
       - reference
@@ -10142,6 +10183,11 @@ components:
             payment page is rendered according to the theme set as default in your
             Customer Area.
           type: string
+        threeDS2RequestData:
+          description: The cardholder phone number need to be part of the authentication
+            message for payment data. It is a requirement for Visa Secure Authentication
+            Data Field Mandate effective August 2024.
+          $ref: '#/components/schemas/CheckoutSessionThreeDS2RequestData'
         updatedAt:
           description: 'The date when the payment link status was updated.
 
@@ -11635,6 +11681,10 @@ components:
           description: The version of the SDK you are using (for Web SDK integrations
             only).
           type: string
+        secureRemoteCommerceCheckoutData:
+          x-addedInVersion: '68'
+          description: Checkout data for a Secure Remote Commerce payment.
+          $ref: '#/components/schemas/SecureRemoteCommerceCheckoutData'
         sessionValidity:
           description: 'The date and time until when the session remains valid, in
             [ISO 8601](https://www.w3.org/TR/NOTE-datetime) format.
@@ -12899,6 +12949,43 @@ components:
       required:
       - samsungPayToken
       title: Samsung Pay
+      type: object
+    SecureRemoteCommerceCheckoutData:
+      additionalProperties: false
+      properties:
+        checkoutPayload:
+          description: The Secure Remote Commerce checkout payload to process the
+            payment with.
+          maxLength: 10000
+          type: string
+        correlationId:
+          description: This is the unique identifier generated by SRC system to track
+            and link SRC messages. Available within the present checkout session (e.g.
+            received in an earlier API response during the present session).
+          maxLength: 40
+          minLength: 1
+          type: string
+        cvc:
+          description: The [card verification code](https://docs.adyen.com/get-started-with-adyen/payment-glossary/#card-security-code-cvc-cvv-cid).
+          maxLength: 20
+          minLength: 1
+          type: string
+        digitalCardId:
+          description: A unique identifier that represents the token associated with
+            a card enrolled. Required for scheme 'mc'.
+          maxLength: 80
+          type: string
+        scheme:
+          description: The Secure Remote Commerce scheme.
+          enum:
+          - mc
+          - visa
+          type: string
+        tokenReference:
+          description: A unique identifier that represents the token associated with
+            a card enrolled. Required for scheme 'visa'.
+          maxLength: 80
+          type: string
       type: object
     SepaDirectDebitDetails:
       additionalProperties: false
