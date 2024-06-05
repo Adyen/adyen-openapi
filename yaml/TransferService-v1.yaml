@@ -310,19 +310,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RestServiceError'
+                $ref: '#/components/schemas/TransferServiceRestServiceError'
           description: Forbidden - insufficient permissions to process the request.
         '422':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RestServiceError'
+                $ref: '#/components/schemas/TransferServiceRestServiceError'
           description: Unprocessable Entity - a request validation error.
         '500':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RestServiceError'
+                $ref: '#/components/schemas/TransferServiceRestServiceError'
           description: Internal Server Error - the server could not process the request.
 components:
   schemas:
@@ -573,6 +573,56 @@ components:
       - detail
       - status
       type: object
+    RoutingDetails:
+      additionalProperties: false
+      properties:
+        detail:
+          description: A human-readable explanation specific to this occurrence of
+            the problem.
+          type: string
+        errorCode:
+          description: A code that identifies the problem type.
+          type: string
+        priority:
+          description: 'The priority for the bank transfer. This sets the speed at
+            which the transfer is sent and the fees that you have to pay. Required
+            for transfers with `category` **bank**.
+
+
+            Possible values:
+
+
+            * **regular**: For normal, low-value transactions.
+
+
+            * **fast**: Faster way to transfer funds but has higher fees. Recommended
+            for high-priority, low-value transactions.
+
+
+            * **wire**: Fastest way to transfer funds but has the highest fees. Recommended
+            for high-priority, high-value transactions.
+
+
+            * **instant**: Instant way to transfer funds in [SEPA countries](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).
+
+
+            * **crossBorder**: High-value transfer to a recipient in a different country.
+
+
+            * **internal**: Transfer to an Adyen-issued business bank account (by
+            bank account number/IBAN).'
+          enum:
+          - crossBorder
+          - fast
+          - instant
+          - internal
+          - regular
+          - wire
+          type: string
+        title:
+          description: A short, human-readable summary of the problem type.
+          type: string
+      type: object
     ServiceError:
       additionalProperties: false
       properties:
@@ -796,7 +846,7 @@ components:
         reference:
           x-addedInVersion: '1'
           description: 'Your unique reference for the transfer. You can use alphanumeric
-            characters and hyphens. Maximum length: 80 characters.'
+            characters and hyphens. '
           maxLength: 80
           type: string
         source:
@@ -835,7 +885,7 @@ components:
         reference:
           x-addedInVersion: '1'
           description: 'Your unique reference for the transfer. You can use alphanumeric
-            characters and hyphens. Maximum length: 80 characters.'
+            characters and hyphens. '
           maxLength: 80
           type: string
         refusalReason:
@@ -858,6 +908,56 @@ components:
       - amount
       - id
       - resultCode
+      type: object
+    TransferServiceRestServiceError:
+      additionalProperties: false
+      properties:
+        detail:
+          description: A human-readable explanation specific to this occurrence of
+            the problem.
+          type: string
+        errorCode:
+          description: A code that identifies the problem type.
+          type: string
+        instance:
+          description: A unique URI that identifies the specific occurrence of the
+            problem.
+          type: string
+        invalidFields:
+          description: Detailed explanation of each validation error, when applicable.
+          items:
+            $ref: '#/components/schemas/InvalidField'
+          type: array
+        requestId:
+          description: A unique reference for the request, essentially the same as
+            `pspReference`.
+          type: string
+        response:
+          description: JSON response payload.
+          $ref: '#/components/schemas/JSONObject'
+        routingDetails:
+          description: Detailed explanation of each attempt to route the transfer
+            with the priorities from the request.
+          items:
+            $ref: '#/components/schemas/RoutingDetails'
+          type: array
+        status:
+          description: The HTTP status code.
+          format: int32
+          type: integer
+        title:
+          description: A short, human-readable summary of the problem type.
+          type: string
+        type:
+          description: A URI that identifies the problem type, pointing to human-readable
+            documentation on this problem type.
+          type: string
+      required:
+      - type
+      - errorCode
+      - title
+      - detail
+      - status
       type: object
   securitySchemes:
     ApiKeyAuth:
