@@ -981,7 +981,7 @@
             "additionalProperties" : false,
             "properties" : {
                "notificationResponse" : {
-                  "description" : "Respond with **HTTP 200 OK** and `[accepted]` in the response body to [accept the webhook](https://docs.adyen.com/development-resources/webhooks#accept-notifications).",
+                  "description" : "Respond with any **2xx** HTTP status code to [accept the webhook](https://docs.adyen.com/development-resources/webhooks#accept-notifications).",
                   "type" : "string"
                }
             },
@@ -1422,6 +1422,7 @@
             "type" : "object"
          },
          "ContactDetails" : {
+            "deprecated" : true,
             "additionalProperties" : false,
             "properties" : {
                "address" : {
@@ -1639,6 +1640,11 @@
                      "inactive",
                      "suspended"
                   ],
+                  "type" : "string"
+               },
+               "statusComment" : {
+                  "x-addedInVersion" : "2",
+                  "description" : "The status comment provides additional information for the statusReason of the payment instrument.",
                   "type" : "string"
                },
                "statusReason" : {
@@ -1887,7 +1893,7 @@
                },
                "priorities" : {
                   "x-addedInVersion" : "2",
-                  "description" : "The list of priorities for the bank transfer. This sets the speed at which the transfer is sent and the fees that you have to pay. You can provide multiple priorities. Adyen will try to pay out using the priority you list first. If that's not possible, it moves on to the next option in the order of your provided priorities.\n\nPossible values:\n\n* **regular**: For normal, low-value transactions.\n\n* **fast**: Faster way to transfer funds but has higher fees. Recommended for high-priority, low-value transactions.\n\n* **wire**: Fastest way to transfer funds but has the highest fees. Recommended for high-priority, high-value transactions.\n\n* **instant**: Instant way to transfer funds in [SEPA countries](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).\n\n* **crossBorder**: High-value transfer to a recipient in a different country.\n\n* **internal**: Transfer to an Adyen-issued business bank account (by bank account number/IBAN).\n\nSet `category` to **bank**. For more details, see optional priorities setup for [marketplaces](https://docs.adyen.com/marketplaces/payout-to-users/scheduled-payouts#optional-priorities-setup) or [platforms](https://docs.adyen.com/platforms/payout-to-users/scheduled-payouts#optional-priorities-setup).",
+                  "description" : "The list of priorities for the bank transfer. This sets the speed at which the transfer is sent and the fees that you have to pay. You can provide multiple priorities. Adyen will try to pay out using the priority you list first. If that's not possible, it moves on to the next option in the order of your provided priorities.\n\nPossible values:\n\n* **regular**: for normal, low-value transactions.\n\n* **fast**: a faster way to transfer funds, but the fees are higher. Recommended for high-priority, low-value transactions.\n\n* **wire**: the fastest way to transfer funds, but this has the highest fees. Recommended for high-priority, high-value transactions.\n\n* **instant**: for instant funds transfers in [SEPA countries](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).\n\n* **crossBorder**: for high-value transfers to a recipient in a different country.\n\n* **internal**: for transfers to an Adyen-issued business bank account (by bank account number/IBAN).\n\nSet `category` to **bank**. For more details, see optional priorities setup for [marketplaces](https://docs.adyen.com/marketplaces/payout-to-users/scheduled-payouts#optional-priorities-setup) or [platforms](https://docs.adyen.com/platforms/payout-to-users/scheduled-payouts#optional-priorities-setup).",
                   "items" : {
                      "enum" : [
                         "crossBorder",
@@ -1913,6 +1919,7 @@
                      "counterpartyAddressRequired",
                      "counterpartyBankTimedOut",
                      "counterpartyBankUnavailable",
+                     "declined",
                      "declinedByTransactionRule",
                      "error",
                      "notEnoughBalance",
@@ -1980,15 +1987,15 @@
             "additionalProperties" : false,
             "properties" : {
                "balanceAccountId" : {
-                  "description" : "The unique identifier of the destination or source [balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__resParam_id).\n\n You can only use this for periodic sweep schedules such as `schedule.type` **daily** or **monthly**.",
+                  "description" : "The unique identifier of the destination or source [balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__resParam_id).\n\n > If you are updating the counterparty from a transfer instrument to a balance account, set `transferInstrumentId` to **null**.",
                   "type" : "string"
                },
                "merchantAccount" : {
-                  "description" : "The merchant account that will be the source of funds.\n\nYou can only use this parameter with sweeps of `type` **pull** and `schedule.type` **balance**, and if you are processing payments with Adyen.",
+                  "description" : "The merchant account that will be the source of funds.\n\nYou can only use this parameter with sweeps of `type` **pull** and if you are processing payments with Adyen.",
                   "type" : "string"
                },
                "transferInstrumentId" : {
-                  "description" : "The unique identifier of the destination or source [transfer instrument](https://docs.adyen.com/api-explorer/legalentity/latest/post/transferInstruments#responses-200-id) depending on the sweep `type`.\n\nTo set up automated top-up sweeps to balance accounts in your [marketplace](https://docs.adyen.com/marketplaces/top-up-balance-account/#before-you-begin) or [platform](https://docs.adyen.com/platforms/top-up-balance-account/#before-you-begin), use this parameter in combination with a `merchantAccount` and a sweep `type` of **pull**.\n\nTop-up sweeps start a direct debit request from the source transfer instrument. Contact Adyen Support to enable this feature.",
+                  "description" : "The unique identifier of the destination or source [transfer instrument](https://docs.adyen.com/api-explorer/legalentity/latest/post/transferInstruments#responses-200-id) depending on the sweep `type`\n\n. To set up automated top-up sweeps to balance accounts in your [marketplace](https://docs.adyen.com/marketplaces/top-up-balance-account/#before-you-begin) or [platform](https://docs.adyen.com/platforms/top-up-balance-account/#before-you-begin), use this parameter in combination with a `merchantAccount` and a sweep `type` of **pull**.\n\nTop-up sweeps start a direct debit request from the source transfer instrument. Contact Adyen Support to enable this feature.> If you are updating the counterparty from a balance account to a transfer instrument, set `balanceAccountId` to **null**.",
                   "type" : "string"
                }
             },
@@ -2002,7 +2009,7 @@
                   "type" : "string"
                },
                "type" : {
-                  "description" : "The schedule type.\n\nPossible values:\n\n* **cron**: push out funds based on a `cronExpression`.\n\n* **daily**: push out funds daily at 07:00 AM CET.\n\n* **weekly**: push out funds every Monday at 07:00 AM CET.\n\n* **monthly**: push out funds every first of the month at 07:00 AM CET.\n\n* **balance**: pull in funds instantly if the balance is less than or equal to the `triggerAmount`.\nYou can only use this for sweeps of `type` **pull** and when the source is a `merchantAccount` or `transferInstrument`.\nIf the source is transferInstrument, merchant account identifier is still required, with which you want to process the transaction.\n",
+                  "description" : "The schedule type.\n\nPossible values:\n\n* **cron**: push out funds based on a `cronExpression`.\n\n* **daily**: push out funds daily at 07:00 AM CET.\n\n* **weekly**: push out funds every Monday at 07:00 AM CET.\n\n* **monthly**: push out funds every first of the month at 07:00 AM CET.\n\n* **balance**: execute the sweep instantly if the `triggerAmount` is reached.\n",
                   "enum" : [
                      "daily",
                      "weekly",

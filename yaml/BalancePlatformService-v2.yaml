@@ -2263,6 +2263,12 @@ paths:
             examples:
               createBusinessAccountNL:
                 $ref: '#/components/examples/post-paymentInstruments-createBusinessAccountNL'
+              createBusinessAccountNL-DELocalIBAN:
+                $ref: '#/components/examples/post-paymentInstruments-createBusinessAccountNL-DELocalIBAN'
+              createBusinessAccountNL-FRLocalIBAN:
+                $ref: '#/components/examples/post-paymentInstruments-createBusinessAccountNL-FRLocalIBAN'
+              createBusinessAccountUK:
+                $ref: '#/components/examples/post-paymentInstruments-createBusinessAccountUK'
               createBusinessAccountUS:
                 $ref: '#/components/examples/post-paymentInstruments-createBusinessAccountUS'
               createPhysicalCard:
@@ -2278,6 +2284,12 @@ paths:
               examples:
                 createBusinessAccountNL:
                   $ref: '#/components/examples/post-paymentInstruments-createBusinessAccountNL-200'
+                createBusinessAccountNL-DELocalIBAN:
+                  $ref: '#/components/examples/post-paymentInstruments-createBusinessAccountNL-DELocalIBAN-200'
+                createBusinessAccountNL-FRLocalIBAN:
+                  $ref: '#/components/examples/post-paymentInstruments-createBusinessAccountNL-FRLocalIBAN-200'
+                createBusinessAccountUK:
+                  $ref: '#/components/examples/post-paymentInstruments-createBusinessAccountUK-200'
                 createBusinessAccountUS:
                   $ref: '#/components/examples/post-paymentInstruments-createBusinessAccountUS-200'
                 createPhysicalCard:
@@ -5569,6 +5581,7 @@ components:
           type: string
       type: object
     ContactDetails:
+      deprecated: true
       additionalProperties: false
       properties:
         address:
@@ -5676,25 +5689,26 @@ components:
             Possible values:
 
 
-            * **regular**: For normal, low-value transactions.
+            * **regular**: for normal, low-value transactions.
 
 
-            * **fast**: Faster way to transfer funds but has higher fees. Recommended
+            * **fast**: a faster way to transfer funds, but the fees are higher. Recommended
             for high-priority, low-value transactions.
 
 
-            * **wire**: Fastest way to transfer funds but has the highest fees. Recommended
-            for high-priority, high-value transactions.
+            * **wire**: the fastest way to transfer funds, but this has the highest
+            fees. Recommended for high-priority, high-value transactions.
 
 
-            * **instant**: Instant way to transfer funds in [SEPA countries](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).
+            * **instant**: for instant funds transfers in [SEPA countries](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).
 
 
-            * **crossBorder**: High-value transfer to a recipient in a different country.
+            * **crossBorder**: for high-value transfers to a recipient in a different
+            country.
 
 
-            * **internal**: Transfer to an Adyen-issued business bank account (by
-            bank account number/IBAN).
+            * **internal**: for transfers to an Adyen-issued business bank account
+            (by bank account number/IBAN).
 
 
             Set `category` to **bank**. For more details, see optional priorities
@@ -5722,6 +5736,7 @@ components:
           - counterpartyAddressRequired
           - counterpartyBankTimedOut
           - counterpartyBankUnavailable
+          - declined
           - declinedByTransactionRule
           - error
           - notEnoughBalance
@@ -6344,6 +6359,25 @@ components:
       required:
       - operation
       type: object
+    MatchingValuesRestriction:
+      additionalProperties: false
+      properties:
+        operation:
+          description: Defines how the condition must be evaluated.
+          type: string
+        value:
+          items:
+            enum:
+            - acquirerId
+            - amount
+            - currency
+            - merchantId
+            - merchantName
+            type: string
+          type: array
+      required:
+      - operation
+      type: object
     MccsRestriction:
       additionalProperties: false
       properties:
@@ -6691,6 +6725,11 @@ components:
           - inactive
           - suspended
           type: string
+        statusComment:
+          x-addedInVersion: '2'
+          description: The status comment provides additional information for the
+            statusReason of the payment instrument.
+          type: string
         statusReason:
           x-addedInVersion: '2'
           description: 'The reason for the status of the payment instrument.
@@ -6832,6 +6871,11 @@ components:
           - closed
           - inactive
           - suspended
+          type: string
+        statusComment:
+          x-addedInVersion: '2'
+          description: The status comment provides additional information for the
+            statusReason of the payment instrument.
           type: string
         statusReason:
           x-addedInVersion: '2'
@@ -7514,25 +7558,26 @@ components:
             Possible values:
 
 
-            * **regular**: For normal, low-value transactions.
+            * **regular**: for normal, low-value transactions.
 
 
-            * **fast**: Faster way to transfer funds but has higher fees. Recommended
+            * **fast**: a faster way to transfer funds, but the fees are higher. Recommended
             for high-priority, low-value transactions.
 
 
-            * **wire**: Fastest way to transfer funds but has the highest fees. Recommended
-            for high-priority, high-value transactions.
+            * **wire**: the fastest way to transfer funds, but this has the highest
+            fees. Recommended for high-priority, high-value transactions.
 
 
-            * **instant**: Instant way to transfer funds in [SEPA countries](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).
+            * **instant**: for instant funds transfers in [SEPA countries](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).
 
 
-            * **crossBorder**: High-value transfer to a recipient in a different country.
+            * **crossBorder**: for high-value transfers to a recipient in a different
+            country.
 
 
-            * **internal**: Transfer to an Adyen-issued business bank account (by
-            bank account number/IBAN).
+            * **internal**: for transfers to an Adyen-issued business bank account
+            (by bank account number/IBAN).
 
 
             Set `category` to **bank**. For more details, see optional priorities
@@ -7560,6 +7605,7 @@ components:
           - counterpartyAddressRequired
           - counterpartyBankTimedOut
           - counterpartyBankUnavailable
+          - declined
           - declinedByTransactionRule
           - error
           - notEnoughBalance
@@ -7640,30 +7686,32 @@ components:
         balanceAccountId:
           description: "The unique identifier of the destination or source [balance\
             \ account](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__resParam_id).\n\
-            \n You can only use this for periodic sweep schedules such as `schedule.type`\
-            \ **daily** or **monthly**."
+            \n > If you are updating the counterparty from a transfer instrument to\
+            \ a balance account, set `transferInstrumentId` to **null**."
           type: string
         merchantAccount:
           description: 'The merchant account that will be the source of funds.
 
 
-            You can only use this parameter with sweeps of `type` **pull** and `schedule.type`
-            **balance**, and if you are processing payments with Adyen.'
+            You can only use this parameter with sweeps of `type` **pull** and if
+            you are processing payments with Adyen.'
           type: string
         transferInstrumentId:
           description: 'The unique identifier of the destination or source [transfer
             instrument](https://docs.adyen.com/api-explorer/legalentity/latest/post/transferInstruments#responses-200-id)
-            depending on the sweep `type`.
+            depending on the sweep `type`
 
 
-            To set up automated top-up sweeps to balance accounts in your [marketplace](https://docs.adyen.com/marketplaces/top-up-balance-account/#before-you-begin)
+            . To set up automated top-up sweeps to balance accounts in your [marketplace](https://docs.adyen.com/marketplaces/top-up-balance-account/#before-you-begin)
             or [platform](https://docs.adyen.com/platforms/top-up-balance-account/#before-you-begin),
             use this parameter in combination with a `merchantAccount` and a sweep
             `type` of **pull**.
 
 
             Top-up sweeps start a direct debit request from the source transfer instrument.
-            Contact Adyen Support to enable this feature.'
+            Contact Adyen Support to enable this feature.> If you are updating the
+            counterparty from a balance account to a transfer instrument, set `balanceAccountId`
+            to **null**.'
           type: string
       type: object
     SweepSchedule:
@@ -7700,14 +7748,7 @@ components:
             * **monthly**: push out funds every first of the month at 07:00 AM CET.
 
 
-            * **balance**: pull in funds instantly if the balance is less than or
-            equal to the `triggerAmount`.
-
-            You can only use this for sweeps of `type` **pull** and when the source
-            is a `merchantAccount` or `transferInstrument`.
-
-            If the source is transferInstrument, merchant account identifier is still
-            required, with which you want to process the transaction.
+            * **balance**: execute the sweep instantly if the `triggerAmount` is reached.
 
             '
           enum:
@@ -8176,6 +8217,26 @@ components:
             Supported operations: **equals**, **notEquals**, **greaterThanOrEqualTo**,
             **greaterThan**, **lessThanOrEqualTo**, **lessThan**.'
           $ref: '#/components/schemas/MatchingTransactionsRestriction'
+        matchingValues:
+          description: 'Checks if a user has recently made multiple transfers with
+            the specified values.
+
+
+            To use this restriction, you must:
+
+
+            - Set the rule `type` to **velocity**.
+
+
+            - Specify a time `interval`.
+
+
+            - Specify a number of `matchingTransactions`.
+
+
+            - Supported values: **merchantId** **acquirerId**Supported operation:
+            **allMatch**.'
+          $ref: '#/components/schemas/MatchingValuesRestriction'
         mccs:
           description: 'List of merchant category codes (MCCs) and the operation.
 
@@ -8303,25 +8364,26 @@ components:
             values:
 
 
-            * **regular**: For normal, low-value transactions.
+            * **regular**: for normal, low-value transactions.
 
 
-            * **fast**: Faster way to transfer funds but has higher fees. Recommended
+            * **fast**: a faster way to transfer funds, but the fees are higher. Recommended
             for high-priority, low-value transactions.
 
 
-            * **wire**: Fastest way to transfer funds but has the highest fees. Recommended
-            for high-priority, high-value transactions.
+            * **wire**: the fastest way to transfer funds, but this has the highest
+            fees. Recommended for high-priority, high-value transactions.
 
 
-            * **instant**: Instant way to transfer funds in [SEPA countries](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).
+            * **instant**: for instant funds transfers in [SEPA countries](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).
 
 
-            * **crossBorder**: High-value transfer to a recipient in a different country.
+            * **crossBorder**: for high-value transfers to a recipient in a different
+            country.
 
 
-            * **internal**: Transfer to an Adyen-issued business bank account (by
-            bank account number/IBAN).'
+            * **internal**: for transfers to an Adyen-issued business bank account
+            (by bank account number/IBAN).'
           enum:
           - crossBorder
           - fast
@@ -8383,25 +8445,26 @@ components:
             Possible values:
 
 
-            * **regular**: For normal, low-value transactions.
+            * **regular**: for normal, low-value transactions.
 
 
-            * **fast**: Faster way to transfer funds but has higher fees. Recommended
+            * **fast**: a faster way to transfer funds, but the fees are higher. Recommended
             for high-priority, low-value transactions.
 
 
-            * **wire**: Fastest way to transfer funds but has the highest fees. Recommended
-            for high-priority, high-value transactions.
+            * **wire**: the fastest way to transfer funds, but this has the highest
+            fees. Recommended for high-priority, high-value transactions.
 
 
-            * **instant**: Instant way to transfer funds in [SEPA countries](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).
+            * **instant**: for instant funds transfers in [SEPA countries](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).
 
 
-            * **crossBorder**: High-value transfer to a recipient in a different country.
+            * **crossBorder**: for high-value transfers to a recipient in a different
+            country.
 
 
-            * **internal**: Transfer to an Adyen-issued business bank account (by
-            bank account number/IBAN).'
+            * **internal**: for transfers to an Adyen-issued business bank account
+            (by bank account number/IBAN).'
           items:
             enum:
             - crossBorder
@@ -8564,6 +8627,7 @@ components:
           - suspended
           type: string
         statusComment:
+          x-addedInVersion: '2'
           description: 'Comment for the status of the payment instrument.
 
 
@@ -8658,25 +8722,26 @@ components:
             Possible values:
 
 
-            * **regular**: For normal, low-value transactions.
+            * **regular**: for normal, low-value transactions.
 
 
-            * **fast**: Faster way to transfer funds but has higher fees. Recommended
+            * **fast**: a faster way to transfer funds, but the fees are higher. Recommended
             for high-priority, low-value transactions.
 
 
-            * **wire**: Fastest way to transfer funds but has the highest fees. Recommended
-            for high-priority, high-value transactions.
+            * **wire**: the fastest way to transfer funds, but this has the highest
+            fees. Recommended for high-priority, high-value transactions.
 
 
-            * **instant**: Instant way to transfer funds in [SEPA countries](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).
+            * **instant**: for instant funds transfers in [SEPA countries](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).
 
 
-            * **crossBorder**: High-value transfer to a recipient in a different country.
+            * **crossBorder**: for high-value transfers to a recipient in a different
+            country.
 
 
-            * **internal**: Transfer to an Adyen-issued business bank account (by
-            bank account number/IBAN).
+            * **internal**: for transfers to an Adyen-issued business bank account
+            (by bank account number/IBAN).
 
 
             Set `category` to **bank**. For more details, see optional priorities
@@ -8704,6 +8769,7 @@ components:
           - counterpartyAddressRequired
           - counterpartyBankTimedOut
           - counterpartyBankUnavailable
+          - declined
           - declinedByTransactionRule
           - error
           - notEnoughBalance
@@ -9875,9 +9941,84 @@ components:
         type: bankAccount
         description: YOUR_DESCRIPTION
         bankAccount:
+          formFactor: physical
           type: iban
           iban: NL20ADYB2017000035
         id: PI322LJ223222B5DJS7CD9LWL
+    post-paymentInstruments-createBusinessAccountNL-DELocalIBAN:
+      summary: Create a local IBAN in DE (first create an NL business account)
+      description: Example request for creating a local IBAN in DE
+      value:
+        type: bankAccount
+        description: YOUR_DESCRIPTION
+        balanceAccountId: BA3227C223222B5CTBLR8BWJB
+        issuingCountryCode: DE
+        bankAccount:
+          formFactor: virtual
+    post-paymentInstruments-createBusinessAccountNL-DELocalIBAN-200:
+      summary: Virtual business account in DE (local IBAN) created
+      description: Example response for creating a local IBAN business account in
+        DE
+      value:
+        balanceAccountId: BA3227C223222B5CTBLR8BWJB
+        description: YOUR_DESCRIPTION
+        issuingCountryCode: DE
+        status: active
+        type: bankAccount
+        bankAccount:
+          type: iban
+          iban: DE20100190002300001206
+          formFactor: virtual
+        id: PI3227C223226C5JW49ZHBQMS
+    post-paymentInstruments-createBusinessAccountNL-FRLocalIBAN:
+      summary: Create a local IBAN in FR (first create an NL business account)
+      description: Example request for creating a local IBAN in FR
+      value:
+        type: bankAccount
+        description: YOUR_DESCRIPTION
+        balanceAccountId: BA3227C223222B5CTBLR8BWJB
+        issuingCountryCode: FR
+        bankAccount:
+          formFactor: virtual
+    post-paymentInstruments-createBusinessAccountNL-FRLocalIBAN-200:
+      summary: Virtual business account in FR (local IBAN) created
+      description: Example response for creating a local IBAN business account in
+        FR
+      value:
+        balanceAccountId: BA3227C223222B5CTBLR8BWJB
+        description: YOUR_DESCRIPTION
+        issuingCountryCode: FR
+        status: active
+        type: bankAccount
+        bankAccount:
+          type: iban
+          iban: FR7621733712350230000110741
+          formFactor: virtual
+        id: PI3227C223226C5JW49ZAHSYD
+    post-paymentInstruments-createBusinessAccountUK:
+      summary: Create a business account in the UK
+      description: Example request for creating a business account in the UK
+      value:
+        type: bankAccount
+        description: YOUR_DESCRIPTION
+        balanceAccountId: BA328R4223227F5KMH9NJB2S4
+        issuingCountryCode: GB
+    post-paymentInstruments-createBusinessAccountUK-200:
+      summary: Business account in the UK created
+      description: Example response for creating a business account in the UK
+      value:
+        balanceAccountId: BA328R4223227F5KMH9NJB2S4
+        description: YOUR_DESCRIPTION
+        issuingCountryCode: GB
+        status: active
+        type: bankAccount
+        bankAccount:
+          accountNumber: '20010731'
+          formFactor: physical
+          iban: GB68ADYX04295720010731
+          sortCode: 042957
+          type: ukLocal
+        id: PI328Q9223227F5KMH9P92MDG
     post-paymentInstruments-createBusinessAccountUS:
       summary: Create a business account in the US
       description: Example request for creating a business account in the US
@@ -9896,10 +10037,11 @@ components:
         type: bankAccount
         description: YOUR_DESCRIPTION
         bankAccount:
-          type: usLocal
           accountNumber: '333720756'
-          routingNumber: '210000210'
           accountType: checking
+          formFactor: physical
+          routingNumber: '210000210'
+          type: usLocal
         id: PI322LJ223222B5DJS7CD9LWL
     post-paymentInstruments-createPhysicalCard:
       summary: Create a physical card
