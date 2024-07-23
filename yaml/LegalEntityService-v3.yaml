@@ -2754,7 +2754,8 @@ components:
 
             * For **individual**, the `type` values can be **identityCard**, **driversLicense**,
             **passport**, **liveSelfie**, **proofOfNationalIdNumber**, **proofOfResidency**,
-            **proofOfIndustry**, **proofOfIndividualTaxId**, or **proofOfFundingOrWealthSource**.
+            **proofOfIndustry**, **proofOfIndividualTaxId**, **proofOfFundingOrWealthSource**
+            or **proofOfRelationship**.
 
 
             * For **soleProprietorship**, the `type` values can be **constitutionalDocument**,
@@ -2784,6 +2785,7 @@ components:
           - proofOfIndustry
           - constitutionalDocument
           - proofOfFundingOrWealthSource
+          - proofOfRelationship
           type: string
       required:
       - description
@@ -2941,6 +2943,10 @@ components:
             specified by the two-letter [ISO 639-1](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)
             language code. Possible value: **en** for English.'
           type: string
+        termsOfServiceDocumentFormat:
+          description: 'The requested format for the Terms of Service document. Default
+            value: JSON.'
+          type: string
         type:
           description: 'The type of Terms of Service.
 
@@ -2993,6 +2999,9 @@ components:
           description: 'The language used for the Terms of Service document, specified
             by the two-letter [ISO 639-1](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)
             language code. Possible value: **en** for English.'
+          type: string
+        termsOfServiceDocumentFormat:
+          description: The format of the Terms of Service document.
           type: string
         termsOfServiceDocumentId:
           description: The unique identifier of the Terms of Service document.
@@ -3119,12 +3128,12 @@ components:
           description: The number in the document.
           type: string
         type:
-          description: "Type of identity data. For individuals, the `type` value is\
-            \ **nationalIdNumber**. For individuals in these countries, the following\
-            \ types are supported.\n\n- Australia: **driversLicense**, **passport**\n\
-            \n- Hong Kong: **driversLicense**, **nationalIdNumber**, **passport**\n\
-            \n- New Zealand: **driversLicense**, **passport**\n\n- Singapore: **driversLicense**,\
-            \ **nationalIdNumber**, **passport** \n\n"
+          description: "Type of identity data. For individuals, the following types\
+            \ are supported:\n\n- Australia: **driversLicense**, **passport**\n\n\
+            - Hong Kong: **driversLicense**, **nationalIdNumber**, **passport**\n\n\
+            - New Zealand: **driversLicense**, **passport**\n\n- Singapore: **driversLicense**,\
+            \ **nationalIdNumber**, **passport** \n\n- All other supported countries:\
+            \ **nationalIdNumber"
           enum:
           - nationalIdNumber
           - passport
@@ -3265,7 +3274,7 @@ components:
           type: array
         verificationPlan:
           description: A key-value pair that specifies the verification process for
-            a legal entity. Set to **upfront** for upfront verification for [marketplaces](https://docs.adyen.com/marketplaces/onboard-users#upfront).
+            a legal entity. Set to **upfront** for upfront verification for [marketplaces](https://docs.adyen.com/marketplaces/verification-overview/verification-types/#upfront-verification).
           type: string
       required:
       - id
@@ -3305,6 +3314,10 @@ components:
             - For **soleProprietorship**, `name`.'
           readOnly: true
           type: string
+        relationship:
+          description: 'The individual''s relationship to a legal representative if
+            the `type` is **legalRepresentative**. Possible values: **parent**, **guardian**.'
+          type: string
         settlorExemptionReason:
           description: 'Defines the Kyc Exemption Reason for a Settlor associated
             with a trust.
@@ -3320,6 +3333,9 @@ components:
             legal entity.
 
 
+            Possible value for individuals: **legalRepresentative**.
+
+
             Possible values for organizations: **uboThroughOwnership**, **uboThroughControl**,
             **director**, **signatory**, or **ultimateParentCompany**.
 
@@ -3327,7 +3343,7 @@ components:
             Possible values for sole proprietorships: **soleProprietorship**.
 
 
-            Possible value for trusts: **trust**
+            Possible value for trusts: **trust**.
 
 
             Possible values for trust members: **definedBeneficiary**, **protector**,
@@ -3336,6 +3352,7 @@ components:
           - definedBeneficiary
           - director
           - immediateParentCompany
+          - legalRepresentative
           - pciSignatory
           - protector
           - secondaryTrustee
@@ -3487,7 +3504,7 @@ components:
           type: string
         verificationPlan:
           description: A key-value pair that specifies the verification process for
-            a legal entity. Set to **upfront** for upfront verification for [marketplaces](https://docs.adyen.com/marketplaces/onboard-users#upfront).
+            a legal entity. Set to **upfront** for upfront verification for [marketplaces](https://docs.adyen.com/marketplaces/verification-overview/verification-types/#upfront-verification).
           type: string
       type: object
     LegalEntityInfoRequiredType:
@@ -3540,7 +3557,7 @@ components:
           type: string
         verificationPlan:
           description: A key-value pair that specifies the verification process for
-            a legal entity. Set to **upfront** for upfront verification for [marketplaces](https://docs.adyen.com/marketplaces/onboard-users#upfront).
+            a legal entity. Set to **upfront** for upfront verification for [marketplaces](https://docs.adyen.com/marketplaces/verification-overview/verification-types/#upfront-verification).
           type: string
       required:
       - type
@@ -3656,73 +3673,8 @@ components:
             onboarding.
           type: string
         settings:
-          description: 'Key-value pairs indicating the settings for the hosted onboarding
-            page. The keys are the settings.
-
-
-            Possible keys:
-
-
-            By default, these values are set to **true**. Set to **false** to not
-            allow the action.
-
-
-            - **changeLegalEntityType**: The user can change their legal entity type.
-
-
-            - **editPrefilledCountry**: The user can change the country of their legal
-            entity''s address, for example the registered address of an organization.
-
-
-            By default, these values are set to **false**. Set to **true** to allow
-            the action.
-
-
-            - **allowBankAccountFormatSelection**: The user can select the format
-            for their payout account if applicable.
-
-
-            - **allowIntraRegionCrossBorderPayout**: The user can select a payout
-            account in a different EU/EEA country (including Switzerland and the UK)
-            than the country of their legal entity.
-
-
-            By default, these values are set to **false**. Set the following values
-            to **true** to require the user to sign PCI questionnaires based on their
-            sales channels. The user must sign PCI questionnaires for all relevant
-            sales channels.
-
-
-            - **requirePciSignEcommerce**
-
-
-            - **requirePciSignPos**
-
-
-            - **requirePciSignEcomMoto**
-
-
-            - **requirePciSignPosMoto**
-
-
-            The following value is an array of strings in the two-character [ISO 3166-1
-            alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country code
-            format. The array is empty by default and only countries supported by
-            hosted onboarding are allowed.
-
-
-            - **acceptedCountries**: List of countries that the user can select in
-            hosted onboarding when `editPrefilledCountry` is allowed.
-
-
-            The following value is an integer:
-
-
-            - **transferInstrumentLimit**: The maximum number of transfer instruments
-            the user can create.
-
-
-            '
+          description: Key-value pairs indicating the settings for the hosted onboarding
+            page. The key represents a specific setting.
           $ref: '#/components/schemas/OnboardingLinkSettings'
         themeId:
           description: The unique identifier of the hosted onboarding theme.
@@ -3732,36 +3684,124 @@ components:
       additionalProperties: false
       properties:
         acceptedCountries:
+          description: 'The list of countries the user can choose from in hosted onboarding
+            when `editPrefilledCountry` is allowed.
+
+
+            The value must be in the two-character [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)
+            country code format.
+
+
+            The array is empty by default, allowing all [countries and regions supported
+            by hosted onboarding](https://docs.adyen.com/platforms/onboard-users/#hosted-onboarding).'
           items:
             type: string
           type: array
         allowBankAccountFormatSelection:
+          description: 'Default value: **false**
+
+
+            Indicates if the user can select the format for their payout account (if
+            applicable).'
           type: boolean
         allowIntraRegionCrossBorderPayout:
+          description: 'Default value: **false**
+
+
+            Indicates if the user can select a payout account in a different EU/EEA
+            location (including Switzerland and the UK) than the location of their
+            legal entity.'
           type: boolean
         changeLegalEntityType:
+          description: 'Default value: **true**
+
+
+            Indicates if the user can change their legal entity type.'
           type: boolean
         editPrefilledCountry:
+          description: 'Default value: **true**
+
+
+            Indicates if the user can change the country of their legal entity''s
+            address, for example the registered address of an organization.'
           type: boolean
         hideOnboardingIntroductionIndividual:
+          description: 'Default value: **false**
+
+
+            Indicates if the user of the individual legal entity type can view the
+            introduction screen.
+
+            The introduction screen provides brief instructions for the subsequent
+            steps in the hosted onboarding process.'
           type: boolean
         hideOnboardingIntroductionOrganization:
+          description: 'Default value: **false**
+
+
+            Indicates if the user of the organization legal entity type can view the
+            introduction screen.
+
+            The introduction screen provides brief instructions for the subsequent
+            steps in the hosted onboarding process.'
           type: boolean
         hideOnboardingIntroductionSoleProprietor:
+          description: 'Default value: **false**
+
+
+            Indicates if the user of the sole proprietorship legal entity type can
+            view the introduction screen.
+
+            The introduction screen provides brief instructions for the subsequent
+            steps in the hosted onboarding process.'
           type: boolean
         hideOnboardingIntroductionTrust:
+          description: 'Default value: **false**
+
+
+            Indicates if the user of the trust legal entity type can view the introduction
+            screen.
+
+            The introduction screen provides brief instructions for the subsequent
+            steps in the hosted onboarding process.'
           type: boolean
         instantBankVerification:
+          description: 'Default value: **true**
+
+
+            Indicates if the user can initiate the verification process through open
+            banking providers, like Plaid or Tink.'
           type: boolean
         requirePciSignEcomMoto:
+          description: 'Default value: **false**
+
+
+            Indicates if the user is required to sign a PCI questionnaires for the
+            **ecomMoto** sales channel type.'
           type: boolean
         requirePciSignEcommerce:
+          description: 'Default value: **false**
+
+
+            Indicates if the user is required to sign a PCI questionnaires for the
+            **eCommerce** sales channel type.'
           type: boolean
         requirePciSignPos:
+          description: 'Default value: **false**
+
+
+            Indicates if the user is required to sign a PCI questionnaires for the
+            **pos** sales channel type.'
           type: boolean
         requirePciSignPosMoto:
+          description: 'Default value: **false**
+
+
+            Indicates if the user is required to sign a PCI questionnaires for the
+            **posMoto** sales channel type.'
           type: boolean
         transferInstrumentLimit:
+          description: The maximum number of transfer instruments the user can create.
           format: int32
           type: integer
       type: object
