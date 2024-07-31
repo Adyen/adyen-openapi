@@ -22,7 +22,6 @@ tags:
 - name: Merchant account
 - name: Payment method
 - name: Terminal management
-x-staticResponse: response.json
 webhooks:
   merchant.created:
     post:
@@ -110,6 +109,30 @@ webhooks:
             application/json:
               schema:
                 $ref: '#/components/schemas/PaymentMethodNotificationResponse'
+          description: OK - the request has succeeded.
+  terminalBoarding.triggered:
+    post:
+      tags:
+      - Terminal management
+      summary: Result of terminal boarding
+      description: The boarding of a payment terminal succeeded or failed.
+      x-addedInVersion: '1'
+      operationId: post-terminalBoarding.triggered
+      x-sortIndex: 2
+      x-methodName: resultOfTerminalBoarding
+      security:
+      - BasicAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TerminalBoardingNotificationRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TerminalBoardingNotificationResponse'
           description: OK - the request has succeeded.
   terminalSettings.modified:
     post:
@@ -525,6 +548,59 @@ components:
           type: string
         message:
           description: A description of how you can resolve the verification error.
+          type: string
+      type: object
+    TerminalBoardingData:
+      additionalProperties: false
+      properties:
+        companyId:
+          description: The unique identifier of the company account.
+          type: string
+        merchantId:
+          description: The unique identifier of the merchant account.
+          type: string
+        storeId:
+          description: The unique identifier of the store.
+          type: string
+        uniqueTerminalId:
+          description: The unique identifier of the terminal.
+          type: string
+      required:
+      - uniqueTerminalId
+      - companyId
+      type: object
+    TerminalBoardingNotificationRequest:
+      additionalProperties: false
+      properties:
+        createdAt:
+          description: Timestamp for when the webhook was created.
+          format: date-time
+          type: string
+        data:
+          description: Contains event details.
+          $ref: '#/components/schemas/TerminalBoardingData'
+        environment:
+          description: 'The environment from which the webhook originated.
+
+
+            Possible values: **test**, **live**.'
+          type: string
+        type:
+          description: Type of notification.
+          enum:
+          - terminalBoarding.triggered
+          type: string
+      required:
+      - environment
+      - createdAt
+      - data
+      - type
+      type: object
+    TerminalBoardingNotificationResponse:
+      additionalProperties: false
+      properties:
+        notificationResponse:
+          description: Respond with any **2xx** HTTP status code to [accept the webhook](https://docs.adyen.com/development-resources/webhooks#accept-notifications).
           type: string
       type: object
     TerminalSettingsData:
