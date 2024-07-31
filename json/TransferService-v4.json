@@ -1683,6 +1683,70 @@
             ],
             "type" : "object"
          },
+         "Card" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "cardHolder" : {
+                  "description" : "Contains information about the cardholder.",
+                  "$ref" : "#/components/schemas/PartyIdentification"
+               },
+               "cardIdentification" : {
+                  "description" : "Contains the identification details of the card.",
+                  "$ref" : "#/components/schemas/CardIdentification"
+               }
+            },
+            "required" : [
+               "cardIdentification",
+               "cardHolder"
+            ],
+            "type" : "object"
+         },
+         "CardIdentification" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "expiryMonth" : {
+                  "description" : "The expiry month of the card.\nFormat: 2 digits, zero-padded for single digits. For example:\n* 03 = March\n* 11 = November",
+                  "maxLength" : 2,
+                  "minLength" : 2,
+                  "type" : "string"
+               },
+               "expiryYear" : {
+                  "description" : "The expiry year of the card.\nFormat: 4 digits. For example: 2020",
+                  "maxLength" : 4,
+                  "minLength" : 4,
+                  "type" : "string"
+               },
+               "issueNumber" : {
+                  "description" : "The issue number of the card. Applies only to some UK debit cards.",
+                  "maxLength" : 2,
+                  "minLength" : 1,
+                  "type" : "string"
+               },
+               "number" : {
+                  "description" : "The card number without any separators.\n\nWhen this value is returned in a response, it only includes the last 4 digits of the card number.",
+                  "maxLength" : 19,
+                  "minLength" : 4,
+                  "type" : "string"
+               },
+               "startMonth" : {
+                  "description" : "The month when the card was issued. Applies only to some UK debit cards.\n\nFormat: 2 digits, zero-padded for single digits. For example:\n* 03 = March\n* 11 = November",
+                  "maxLength" : 2,
+                  "minLength" : 2,
+                  "type" : "string"
+               },
+               "startYear" : {
+                  "description" : "The year when the card was issued. Applies only to some UK debit cards.\n\nFormat: 4 digits. For example: 2020",
+                  "maxLength" : 4,
+                  "minLength" : 4,
+                  "type" : "string"
+               },
+               "storedPaymentMethodId" : {
+                  "description" : "The unique [token](/payouts/payout-service/pay-out-to-cards/manage-card-information#save-card-details) created to identify the counterparty.\n\n",
+                  "type" : "string"
+               }
+            },
+            "type" : "object"
+         },
          "ConfirmationTrackingData" : {
             "additionalProperties" : false,
             "properties" : {
@@ -1730,15 +1794,19 @@
             "additionalProperties" : false,
             "properties" : {
                "balanceAccountId" : {
-                  "description" : "The unique identifier of the [balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__resParam_id).",
+                  "description" : "The unique identifier of the counterparty [balance account](https://docs.adyen.com/api-explorer/balanceplatform/2/post/balanceAccounts#responses-200-id).",
                   "type" : "string"
                },
                "bankAccount" : {
-                  "description" : "Contains information about the bank account.",
+                  "description" : "Contains information about the counterparty bank account.",
                   "$ref" : "#/components/schemas/BankAccountV3"
                },
+               "card" : {
+                  "description" : "Contains information about the counterparty card.",
+                  "$ref" : "#/components/schemas/Card"
+               },
                "transferInstrumentId" : {
-                  "description" : "The unique identifier of the [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments__resParam_id).",
+                  "description" : "The unique identifier of the counterparty [transfer instrument](https://docs.adyen.com/api-explorer/legalentity/3/post/transferInstruments#responses-200-id).",
                   "type" : "string"
                }
             },
@@ -1748,19 +1816,23 @@
             "additionalProperties" : false,
             "properties" : {
                "balanceAccountId" : {
-                  "description" : "The unique identifier of the [balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__resParam_id).",
+                  "description" : "The unique identifier of the counterparty [balance account](https://docs.adyen.com/api-explorer/balanceplatform/2/post/balanceAccounts#responses-200-id).",
                   "type" : "string"
                },
                "bankAccount" : {
-                  "description" : "Contains information about the bank account.",
+                  "description" : "Contains information about the counterparty bank account.",
                   "$ref" : "#/components/schemas/BankAccountV3"
+               },
+               "card" : {
+                  "description" : "Contains information about the counterparty card.",
+                  "$ref" : "#/components/schemas/Card"
                },
                "merchant" : {
                   "description" : "Contains information about the merchant.",
                   "$ref" : "#/components/schemas/MerchantData"
                },
                "transferInstrumentId" : {
-                  "description" : "The unique identifier of the [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments__resParam_id).",
+                  "description" : "The unique identifier of the counterparty [transfer instrument](https://docs.adyen.com/api-explorer/legalentity/3/post/transferInstruments#responses-200-id).",
                   "type" : "string"
                }
             },
@@ -2388,34 +2460,34 @@
             "additionalProperties" : false,
             "properties" : {
                "address" : {
-                  "description" : "Address of the bank account owner.",
+                  "description" : "The address of the bank account or card owner.",
                   "$ref" : "#/components/schemas/Address"
                },
                "dateOfBirth" : {
-                  "description" : "The date of birth of the individual in [ISO-8601](https://www.w3.org/TR/NOTE-datetime) format. For example, **YYYY-MM-DD**. Should not be before January 1, 1900.\n\nAllowed only when `type` is **individual**.",
+                  "description" : "The date of birth of the individual in [ISO-8601](https://www.w3.org/TR/NOTE-datetime) format. For example, **YYYY-MM-DD**.\n\nThe date must be later than January 1, 1900.\n\nAllowed only when `type` is **individual**.",
                   "format" : "date",
                   "type" : "string"
                },
                "firstName" : {
-                  "description" : "First name of the individual.\n\nAllowed only when `type` is **individual**.\n\nSupported characters: [a-z] [A-Z] - . / — and Space.\n",
+                  "description" : "The first name of the individual.\n\nSupported characters: [a-z] [A-Z] - . / — and Space.\n\nThis parameter is:\n- Allowed only when `type` is **individual**.\n- Required when `category` is **card**.",
                   "type" : "string"
                },
                "fullName" : {
-                  "description" : "The name of the entity.\n\nSupported characters: [a-z] [A-Z] [0-9] , . ; : - — / \\ + & ! ? @ ( ) \" ' and Space.\n",
+                  "description" : "The full name of the entity that owns the bank account or card.\n\nSupported characters: [a-z] [A-Z] [0-9] , . ; : - — / \\ + & ! ? @ ( ) \" ' and Space.\n\nRequired when `category` is **bank**.",
                   "type" : "string"
                },
                "lastName" : {
-                  "description" : "Last name of the individual.\n\nAllowed only when `type` is **individual**.\n\nSupported characters: [a-z] [A-Z] - . / — and Space.\n",
+                  "description" : "The last name of the individual.\n\nSupported characters: [a-z] [A-Z] - . / — and Space.\n\nThis parameter is:\n- Allowed only when `type` is **individual**.\n- Required when `category` is **card**.",
                   "type" : "string"
                },
                "reference" : {
-                  "description" : "A unique reference to identify the party or counterparty involved in transfers. This identifier ensures consistency and uniqueness throughout all transactions initiated to and from the same party. For example, your client's unique wallet or payee ID.",
+                  "description" : "A unique reference to identify the party or counterparty involved in the transfer. For example, your client's unique wallet or payee ID.\n\nRequired when you include `cardIdentification.storedPaymentMethodId`.",
                   "maxLength" : 150,
                   "type" : "string"
                },
                "type" : {
                   "default" : "unknown",
-                  "description" : "The type of entity that owns the bank account.\n\n Possible values: **individual**, **organization**, or **unknown**.",
+                  "description" : "The type of entity that owns the bank account or card.\n\nPossible values: **individual**, **organization**, or **unknown**.\n\nRequired when `category` is **card**. In this case, the value must be **individual**.",
                   "enum" : [
                      "individual",
                      "organization",
@@ -2424,9 +2496,6 @@
                   "type" : "string"
                }
             },
-            "required" : [
-               "fullName"
-            ],
             "type" : "object"
          },
          "PaymentInstrument" : {
@@ -3027,9 +3096,10 @@
                },
                "category" : {
                   "x-addedInVersion" : "3",
-                  "description" : "The category of the transfer.\n\nPossible values:\n\n - **bank**: a transfer involving a [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments__resParam_id) or a bank account.\n\n- **internal**: a transfer between [balance accounts](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__resParam_id) within your platform.\n\n- **issuedCard**: a transfer initiated by an Adyen-issued card.\n\n- **platformPayment**: funds movements related to payments that are acquired for your users.",
+                  "description" : "The category of the transfer.\n\nPossible values:\n\n - **bank**: a transfer involving a [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments__resParam_id) or a bank account.\n\n- **card**: a transfer involving a third-party card.\n\n- **internal**: a transfer between [balance accounts](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__resParam_id) within your platform.\n\n- **issuedCard**: a transfer initiated by an Adyen-issued card.\n\n- **platformPayment**: funds movements related to payments that are acquired for your users.",
                   "enum" : [
                      "bank",
+                     "card",
                      "internal",
                      "issuedCard",
                      "platformPayment"
@@ -3283,9 +3353,10 @@
                },
                "category" : {
                   "x-addedInVersion" : "3",
-                  "description" : "The category of the transfer.\n\nPossible values:\n\n - **bank**: a transfer involving a [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments__resParam_id) or a bank account.\n\n- **internal**: a transfer between [balance accounts](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__resParam_id) within your platform.\n\n- **issuedCard**: a transfer initiated by an Adyen-issued card.\n\n- **platformPayment**: funds movements related to payments that are acquired for your users.",
+                  "description" : "The category of the transfer.\n\nPossible values:\n\n - **bank**: a transfer involving a [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments__resParam_id) or a bank account.\n\n- **card**: a transfer involving a third-party card.\n\n- **internal**: a transfer between [balance accounts](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__resParam_id) within your platform.\n\n- **issuedCard**: a transfer initiated by an Adyen-issued card.\n\n- **platformPayment**: funds movements related to payments that are acquired for your users.",
                   "enum" : [
                      "bank",
+                     "card",
                      "internal",
                      "issuedCard",
                      "platformPayment"
@@ -3757,9 +3828,10 @@
                },
                "category" : {
                   "x-addedInVersion" : "3",
-                  "description" : "The type of transfer.\n\nPossible values:\n\n - **bank**: a transfer involving a [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments__resParam_id) or a bank account.\n\n- **internal**: a transfer between [balance accounts](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__resParam_id) within your platform.\n\n- **issuedCard**: a transfer initiated by a Adyen-issued card.\n\n- **platformPayment**: funds movements related to payments that are acquired for your users.",
+                  "description" : "The category of the transfer.\n\nPossible values:\n\n - **bank**: a transfer involving a [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments__resParam_id) or a bank account.\n\n- **card**: a transfer involving a third-party card.\n\n- **internal**: a transfer between [balance accounts](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__resParam_id) within your platform.\n\n- **issuedCard**: a transfer initiated by a Adyen-issued card.\n\n- **platformPayment**: funds movements related to payments that are acquired for your users.",
                   "enum" : [
                      "bank",
+                     "card",
                      "internal",
                      "issuedCard",
                      "platformPayment",
@@ -3769,7 +3841,7 @@
                },
                "counterparty" : {
                   "x-addedInVersion" : "3",
-                  "description" : "The other party involved in the funds transfer. A bank account, a balance account, or a transfer instrument is required.",
+                  "description" : "The other party involved in the funds transfer. A bank account, a balance account, a card, or a transfer instrument is required.",
                   "$ref" : "#/components/schemas/CounterpartyInfoV3"
                },
                "description" : {
@@ -3849,19 +3921,23 @@
             "additionalProperties" : false,
             "properties" : {
                "balanceAccountId" : {
-                  "description" : "The unique identifier of the [balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__resParam_id).",
+                  "description" : "The unique identifier of the counterparty [balance account](https://docs.adyen.com/api-explorer/balanceplatform/2/post/balanceAccounts#responses-200-id).",
                   "type" : "string"
                },
                "bankAccount" : {
-                  "description" : "Contains information about the bank account.",
+                  "description" : "Contains information about the counterparty bank account.",
                   "$ref" : "#/components/schemas/BankAccountV3"
+               },
+               "card" : {
+                  "description" : "Contains information about the counterparty card.",
+                  "$ref" : "#/components/schemas/Card"
                },
                "merchant" : {
                   "description" : "Contains information about the merchant.",
                   "$ref" : "#/components/schemas/TransferNotificationMerchantData"
                },
                "transferInstrumentId" : {
-                  "description" : "The unique identifier of the [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments__resParam_id).",
+                  "description" : "The unique identifier of the counterparty [transfer instrument](https://docs.adyen.com/api-explorer/legalentity/3/post/transferInstruments#responses-200-id).",
                   "type" : "string"
                }
             },
@@ -4086,34 +4162,34 @@
             "additionalProperties" : false,
             "properties" : {
                "address" : {
-                  "description" : "Address of the bank account owner.",
+                  "description" : "The address of the bank account or card owner.",
                   "$ref" : "#/components/schemas/Address"
                },
                "dateOfBirth" : {
-                  "description" : "The date of birth of the individual in [ISO-8601](https://www.w3.org/TR/NOTE-datetime) format. For example, **YYYY-MM-DD**. Should not be before January 1, 1900.\n\nAllowed only when `type` is **individual**.",
+                  "description" : "The date of birth of the individual in [ISO-8601](https://www.w3.org/TR/NOTE-datetime) format. For example, **YYYY-MM-DD**.\n\nThe date must be later than January 1, 1900.\n\nAllowed only when `type` is **individual**.",
                   "format" : "date",
                   "type" : "string"
                },
                "firstName" : {
-                  "description" : "First name of the individual.\n\nAllowed only when `type` is **individual**.\n\nSupported characters: [a-z] [A-Z] - . / — and Space.\n",
+                  "description" : "The first name of the individual.\n\nSupported characters: [a-z] [A-Z] - . / — and Space.\n\nThis parameter is:\n- Allowed only when `type` is **individual**.\n- Required when `category` is **card**.",
                   "type" : "string"
                },
                "fullName" : {
-                  "description" : "The name of the entity.\n\nSupported characters: [a-z] [A-Z] [0-9] , . ; : - — / \\ + & ! ? @ ( ) \" ' and Space.\n",
+                  "description" : "The full name of the entity that owns the bank account or card.\n\nSupported characters: [a-z] [A-Z] [0-9] , . ; : - — / \\ + & ! ? @ ( ) \" ' and Space.\n\nRequired when `category` is **bank**.",
                   "type" : "string"
                },
                "lastName" : {
-                  "description" : "Last name of the individual.\n\nAllowed only when `type` is **individual**.\n\nSupported characters: [a-z] [A-Z] - . / — and Space.\n",
+                  "description" : "The last name of the individual.\n\nSupported characters: [a-z] [A-Z] - . / — and Space.\n\nThis parameter is:\n- Allowed only when `type` is **individual**.\n- Required when `category` is **card**.",
                   "type" : "string"
                },
                "reference" : {
-                  "description" : "A unique reference to identify the party or counterparty involved in transfers. This identifier ensures consistency and uniqueness throughout all transactions initiated to and from the same party. For example, your client's unique wallet or payee ID.",
+                  "description" : "A unique reference to identify the party or counterparty involved in the transfer. For example, your client's unique wallet or payee ID.\n\nRequired when you include `cardIdentification.storedPaymentMethodId`.",
                   "maxLength" : 150,
                   "type" : "string"
                },
                "type" : {
                   "default" : "unknown",
-                  "description" : "The type of entity that owns the bank account.\n\n Possible values: **individual**, **organization**, or **unknown**.",
+                  "description" : "The type of entity that owns the bank account or card.\n\nPossible values: **individual**, **organization**, or **unknown**.\n\nRequired when `category` is **card**. In this case, the value must be **individual**.",
                   "enum" : [
                      "individual",
                      "organization",
@@ -4122,9 +4198,6 @@
                   "type" : "string"
                }
             },
-            "required" : [
-               "fullName"
-            ],
             "type" : "object"
          }
       },
