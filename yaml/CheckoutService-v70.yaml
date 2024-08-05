@@ -284,6 +284,92 @@ paths:
           headers:
             Idempotency-Key:
               $ref: '#/components/headers/Idempotency-Key'
+  /donationCampaigns:
+    post:
+      tags:
+      - Donations
+      summary: Get a list of donation campaigns.
+      description: Queries the available donation campaigns for a donation based on
+        the donation context (like merchant account, currency, and locale). The response
+        contains active donation campaigns.
+      x-addedInVersion: '67'
+      operationId: post-donationCampaigns
+      x-sortIndex: 1
+      x-methodName: donationCampaigns
+      security:
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      requestBody:
+        content:
+          application/json:
+            examples:
+              donation-campaigns:
+                $ref: '#/components/examples/post-donationCampaigns-donation-campaigns'
+            schema:
+              $ref: '#/components/schemas/DonationCampaignsRequest'
+      parameters:
+      - $ref: '#/components/parameters/Idempotency-Key'
+      responses:
+        '200':
+          content:
+            application/json:
+              examples:
+                donation-campaigns:
+                  $ref: '#/components/examples/post-donationCampaigns-donation-campaigns-200'
+              schema:
+                $ref: '#/components/schemas/DonationCampaignsResponse'
+          description: OK - the request has succeeded.
+          headers:
+            Idempotency-Key:
+              $ref: '#/components/headers/Idempotency-Key'
+        '400':
+          content:
+            application/json:
+              examples:
+                generic:
+                  $ref: '#/components/examples/generic-400'
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Bad Request - a problem reading or understanding the request.
+        '401':
+          content:
+            application/json:
+              examples:
+                generic:
+                  $ref: '#/components/examples/generic-401'
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Unauthorized - authentication required.
+        '403':
+          content:
+            application/json:
+              examples:
+                generic:
+                  $ref: '#/components/examples/generic-403'
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Forbidden - insufficient permissions to process the request.
+        '422':
+          content:
+            application/json:
+              examples:
+                generic:
+                  $ref: '#/components/examples/generic-422'
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Unprocessable Entity - a request validation error.
+          headers:
+            Idempotency-Key:
+              $ref: '#/components/headers/Idempotency-Key'
+        '500':
+          content:
+            application/json:
+              examples:
+                generic:
+                  $ref: '#/components/examples/generic-500'
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Internal Server Error - the server could not process the request.
   /donations:
     post:
       tags:
@@ -2703,6 +2789,10 @@ components:
             when you created the token.
           maxLength: 64
           type: string
+        transferInstrumentId:
+          description: The unique identifier of your user's verified transfer instrument,
+            which you can use to top up their balance accounts.
+          type: string
         type:
           default: ach
           description: '**ach**'
@@ -4428,6 +4518,22 @@ components:
       - value
       - currency
       type: object
+    Amounts:
+      additionalProperties: false
+      properties:
+        currency:
+          description: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes/).
+          type: string
+        values:
+          description: The amounts of the donation (in [minor units](https://docs.adyen.com/development-resources/currency-codes/)).
+          items:
+            format: int64
+            type: integer
+          type: array
+      required:
+      - currency
+      - values
+      type: object
     AncvDetails:
       additionalProperties: false
       properties:
@@ -4711,6 +4817,10 @@ components:
           description: This is the `recurringDetailReference` returned in the response
             when you created the token.
           maxLength: 64
+          type: string
+        transferInstrumentId:
+          description: The unique identifier of your user's verified transfer instrument,
+            which you can use to top up their balance accounts.
           type: string
         type:
           default: directdebit_GB
@@ -6575,6 +6685,18 @@ components:
             (in the [classic integration](https://docs.adyen.com/classic-platforms/processing-payments/route-payment-to-store/#route-a-payment-to-a-store))
             for the ecommerce or point-of-sale store that is processing the payment.
           type: string
+        storeFiltrationMode:
+          description: "Specifies how payment methods should be filtered based on\
+            \ the 'store' parameter:\n  - 'exclusive': Only payment methods belonging\
+            \ to the specified 'store' are returned.\n  - 'inclusive': Payment methods\
+            \ from the 'store' and those not associated with any other store are returned.\n\
+            \  - 'skipFilter': All payment methods are returned, regardless of store\
+            \ association."
+          enum:
+          - exclusive
+          - inclusive
+          - skipFilter
+          type: string
         storePaymentMethod:
           description: When true and `shopperReference` is provided, the payment details
             will be stored for future [recurring payments](https://docs.adyen.com/online-payments/tokenization/#recurring-payment-types).
@@ -6996,6 +7118,18 @@ components:
             (in the [classic integration](https://docs.adyen.com/classic-platforms/processing-payments/route-payment-to-store/#route-a-payment-to-a-store))
             for the ecommerce or point-of-sale store that is processing the payment.
           type: string
+        storeFiltrationMode:
+          description: "Specifies how payment methods should be filtered based on\
+            \ the 'store' parameter:\n  - 'exclusive': Only payment methods belonging\
+            \ to the specified 'store' are returned.\n  - 'inclusive': Payment methods\
+            \ from the 'store' and those not associated with any other store are returned.\n\
+            \  - 'skipFilter': All payment methods are returned, regardless of store\
+            \ association."
+          enum:
+          - exclusive
+          - inclusive
+          - skipFilter
+          type: string
         storePaymentMethod:
           description: When true and `shopperReference` is provided, the payment details
             will be stored for future [recurring payments](https://docs.adyen.com/online-payments/tokenization/#recurring-payment-types).
@@ -7302,6 +7436,98 @@ components:
       - shopperEmail
       title: Doku
       type: object
+    Donation:
+      additionalProperties: false
+      properties:
+        currency:
+          description: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes/).
+          type: string
+        donationType:
+          description: 'The [type of donation](https://docs.adyen.com/online-payments/donations/#donation-types)."Possible
+            values:\n\n**roundup**: a donation where the original transaction amount
+            is rounded up as a donation.**fixedAmounts**: a donation where you show
+            fixed donations amounts that the shopper can select from.'
+          type: string
+        maxRoundupAmount:
+          description: The maximum amount a transaction can be rounded up to make
+            a donation. This field is only present when `donationType` is **roundup**.
+          format: int64
+          type: integer
+        values:
+          description: The fixed donation amounts in [minor units](https://docs.adyen.com/development-resources/currency-codes//#minor-units).
+            This field is only present when `donationType` is **fixedAmounts**.
+          items:
+            format: int64
+            type: integer
+          type: array
+      required:
+      - currency
+      - donationType
+      type: object
+    DonationCampaign:
+      additionalProperties: false
+      properties:
+        amounts:
+          description: The object that contains the fixed donation amounts that the
+            shopper can select from.
+          $ref: '#/components/schemas/Amounts'
+        bannerUrl:
+          description: The URL for the banner of the nonprofit or campaign.
+          type: string
+        campaignName:
+          description: The name of the donation campaign..
+          type: string
+        causeName:
+          description: The cause of the nonprofit.
+          type: string
+        donation:
+          description: The object that contains the details of the donation.
+          $ref: '#/components/schemas/Donation'
+        id:
+          description: The unique campaign ID of the donation campaign.
+          type: string
+        logoUrl:
+          description: The URL for the logo of the nonprofit.
+          type: string
+        nonprofitDescription:
+          description: The description of the nonprofit.
+          type: string
+        nonprofitName:
+          description: The name of the nonprofit organization that receives the donation.
+          type: string
+        nonprofitUrl:
+          description: The website URL of the nonprofit.
+          type: string
+        termsAndConditionsUrl:
+          description: The URL of the terms and conditions page of the nonprofit and
+            the campaign.
+          type: string
+      type: object
+    DonationCampaignsRequest:
+      additionalProperties: false
+      properties:
+        currency:
+          description: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes/).
+          type: string
+        locale:
+          description: Locale on the shopper interaction device.
+          type: string
+        merchantAccount:
+          description: Your merchant account identifier.
+          type: string
+      required:
+      - merchantAccount
+      - currency
+      type: object
+    DonationCampaignsResponse:
+      additionalProperties: false
+      properties:
+        donationCampaigns:
+          description: List of active donation campaigns for your merchant account.
+          items:
+            $ref: '#/components/schemas/DonationCampaign'
+          type: array
+      type: object
     DonationPaymentRequest:
       additionalProperties: false
       properties:
@@ -7488,6 +7714,11 @@ components:
           type: string
         donationAccount:
           description: Donation account to which the transaction is credited.
+          type: string
+        donationCampaignId:
+          x-addedInVersion: '67'
+          description: The donation campaign ID received in the `/donationCampaigns`
+            call.
           type: string
         donationOriginalPspReference:
           description: PSP reference of the transaction from which the donation token
@@ -9564,6 +9795,7 @@ components:
           enum:
           - alipay
           - multibanco
+          - bankTransfer_IBAN
           - paybright
           - paynow
           - affirm
@@ -13251,6 +13483,10 @@ components:
             when you created the token.
           maxLength: 64
           type: string
+        transferInstrumentId:
+          description: The unique identifier of your user's verified transfer instrument,
+            which you can use to top up their balance accounts.
+          type: string
         type:
           default: sepadirectdebit
           description: '**sepadirectdebit**'
@@ -13454,16 +13690,19 @@ components:
             \ ++ pricing](https://www.adyen.com/knowledge-hub/interchange-fees-explained).\n\
             \   * **Interchange**: the fees paid to the issuer for each payment made\
             \ with the card network.\n   * **SchemeFee**: the fees paid to the card\
-            \ scheme for using their network. \n* **Remainder**: the amount left over\
-            \ after a currency conversion, booked to the specified `account`.\n* **VAT**:\
-            \ the value-added tax charged on the payment, booked to your platforms\
-            \ liable balance account.\n* **Commission**: your platform's commission\
-            \ (specified in `amount`) on the payment, booked to your liable balance\
-            \ account.\n* **Default**: in very specific use cases, allows you to book\
-            \ the specified `amount` to the specified `account`. For more information,\
-            \ contact Adyen support.\n\nPossible values for the [Classic Platforms\
-            \ integration](https://docs.adyen.com/classic-platforms): **Commission**,\
-            \ **Default**, **Marketplace**, **PaymentFee**, **VAT**."
+            \ scheme for using their network. \n* **Commission**: your platform's\
+            \ commission on the payment (specified in `amount`), booked to your liable\
+            \ balance account.\n* **Remainder**: the amount left over after a currency\
+            \ conversion, booked to the specified `account`.\n* **TopUp**: allows\
+            \ you and your users to top up balance accounts using direct debit, card\
+            \ payments, or other payment methods.\n* **VAT**: the value-added tax\
+            \ charged on the payment, booked to your platforms liable balance account.\n\
+            * **Commission**: your platform's commission (specified in `amount`) on\
+            \ the payment, booked to your liable balance account.\n* **Default**:\
+            \ in very specific use cases, allows you to book the specified `amount`\
+            \ to the specified `account`. For more information, contact Adyen support.\n\
+            \nPossible values for the [Classic Platforms integration](https://docs.adyen.com/classic-platforms):\
+            \ **Commission**, **Default**, **Marketplace**, **PaymentFee**, **VAT**."
           enum:
           - AcquiringFees
           - AdyenCommission
@@ -13662,7 +13901,6 @@ components:
           - bcmc_mobile
           - bcmc_mobile_QR
           - bcmc_mobile_app
-          - bankTransfer_IBAN
           - momo_wallet
           - momo_wallet_app
           - twint
@@ -15222,6 +15460,44 @@ components:
           supported: true
         - type: cartebancaire
           supported: false
+    post-donationCampaigns-donation-campaigns:
+      summary: Get a list of active donation campaigns
+      value:
+        merchantAccount: YOUR_MERCHANT_ACCOUNT
+        currency: EUR
+    post-donationCampaigns-donation-campaigns-200:
+      summary: Example response with a list of active donation campaigns
+      value:
+        donationCampaigns:
+        - id: DONATION_CAMPAIGN_ID
+          campaignName: DONATION_CAMPAIGN_NAME
+          donation:
+            currency: EUR
+            donationType: fixedAmounts
+            values:
+            - 100
+            - 200
+            - 300
+          nonprofitName: NONPROFIT_NAME
+          causeName: NONPROFIT_CAUSE
+          nonprofitDescription: NONPROFIT_DESCRIPTION.
+          nonprofitUrl: NONPROFIT_WEBSITE_URL
+          logoUrl: NONPROFIT_LOGO_URL
+          bannerUrl: NONPROFIT_BANNER_URL
+          termsAndConditionsUrl: NONPROFIT_TERMS_AND_CONDITIONS_URL
+        - id: DONATION_CAMPAIGN_ID
+          campaignName: DONATION_CAMPAIGN_NAME
+          donation:
+            currency: EUR
+            donationType: roundup
+            maxRoundupAmount: 100
+          nonprofitName: NONPROFIT_NAME
+          causeName: NONPROFIT_CAUSE
+          nonprofitDescription: NONPROFIT_DESCRIPTION.
+          nonprofitUrl: NONPROFIT_WEBSITE_URL
+          logoUrl: NONPROFIT_LOGO_URL
+          bannerUrl: NONPROFIT_BANNER_URL
+          termsAndConditionsUrl: NONPROFIT_TERMS_AND_CONDITIONS_URL
     post-donations-donations:
       summary: Start a donation transaction
       value:
@@ -15233,7 +15509,7 @@ components:
           type: scheme
         donationToken: YOUR_DONATION_TOKEN
         donationOriginalPspReference: 991559660454807J
-        donationAccount: CHARITY_ACCOUNT
+        donationAccount: NONPROFIT_ACCOUNT
         returnUrl: https://your-company.com/...
         merchantAccount: YOUR_MERCHANT_ACCOUNT
         shopperInteraction: ContAuth
@@ -15242,7 +15518,7 @@ components:
       value:
         id: UNIQUE_RESOURCE_ID
         status: completed
-        donationAccount: CHARITY_ACCOUNT
+        donationAccount: NONPROFIT_ACCOUNT
         merchantAccount: YOUR_MERCHANT_ACCOUNT
         amount:
           currency: EUR
@@ -15267,7 +15543,7 @@ components:
           recurringDetailReference: '7219687191761347'
         returnUrl: https://your-company.com/...
         merchantAccount: YOUR_MERCHANT_ACCOUNT
-        donationAccount: CHARITY_ACCOUNT
+        donationAccount: NONPROFIT_ACCOUNT
         shopperInteraction: ContAuth
         shopperReference: YOUR_SHOPPER_REFERENCE
         recurringProcessingModel: CardOnFile
@@ -15277,7 +15553,7 @@ components:
         amount:
           currency: EUR
           value: 500
-        donationAccount: CHARITY_ACCOUNT
+        donationAccount: NONPROFIT_ACCOUNT
         id: UNIQUE_RESOURCE_ID
         merchantAccount: YOUR_MERCHANT_ACCOUNT
         payment:
