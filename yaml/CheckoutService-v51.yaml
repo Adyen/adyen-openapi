@@ -5076,7 +5076,7 @@ components:
           maxLength: 15000
           type: string
         networkPaymentReference:
-          description: The network token reference. This is the [`networkTxReference`](https://docs.adyen.com/api-explorer/#/CheckoutService/latest/post/payments__resParam_additionalData-ResponseAdditionalDataCommon-networkTxReference)
+          description: The transaction identifier from card schemes. This is the [`networkTxReference`](https://docs.adyen.com/api-explorer/#/CheckoutService/latest/post/payments__resParam_additionalData-ResponseAdditionalDataCommon-networkTxReference)
             from the response to the first payment.
           type: string
         number:
@@ -5231,7 +5231,7 @@ components:
           maxLength: 15000
           type: string
         networkPaymentReference:
-          description: The network token reference. This is the [`networkTxReference`](https://docs.adyen.com/api-explorer/#/CheckoutService/latest/post/payments__resParam_additionalData-ResponseAdditionalDataCommon-networkTxReference)
+          description: The transaction identifier from card schemes. This is the [`networkTxReference`](https://docs.adyen.com/api-explorer/#/CheckoutService/latest/post/payments__resParam_additionalData-ResponseAdditionalDataCommon-networkTxReference)
             from the response to the first payment.
           type: string
         number:
@@ -5356,6 +5356,45 @@ components:
           description: '**await**'
           enum:
           - await
+          type: string
+        url:
+          description: Specifies the URL to redirect to.
+          type: string
+      required:
+      - type
+      type: object
+    CheckoutBankTransferAction:
+      additionalProperties: false
+      properties:
+        beneficiary:
+          description: The name of the account holder.
+          type: string
+        bic:
+          description: The BIC of the IBAN.
+          type: string
+        downloadUrl:
+          description: The url to download payment details with.
+          type: string
+        iban:
+          description: The IBAN of the bank transfer.
+          type: string
+        paymentMethodType:
+          description: Specifies the payment method.
+          type: string
+        reference:
+          description: The transfer reference.
+          type: string
+        shopperEmail:
+          description: The e-mail of the shopper, included if an e-mail was sent to
+            the shopper.
+          type: string
+        totalAmount:
+          description: The amount of the bank transfer.
+          $ref: '#/components/schemas/Amount'
+        type:
+          description: The type of the action.
+          enum:
+          - bankTransfer
           type: string
         url:
           description: Specifies the URL to redirect to.
@@ -6317,8 +6356,10 @@ components:
             * For Android, use a custom URL handled by an Activity on your app. You
             can configure it with an [intent filter](https://developer.android.com/guide/components/intents-filters).
 
-            Example: `my-app://your.package.name`If the URL to return to includes
-            non-ASCII characters, like spaces or special letters, URL encode the value.
+            Example: `my-app://your.package.name`
+
+            If the URL to return to includes non-ASCII characters, like spaces or
+            special letters, URL encode the value.
 
             > The URL must not include personally identifiable information (PII),
             for example name or email address.'
@@ -6698,15 +6739,17 @@ components:
           description: The address where to send the invoice.
           $ref: '#/components/schemas/Address'
         shopperEmail:
-          description: Email address of the person.
+          description: The email address of the person funding the money.
           type: string
         shopperName:
-          description: The name of the person
+          description: The name of the person funding the money.
           $ref: '#/components/schemas/Name'
         telephoneNumber:
-          description: Phone number of the person
+          description: The phone number of the person funding the money.
           type: string
         walletIdentifier:
+          description: The unique identifier of the wallet where the funds are coming
+            from.
           type: string
       type: object
     FundRecipient:
@@ -9513,6 +9556,12 @@ components:
           description: When true and `shopperReference` is provided, the payment details
             will be stored for future [recurring payments](https://docs.adyen.com/online-payments/tokenization/#recurring-payment-types).
           type: boolean
+        subMerchants:
+          description: This field contains additional information on the submerchant,
+            who is onboarded to an acquirer through a payment facilitator or aggregator
+          items:
+            $ref: '#/components/schemas/SubMerchantInfoWrapper'
+          type: array
         telephoneNumber:
           description: The shopper's telephone number.
           type: string
@@ -9547,6 +9596,7 @@ components:
           description: Action to be taken for completing the payment.
           oneOf:
           - $ref: '#/components/schemas/CheckoutAwaitAction'
+          - $ref: '#/components/schemas/CheckoutBankTransferAction'
           - $ref: '#/components/schemas/CheckoutNativeRedirectAction'
           - $ref: '#/components/schemas/CheckoutQrCodeAction'
           - $ref: '#/components/schemas/CheckoutRedirectAction'
@@ -10031,8 +10081,10 @@ components:
             * For Android, use a custom URL handled by an Activity on your app. You
             can configure it with an [intent filter](https://developer.android.com/guide/components/intents-filters).
 
-            Example: `my-app://your.package.name`If the URL to return to includes
-            non-ASCII characters, like spaces or special letters, URL encode the value.
+            Example: `my-app://your.package.name`
+
+            If the URL to return to includes non-ASCII characters, like spaces or
+            special letters, URL encode the value.
 
             > The URL must not include personally identifiable information (PII),
             for example name or email address.'
@@ -11836,6 +11888,72 @@ components:
             * Fixed length: 11 digits for the CPF or 14 digits for the CNPJ'
           type: string
       type: object
+    SubMerchantInfo:
+      additionalProperties: false
+      properties:
+        address:
+          description: 'Required for transactions performed by registered payment
+            facilitators. The sub-merchant''s address.
+
+            '
+          $ref: '#/components/schemas/BillingAddress'
+        amount:
+          description: Required for transactions performed by registered payment facilitators.
+            The amount of the payment corresponding to each sub-merchant. This value
+            will be different than the request amount if shopper is purchasing items
+            at different sub-merchants' shops.
+          $ref: '#/components/schemas/Amount'
+        email:
+          description: Required for transactions performed by registered payment facilitators.
+            The email associated with the sub-merchant's account.
+          maxLength: 320
+          type: string
+        id:
+          description: "Required for transactions performed by registered payment\
+            \ facilitators. A unique identifier that you create for the sub-merchant,\
+            \ used by schemes to identify the sub-merchant. \n* Format: Alphanumeric\n\
+            * Maximum length: 15 characters"
+          type: string
+        mcc:
+          description: "Required for transactions performed by registered payment\
+            \ facilitators. The sub-merchant's 4-digit Merchant Category Code (MCC).\
+            \ \n* Format: Numeric\n* Fixed length: 4 digits"
+          type: string
+        name:
+          description: 'Required for transactions performed by registered payment
+            facilitators. The name of the sub-merchant. Based on scheme specifications,
+            this value will overwrite the shopper statement that will appear in the
+            card statement.
+
+            * Format: Alphanumeric
+
+            * Maximum length: 22 characters'
+          type: string
+        phoneNumber:
+          description: Required for transactions performed by registered payment facilitators.
+            The phone number associated with the sub-merchant's account.
+          maxLength: 20
+          type: string
+        registeredSince:
+          type: string
+        taxId:
+          description: 'Required for transactions performed by registered payment
+            facilitators. The tax ID of the sub-merchant.
+
+            * Format: Numeric
+
+            * Fixed length: 11 digits for the CPF or 14 digits for the CNPJ'
+          type: string
+        url:
+          description: Required for transactions performed by registered payment facilitators.
+            The sub-merchant's URL on the platform, i.e. the sub-merchant's shop.
+          maxLength: 320
+          type: string
+      type: object
+    SubMerchantInfoWrapper:
+      properties:
+        SubMerchant:
+          $ref: '#/components/schemas/SubMerchantInfo'
     TaxTotal:
       additionalProperties: false
       properties:
