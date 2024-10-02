@@ -1813,6 +1813,10 @@ paths:
             examples:
               capture:
                 $ref: '#/components/examples/post-payments-paymentPspReference-captures-capture'
+              split-balanceplatform:
+                $ref: '#/components/examples/post-payments-paymentPspReference-captures-split-balanceplatform'
+              split-classic:
+                $ref: '#/components/examples/post-payments-paymentPspReference-captures-split-classic'
             schema:
               $ref: '#/components/schemas/PaymentCaptureRequest'
       parameters:
@@ -1831,6 +1835,10 @@ paths:
               examples:
                 capture:
                   $ref: '#/components/examples/post-payments-paymentPspReference-captures-capture-201'
+                split-balanceplatform:
+                  $ref: '#/components/examples/post-payments-paymentPspReference-captures-split-balanceplatform-201'
+                split-classic:
+                  $ref: '#/components/examples/post-payments-paymentPspReference-captures-split-classic-201'
               schema:
                 $ref: '#/components/schemas/PaymentCaptureResponse'
           description: Created - the request has been fulfilled and has resulted in
@@ -5288,6 +5296,14 @@ components:
           items:
             $ref: '#/components/schemas/CardBrandDetails'
           type: array
+        fundingSource:
+          description: The funding source of the card, for example **DEBIT**, **CREDIT**,
+            or **PREPAID**.
+          type: string
+        isCardCommercial:
+          description: Indicates if this is a commercial card or a consumer card.
+            If **true**, it is a commercial card. If **false**, it is a consumer card.
+          type: boolean
         issuingCountryCode:
           description: The two-letter country code  of the country where the card
             was issued.
@@ -5853,8 +5869,12 @@ components:
           description: The total amount of the order.
           $ref: '#/components/schemas/Amount'
         expiresAt:
-          description: The date that order expires; e.g. 2019-03-23T12:25:28Z. If
-            not provided, the default expiry duration is 1 day.
+          description: 'The date when the order should expire. If not provided, the
+            default expiry duration is 1 day.
+
+
+            [ISO 8601](https://www.w3.org/TR/NOTE-datetime) format: YYYY-MM-DDThh:mm:ss+TZD,
+            for example, **2020-12-18T10:15:30+01:00**.'
           type: string
         merchantAccount:
           description: The merchant account identifier, with which you want to process
@@ -7041,6 +7061,15 @@ components:
         walletOwnerTaxId:
           description: Indicates the tax identifier of the fund recipient
           type: string
+        walletPurpose:
+          description: The purpose of a digital wallet transaction
+          enum:
+          - identifiedBoleto
+          - transferDifferentWallet
+          - transferOwnWallet
+          - transferSameWallet
+          - unidentifiedBoleto
+          type: string
       type: object
     GenericIssuerPaymentMethodDetails:
       additionalProperties: false
@@ -7506,8 +7535,8 @@ components:
           description: 'The frequency with which a shopper should be charged.
 
 
-            Possible values: **daily**, **weekly**, **biWeekly**, **monthly**, **quarterly**,
-            **halfYearly**, **yearly**.'
+            Possible values: **adhoc**, **daily**, **weekly**, **biWeekly**, **monthly**,
+            **quarterly**, **halfYearly**, **yearly**.'
           enum:
           - adhoc
           - daily
@@ -7809,9 +7838,22 @@ components:
     PayToDetails:
       additionalProperties: false
       properties:
+        recurringDetailReference:
+          deprecated: true
+          x-deprecatedInVersion: '49'
+          x-deprecatedMessage: Use `storedPaymentMethodId` instead.
+          description: This is the `recurringDetailReference` returned in the response
+            when you created the token.
+          type: string
         shopperAccountIdentifier:
           description: The shopper's banking details or payId reference, used to complete
             payment.
+          type: string
+        storedPaymentMethodId:
+          x-addedInVersion: '49'
+          description: This is the `recurringDetailReference` returned in the response
+            when you created the token.
+          maxLength: 64
           type: string
         type:
           default: payto
@@ -11865,7 +11907,7 @@ components:
             \ in very specific use cases, allows you to book the specified `amount`\
             \ to the specified `account`. For more information, contact Adyen support.\n\
             \nPossible values for the [Classic Platforms integration](https://docs.adyen.com/classic-platforms):\
-            \ **Commission**, **Default**, **Marketplace**, **PaymentFee**, **VAT**."
+            \ **Commission**, **Default**, **MarketPlace**, **PaymentFee**, **VAT**."
           enum:
           - AcquiringFees
           - AdyenCommission
@@ -16000,6 +16042,102 @@ components:
         amount:
           value: 2000
           currency: EUR
+    post-payments-paymentPspReference-captures-split-balanceplatform:
+      summary: Capture and split an authorised payment between balance accounts
+      description: Example capture request
+      value:
+        reference: YOUR_UNIQUE_REFERENCE
+        merchantAccount: YOUR_MERCHANT_ACCOUNT
+        amount:
+          value: 2000
+          currency: USD
+        splits:
+        - amount:
+            value: 1500
+          type: BalanceAccount
+          account: BA00000000000000000000001
+          reference: Your reference for the sale amount
+          description: Your description for the sale amount
+        - amount:
+            value: 500
+          type: Commission
+          reference: Your reference for the commission
+          description: Your description for the commission
+        - type: PaymentFee
+          account: BA00000000000000000000001
+          reference: Your reference for the fees
+          description: Your description for the fees
+    post-payments-paymentPspReference-captures-split-balanceplatform-201:
+      summary: Capture requested and split between balance accounts
+      description: Example response when a capture was requested and split between
+        balance accounts
+      value:
+        merchantAccount: YOUR_MERCHANT_ACCOUNT
+        paymentPspReference: 993617894903480A
+        reference: YOUR_UNIQUE_REFERENCE
+        pspReference: 993617894906488A
+        status: received
+        amount:
+          value: 2000
+          currency: USD
+        splits:
+        - amount:
+            value: 1500
+          type: BalanceAccount
+          account: BA00000000000000000000001
+          reference: Your reference for the sale amount
+          description: Your description for the sale amount
+        - amount:
+            value: 500
+          type: Commission
+          reference: Your reference for the commission
+          description: Your description for the commission
+        - type: PaymentFee
+          account: BA00000000000000000000001
+          reference: Your reference for the fees
+          description: Your description for the fees
+    post-payments-paymentPspReference-captures-split-classic:
+      summary: Capture and split an authorised payment in the Classic Platforms integration
+      description: Example capture request
+      value:
+        reference: YOUR_UNIQUE_REFERENCE
+        merchantAccount: YOUR_MERCHANT_ACCOUNT
+        amount:
+          value: 2000
+          currency: USD
+        splits:
+        - account: '8816080397613514'
+          amount:
+            value: 1500
+          reference: Your reference for the sale amount.
+          type: MarketPlace
+        - amount:
+            value: 500
+          reference: Your reference for the commission.
+          type: Commission
+    post-payments-paymentPspReference-captures-split-classic-201:
+      summary: Capture requested and split in the Classic Platforms integration
+      description: Example response when a capture was requested in the Classic Platforms
+        integration
+      value:
+        merchantAccount: YOUR_MERCHANT_ACCOUNT
+        paymentPspReference: 993617894903480A
+        reference: YOUR_UNIQUE_REFERENCE
+        pspReference: 993617894906488A
+        status: received
+        amount:
+          value: 2000
+          currency: USD
+        splits:
+        - account: '8816080397613514'
+          amount:
+            value: 1500
+          reference: Your reference for the sale amount.
+          type: MarketPlace
+        - amount:
+            value: 500
+          reference: Your reference for the commission.
+          type: Commission
     post-payments-paymentPspReference-refunds-refund:
       summary: Refund a payment
       description: Example refund request

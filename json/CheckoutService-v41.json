@@ -2599,6 +2599,12 @@
                      "examples" : {
                         "capture" : {
                            "$ref" : "#/components/examples/post-payments-paymentPspReference-captures-capture"
+                        },
+                        "split-balanceplatform" : {
+                           "$ref" : "#/components/examples/post-payments-paymentPspReference-captures-split-balanceplatform"
+                        },
+                        "split-classic" : {
+                           "$ref" : "#/components/examples/post-payments-paymentPspReference-captures-split-classic"
                         }
                      },
                      "schema" : {
@@ -2628,6 +2634,12 @@
                         "examples" : {
                            "capture" : {
                               "$ref" : "#/components/examples/post-payments-paymentPspReference-captures-capture-201"
+                           },
+                           "split-balanceplatform" : {
+                              "$ref" : "#/components/examples/post-payments-paymentPspReference-captures-split-balanceplatform-201"
+                           },
+                           "split-classic" : {
+                              "$ref" : "#/components/examples/post-payments-paymentPspReference-captures-split-classic-201"
                            }
                         },
                         "schema" : {
@@ -5464,6 +5476,14 @@
                   },
                   "type" : "array"
                },
+               "fundingSource" : {
+                  "description" : "The funding source of the card, for example **DEBIT**, **CREDIT**, or **PREPAID**.",
+                  "type" : "string"
+               },
+               "isCardCommercial" : {
+                  "description" : "Indicates if this is a commercial card or a consumer card. If **true**, it is a commercial card. If **false**, it is a consumer card.",
+                  "type" : "boolean"
+               },
                "issuingCountryCode" : {
                   "description" : "The two-letter country code  of the country where the card was issued.",
                   "type" : "string"
@@ -5786,7 +5806,7 @@
                   "$ref" : "#/components/schemas/Amount"
                },
                "expiresAt" : {
-                  "description" : "The date that order expires; e.g. 2019-03-23T12:25:28Z. If not provided, the default expiry duration is 1 day.",
+                  "description" : "The date when the order should expire. If not provided, the default expiry duration is 1 day.\n\n[ISO 8601](https://www.w3.org/TR/NOTE-datetime) format: YYYY-MM-DDThh:mm:ss+TZD, for example, **2020-12-18T10:15:30+01:00**.",
                   "type" : "string"
                },
                "merchantAccount" : {
@@ -6829,6 +6849,17 @@
                "walletOwnerTaxId" : {
                   "description" : "Indicates the tax identifier of the fund recipient",
                   "type" : "string"
+               },
+               "walletPurpose" : {
+                  "description" : "The purpose of a digital wallet transaction",
+                  "enum" : [
+                     "identifiedBoleto",
+                     "transferDifferentWallet",
+                     "transferOwnWallet",
+                     "transferSameWallet",
+                     "unidentifiedBoleto"
+                  ],
+                  "type" : "string"
                }
             },
             "type" : "object"
@@ -7256,7 +7287,7 @@
                   "type" : "string"
                },
                "frequency" : {
-                  "description" : "The frequency with which a shopper should be charged.\n\nPossible values: **daily**, **weekly**, **biWeekly**, **monthly**, **quarterly**, **halfYearly**, **yearly**.",
+                  "description" : "The frequency with which a shopper should be charged.\n\nPossible values: **adhoc**, **daily**, **weekly**, **biWeekly**, **monthly**, **quarterly**, **halfYearly**, **yearly**.",
                   "enum" : [
                      "adhoc",
                      "daily",
@@ -7582,6 +7613,10 @@
          "PayToDetails" : {
             "additionalProperties" : false,
             "properties" : {
+               "recurringDetailReference" : {
+                  "description" : "This is the `recurringDetailReference` returned in the response when you created the token.",
+                  "type" : "string"
+               },
                "shopperAccountIdentifier" : {
                   "description" : "The shopper's banking details or payId reference, used to complete payment.",
                   "type" : "string"
@@ -11179,7 +11214,7 @@
                   "type" : "string"
                },
                "type" : {
-                  "description" : "The part of the payment you want to book to the specified `account`.\n\nPossible values for the [Balance Platform](https://docs.adyen.com/adyen-for-platforms-model):\n* **BalanceAccount**: books part of the payment (specified in `amount`) to the specified `account`.\n* Transaction fees types that you can book to the specified `account`:\n   * **AcquiringFees**: the aggregated amount of the interchange and scheme fees.\n   * **PaymentFee**: the aggregated amount of all transaction fees.\n   * **AdyenFees**: the aggregated amount of Adyen's commission and markup fees.\n   * **AdyenCommission**: the transaction fees due to Adyen under [blended rates](https://www.adyen.com/knowledge-hub/interchange-fees-explained).\n   * **AdyenMarkup**: the transaction fees due to Adyen under [Interchange ++ pricing](https://www.adyen.com/knowledge-hub/interchange-fees-explained).\n   * **Interchange**: the fees paid to the issuer for each payment made with the card network.\n   * **SchemeFee**: the fees paid to the card scheme for using their network. \n* **Commission**: your platform's commission on the payment (specified in `amount`), booked to your liable balance account.\n* **Remainder**: the amount left over after a currency conversion, booked to the specified `account`.\n* **TopUp**: allows you and your users to top up balance accounts using direct debit, card payments, or other payment methods.\n* **VAT**: the value-added tax charged on the payment, booked to your platforms liable balance account.\n* **Commission**: your platform's commission (specified in `amount`) on the payment, booked to your liable balance account.\n* **Default**: in very specific use cases, allows you to book the specified `amount` to the specified `account`. For more information, contact Adyen support.\n\nPossible values for the [Classic Platforms integration](https://docs.adyen.com/classic-platforms): **Commission**, **Default**, **Marketplace**, **PaymentFee**, **VAT**.",
+                  "description" : "The part of the payment you want to book to the specified `account`.\n\nPossible values for the [Balance Platform](https://docs.adyen.com/adyen-for-platforms-model):\n* **BalanceAccount**: books part of the payment (specified in `amount`) to the specified `account`.\n* Transaction fees types that you can book to the specified `account`:\n   * **AcquiringFees**: the aggregated amount of the interchange and scheme fees.\n   * **PaymentFee**: the aggregated amount of all transaction fees.\n   * **AdyenFees**: the aggregated amount of Adyen's commission and markup fees.\n   * **AdyenCommission**: the transaction fees due to Adyen under [blended rates](https://www.adyen.com/knowledge-hub/interchange-fees-explained).\n   * **AdyenMarkup**: the transaction fees due to Adyen under [Interchange ++ pricing](https://www.adyen.com/knowledge-hub/interchange-fees-explained).\n   * **Interchange**: the fees paid to the issuer for each payment made with the card network.\n   * **SchemeFee**: the fees paid to the card scheme for using their network. \n* **Commission**: your platform's commission on the payment (specified in `amount`), booked to your liable balance account.\n* **Remainder**: the amount left over after a currency conversion, booked to the specified `account`.\n* **TopUp**: allows you and your users to top up balance accounts using direct debit, card payments, or other payment methods.\n* **VAT**: the value-added tax charged on the payment, booked to your platforms liable balance account.\n* **Commission**: your platform's commission (specified in `amount`) on the payment, booked to your liable balance account.\n* **Default**: in very specific use cases, allows you to book the specified `amount` to the specified `account`. For more information, contact Adyen support.\n\nPossible values for the [Classic Platforms integration](https://docs.adyen.com/classic-platforms): **Commission**, **Default**, **MarketPlace**, **PaymentFee**, **VAT**.",
                   "enum" : [
                      "AcquiringFees",
                      "AdyenCommission",
@@ -17213,6 +17248,144 @@
                   "value" : 2000,
                   "currency" : "EUR"
                }
+            }
+         },
+         "post-payments-paymentPspReference-captures-split-balanceplatform" : {
+            "summary" : "Capture and split an authorised payment between balance accounts",
+            "description" : "Example capture request",
+            "value" : {
+               "reference" : "YOUR_UNIQUE_REFERENCE",
+               "merchantAccount" : "YOUR_MERCHANT_ACCOUNT",
+               "amount" : {
+                  "value" : 2000,
+                  "currency" : "USD"
+               },
+               "splits" : [
+                  {
+                     "amount" : {
+                        "value" : 1500
+                     },
+                     "type" : "BalanceAccount",
+                     "account" : "BA00000000000000000000001",
+                     "reference" : "Your reference for the sale amount",
+                     "description" : "Your description for the sale amount"
+                  },
+                  {
+                     "amount" : {
+                        "value" : 500
+                     },
+                     "type" : "Commission",
+                     "reference" : "Your reference for the commission",
+                     "description" : "Your description for the commission"
+                  },
+                  {
+                     "type" : "PaymentFee",
+                     "account" : "BA00000000000000000000001",
+                     "reference" : "Your reference for the fees",
+                     "description" : "Your description for the fees"
+                  }
+               ]
+            }
+         },
+         "post-payments-paymentPspReference-captures-split-balanceplatform-201" : {
+            "summary" : "Capture requested and split between balance accounts",
+            "description" : "Example response when a capture was requested and split between balance accounts",
+            "value" : {
+               "merchantAccount" : "YOUR_MERCHANT_ACCOUNT",
+               "paymentPspReference" : "993617894903480A",
+               "reference" : "YOUR_UNIQUE_REFERENCE",
+               "pspReference" : "993617894906488A",
+               "status" : "received",
+               "amount" : {
+                  "value" : 2000,
+                  "currency" : "USD"
+               },
+               "splits" : [
+                  {
+                     "amount" : {
+                        "value" : 1500
+                     },
+                     "type" : "BalanceAccount",
+                     "account" : "BA00000000000000000000001",
+                     "reference" : "Your reference for the sale amount",
+                     "description" : "Your description for the sale amount"
+                  },
+                  {
+                     "amount" : {
+                        "value" : 500
+                     },
+                     "type" : "Commission",
+                     "reference" : "Your reference for the commission",
+                     "description" : "Your description for the commission"
+                  },
+                  {
+                     "type" : "PaymentFee",
+                     "account" : "BA00000000000000000000001",
+                     "reference" : "Your reference for the fees",
+                     "description" : "Your description for the fees"
+                  }
+               ]
+            }
+         },
+         "post-payments-paymentPspReference-captures-split-classic" : {
+            "summary" : "Capture and split an authorised payment in the Classic Platforms integration",
+            "description" : "Example capture request",
+            "value" : {
+               "reference" : "YOUR_UNIQUE_REFERENCE",
+               "merchantAccount" : "YOUR_MERCHANT_ACCOUNT",
+               "amount" : {
+                  "value" : 2000,
+                  "currency" : "USD"
+               },
+               "splits" : [
+                  {
+                     "account" : "8816080397613514",
+                     "amount" : {
+                        "value" : 1500
+                     },
+                     "reference" : "Your reference for the sale amount.",
+                     "type" : "MarketPlace"
+                  },
+                  {
+                     "amount" : {
+                        "value" : 500
+                     },
+                     "reference" : "Your reference for the commission.",
+                     "type" : "Commission"
+                  }
+               ]
+            }
+         },
+         "post-payments-paymentPspReference-captures-split-classic-201" : {
+            "summary" : "Capture requested and split in the Classic Platforms integration",
+            "description" : "Example response when a capture was requested in the Classic Platforms integration",
+            "value" : {
+               "merchantAccount" : "YOUR_MERCHANT_ACCOUNT",
+               "paymentPspReference" : "993617894903480A",
+               "reference" : "YOUR_UNIQUE_REFERENCE",
+               "pspReference" : "993617894906488A",
+               "status" : "received",
+               "amount" : {
+                  "value" : 2000,
+                  "currency" : "USD"
+               },
+               "splits" : [
+                  {
+                     "account" : "8816080397613514",
+                     "amount" : {
+                        "value" : 1500
+                     },
+                     "reference" : "Your reference for the sale amount.",
+                     "type" : "MarketPlace"
+                  },
+                  {
+                     "amount" : {
+                        "value" : 500
+                     },
+                     "reference" : "Your reference for the commission.",
+                     "type" : "Commission"
+                  }
+               ]
             }
          },
          "post-payments-paymentPspReference-refunds-refund" : {
