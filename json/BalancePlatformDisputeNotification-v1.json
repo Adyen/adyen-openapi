@@ -1,0 +1,214 @@
+{
+   "openapi" : "3.1.0",
+   "info" : {
+      "version" : "1",
+      "x-publicVersion" : true,
+      "title" : "Dispute webhooks",
+      "description" : "Adyen sends webhooks to inform your system about the creation or update of raised disputes, and chargebacks resulting from raised disputes.\n\nYou can use these webhooks to build your implementation.",
+      "termsOfService" : "https://www.adyen.com/legal/terms-and-conditions",
+      "contact" : {
+         "name" : "Adyen Developer Experience team",
+         "url" : "https://github.com/Adyen/adyen-openapi"
+      }
+   },
+   "tags" : [
+      {
+         "name" : "Dispute/Chargeback"
+      }
+   ],
+   "webhooks" : {
+      "balancePlatform.dispute.created" : {
+         "post" : {
+            "tags" : [
+               "Dispute/Chargeback"
+            ],
+            "summary" : "Dispute is created",
+            "description" : "Adyen sends this webhook when a dispute is created. This webhook only informs your server of requests. ",
+            "x-addedInVersion" : "1",
+            "operationId" : "post-balancePlatform.dispute.created",
+            "x-sortIndex" : 1,
+            "x-methodName" : "disputeIsCreated",
+            "security" : [
+               {
+                  "BasicAuth" : [
+                     ]
+               }
+            ],
+            "requestBody" : {
+               "content" : {
+                  "application/json" : {
+                     "schema" : {
+                        "$ref" : "#/components/schemas/DisputeNotificationRequest"
+                     }
+                  }
+               }
+            },
+            "responses" : {
+               "200" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/BalancePlatformNotificationResponse"
+                        }
+                     }
+                  },
+                  "description" : "OK - the request has succeeded."
+               }
+            }
+         }
+      },
+      "balancePlatform.dispute.updated" : {
+         "post" : {
+            "tags" : [
+               "Dispute/Chargeback"
+            ],
+            "summary" : "Dispute is updated",
+            "description" : "Adyen sends this webhook when a dispute is updated. This webhook only informs your server of requests. ",
+            "x-addedInVersion" : "1",
+            "operationId" : "post-balancePlatform.dispute.updated",
+            "x-sortIndex" : 1,
+            "x-methodName" : "disputeIsUpdated",
+            "security" : [
+               {
+                  "BasicAuth" : [
+                     ]
+               }
+            ],
+            "requestBody" : {
+               "content" : {
+                  "application/json" : {
+                     "schema" : {
+                        "$ref" : "#/components/schemas/DisputeNotificationRequest"
+                     }
+                  }
+               }
+            },
+            "responses" : {
+               "200" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/BalancePlatformNotificationResponse"
+                        }
+                     }
+                  },
+                  "description" : "OK - the request has succeeded."
+               }
+            }
+         }
+      }
+   },
+   "components" : {
+      "schemas" : {
+         "Amount" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "currency" : {
+                  "description" : "The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).",
+                  "maxLength" : 3,
+                  "minLength" : 3,
+                  "type" : "string"
+               },
+               "value" : {
+                  "description" : "The amount of the transaction, in [minor units](https://docs.adyen.com/development-resources/currency-codes).",
+                  "format" : "int64",
+                  "type" : "integer"
+               }
+            },
+            "required" : [
+               "value",
+               "currency"
+            ],
+            "type" : "object"
+         },
+         "BalancePlatformNotificationResponse" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "notificationResponse" : {
+                  "description" : "Respond with any **2xx** HTTP status code to [accept the webhook](https://docs.adyen.com/development-resources/webhooks#accept-notifications).",
+                  "type" : "string"
+               }
+            },
+            "type" : "object"
+         },
+         "DisputeEventNotification" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "arn" : {
+                  "description" : "The unique Acquirer Reference Number (arn) generated by the card scheme for each capture. You can use the arn to trace the transaction through its lifecycle.",
+                  "type" : "string"
+               },
+               "balancePlatform" : {
+                  "description" : "The unique identifier of the balance platform.",
+                  "type" : "string"
+               },
+               "creationDate" : {
+                  "description" : "The date and time when the event was triggered, in ISO 8601 extended format. For example, **2020-12-18T10:15:30+01:00**.",
+                  "format" : "date-time",
+                  "type" : "string"
+               },
+               "description" : {
+                  "description" : "Contains information about the dispute.",
+                  "type" : "string"
+               },
+               "disputedAmount" : {
+                  "description" : "The amount for which the transaction is being disputed. The disputed amount cannot be greater than the transaction amount. If an amount was not provided, the entire transaction amount is disputed.",
+                  "$ref" : "#/components/schemas/Amount"
+               },
+               "id" : {
+                  "description" : "The ID of the resource.",
+                  "type" : "string"
+               },
+               "reason" : {
+                  "description" : "The reason for which you dispute the transaction.",
+                  "enum" : [
+                     "fraud",
+                     "notDelivered"
+                  ],
+                  "type" : "string"
+               },
+               "status" : {
+                  "description" : "The current status of the dispute.",
+                  "type" : "string"
+               },
+               "transactionId" : {
+                  "description" : "The unique reference of the transaction for which the dispute is requested.",
+                  "type" : "string"
+               }
+            },
+            "type" : "object"
+         },
+         "DisputeNotificationRequest" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "data" : {
+                  "description" : "Contains event details.",
+                  "$ref" : "#/components/schemas/DisputeEventNotification"
+               },
+               "type" : {
+                  "description" : "Type of webhook.",
+                  "enum" : [
+                     "balancePlatform.dispute.created",
+                     "balancePlatform.dispute.updated"
+                  ],
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "type",
+               "data"
+            ],
+            "type" : "object"
+         }
+      },
+      "securitySchemes" : {
+         "BasicAuth" : {
+            "scheme" : "basic",
+            "type" : "http"
+         }
+      },
+      "examples" : {
+         
+      }
+   }
+}

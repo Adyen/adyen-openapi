@@ -1,0 +1,553 @@
+openapi: 3.1.0
+info:
+  title: Btl
+  description: OpenAPI spec for Btl
+  termsOfService: https://www.adyen.com/legal/terms-and-conditions
+  contact:
+    name: Adyen Developer Experience team
+    url: https://github.com/Adyen/adyen-openapi
+  version: '4'
+  x-timestamp: '2024-10-07T20:31:54Z'
+tags:
+- name: DisputeAttachmentResource
+- name: RaiseDisputeResource
+paths:
+  /disputes/{disputeId}/attachments:
+    get:
+      tags:
+      - DisputeAttachmentResource
+      summary: Get all attachments linked to a raised dispute
+      description: Get a list of attachments associated with a dispute ID.
+      operationId: get-disputes-disputeId-attachments
+      parameters:
+      - name: disputeId
+        in: path
+        description: The unique identifier of the raised dispute.
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK - the request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DisputeAttachment'
+      x-sortIndex: 0
+    post:
+      tags:
+      - DisputeAttachmentResource
+      summary: Add an attachment to a dispute
+      description: Add supporting information as an attachment for the raised dispute.
+        Upload receipts, communication, or any other documentation to support the
+        dispute.
+      operationId: post-disputes-disputeId-attachments
+      parameters:
+      - name: disputeId
+        in: path
+        description: The unique identifier of the raised dispute.
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DisputeAttachment'
+        required: true
+      responses:
+        '200':
+          description: OK - the request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttachDocumentResponse'
+      x-sortIndex: 0
+  /disputes/{disputeId}/attachments/{attachmentId}:
+    get:
+      tags:
+      - DisputeAttachmentResource
+      summary: Get an attachment
+      description: Search for a single attachment, providing the specific dispute
+        ID and attachment ID.
+      operationId: get-disputes-disputeId-attachments-attachmentId
+      parameters:
+      - name: disputeId
+        in: path
+        description: The unique identifier of the raised dispute.
+        required: true
+        schema:
+          type: string
+      - name: attachmentId
+        in: path
+        description: The unique identifier of the attachment.
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK - the request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DisputeAttachment'
+      x-sortIndex: 0
+    delete:
+      tags:
+      - DisputeAttachmentResource
+      summary: Delete attachment from a dispute
+      description: Removes the attachment from the raised dispute. Adyen may keep
+        this file for compliance purposes.
+      operationId: delete-disputes-disputeId-attachments-attachmentId
+      parameters:
+      - name: disputeId
+        in: path
+        description: The unique identifier of the raised dispute.
+        required: true
+        schema:
+          type: string
+      - name: attachmentId
+        in: path
+        description: The unique identifier of the attachment.
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: No Content - the request has been successfully processed, but
+            there is no additional content.
+          content:
+            application/json: {}
+      x-sortIndex: 0
+  /disputes:
+    get:
+      tags:
+      - RaiseDisputeResource
+      summary: Get a list of raised disputes
+      description: 'Returns a list of raised disputes that match the query parameters.
+
+
+        This endpoint supports cursor-based pagination. The response returns the first
+        page of results, and returns links to the next page when applicable. You can
+        use the links to page through the results. The response also returns links
+        to the previous page when applicable.'
+      operationId: get-disputes
+      parameters:
+      - name: status
+        in: query
+        description: 'The current status of the dispute.
+
+
+          Possible values: **draft**, **submitted**, **closed**, **won**, **chargeback**,
+          **secondPresentment**.'
+        schema:
+          type: string
+      - name: paymentInstrument
+        in: query
+        description: The unique identifier of the payment instrument.
+        schema:
+          type: string
+      - name: createdSince
+        in: query
+        description: Only include disputes that have been created on or after this
+          point in time. The value must be in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601\)  format.
+          For example, 2021-05-30T15:07:40Z.
+        schema:
+          type: string
+      - name: createdUntil
+        in: query
+        description: Only include disputes that have been created on or before this
+          point in time. The value must be in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601\)
+          format. For example, **2021-05-30T15:07:40Z**.
+        schema:
+          type: string
+      - name: offset
+        in: query
+        description: The number of items that you want to skip.
+        schema:
+          type: string
+      - name: limit
+        in: query
+        description: The number of items returned per page, maximum of 500 items.
+          By default, the response returns 100 items per page.
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK - the request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DisputeDTO'
+      x-sortIndex: 0
+    post:
+      tags:
+      - RaiseDisputeResource
+      summary: Raise a dispute
+      description: 'Raise a dispute for an underlying transaction, providing a dispute
+        type and the amount you want to dispute.
+
+
+        Raising a dispute returns a dispute ID, which you can use to update details
+        about the dispute, provide supporting documentation, close the dispute, or
+        submit the dispute for a chargeback. You can also use the dispute ID to view
+        the status of the dispute.'
+      operationId: post-disputes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DisputeDTO'
+        required: true
+      responses:
+        '200':
+          description: OK - the request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DisputeDTO'
+      x-sortIndex: 0
+  /disputes/{id}:
+    get:
+      tags:
+      - RaiseDisputeResource
+      summary: Get dispute by ID
+      description: Get a raised dispute by ID.
+      operationId: get-disputes-id
+      parameters:
+      - name: id
+        in: path
+        description: The unique identifier of the raised dispute.
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK - the request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DisputeDTO'
+      x-sortIndex: 0
+    patch:
+      tags:
+      - RaiseDisputeResource
+      summary: Update a raised dispute
+      description: 'Update information related to a raised dispute, or change a dispute''s
+        status from **draft** to **submitted** or **closed**.
+
+
+        **Note:** Changing the status of a dispute to **submitted** or **closed**
+        is a final action. You cannot make updates to a **submitted** or **closed**
+        dispute. Make sure to upload all supporting attachments using the `POST /disputes/{id}/attachments`
+        endpoint before you submit a dispute. When you update a dispute to **submitted**,
+        Adyen sends the raised dispute to the card scheme for review and acquirer
+        defense. When you update a raised dispute to **closed**, Adyen closes the
+        dispute, and the dispute is no longer eligible for review by the card scheme.'
+      operationId: patch-disputes-id
+      parameters:
+      - name: id
+        in: path
+        description: The unique identifier of the raised dispute.
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchableDisputeDTO'
+      responses:
+        '200':
+          description: OK - the request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DisputeDTO'
+      x-sortIndex: 0
+components:
+  schemas:
+    AttachmentType:
+      type: string
+      enum:
+      - receipt
+      - correspondence
+      - other
+    DisputeAttachment:
+      required:
+      - attachmentType
+      - content
+      - fileName
+      type: object
+      properties:
+        attachmentType:
+          description: 'The type of information contained in the attachment: **receipt**,
+            **correspondence**, **other**.'
+          $ref: '#/components/schemas/AttachmentType'
+        content:
+          type: string
+          description: The content of the image. An attachment must be base64-encoded
+            data.
+        fileName:
+          maxLength: 17
+          minLength: 4
+          pattern: ([^\s]+(\.(?i)(jpeg|tiff|pdf))$)
+          type: string
+          description: 'The name of the attachment, including its filename extension.
+            Supported filename extensions: **jpeg**, **pdf**, **tiff**.'
+        id:
+          type: string
+          description: The unique identifier of the attachment.
+          readOnly: true
+    AttachDocumentResponse:
+      type: object
+      properties:
+        attachmentId:
+          type: string
+          description: The unique identifier of the attachment.
+          readOnly: true
+    Amount:
+      required:
+      - currency
+      - value
+      type: object
+      properties:
+        currency:
+          type: string
+          description: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).
+        value:
+          type: integer
+          description: The amount of the transaction, in [minor units](https://docs.adyen.com/development-resources/currency-codes).
+          format: int64
+    CancellingEntity:
+      type: string
+      enum:
+      - merchant
+      - cardholder
+    DisputeDTO:
+      required:
+      - transactionId
+      - type
+      type: object
+      properties:
+        arn:
+          type: string
+          description: The unique Acquirer Reference Number (arn) generated by the
+            card scheme for each capture. You can use the `arn` to trace the transaction
+            through its lifecycle.
+          readOnly: true
+        description:
+          type: string
+          description: Your description for the dispute.
+        disputedAmount:
+          description: The amount for which you dispute the transaction. The disputed
+            amount cannot be greater than the transaction amount. If you do not provide
+            an amount, the entire transaction amount will be disputed.
+          $ref: '#/components/schemas/Amount'
+        fraudInfo:
+          description: Additional information for raising a dispute of `type` **fraud**.
+            Required for disputes of `type` **fraud**.
+          $ref: '#/components/schemas/FraudInfo'
+        id:
+          type: string
+          description: The unique identifier of the raised dispute.
+          readOnly: true
+        notDeliveredInfo:
+          description: Additional information for raising a dispute of `type` **notDelivered**.
+            Required for disputes of `type` **notDelivered**.
+          $ref: '#/components/schemas/NotDeliveredInfo'
+        status:
+          description: 'The current status of the dispute.
+
+
+            You can update a dispute to **submitted** or **closed**.
+
+
+            Possible values: **draft**, **submitted**, **closed**, **won**, **chargeback**,
+            **secondPresentment**.'
+          $ref: '#/components/schemas/DisputeStatus'
+        transactionId:
+          type: string
+          description: The unique reference of the transaction for which you are raising
+            the dispute.
+        type:
+          description: 'The type of the dispute.
+
+
+            Possible values: **notDelivered**, **fraud**.'
+          $ref: '#/components/schemas/DisputeType'
+    DisputeStatus:
+      type: string
+      enum:
+      - draft
+      - submitted
+      - chargeback
+      - secondPresentment
+      - won
+      - closed
+    DisputeType:
+      type: string
+      x-extensible-enum:
+      - notDelivered
+      - fraud
+    FraudInfo:
+      required:
+      - cardDoesNotBelongToCardholder
+      - cardWasCounterfeited
+      - descriptionOfIssue
+      type: object
+      properties:
+        cardDoesNotBelongToCardholder:
+          type: boolean
+          description: The card is no longer in the cardholder's possession. Set to
+            **true** if the card is lost or stolen.
+        cardWasCounterfeited:
+          type: boolean
+          description: The card was counterfeited.
+        descriptionOfIssue:
+          type: string
+          description: Your description of the issue for raising a dispute of `type`
+            **fraud**.
+        reportOnly:
+          type: boolean
+          description: Set to **true** to report fraud to Adyen with no further action,
+            such as a request for a chargeback or fee reversal. The default value
+            is **false**.
+    NotDeliveredInfo:
+      required:
+      - descriptionOfIssue
+      - lastExpectedDate
+      - whatWasNotDelivered
+      type: object
+      properties:
+        dateOfCancellation:
+          type: string
+          description: The date the undelivered goods or services were cancelled in
+            YYYY-MM-DD format.
+          format: date
+        descriptionOfIssue:
+          type: string
+          description: Your description of the issue for raising a dispute of `type`
+            **notDelivered**.
+        lastExpectedDate:
+          type: string
+          description: The date the undelivered goods or services were expected to
+            be delivered in YYYY-MM-DD format.
+          format: date
+        whatWasNotDelivered:
+          description: 'The type of product that you expected to receive.
+
+
+            Possible values: **goods**, **services**.'
+          $ref: '#/components/schemas/ProductType'
+        whoCancelled:
+          description: 'The party that initiated the cancellation of the transaction.
+
+
+            Possible values: **merchant**, **cardholder**.'
+          $ref: '#/components/schemas/CancellingEntity'
+    ProductType:
+      type: string
+      enum:
+      - goods
+      - services
+    PatchableDisputeDTO:
+      type: object
+      properties:
+        fraudInfo:
+          type: object
+          description: Additional information for raising a dispute of `type` **fraud**.
+            Required for disputes of `type` **fraud**.
+          oneOf:
+          - $ref: '#/components/schemas/PatchableFraudInfo'
+          - type: 'null'
+        notDeliveredInfo:
+          type: object
+          description: Additional information for raising a dispute of `type` **notDelivered**.
+            Required for disputes of `type` **notDelivered**.
+          oneOf:
+          - $ref: '#/components/schemas/PatchableNotDeliveredInfo'
+          - type: 'null'
+        status:
+          type: object
+          description: 'The current status of the dispute.
+
+
+            You can update a dispute to **submitted** or **closed**.
+
+
+            Possible values: **draft**, **submitted**, **closed**, **won**, **chargeback**,
+            **secondPresentment**.'
+          oneOf:
+          - $ref: '#/components/schemas/DisputeStatus'
+          - type: 'null'
+    PatchableFraudInfo:
+      type: object
+      properties:
+        cardDoesNotBelongToCardholder:
+          type: boolean
+          description: The card is no longer in the cardholder's possession. Set to
+            **true** if the card is lost or stolen.
+        cardWasCounterfeited:
+          type: boolean
+          description: The card was counterfeited.
+        descriptionOfIssue:
+          type: string
+          description: Your description of the issue for raising a dispute of `type`
+            **fraud**.
+        reportOnly:
+          type:
+          - boolean
+          - 'null'
+          description: Set to **true** to report fraud to Adyen with no further action,
+            such as a request for a chargeback or fee reversal. The default value
+            is **false**.
+    PatchableNotDeliveredInfo:
+      type: object
+      properties:
+        dateOfCancellation:
+          type:
+          - string
+          - 'null'
+          description: The date the undelivered goods or services were cancelled in
+            YYYY-MM-DD format.
+          format: date
+        descriptionOfIssue:
+          type: string
+          description: Your description of the issue for raising a dispute of `type`
+            **notDelivered**.
+        lastExpectedDate:
+          type: string
+          description: The date the undelivered goods or services were expected to
+            be delivered in YYYY-MM-DD format.
+          format: date
+        whatWasNotDelivered:
+          type: object
+          description: 'The type of product that you expected to receive.
+
+
+            Possible values: **goods**, **services**.'
+          oneOf:
+          - $ref: '#/components/schemas/ProductType'
+        whoCancelled:
+          type: object
+          description: 'The party that initiated the cancellation of the transaction.
+
+
+            Possible values: **merchant**, **cardholder**.'
+          oneOf:
+          - $ref: '#/components/schemas/CancellingEntity'
+          - type: 'null'
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      name: X-API-Key
+      in: header
+    BasicAuth:
+      type: http
+      scheme: basic
+jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
