@@ -516,6 +516,28 @@ components:
       - accountNumber
       - bankCode
       type: object
+    DirectDebitInformation:
+      additionalProperties: false
+      properties:
+        dateOfSignature:
+          description: The date when the direct debit mandate was accepted by your
+            user, in [ISO-8601](https://www.w3.org/TR/NOTE-datetime) format.
+          format: date-time
+          type: string
+        dueDate:
+          description: The date when the funds are deducted from your user's balance
+            account.
+          format: date-time
+          type: string
+        mandateId:
+          description: Your unique identifier for the direct debit mandate.
+          type: string
+        sequenceType:
+          description: 'Identifies the direct debit transfer''s type.
+
+            Possible values: **OneOff**, **First**, **Recurring**, **Final**.'
+          type: string
+      type: object
     EstimationTrackingData:
       additionalProperties: false
       properties:
@@ -731,6 +753,7 @@ components:
           - paymentCost
           - paymentCostPending
           - pendingApproval
+          - pendingExecution
           - received
           - refundPending
           - refundReversalPending
@@ -1158,6 +1181,10 @@ components:
             Supported characters for **regular** and **fast** transfers to a US counterparty:
             **[a-z] [A-Z] [0-9] & $ % # @** **~ = + - _ '' " ! ?**'
           type: string
+        directDebitInformation:
+          x-addedInVersion: '3'
+          description: The details of the direct debit.
+          $ref: '#/components/schemas/DirectDebitInformation'
         direction:
           x-addedInVersion: '2'
           description: 'The direction of the transfer.
@@ -1347,6 +1374,7 @@ components:
           x-addedInVersion: '2'
           description: Additional information about the status of the transfer.
           enum:
+          - accountHierarchyNotActive
           - amountLimitExceeded
           - approved
           - balanceAccountTemporarilyBlockedByTransactionRule
@@ -1358,12 +1386,15 @@ components:
           - counterpartyBankUnavailable
           - declined
           - declinedByTransactionRule
+          - directDebitNotSupported
           - error
           - notEnoughBalance
           - pendingApproval
+          - pendingExecution
           - refusedByCounterpartyBank
           - routeNotFound
           - scaFailed
+          - transferInstrumentDoesNotExist
           - unknown
           type: string
         reference:
@@ -1391,6 +1422,10 @@ components:
           description: If you are using relayed authorisation, this object contains
             information from the relayed authorisation response from your server.
           $ref: '#/components/schemas/RelayedAuthorisationData'
+        review:
+          x-addedInVersion: '3'
+          description: Contains status updates related to additional reviews.
+          $ref: '#/components/schemas/TransferReview'
         sequenceNumber:
           x-addedInVersion: '3'
           description: 'The sequence number of the transfer webhook. The numbers start
@@ -1458,6 +1493,7 @@ components:
           - paymentCost
           - paymentCostPending
           - pendingApproval
+          - pendingExecution
           - received
           - refundPending
           - refundReversalPending
@@ -1602,6 +1638,7 @@ components:
           x-addedInVersion: '3'
           description: The reason for the transfer status.
           enum:
+          - accountHierarchyNotActive
           - amountLimitExceeded
           - approved
           - balanceAccountTemporarilyBlockedByTransactionRule
@@ -1613,12 +1650,15 @@ components:
           - counterpartyBankUnavailable
           - declined
           - declinedByTransactionRule
+          - directDebitNotSupported
           - error
           - notEnoughBalance
           - pendingApproval
+          - pendingExecution
           - refusedByCounterpartyBank
           - routeNotFound
           - scaFailed
+          - transferInstrumentDoesNotExist
           - unknown
           type: string
         schemeTraceID:
@@ -1685,6 +1725,7 @@ components:
           - paymentCost
           - paymentCostPending
           - pendingApproval
+          - pendingExecution
           - received
           - refundPending
           - refundReversalPending
@@ -1806,6 +1847,30 @@ components:
           type: string
         type:
           description: The type of the validation fact.
+          type: string
+      type: object
+    TransferReview:
+      additionalProperties: false
+      properties:
+        numberOfApprovalsCompleted:
+          description: Shows the number of approvals completed for the transfer.
+          format: int32
+          type: integer
+        numberOfApprovalsRequired:
+          description: Shows the number of [approvals](https://docs.adyen.com/api-explorer/transfers/latest/post/transfers/approve)
+            required to process the transfer.
+          format: int32
+          type: integer
+        scaOnApproval:
+          description: 'Shows the status of the Strong Customer Authentication (SCA)
+            process.
+
+
+            Possible values: **required**, **completed**, **notApplicable**.'
+          enum:
+          - completed
+          - notApplicable
+          - required
           type: string
       type: object
     UKLocalAccountIdentification:

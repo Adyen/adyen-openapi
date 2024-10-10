@@ -66,14 +66,24 @@ webhooks:
         content:
           application/json:
             examples:
-              balancePlatform-transfer-updated-authorised-incoming-internal:
-                $ref: '#/components/examples/post-balancePlatform.transfer.updated-balancePlatform-transfer-updated-authorised-incoming-internal'
-              balancePlatform-transfer-updated-authorised-outgoing-external:
-                $ref: '#/components/examples/post-balancePlatform.transfer.updated-balancePlatform-transfer-updated-authorised-outgoing-external'
-              balancePlatform-transfer-updated-booked-incoming-internal:
-                $ref: '#/components/examples/post-balancePlatform.transfer.updated-balancePlatform-transfer-updated-booked-incoming-internal'
-              balancePlatform-transfer-updated-booked-outgoing-external:
-                $ref: '#/components/examples/post-balancePlatform.transfer.updated-balancePlatform-transfer-updated-booked-outgoing-external'
+              01.payout-authorized:
+                $ref: '#/components/examples/post-balancePlatform.transfer.updated-01.payout-authorized'
+              02.payout-booked:
+                $ref: '#/components/examples/post-balancePlatform.transfer.updated-02.payout-booked'
+              03.internal-authorised:
+                $ref: '#/components/examples/post-balancePlatform.transfer.updated-03.internal-authorised'
+              04.internal-booked:
+                $ref: '#/components/examples/post-balancePlatform.transfer.updated-04.internal-booked'
+              05.directDebit-booked:
+                $ref: '#/components/examples/post-balancePlatform.transfer.updated-05.directDebit-booked'
+              06.directDebit-cancelled:
+                $ref: '#/components/examples/post-balancePlatform.transfer.updated-06.directDebit-cancelled'
+              07.directDebit-failed:
+                $ref: '#/components/examples/post-balancePlatform.transfer.updated-07.directDebit-failed'
+              08.internalDirectDebit-incoming-booked:
+                $ref: '#/components/examples/post-balancePlatform.transfer.updated-08.internalDirectDebit-incoming-booked'
+              09.internalDirectDebit-outgoing-booked:
+                $ref: '#/components/examples/post-balancePlatform.transfer.updated-09.internalDirectDebit-outgoing-booked'
             schema:
               $ref: '#/components/schemas/TransferNotificationRequest'
       responses:
@@ -578,6 +588,28 @@ components:
       - accountNumber
       - bankCode
       type: object
+    DirectDebitInformation:
+      additionalProperties: false
+      properties:
+        dateOfSignature:
+          description: The date when the direct debit mandate was accepted by your
+            user, in [ISO-8601](https://www.w3.org/TR/NOTE-datetime) format.
+          format: date-time
+          type: string
+        dueDate:
+          description: The date when the funds are deducted from your user's balance
+            account.
+          format: date-time
+          type: string
+        mandateId:
+          description: Your unique identifier for the direct debit mandate.
+          type: string
+        sequenceType:
+          description: 'Identifies the direct debit transfer''s type.
+
+            Possible values: **OneOff**, **First**, **Recurring**, **Final**.'
+          type: string
+      type: object
     EstimationTrackingData:
       additionalProperties: false
       properties:
@@ -883,6 +915,7 @@ components:
           - paymentCost
           - paymentCostPending
           - pendingApproval
+          - pendingExecution
           - received
           - refundPending
           - refundReversalPending
@@ -1367,6 +1400,10 @@ components:
             Supported characters for **regular** and **fast** transfers to a US counterparty:
             **[a-z] [A-Z] [0-9] & $ % # @** **~ = + - _ '' " ! ?**'
           type: string
+        directDebitInformation:
+          x-addedInVersion: '3'
+          description: The details of the direct debit.
+          $ref: '#/components/schemas/DirectDebitInformation'
         direction:
           x-addedInVersion: '2'
           description: 'The direction of the transfer.
@@ -1396,6 +1433,7 @@ components:
           x-addedInVersion: '2'
           description: Additional information about the status of the transfer.
           enum:
+          - accountHierarchyNotActive
           - amountLimitExceeded
           - approved
           - balanceAccountTemporarilyBlockedByTransactionRule
@@ -1407,12 +1445,15 @@ components:
           - counterpartyBankUnavailable
           - declined
           - declinedByTransactionRule
+          - directDebitNotSupported
           - error
           - notEnoughBalance
           - pendingApproval
+          - pendingExecution
           - refusedByCounterpartyBank
           - routeNotFound
           - scaFailed
+          - transferInstrumentDoesNotExist
           - unknown
           type: string
         reference:
@@ -1431,6 +1472,10 @@ components:
             \ on the `category`.\n\n - **internal**: 80 characters\n\n- **bank**:\
             \ 35 characters when transferring to an IBAN, 15 characters for others."
           type: string
+        review:
+          x-addedInVersion: '3'
+          description: Contains status updates related to additional reviews.
+          $ref: '#/components/schemas/TransferReview'
         sequenceNumber:
           x-addedInVersion: '3'
           description: 'The sequence number of the transfer webhook. The numbers start
@@ -1498,6 +1543,7 @@ components:
           - paymentCost
           - paymentCostPending
           - pendingApproval
+          - pendingExecution
           - received
           - refundPending
           - refundReversalPending
@@ -1628,6 +1674,7 @@ components:
           x-addedInVersion: '3'
           description: The reason for the transfer status.
           enum:
+          - accountHierarchyNotActive
           - amountLimitExceeded
           - approved
           - balanceAccountTemporarilyBlockedByTransactionRule
@@ -1639,12 +1686,15 @@ components:
           - counterpartyBankUnavailable
           - declined
           - declinedByTransactionRule
+          - directDebitNotSupported
           - error
           - notEnoughBalance
           - pendingApproval
+          - pendingExecution
           - refusedByCounterpartyBank
           - routeNotFound
           - scaFailed
+          - transferInstrumentDoesNotExist
           - unknown
           type: string
         status:
@@ -1703,6 +1753,7 @@ components:
           - paymentCost
           - paymentCostPending
           - pendingApproval
+          - pendingExecution
           - received
           - refundPending
           - refundReversalPending
@@ -1824,6 +1875,30 @@ components:
           type: string
         type:
           description: The type of the validation fact.
+          type: string
+      type: object
+    TransferReview:
+      additionalProperties: false
+      properties:
+        numberOfApprovalsCompleted:
+          description: Shows the number of approvals completed for the transfer.
+          format: int32
+          type: integer
+        numberOfApprovalsRequired:
+          description: Shows the number of [approvals](https://docs.adyen.com/api-explorer/transfers/latest/post/transfers/approve)
+            required to process the transfer.
+          format: int32
+          type: integer
+        scaOnApproval:
+          description: 'Shows the status of the Strong Customer Authentication (SCA)
+            process.
+
+
+            Possible values: **required**, **completed**, **notApplicable**.'
+          enum:
+          - completed
+          - notApplicable
+          - required
           type: string
       type: object
     UKLocalAccountIdentification:
@@ -1979,57 +2054,7 @@ components:
           type: bankTransfer
         environment: test
         type: balancePlatform.transfer.created
-    post-balancePlatform.transfer.updated-balancePlatform-transfer-updated-authorised-incoming-internal:
-      summary: Authorized incoming internal transfer
-      description: Example webhook of an authorised incoming transfer
-      value:
-        data:
-          id: 2WT1N05XXY7P9XH9
-          type: internalTransfer
-          accountHolder:
-            description: Your description of the account holder of the target balance
-              account
-            id: AH00000000000000000000002
-            reference: Your reference for the account holder
-          amount:
-            currency: EUR
-            value: 1000
-          balanceAccount:
-            description: Your description of the target balance account
-            id: BA00000000000000000000002
-          balancePlatform: YOUR_BALANCE_PLATFORM
-          balances:
-          - currency: EUR
-            received: 0
-            reserved: 1000
-          category: internal
-          creationDate: '2023-02-28T13:30:05+02:00'
-          description: Your description of the transfer
-          direction: incoming
-          events:
-          - bookingDate: '2023-02-28T13:30:18+02:00'
-            id: JDRF00000000000000000000000001
-            mutations:
-            - currency: EUR
-              received: 1000
-            status: received
-            type: accounting
-          - bookingDate: '2023-02-28T13:30:18+02:00'
-            id: JDRF00000000000000000000000002
-            mutations:
-            - currency: EUR
-              received: -1000
-              reserved: 1000
-            status: authorised
-            type: accounting
-          reason: approved
-          reference: Your reference for the transfer
-          referenceForBeneficiary: Your-reference-for-the-recipient-of-the-transfer-request
-          sequenceNumber: 2
-          status: authorised
-        environment: test
-        type: balancePlatform.transfer.updated
-    post-balancePlatform.transfer.updated-balancePlatform-transfer-updated-authorised-outgoing-external:
+    post-balancePlatform.transfer.updated-01.payout-authorized:
       summary: Authorized payout to a transfer instrument
       description: Example webhook of an authorised outgoing bank transfer
       value:
@@ -2085,71 +2110,7 @@ components:
           type: bankTransfer
         environment: test
         type: balancePlatform.transfer.updated
-    post-balancePlatform.transfer.updated-balancePlatform-transfer-updated-booked-incoming-internal:
-      summary: Booked incoming internal transfer
-      description: Example webhook of a booked incoming transfer
-      value:
-        data:
-          id: 2WT1N05XXY7P9XH9
-          type: internalTransfer
-          accountHolder:
-            description: Your description of the account holder of the target balance
-              account
-            id: AH00000000000000000000002
-            reference: Your reference for the account holder
-          amount:
-            currency: EUR
-            value: 1000
-          balanceAccount:
-            description: Your description of the target balance account
-            id: BA00000000000000000000002
-          balancePlatform: YOUR_BALANCE_PLATFORM
-          balances:
-          - balance: 1000
-            currency: EUR
-            received: 0
-            reserved: 0
-          category: internal
-          counterparty:
-            balanceAccountId: BA00000000000000000000001
-          creationDate: '2023-02-28T13:30:05+02:00'
-          description: Your description of the transfer
-          direction: incoming
-          events:
-          - bookingDate: '2023-02-28T13:30:18+02:00'
-            id: JDRF00000000000000000000000001
-            mutations:
-            - currency: EUR
-              received: 1000
-            status: received
-            type: accounting
-          - bookingDate: '2023-02-28T13:30:18+02:00'
-            id: JDRF00000000000000000000000002
-            mutations:
-            - currency: EUR
-              received: -1000
-              reserved: 1000
-            status: authorised
-            type: accounting
-          - bookingDate: '2023-02-28T13:30:18+02:00'
-            id: JDRF00000000000000000000000003
-            mutations:
-            - balance: 1000
-              currency: EUR
-              received: 0
-              reserved: -1000
-            status: booked
-            transactionId: FWKP42CL8224223D5KKJWD6FXS3VQCEUR
-            type: accounting
-            valueDate: '2023-02-28T13:30:18+02:00'
-          reason: approved
-          reference: Your reference for the transfer
-          referenceForBeneficiary: Your-reference-for-the-recipient-of-the-transfer-request
-          sequenceNumber: 3
-          status: booked
-        environment: test
-        type: balancePlatform.transfer.updated
-    post-balancePlatform.transfer.updated-balancePlatform-transfer-updated-booked-outgoing-external:
+    post-balancePlatform.transfer.updated-02.payout-booked:
       summary: Booked payout to a transfer instrument
       description: Example webhook of a booked outgoing bank transfer
       value:
@@ -2217,5 +2178,456 @@ components:
             allHardBlockRulesPassed: true
           status: booked
           type: bankTransfer
+        environment: test
+        type: balancePlatform.transfer.updated
+    post-balancePlatform.transfer.updated-03.internal-authorised:
+      summary: Authorized incoming internal transfer
+      description: Example webhook of an authorised incoming transfer
+      value:
+        data:
+          id: 2WT1N05XXY7P9XH9
+          type: internalTransfer
+          accountHolder:
+            description: Your description of the account holder of the target balance
+              account
+            id: AH00000000000000000000002
+            reference: Your reference for the account holder
+          amount:
+            currency: EUR
+            value: 1000
+          balanceAccount:
+            description: Your description of the target balance account
+            id: BA00000000000000000000002
+          balancePlatform: YOUR_BALANCE_PLATFORM
+          balances:
+          - currency: EUR
+            received: 0
+            reserved: 1000
+          category: internal
+          creationDate: '2023-02-28T13:30:05+02:00'
+          description: Your description of the transfer
+          direction: incoming
+          events:
+          - bookingDate: '2023-02-28T13:30:18+02:00'
+            id: JDRF00000000000000000000000001
+            mutations:
+            - currency: EUR
+              received: 1000
+            status: received
+            type: accounting
+          - bookingDate: '2023-02-28T13:30:18+02:00'
+            id: JDRF00000000000000000000000002
+            mutations:
+            - currency: EUR
+              received: -1000
+              reserved: 1000
+            status: authorised
+            type: accounting
+          reason: approved
+          reference: Your reference for the transfer
+          referenceForBeneficiary: Your-reference-for-the-recipient-of-the-transfer-request
+          sequenceNumber: 2
+          status: authorised
+        environment: test
+        type: balancePlatform.transfer.updated
+    post-balancePlatform.transfer.updated-04.internal-booked:
+      summary: Booked incoming internal transfer
+      description: Example webhook of a booked incoming transfer
+      value:
+        data:
+          id: 2WT1N05XXY7P9XH9
+          type: internalTransfer
+          accountHolder:
+            description: Your description of the account holder of the target balance
+              account
+            id: AH00000000000000000000002
+            reference: Your reference for the account holder
+          amount:
+            currency: EUR
+            value: 1000
+          balanceAccount:
+            description: Your description of the target balance account
+            id: BA00000000000000000000002
+          balancePlatform: YOUR_BALANCE_PLATFORM
+          balances:
+          - balance: 1000
+            currency: EUR
+            received: 0
+            reserved: 0
+          category: internal
+          counterparty:
+            balanceAccountId: BA00000000000000000000001
+          creationDate: '2023-02-28T13:30:05+02:00'
+          description: Your description of the transfer
+          direction: incoming
+          events:
+          - bookingDate: '2023-02-28T13:30:18+02:00'
+            id: JDRF00000000000000000000000001
+            mutations:
+            - currency: EUR
+              received: 1000
+            status: received
+            type: accounting
+          - bookingDate: '2023-02-28T13:30:18+02:00'
+            id: JDRF00000000000000000000000002
+            mutations:
+            - currency: EUR
+              received: -1000
+              reserved: 1000
+            status: authorised
+            type: accounting
+          - bookingDate: '2023-02-28T13:30:18+02:00'
+            id: JDRF00000000000000000000000003
+            mutations:
+            - balance: 1000
+              currency: EUR
+              received: 0
+              reserved: -1000
+            status: booked
+            transactionId: FWKP42CL8224223D5KKJWD6FXS3VQCEUR
+            type: accounting
+            valueDate: '2023-02-28T13:30:18+02:00'
+          reason: approved
+          reference: Your reference for the transfer
+          referenceForBeneficiary: Your-reference-for-the-recipient-of-the-transfer-request
+          sequenceNumber: 3
+          status: booked
+        environment: test
+        type: balancePlatform.transfer.updated
+    post-balancePlatform.transfer.updated-05.directDebit-booked:
+      summary: Business accounts - Successful external direct debit
+      description: Example webhook of a booked external direct debit transfer
+      value:
+        data:
+          accountHolder:
+            description: Your description of the account holder
+            id: AH00000000000000000000002
+            reference: Your reference for the account holder
+          amount:
+            currency: EUR
+            value: 1000
+          balanceAccount:
+            description: Your description of the target balance account
+            id: BA00000000000000000000002
+          balancePlatform: YOUR_BALANCE_PLATFORM
+          balances:
+          - balance: -1000
+            currency: EUR
+            received: 0
+            reserved: 0
+          category: bank
+          categoryData:
+            type: bank
+          counterparty:
+            bankAccount:
+              accountHolder:
+                fullName: John Smith
+                type: unknown
+              accountIdentification:
+                iban: FR0000000000000000000000117
+                type: iban
+          creationDate: '2024-08-28T13:30:05+02:00'
+          directDebitInformation:
+            dateOfSignature: '2023-01-01T01:00:00+01:00'
+            dueDate: '2024-08-23T02:00:00+02:00'
+            mandateId: EBAClearing-MANDAT001
+            sequenceType: FRST
+          direction: incoming
+          events:
+          - bookingDate: '2024-08-28T13:30:18+02:00'
+            id: JDRF00000000000000000000000001
+            mutations:
+            - currency: EUR
+              received: -1000
+            status: received
+            type: accounting
+          - bookingDate: '2024-08-28T13:30:18+02:00'
+            id: JDRF00000000000000000000000002
+            mutations:
+            - currency: EUR
+              received: 1000
+              reserved: -1000
+            status: authorised
+            type: accounting
+          - bookingDate: '2024-08-28T13:30:18+02:00'
+            id: JDRF00000000000000000000000003
+            mutations:
+            - balance: -1000
+              currency: EUR
+              received: 0
+              reserved: 1000
+            status: booked
+            transactionId: JDRF00000000000000000000000MEUR
+            type: accounting
+            valueDate: '2024-08-28T14:00:00+02:00'
+          id: 2WT1N05XXY7P9XH9
+          paymentInstrument:
+            description: Your reference for the payment instrument
+            id: PI00000000000000000000001
+          reason: approved
+          reference: Your reference for the transfer
+          referenceForBeneficiary: The sender's reference for the beneficiary
+          sequenceNumber: 3
+          status: booked
+          transactionRulesResult:
+            allHardBlockRulesPassed: true
+          type: bankDirectDebit
+        environment: test
+        type: balancePlatform.transfer.updated
+    post-balancePlatform.transfer.updated-06.directDebit-cancelled:
+      summary: Business accounts - Cancelled external direct debit
+      description: Example webhook of a cancelled external direct debit transfer
+      value:
+        data:
+          accountHolder:
+            description: Your description of the account holder
+            id: AH00000000000000000000002
+            reference: Your reference for the account holder
+          amount:
+            currency: EUR
+            value: 1000
+          balanceAccount:
+            description: Your description of the target balance account
+            id: BA00000000000000000000002
+          balancePlatform: YOUR_BALANCE_PLATFORM
+          balances:
+          - currency: EUR
+            received: -1000
+          category: bank
+          categoryData:
+            type: bank
+          counterparty:
+            bankAccount:
+              accountHolder:
+                fullName: John Smith
+                type: unknown
+              accountIdentification:
+                iban: FR0000000000000000000000117
+                type: iban
+          creationDate: '2024-08-28T13:30:05+02:00'
+          directDebitInformation:
+            dateOfSignature: '2023-01-01T01:00:00+01:00'
+            dueDate: '2024-08-23T02:00:00+02:00'
+            mandateId: EBAClearing-MANDAT001
+            sequenceType: FRST
+          direction: incoming
+          events:
+          - bookingDate: '2024-08-28T13:30:18+02:00'
+            id: JDRF00000000000000000000000001
+            mutations:
+            - currency: EUR
+              received: -1000
+            status: received
+            type: accounting
+          - bookingDate: '2024-08-28T13:30:18+02:00'
+            id: JDRF00000000000000000000000002
+            mutations:
+            - currency: EUR
+              received: 1000
+            reason: unknown
+            status: cancelled
+            type: accounting
+          id: 2WT1N05XXY7P9XH9
+          paymentInstrument:
+            description: Your reference for the payment instrument
+            id: PI00000000000000000000001
+          reason: approved
+          reference: Your reference for the transfer
+          referenceForBeneficiary: The sender's reference for the beneficiary
+          sequenceNumber: 2
+          status: refused
+          transactionRulesResult:
+            allHardBlockRulesPassed: true
+          type: bankDirectDebit
+        environment: test
+        type: balancePlatform.transfer.updated
+    post-balancePlatform.transfer.updated-07.directDebit-failed:
+      summary: Business accounts - Failed external direct debit
+      description: Example webhook of a failed external direct debit transfer
+      value:
+        data:
+          accountHolder:
+            description: Your description of the account holder
+            id: AH00000000000000000000002
+            reference: Your reference for the account holder
+          amount:
+            currency: EUR
+            value: 1000
+          balanceAccount:
+            description: Your description of the target balance account
+            id: BA00000000000000000000002
+          balancePlatform: YOUR_BALANCE_PLATFORM
+          balances:
+          - currency: EUR
+            received: -1000
+          category: bank
+          categoryData:
+            type: bank
+          counterparty:
+            bankAccount:
+              accountHolder:
+                fullName: John Smith
+                type: unknown
+              accountIdentification:
+                iban: FR0000000000000000000000117
+                type: iban
+          creationDate: '2024-08-28T13:30:05+02:00'
+          directDebitInformation:
+            dateOfSignature: '2023-01-01T01:00:00+01:00'
+            dueDate: '2024-08-23T02:00:00+02:00'
+            mandateId: EBAClearing-MANDAT001
+            sequenceType: FRST
+          direction: incoming
+          events:
+          - bookingDate: '2024-08-28T13:30:18+02:00'
+            id: JDRF00000000000000000000000001
+            mutations:
+            - currency: EUR
+              received: -1000
+            status: received
+            type: accounting
+          - bookingDate: '2024-08-28T13:30:18+02:00'
+            id: JDRF00000000000000000000000002
+            mutations:
+            - currency: EUR
+              received: 1000
+            status: refused
+            type: accounting
+          id: 2WT1N05XXY7P9XH9
+          paymentInstrument:
+            description: Your reference for the payment instrument
+            id: PI00000000000000000000001
+          reason: unknown
+          reference: Your reference for the transfer
+          referenceForBeneficiary: The sender's reference for the beneficiary
+          sequenceNumber: 2
+          status: cancelled
+          transactionRulesResult:
+            allHardBlockRulesPassed: true
+          type: bankDirectDebit
+        environment: test
+        type: balancePlatform.transfer.updated
+    post-balancePlatform.transfer.updated-08.internalDirectDebit-incoming-booked:
+      summary: Business accounts - Successful internal direct debit (incoming)
+      description: Example webhook of a booked incoming internal direct debit transfer
+      value:
+        data:
+          accountHolder:
+            id: AH00000000000000000000002
+            reference: Your reference for the account holder
+          amount:
+            currency: EUR
+            value: 1000
+          balanceAccount:
+            description: Your description for the balance account
+            id: BA00000000000000000000002
+          balancePlatform: YOUR_BALANCE_PLATFORM
+          balances:
+          - balance: -1000
+            currency: EUR
+            received: 0
+            reserved: 0
+          category: internal
+          categoryData:
+            type: internal
+          counterparty:
+            balanceAccountId: BA00000000000000000LIABLE
+          creationDate: '2024-08-28T13:30:05+02:00'
+          direction: incoming
+          events:
+          - bookingDate: '2024-08-28T13:30:18+02:00'
+            id: JDRF00000000000000000000000001
+            mutations:
+            - currency: EUR
+              received: -1000
+            status: received
+            type: accounting
+          - bookingDate: '2024-08-28T13:30:18+02:00'
+            id: JDRF00000000000000000000000002
+            mutations:
+            - currency: EUR
+              received: 1000
+              reserved: -1000
+            status: authorised
+            type: accounting
+          - bookingDate: '2024-08-28T13:30:18+02:00'
+            id: JDRF00000000000000000000000003
+            mutations:
+            - balance: -1000
+              currency: EUR
+              received: 0
+              reserved: 1000
+            status: booked
+            transactionId: JDRF00000000000000000000000MEUR
+            type: accounting
+            valueDate: '2024-08-28T14:00:00+02:00'
+          id: 2WT1N05XXY7P9XH9
+          reason: approved
+          reference: Your reference for the transfer
+          sequenceNumber: 3
+          status: booked
+          type: internalDirectDebit
+        environment: test
+        type: balancePlatform.transfer.updated
+    post-balancePlatform.transfer.updated-09.internalDirectDebit-outgoing-booked:
+      summary: Business accounts - Successful internal direct debit (outgoing)
+      description: Example webhook of a booked outgoing internal direct debit transfer
+      value:
+        data:
+          accountHolder:
+            id: AH000000000000000000LIABLE
+            reference: Your reference for the account holder
+          amount:
+            currency: EUR
+            value: 1000
+          balanceAccount:
+            description: Your description for the balance account
+            id: BA000000000000000000LIABLE
+          balancePlatform: YOUR_BALANCE_PLATFORM
+          balances:
+          - balance: 1000
+            currency: EUR
+            received: 0
+            reserved: 0
+          category: internal
+          categoryData:
+            type: internal
+          counterparty:
+            balanceAccountId: BA00000000000000000000002
+          creationDate: '2024-08-28T13:30:05+02:00'
+          direction: outgoing
+          events:
+          - bookingDate: '2024-08-28T13:30:18+02:00'
+            id: JDRF00000000000000000000000001
+            mutations:
+            - currency: EUR
+              received: 1000
+            status: received
+            type: accounting
+          - bookingDate: '2024-08-28T13:30:18+02:00'
+            id: JDRF00000000000000000000000002
+            mutations:
+            - currency: EUR
+              received: -1000
+              reserved: 1000
+            status: authorised
+            type: accounting
+          - bookingDate: '2024-08-28T13:30:18+02:00'
+            id: JDRF00000000000000000000000003
+            mutations:
+            - balance: 1000
+              currency: EUR
+              received: 0
+              reserved: -1000
+            status: booked
+            transactionId: JDRF00000000000000000000000MEUR
+            type: accounting
+            valueDate: '2024-08-28T14:00:00+02:00'
+          id: 2WT1N05XXY7P9XH9
+          reason: approved
+          reference: Your reference for the transfer
+          sequenceNumber: 3
+          status: booked
+          type: internalDirectDebit
         environment: test
         type: balancePlatform.transfer.updated

@@ -456,15 +456,29 @@ paths:
         are just starting your implementation, use the latest version.
 
 
-        Starts a request to transfer funds to [balance accounts](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts),
-        [transfer instruments](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments),
-        or third-party bank accounts. Adyen sends the outcome of the transfer request
-        through webhooks.
+        Starts a request to transfer funds to:
+
+        - [Balance accounts](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts)
+
+        - [Transfer instruments](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments)
+
+        - [Third-party bank accounts](https://docs.adyen.com/payouts/payout-service/pay-out-to-bank-accounts)
+
+        - [Third-party cards](https://docs.adyen.com/payouts/payout-service/pay-out-to-cards)
 
 
-        To use this endpoint, you need an additional role for your API credential
-        and transfers must be enabled for the source balance account. Your Adyen contact
-        will set these up for you.'
+        Adyen sends the outcome of the transfer request through webhooks.
+
+
+        To use this endpoint:
+
+        - Your API credential must have the **TransferService Webservice Initiate**
+        [role](https://docs.adyen.com/platforms/manage-access/webservice-roles/?tab=transfers_3).
+
+        - The account holder must have the required [capabilities](https://docs.adyen.com/platforms/verification-overview/capabilities).
+
+
+        Reach out to your Adyen contact to set up these permissions.'
       x-addedInVersion: '2'
       operationId: post-transfers
       x-sortIndex: 1
@@ -542,6 +556,134 @@ paths:
               schema:
                 $ref: '#/components/schemas/TransferServiceRestServiceError'
           description: Internal Server Error - the server could not process the request.
+  /transfers/approve:
+    post:
+      tags:
+      - Transfers
+      summary: Approve initiated transfers
+      description: 'Initiates the approval of a list of transfers that triggered an
+        additional [review](https://docs.adyen.com/api-explorer/transfers/latest/post/transfers#request-review).
+        Adyen sends the outcome of the approval request through webhooks.
+
+
+        To use this endpoint:
+
+        - Your API credential must have the **TransferService Approve** [role](https://docs.adyen.com/platforms/manage-access/webservice-roles/?tab=transfers_3).
+
+        - The account holder must have the required [capabilities](https://docs.adyen.com/platforms/verification-overview/capabilities).
+
+
+        Reach out to your Adyen contact to set up these permissions.'
+      x-addedInVersion: '3'
+      operationId: post-transfers-approve
+      x-sortIndex: 2
+      x-methodName: approveInitiatedTransfers
+      security:
+      - clientKey: []
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApproveTransfersRequest'
+      parameters:
+      - description: Header for authenticating through SCA
+        example: SCA realm="ApproveTransfers" auth-param1="eyJjaGFsbGVuZ2UiOiJiVlV6ZW5wek0waFNl..."
+        name: WWW-Authenticate
+        in: header
+        schema:
+          type: string
+      responses:
+        '200':
+          description: 'No Content - look at the actual response code for the status
+            of the request. '
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Unauthorized - authentication required.
+          headers:
+            auth-param1:
+              $ref: '#/components/headers/auth-param1'
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferServiceRestServiceError'
+          description: Forbidden - insufficient permissions to process the request.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferServiceRestServiceError'
+          description: Unprocessable Entity - a request validation error.
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferServiceRestServiceError'
+          description: Internal Server Error - the server could not process the request.
+  /transfers/cancel:
+    post:
+      tags:
+      - Transfers
+      summary: Cancel initiated transfers
+      description: 'Initiates the cancellation of a list of transfers that triggered
+        an additional [review](https://docs.adyen.com/api-explorer/transfers/latest/post/transfers#request-review).
+        Adyen sends the outcome of the cancel request through webhooks.
+
+
+        To use this endpoint:
+
+        - Your API credential must have the **TransferService Approve** [role](https://docs.adyen.com/platforms/manage-access/webservice-roles/?tab=transfers_3).
+
+        - The account holder must have the required [capabilities](https://docs.adyen.com/platforms/verification-overview/capabilities).
+
+
+        Reach out to your Adyen contact to set up these permissions.'
+      x-addedInVersion: '3'
+      operationId: post-transfers-cancel
+      x-sortIndex: 3
+      x-methodName: cancelInitiatedTransfers
+      security:
+      - clientKey: []
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancelTransfersRequest'
+      responses:
+        '200':
+          description: 'No Content - look at the actual response code for the status
+            of the request. '
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferServiceRestServiceError'
+          description: Unauthorized - authentication required.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferServiceRestServiceError'
+          description: Forbidden - insufficient permissions to process the request.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferServiceRestServiceError'
+          description: Unprocessable Entity - a request validation error.
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferServiceRestServiceError'
+          description: Internal Server Error - the server could not process the request.
   /transfers/{transferId}/returns:
     post:
       tags:
@@ -551,7 +693,7 @@ paths:
         a new `transferId`.
       x-addedInVersion: '3'
       operationId: post-transfers-transferId-returns
-      x-sortIndex: 2
+      x-sortIndex: 4
       x-methodName: returnTransfer
       security:
       - clientKey: []
@@ -705,6 +847,16 @@ components:
       - value
       - currency
       type: object
+    ApproveTransfersRequest:
+      additionalProperties: false
+      properties:
+        transferIds:
+          description: Contains the unique identifiers of the transfers that you want
+            to approve.
+          items:
+            type: string
+          type: array
+      type: object
     BRLocalAccountIdentification:
       additionalProperties: false
       properties:
@@ -842,6 +994,16 @@ components:
       - type
       - accountNumber
       - bankCode
+      type: object
+    CancelTransfersRequest:
+      additionalProperties: false
+      properties:
+        transferIds:
+          description: Contains the unique identifiers of the transfers that you want
+            to cancel.
+          items:
+            type: string
+          type: array
       type: object
     CapitalBalance:
       additionalProperties: false
@@ -1101,6 +1263,28 @@ components:
       - type
       - accountNumber
       - bankCode
+      type: object
+    DirectDebitInformation:
+      additionalProperties: false
+      properties:
+        dateOfSignature:
+          description: The date when the direct debit mandate was accepted by your
+            user, in [ISO-8601](https://www.w3.org/TR/NOTE-datetime) format.
+          format: date-time
+          type: string
+        dueDate:
+          description: The date when the funds are deducted from your user's balance
+            account.
+          format: date-time
+          type: string
+        mandateId:
+          description: Your unique identifier for the direct debit mandate.
+          type: string
+        sequenceType:
+          description: 'Identifies the direct debit transfer''s type.
+
+            Possible values: **OneOff**, **First**, **Recurring**, **Final**.'
+          type: string
       type: object
     Fee:
       additionalProperties: false
@@ -1925,6 +2109,10 @@ components:
             Supported characters for **regular** and **fast** transfers to a US counterparty:
             **[a-z] [A-Z] [0-9] & $ % # @** **~ = + - _ '' " ! ?**'
           type: string
+        directDebitInformation:
+          x-addedInVersion: '3'
+          description: The details of the direct debit.
+          $ref: '#/components/schemas/DirectDebitInformation'
         direction:
           x-addedInVersion: '2'
           description: 'The direction of the transfer.
@@ -1995,6 +2183,7 @@ components:
           x-addedInVersion: '2'
           description: Additional information about the status of the transfer.
           enum:
+          - accountHierarchyNotActive
           - amountLimitExceeded
           - approved
           - balanceAccountTemporarilyBlockedByTransactionRule
@@ -2006,12 +2195,15 @@ components:
           - counterpartyBankUnavailable
           - declined
           - declinedByTransactionRule
+          - directDebitNotSupported
           - error
           - notEnoughBalance
           - pendingApproval
+          - pendingExecution
           - refusedByCounterpartyBank
           - routeNotFound
           - scaFailed
+          - transferInstrumentDoesNotExist
           - unknown
           type: string
         reference:
@@ -2030,6 +2222,10 @@ components:
             \ on the `category`.\n\n - **internal**: 80 characters\n\n- **bank**:\
             \ 35 characters when transferring to an IBAN, 15 characters for others."
           type: string
+        review:
+          x-addedInVersion: '3'
+          description: Contains status updates related to additional reviews.
+          $ref: '#/components/schemas/TransferReview'
         status:
           x-addedInVersion: '2'
           description: "The result of the transfer.\n\n For example, **authorised**,\
@@ -2087,6 +2283,7 @@ components:
           - paymentCost
           - paymentCostPending
           - pendingApproval
+          - pendingExecution
           - received
           - refundPending
           - refundReversalPending
@@ -2267,6 +2464,10 @@ components:
             \ depends on the `category`.\n\n- **internal**: 80 characters\n\n- **bank**:\
             \ 35 characters when transferring to an IBAN, 15 characters for others."
           type: string
+        review:
+          x-addedInVersion: '3'
+          description: 'Contains information required for triggering transfer reviews. '
+          $ref: '#/components/schemas/TransferRequestReview'
         type:
           x-addedInVersion: '3'
           description: "The type of transfer.\n\nPossible values:\n\n - **bankTransfer**:\
@@ -2289,6 +2490,47 @@ components:
       - category
       - amount
       - counterparty
+      type: object
+    TransferRequestReview:
+      additionalProperties: false
+      properties:
+        numberOfApprovalsRequired:
+          description: Specifies the number of [approvals](https://docs.adyen.com/api-explorer/transfers/latest/post/transfers/approve)
+            required to process the transfer.
+          format: int32
+          type: integer
+        scaOnApproval:
+          description: 'Specifies whether you will initiate Strong Customer Authentication
+            (SCA) in thePOST [/transfers/approve](https://docs.adyen.com/api-explorer/transfers/latest/post/transfers/approve)
+            request.
+
+
+            Only applies to transfers made with an Adyen [business account](https://docs.adyen.com/platforms/business-accounts).'
+          type: boolean
+      type: object
+    TransferReview:
+      additionalProperties: false
+      properties:
+        numberOfApprovalsCompleted:
+          description: Shows the number of approvals completed for the transfer.
+          format: int32
+          type: integer
+        numberOfApprovalsRequired:
+          description: Shows the number of [approvals](https://docs.adyen.com/api-explorer/transfers/latest/post/transfers/approve)
+            required to process the transfer.
+          format: int32
+          type: integer
+        scaOnApproval:
+          description: 'Shows the status of the Strong Customer Authentication (SCA)
+            process.
+
+
+            Possible values: **required**, **completed**, **notApplicable**.'
+          enum:
+          - completed
+          - notApplicable
+          - required
+          type: string
       type: object
     TransferServiceRestServiceError:
       additionalProperties: false
