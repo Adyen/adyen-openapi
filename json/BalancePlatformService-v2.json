@@ -9,7 +9,7 @@
       "version" : "2",
       "x-publicVersion" : true,
       "title" : "Configuration API",
-      "description" : "The Configuration API enables you to create a platform where you can onboard your users as account holders and create balance accounts, cards, and business accounts.\n\n## Authentication\nYour Adyen contact will provide your API credential and an API key. To connect to the API, add an `X-API-Key` header with the API key as the value, for example:\n\n ```\ncurl\n-H \"Content-Type: application/json\" \\\n-H \"X-API-Key: YOUR_API_KEY\" \\\n...\n```\n\nAlternatively, you can use the username and password to connect to the API using basic authentication. For example:\n\n```\ncurl\n-H \"Content-Type: application/json\" \\\n-U \"ws@BalancePlatform.YOUR_BALANCE_PLATFORM\":\"YOUR_WS_PASSWORD\" \\\n...\n```\n## Versioning\nThe Configuration API supports [versioning](https://docs.adyen.com/development-resources/versioning) using a version suffix in the endpoint URL. This suffix has the following format: \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://balanceplatform-api-test.adyen.com/bcl/v2/accountHolders\n```\n## Going live\nWhen going live, your Adyen contact will provide your API credential for the live environment. You can then use the API key or the username and password to send requests to `https://balanceplatform-api-live.adyen.com/bcl/v2`.",
+      "description" : "The Configuration API allows you to manage your balance platform where you can create account holders, balance accounts, cards, and business accounts.\n\n## Authentication\nEach request to the Configuration API must be signed with an API key. Generate an API key in your Customer Area if you have a [platform setup](https://docs.adyen.com/platforms/manage-access/api-credentials-web-service/#generate-api-key) or [marketplace setup](https://docs.adyen.com/marketplaces/manage-access/api-credentials-web-service/#generate-api-key).\n\n If you have an Adyen Issuing integration, [generate an API key](https://docs.adyen.com/issuing/manage-access/api-credentials-web-service/#generate-api-key) in your Balance Platform Customer Area.\n\nTo connect to the API, add an `X-API-Key` header with the API key as the value, for example:\n\n ```\ncurl\n-H \"Content-Type: application/json\" \\\n-H \"X-API-Key: YOUR_API_KEY\" \\\n...\n```\n\n## Versioning\nThe Configuration API supports [versioning](https://docs.adyen.com/development-resources/versioning) using a version suffix in the endpoint URL. This suffix has the following format: \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://balanceplatform-api-test.adyen.com/bcl/v2/accountHolders\n```\n## Going live\nWhen going live, generate an API key in your [live Customer Area](https://ca-live.adyen.com/ca/) if you have an Adyen for Platforms integration or [live Balance Platform Customer Area](https://balanceplatform-live.adyen.com/balanceplatform/) if you have an Adyen Issuing integration.You can then use the API key to send requests to `https://balanceplatform-api-live.adyen.com/bcl/v2`.",
       "termsOfService" : "https://www.adyen.com/legal/terms-and-conditions",
       "contact" : {
          "name" : "Adyen Developer Experience team",
@@ -7288,6 +7288,10 @@
                   "description" : "The bank account type.\n\nPossible values: **checking** or **savings**. Defaults to **checking**.",
                   "type" : "string"
                },
+               "branchNumber" : {
+                  "description" : "The bank account branch number, without separators or whitespace",
+                  "type" : "string"
+               },
                "formFactor" : {
                   "default" : "physical",
                   "description" : "Business accounts with a `formFactor` value of **physical** are business accounts issued under the central bank of that country. The default value is **physical** for NL, US, and UK business accounts. \n\nAdyen creates a local IBAN for business accounts when the `formFactor` value is set to **virtual**. The local IBANs that are supported are for DE and FR, which reference a physical NL account, with funds being routed through the central bank of NL.",
@@ -8214,6 +8218,7 @@
                "reason" : {
                   "description" : "The reason for disabling the sweep.",
                   "enum" : [
+                     "accountHierarchyNotActive",
                      "amountLimitExceeded",
                      "approved",
                      "balanceAccountTemporarilyBlockedByTransactionRule",
@@ -8225,12 +8230,15 @@
                      "counterpartyBankUnavailable",
                      "declined",
                      "declinedByTransactionRule",
+                     "directDebitNotSupported",
                      "error",
                      "notEnoughBalance",
                      "pendingApproval",
+                     "pendingExecution",
                      "refusedByCounterpartyBank",
                      "routeNotFound",
                      "scaFailed",
+                     "transferInstrumentDoesNotExist",
                      "unknown"
                   ],
                   "readOnly" : true,
@@ -9802,7 +9810,7 @@
                   "type" : "string"
                },
                "settlementDelayDays" : {
-                  "description" : "Specifies after how many business days the funds in a [settlement batch](https://docs.adyen.com/platforms/settle-funds/sales-day-settlement#settlement-batch) are made available in this balance account.\n\nPossible values: **0** to **10**, or **null**.\n* Setting this value to an integer enables Sales day settlement in this balance account. See how Sales day settlement works in your [marketplace](https://docs.adyen.com/marketplaces/settle-funds/sales-day-settlement) or [platform](https://docs.adyen.com/platforms/settle-funds/sales-day-settlement).\n* Setting this value to **null** enables Pass-through settlement in this balance account. See how Pass-through settlement works in your [marketplace](https://docs.adyen.com/marketplaces/settle-funds/pass-through-settlement) or [platform](https://docs.adyen.com/platforms/settle-funds/pass-through-settlement).\n\nDefault value: **null**.",
+                  "description" : "Specifies after how many business days the funds in a [settlement batch](https://docs.adyen.com/platforms/settle-funds/sales-day-settlement#settlement-batch) are made available in this balance account.\n\nPossible values: **1** to **10**, or **null**.\n* Setting this value to an integer enables Sales day settlement in this balance account. See how Sales day settlement works in your [marketplace](https://docs.adyen.com/marketplaces/settle-funds/sales-day-settlement) or [platform](https://docs.adyen.com/platforms/settle-funds/sales-day-settlement).\n* Setting this value to **null** enables Pass-through settlement in this balance account. See how Pass-through settlement works in your [marketplace](https://docs.adyen.com/marketplaces/settle-funds/pass-through-settlement) or [platform](https://docs.adyen.com/platforms/settle-funds/pass-through-settlement).\n\nDefault value: **null**.",
                   "format" : "int32",
                   "type" : "integer"
                }
@@ -9870,6 +9878,10 @@
          "RegisterSCARequest" : {
             "additionalProperties" : false,
             "properties" : {
+               "name" : {
+                  "description" : "The name of the SCA device that you are registering. You can use it to help your users identify the device.\n\nIf you do not specify a `name`, Adyen automatically generates one.",
+                  "type" : "string"
+               },
                "paymentInstrumentId" : {
                   "description" : "The unique identifier of the payment instrument for which you are registering the SCA device.",
                   "type" : "string"
@@ -10273,6 +10285,7 @@
                "reason" : {
                   "description" : "The reason for disabling the sweep.",
                   "enum" : [
+                     "accountHierarchyNotActive",
                      "amountLimitExceeded",
                      "approved",
                      "balanceAccountTemporarilyBlockedByTransactionRule",
@@ -10284,12 +10297,15 @@
                      "counterpartyBankUnavailable",
                      "declined",
                      "declinedByTransactionRule",
+                     "directDebitNotSupported",
                      "error",
                      "notEnoughBalance",
                      "pendingApproval",
+                     "pendingExecution",
                      "refusedByCounterpartyBank",
                      "routeNotFound",
                      "scaFailed",
+                     "transferInstrumentDoesNotExist",
                      "unknown"
                   ],
                   "readOnly" : true,
@@ -10481,7 +10497,7 @@
                },
                "outcomeType" : {
                   "x-addedInVersion" : "2",
-                  "description" : "The [outcome](https://docs.adyen.com/issuing/transaction-rules#outcome) that will be applied when a transaction meets the conditions of the rule. If not provided, by default, this is set to **hardBlock**.\n\nPossible values:\n\n * **hardBlock**: the transaction is declined.\n\n* **scoreBased**: the transaction is assigned the `score` you specified. Adyen calculates the total score and if it exceeds 100, the transaction is declined.",
+                  "description" : "The [outcome](https://docs.adyen.com/issuing/transaction-rules#outcome) that will be applied when a transaction meets the conditions of the rule.\n\nPossible values:\n* **hardBlock**: the transaction is declined.\n* **scoreBased**: the transaction is assigned the `score` you specified. Adyen calculates the total score and if it exceeds 100, declines the Transaction.\n\nDefault value: **hardBlock**.\n\n> **scoreBased** is not allowed when `requestType` is **bankTransfer**.",
                   "enum" : [
                      "enforceSCA",
                      "hardBlock",
@@ -10592,7 +10608,7 @@
                },
                "outcomeType" : {
                   "x-addedInVersion" : "2",
-                  "description" : "The [outcome](https://docs.adyen.com/issuing/transaction-rules#outcome) that will be applied when a transaction meets the conditions of the rule. If not provided, by default, this is set to **hardBlock**.\n\nPossible values:\n\n * **hardBlock**: the transaction is declined.\n\n* **scoreBased**: the transaction is assigned the `score` you specified. Adyen calculates the total score and if it exceeds 100, the transaction is declined.",
+                  "description" : "The [outcome](https://docs.adyen.com/issuing/transaction-rules#outcome) that will be applied when a transaction meets the conditions of the rule.\n\nPossible values:\n* **hardBlock**: the transaction is declined.\n* **scoreBased**: the transaction is assigned the `score` you specified. Adyen calculates the total score and if it exceeds 100, declines the Transaction.\n\nDefault value: **hardBlock**.\n\n> **scoreBased** is not allowed when `requestType` is **bankTransfer**.",
                   "enum" : [
                      "enforceSCA",
                      "hardBlock",
@@ -10768,7 +10784,7 @@
                   "$ref" : "#/components/schemas/MatchingTransactionsRestriction"
                },
                "matchingValues" : {
-                  "description" : "Checks if a user has recently made multiple transfers with the specified values.\n\nTo use this restriction, you must:\n\n- Set the rule `type` to **velocity**.\n\n- Specify a time `interval`.\n\n- Specify a number of `matchingTransactions`.\n\n- Supported values: **merchantId** **acquirerId**Supported operation: **allMatch**.",
+                  "description" : "Checks if a user has recently made multiple transfers with the specified values.\n\nTo use this restriction, you must:\n\n- Set the rule `type` to **velocity**.\n\n- Specify a time `interval`.\n\n- Specify a number of `matchingTransactions`.\n\nSupported operation: **allMatch**.\n\nSupported value inputs:\n- **merchantId** and **acquirerId**\n- **amount** and **currency**\n- **merchantName**.",
                   "$ref" : "#/components/schemas/MatchingValuesRestriction"
                },
                "mccs" : {
@@ -11184,6 +11200,7 @@
                "reason" : {
                   "description" : "The reason for disabling the sweep.",
                   "enum" : [
+                     "accountHierarchyNotActive",
                      "amountLimitExceeded",
                      "approved",
                      "balanceAccountTemporarilyBlockedByTransactionRule",
@@ -11195,12 +11212,15 @@
                      "counterpartyBankUnavailable",
                      "declined",
                      "declinedByTransactionRule",
+                     "directDebitNotSupported",
                      "error",
                      "notEnoughBalance",
                      "pendingApproval",
+                     "pendingExecution",
                      "refusedByCounterpartyBank",
                      "routeNotFound",
                      "scaFailed",
+                     "transferInstrumentDoesNotExist",
                      "unknown"
                   ],
                   "readOnly" : true,
@@ -11280,6 +11300,7 @@
                         "issueCard",
                         "issueCardCommercial",
                         "issueCardConsumer",
+                        "issueCreditLimit",
                         "localAcceptance",
                         "payout",
                         "payoutToTransferInstrument",
@@ -11364,6 +11385,7 @@
                         "issueCard",
                         "issueCardCommercial",
                         "issueCardConsumer",
+                        "issueCreditLimit",
                         "localAcceptance",
                         "payout",
                         "payoutToTransferInstrument",
@@ -11460,6 +11482,7 @@
                         "issueCard",
                         "issueCardCommercial",
                         "issueCardConsumer",
+                        "issueCreditLimit",
                         "localAcceptance",
                         "payout",
                         "payoutToTransferInstrument",
@@ -13102,7 +13125,7 @@
          },
          "post-transactionRules-createTransactionRuleLimitTransaction" : {
             "summary" : "Limit international payments",
-            "description" : "Example request to limit total amount of international transations",
+            "description" : "Example request to limit total amount of international transactions",
             "value" : {
                "description" : "Up to 50 EUR international transactions",
                "reference" : "YOUR_REFERENCE_B2634",
@@ -13133,7 +13156,7 @@
          },
          "post-transactionRules-createTransactionRuleLimitTransaction-200" : {
             "summary" : "Transaction rule for limiting international payments",
-            "description" : "Example response to limit total amount of international transations",
+            "description" : "Example response to limit total amount of international transactions",
             "value" : {
                "description" : "Up to 50 EUR international transactions",
                "entityKey" : {
