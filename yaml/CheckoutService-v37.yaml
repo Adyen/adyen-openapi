@@ -236,12 +236,15 @@ paths:
     post:
       tags:
       - Payments
-      summary: Get the list of brands on the card
-      description: 'Send a request with at least the first 6 digits of the card number
-        to get a response with an array of brands on the card. If you include [your
-        supported brands](https://docs.adyen.com/api-explorer/#/CheckoutService/latest/post/cardDetails__reqParam_supportedBrands)
+      summary: Get the brands and other details of a card
+      description: 'Use this endpoint to get information about the card or network
+        token that enables you to decideon the routing of the transaction and the
+        eligibility of the card for the type of transaction.
+
+
+        If you include [your supported brands](https://docs.adyen.com/api-explorer/#/CheckoutService/latest/post/cardDetails__reqParam_supportedBrands)
         in the request, the response also tells you if you support each [brand that
-        was identified](https://docs.adyen.com/api-explorer/#/CheckoutService/latest/post/cardDetails__resParam_details).
+        was identified on the card](https://docs.adyen.com/api-explorer/#/CheckoutService/latest/post/cardDetails__resParam_details).
 
 
         If you have an API-only integration and collect card data, use this endpoint
@@ -3774,6 +3777,7 @@ components:
 
             The value returned as `configuration.merchantName` field from the [`/paymentMethods`](https://docs.adyen.com/api-explorer/#/CheckoutService/latest/post/paymentMethods)
             response.'
+          maxLength: 64
           type: string
         domainName:
           description: 'The domain name you provided when you added Apple Pay in your
@@ -4576,9 +4580,8 @@ components:
       additionalProperties: false
       properties:
         cardNumber:
-          description: "A minimum of the first 8 digits of the card number and a maximum\
-            \ of the full card number. 11 digits gives the best result. \n\nYou must\
-            \ be [fully PCI compliant](https://docs.adyen.com/development-resources/pci-dss-compliance-guide)\
+          description: "A minimum of the first eight digits of the card number. The\
+            \ full card number gives the best result. \n\nYou must be [fully PCI compliant](https://docs.adyen.com/development-resources/pci-dss-compliance-guide)\
             \ to collect raw card data."
           type: string
         countryCode:
@@ -4772,6 +4775,65 @@ components:
           - cellulant
           type: string
       title: Cellulant
+      type: object
+    CheckoutBankAccount:
+      additionalProperties: false
+      properties:
+        accountType:
+          description: The type of the bank account.
+          enum:
+          - balance
+          - checking
+          - deposit
+          - general
+          - other
+          - payment
+          - savings
+          type: string
+        bankAccountNumber:
+          description: The bank account number (without separators).
+          type: string
+        bankCity:
+          description: The bank city.
+          type: string
+        bankLocationId:
+          description: The location id of the bank. The field value is `nil` in most
+            cases.
+          type: string
+        bankName:
+          description: The name of the bank.
+          type: string
+        bic:
+          description: The [Business Identifier Code](https://en.wikipedia.org/wiki/ISO_9362)
+            (BIC) is the SWIFT address assigned to a bank. The field value is `nil`
+            in most cases.
+          type: string
+        countryCode:
+          description: 'Country code where the bank is located.
+
+
+            A valid value is an ISO two-character country code (e.g. ''NL'').'
+          type: string
+        iban:
+          description: The [International Bank Account Number](https://en.wikipedia.org/wiki/International_Bank_Account_Number)
+            (IBAN).
+          type: string
+        ownerName:
+          description: "The name of the bank account holder.\nIf you submit a name\
+            \ with non-Latin characters, we automatically replace some of them with\
+            \ corresponding Latin characters to meet the FATF recommendations. For\
+            \ example:\n* \u03C712 is converted to ch12.\n* \xFCA is converted to\
+            \ euA.\n* Peter M\xF8ller is converted to Peter Mller, because banks don't\
+            \ accept '\xF8'.\nAfter replacement, the ownerName must have at least\
+            \ three alphanumeric characters (A-Z, a-z, 0-9), and at least one of them\
+            \ must be a valid Latin character (A-Z, a-z). For example:\n* John17 -\
+            \ allowed.\n* J17 - allowed.\n* 171 - not allowed.\n* John-7 - allowed.\n\
+            > If provided details don't match the required format, the response returns\
+            \ the error message: 203 'Invalid bank account holder name'."
+          type: string
+        taxId:
+          description: The bank account holder's tax ID.
+          type: string
       type: object
     CheckoutOrderResponse:
       additionalProperties: false
@@ -7746,6 +7808,12 @@ components:
           description: The merchant account identifier, with which you want to process
             the transaction.
           type: string
+        shopperConversionId:
+          description: A unique ID that can be used to associate `/paymentMethods`
+            and `/payments` requests with the same shopper transaction, offering insights
+            into conversion rates.
+          maxLength: 256
+          type: string
         shopperLocale:
           x-addedInVersion: '7'
           description: The combination of a language code and a country code to specify
@@ -7962,6 +8030,12 @@ components:
             For [BIN or card verification](https://docs.adyen.com/payment-methods/cards/bin-data-and-card-verification)
             requests, set amount to 0 (zero).
           $ref: '#/components/schemas/Amount'
+        bankAccount:
+          description: 'The details of the bank account, from which the payment should
+            be made.
+
+            > Either `bankAccount` or `card` field must be provided in a payment request.'
+          $ref: '#/components/schemas/CheckoutBankAccount'
         billingAddress:
           description: 'The address where to send the invoice.
 
@@ -8188,6 +8262,7 @@ components:
           - $ref: '#/components/schemas/PayWithGoogleDetails'
           - $ref: '#/components/schemas/PaymentDetails'
           - $ref: '#/components/schemas/RatepayDetails'
+          - $ref: '#/components/schemas/RivertyDetails'
           - $ref: '#/components/schemas/SamsungPayDetails'
           - $ref: '#/components/schemas/SepaDirectDebitDetails'
           - $ref: '#/components/schemas/StoredPaymentMethodDetails'
@@ -8269,6 +8344,12 @@ components:
 
 
             For example: 2020-07-18T15:42:40.428+01:00'
+          type: string
+        shopperConversionId:
+          description: A unique ID that can be used to associate `/paymentMethods`
+            and `/payments` requests with the same shopper transaction, offering insights
+            into conversion rates.
+          maxLength: 256
           type: string
         shopperEmail:
           description: 'The shopper''s email address. We recommend that you provide
@@ -9477,6 +9558,43 @@ components:
           maxLength: 5000
           type: string
       type: object
+    RivertyDetails:
+      additionalProperties: false
+      properties:
+        billingAddress:
+          description: The address where to send the invoice.
+          type: string
+        deliveryAddress:
+          description: The address where the goods should be delivered.
+          type: string
+        deviceFingerprint:
+          description: A string containing the shopper's device fingerprint. For more
+            information, refer to [Device fingerprinting](https://docs.adyen.com/risk-management/device-fingerprinting).
+          maxLength: 5000
+          type: string
+        iban:
+          description: 'The iban number of the customer '
+          maxLength: 34
+          type: string
+        personalDetails:
+          description: Shopper name, date of birth, phone number, and email address.
+          type: string
+        recurringDetailReference:
+          description: This is the `recurringDetailReference` returned in the response
+            when you created the token.
+          type: string
+        type:
+          default: riverty
+          description: '**riverty**'
+          enum:
+          - riverty
+          - riverty_account
+          - sepadirectdebit_riverty
+          type: string
+      required:
+      - type
+      title: Riverty
+      type: object
     SamsungPayDetails:
       additionalProperties: false
       properties:
@@ -10371,6 +10489,9 @@ components:
           supported: true
         - type: cartebancaire
           supported: true
+        fundingSource: CREDIT
+        isCardCommercial: false
+        issuingCountryCode: FR
     post-cardDetails-supported-brands:
       summary: Get a list of brands on a card specifying your supported card brands
       description: Example request for getting a list of brands on a card using the
@@ -10392,6 +10513,9 @@ components:
           supported: true
         - type: cartebancaire
           supported: false
+        fundingSource: CREDIT
+        isCardCommercial: false
+        issuingCountryCode: FR
     post-donations-donations:
       summary: Start a donation transaction
       value:
