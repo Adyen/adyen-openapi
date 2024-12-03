@@ -32,9 +32,9 @@ tags:
 - name: Business lines
 - name: Documents
 - name: Terms of Service
+- name: PCI questionnaires
 - name: Tax eDelivery consent
 - name: Hosted Onboarding
-- name: PCI questionnaires
 paths:
   /businessLines:
     post:
@@ -595,6 +595,8 @@ paths:
                 $ref: '#/components/examples/post-legalEntities-createLegalEntitySolePropUS'
               createTrustAU:
                 $ref: '#/components/examples/post-legalEntities-createTrustAU'
+              createUnincorporatedPartnershipAU:
+                $ref: '#/components/examples/post-legalEntities-createUnincorporatedPartnershipAU'
             schema:
               $ref: '#/components/schemas/LegalEntityInfoRequiredType'
       parameters:
@@ -627,6 +629,8 @@ paths:
                   $ref: '#/components/examples/post-legalEntities-createLegalEntitySolePropUS-200'
                 createTrustAU:
                   $ref: '#/components/examples/post-legalEntities-createTrustAU-200'
+                createUnincorporatedPartnershipAU:
+                  $ref: '#/components/examples/post-legalEntities-createUnincorporatedPartnershipAU-200'
               schema:
                 $ref: '#/components/schemas/LegalEntity'
           description: OK - the request has succeeded.
@@ -1374,6 +1378,68 @@ paths:
                   $ref: '#/components/examples/post-legalEntities-id-pciQuestionnaires-signPciTemplates-signPciQuestionnaire-200'
               schema:
                 $ref: '#/components/schemas/PciSigningResponse'
+          description: OK - the request has succeeded.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Bad Request - a problem reading or understanding the request.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Unauthorized - authentication required.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Forbidden - insufficient permissions to process the request.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Unprocessable Entity - a request validation error.
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Internal Server Error - the server could not process the request.
+  /legalEntities/{id}/pciQuestionnaires/signingRequired:
+    post:
+      tags:
+      - PCI questionnaires
+      summary: Calculate PCI status of a legal entity
+      description: Calculate PCI status of a legal entity.
+      x-addedInVersion: '1'
+      operationId: post-legalEntities-id-pciQuestionnaires-signingRequired
+      x-sortIndex: 5
+      x-methodName: calculatePciStatusOfLegalEntity
+      security:
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CalculatePciStatusRequest'
+      parameters:
+      - description: The unique identifier of the legal entity to calculate PCI status.
+        name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalculatePciStatusResponse'
           description: OK - the request has succeeded.
         '400':
           content:
@@ -2737,6 +2803,46 @@ components:
       - accountNumber
       - bankCode
       type: object
+    CalculatePciStatusRequest:
+      additionalProperties: false
+      properties:
+        additionalSalesChannels:
+          description: 'An array of additional sales channels to generate PCI questionnaires.
+            Include the relevant sales channels if you need your user to sign PCI
+            questionnaires. Not required if you [create stores](https://docs.adyen.com/platforms)
+            and [add payment methods](https://docs.adyen.com/adyen-for-platforms-model)
+            before you generate the questionnaires.
+
+
+            Possible values:
+
+            *  **eCommerce**
+
+            *  **pos**
+
+            *  **ecomMoto**
+
+            *  **posMoto**
+
+
+            '
+          items:
+            enum:
+            - eCommerce
+            - ecomMoto
+            - pos
+            - posMoto
+            type: string
+          type: array
+      type: object
+    CalculatePciStatusResponse:
+      additionalProperties: false
+      properties:
+        signingRequired:
+          description: Indicates if the user is required to sign PCI questionnaires.
+            If **false**, they do not need to sign any questionnaires.
+          type: boolean
+      type: object
     CalculateTermsOfServiceStatusResponse:
       additionalProperties: false
       properties:
@@ -2956,7 +3062,10 @@ components:
             **proofOfAddress**, or **proofOfIndustry**.
 
 
-            * For **trust**, the `type` value can be **constitutionalDocument**.
+            * For **trust**, the `type` value is **constitutionalDocument**.
+
+
+            * For **unincorporatedPartnership**, the `type` value is **constitutionalDocument**.
 
 
             * Use **bankStatement** to upload documents for a [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments__resParam_id).'
@@ -3086,6 +3195,7 @@ components:
           type: string
         pciTemplateReferences:
           description: The array of Adyen-generated unique identifiers for the questionnaires.
+            If empty, the user is not required to sign questionnaires.
           items:
             type: string
           type: array
@@ -3487,6 +3597,10 @@ components:
           - trust
           - unincorporatedPartnership
           type: string
+        unincorporatedPartnership:
+          description: Information about the unincorporated partnership. Required
+            if `type` is **unincorporatedPartnership**.
+          $ref: '#/components/schemas/UnincorporatedPartnership'
         verificationDeadlines:
           x-addedInVersion: '3'
           description: List of verification deadlines and the capabilities that will
@@ -3570,7 +3684,14 @@ components:
 
 
             Possible values for trust members: **definedBeneficiary**, **protector**,
-            **secondaryTrustee**, **settlor**, **uboThroughControl**, or **uboThroughOwnership**.'
+            **secondaryTrustee**, **settlor**, **uboThroughControl**, or **uboThroughOwnership**.
+
+
+            Possible value for unincorporated partnership: **unincorporatedPartnership**.
+
+
+            Possible values for unincorporated partnership members: **secondaryPartner**,
+            **uboThroughControl**, **uboThroughOwnership**'
           enum:
           - definedBeneficiary
           - director
@@ -3578,6 +3699,7 @@ components:
           - legalRepresentative
           - pciSignatory
           - protector
+          - secondaryPartner
           - secondaryTrustee
           - settlor
           - signatory
@@ -3588,6 +3710,7 @@ components:
           - uboThroughOwnership
           - ultimateParentCompany
           - undefinedBeneficiary
+          - unincorporatedPartnership
           type: string
       required:
       - legalEntityId
@@ -3725,6 +3848,10 @@ components:
           - trust
           - unincorporatedPartnership
           type: string
+        unincorporatedPartnership:
+          description: Information about the unincorporated partnership. Required
+            if `type` is **unincorporatedPartnership**.
+          $ref: '#/components/schemas/UnincorporatedPartnership'
         verificationPlan:
           description: A key-value pair that specifies the verification process for
             a legal entity. Set to **upfront** for upfront verification for [marketplaces](https://docs.adyen.com/marketplaces/verification-overview/verification-types/#upfront-verification).
@@ -3778,6 +3905,10 @@ components:
           - trust
           - unincorporatedPartnership
           type: string
+        unincorporatedPartnership:
+          description: Information about the unincorporated partnership. Required
+            if `type` is **unincorporatedPartnership**.
+          $ref: '#/components/schemas/UnincorporatedPartnership'
         verificationPlan:
           description: A key-value pair that specifies the verification process for
             a legal entity. Set to **upfront** for upfront verification for [marketplaces](https://docs.adyen.com/marketplaces/verification-overview/verification-types/#upfront-verification).
@@ -4894,6 +5025,156 @@ components:
           description: The reference of the undefined beneficiary.
           readOnly: true
           type: string
+      type: object
+    UnincorporatedPartnership:
+      additionalProperties: false
+      properties:
+        countryOfGoverningLaw:
+          description: The two-character [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)
+            country code of the governing country.
+          type: string
+        dateOfIncorporation:
+          x-addedInVersion: '2'
+          description: The date when the legal arrangement was incorporated in YYYY-MM-DD
+            format.
+          type: string
+        description:
+          x-addedInVersion: '3'
+          description: Short description about the Legal Arrangement.
+          type: string
+        doingBusinessAs:
+          description: The registered name, if different from the `name`.
+          type: string
+        name:
+          description: The legal name.
+          type: string
+        principalPlaceOfBusiness:
+          description: The business address. Required if the principal place of business
+            is different from the `registeredAddress`.
+          $ref: '#/components/schemas/Address'
+        registeredAddress:
+          description: The address registered at the registrar, such as the Chamber
+            of Commerce.
+          $ref: '#/components/schemas/Address'
+        registrationNumber:
+          description: The registration number.
+          type: string
+        taxInformation:
+          x-addedInVersion: '2'
+          description: The tax information of the entity.
+          items:
+            $ref: '#/components/schemas/TaxInformation'
+          type: array
+        type:
+          description: 'Type of Partnership.
+
+
+            Possible values:
+
+            *  **limitedPartnership**
+
+            *  **generalPartnership**
+
+            *  **familyPartnership**
+
+            *  **commercialPartnership**
+
+            *  **publicPartnership**
+
+            *  **otherPartnership**
+
+            *  **gbr**
+
+            *  **gmbh**
+
+            *  **kgaa**
+
+            *  **cv**
+
+            *  **vof**
+
+            *  **maatschap**
+
+            *  **privateFundLimitedPartnership**
+
+            *  **businessTrustEntity**
+
+            *  **businessPartnership**
+
+            *  **limitedLiabilityPartnership**
+
+            *  **eg**
+
+            *  **cooperative**
+
+            *  **vos**
+
+            *  **comunidadDeBienes**
+
+            *  **herenciaYacente**
+
+            *  **comunidadDePropietarios**
+
+            *  **sep**
+
+            *  **sca**
+
+            *  **bt**
+
+            *  **kkt**
+
+            *  **scs**
+
+            *  **snc**
+
+
+            '
+          enum:
+          - limitedPartnership
+          - generalPartnership
+          - familyPartnership
+          - commercialPartnership
+          - publicPartnership
+          - otherPartnership
+          - gbr
+          - gmbh
+          - kgaa
+          - cv
+          - vof
+          - maatschap
+          - privateFundLimitedPartnership
+          - businessTrustEntity
+          - businessPartnership
+          - limitedLiabilityPartnership
+          - eg
+          - cooperative
+          - vos
+          - comunidadDeBienes
+          - herenciaYacente
+          - comunidadDePropietarios
+          - sep
+          - sca
+          - bt
+          - kkt
+          - scs
+          - snc
+          type: string
+        vatAbsenceReason:
+          description: 'The reason for not providing a VAT number.
+
+
+            Possible values: **industryExemption**, **belowTaxThreshold**.'
+          enum:
+          - industryExemption
+          - belowTaxThreshold
+          type: string
+        vatNumber:
+          description: The VAT number.
+          type: string
+      required:
+      - name
+      - countryOfGoverningLaw
+      - registeredAddress
       type: object
     VerificationDeadline:
       additionalProperties: false
@@ -6111,6 +6392,62 @@ components:
             reference: SE322KH223222J5HJ6JRB75HQ
         type: trust
         id: LE322KH223222J5HJ6JRB75C5
+    post-legalEntities-createUnincorporatedPartnershipAU:
+      summary: Create a legal entity for an unincorporated partnership in Australia
+      description: Example request for creating a legal entity for an unincorporated
+        partnership in Australia
+      value:
+        type: unincorporatedPartnership
+        unincorporatedPartnership:
+          name: West Family Partnership
+          type: familyPartnership
+          doingBusinessAs: ''
+          countryOfGoverningLaw: AU
+          taxInformation:
+          - country: AU
+            type: ABN
+            number: '12345678901'
+          registeredAddress:
+            street: ' 53 Winterfield Avenue'
+            city: Sydney
+            postalCode: '1197'
+            stateOrProvince: NSW
+            country: AU
+          principalPlaceOfBusiness:
+            street: 'East City Street '
+            street2: '222'
+            city: Sydney
+            postalCode: '5566'
+            stateOrProvince: NSW
+            country: AU
+    post-legalEntities-createUnincorporatedPartnershipAU-200:
+      summary: Unincorporated partnership legal entity created
+      description: Example response for creating a legal entity for an unincorporated
+        partnership in Australia
+      value:
+        unincorporatedPartnership:
+          countryOfGoverningLaw: AU
+          doingBusinessAs: ''
+          name: West Family Partnership
+          registeredAddress:
+            city: Sydney
+            country: AU
+            postalCode: '1197'
+            stateOrProvince: NSW
+            street: Winterfield Avenue
+          principalPlaceOfBusiness:
+            street: 53 Winterfield Avenue
+            city: Sydney
+            postalCode: '1197'
+            stateOrProvince: NSW
+            country: AU
+          taxInformation:
+          - country: AU
+            number: '12345678901'
+            type: ABN
+          type: familyPartnership
+        type: unincorporatedPartnership
+        id: LE322KH223222J5HJ6JRB78K8
     post-legalEntities-id-checkVerificationErrors-checkVerificationErrors-200:
       summary: Verification errors for a legal entity
       description: Example response when checking the verification errors of a legal

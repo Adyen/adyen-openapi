@@ -33,13 +33,13 @@
          "name" : "Terms of Service"
       },
       {
+         "name" : "PCI questionnaires"
+      },
+      {
          "name" : "Tax eDelivery consent"
       },
       {
          "name" : "Hosted Onboarding"
-      },
-      {
-         "name" : "PCI questionnaires"
       }
    ],
    "paths" : {
@@ -1780,6 +1780,111 @@
             }
          }
       },
+      "/legalEntities/{id}/pciQuestionnaires/signingRequired" : {
+         "post" : {
+            "tags" : [
+               "PCI questionnaires"
+            ],
+            "summary" : "Calculate PCI status of a legal entity",
+            "description" : "Calculate PCI status of a legal entity.",
+            "x-addedInVersion" : "1",
+            "operationId" : "post-legalEntities-id-pciQuestionnaires-signingRequired",
+            "x-sortIndex" : 5,
+            "x-methodName" : "calculatePciStatusOfLegalEntity",
+            "security" : [
+               {
+                  "BasicAuth" : [
+                     ]
+               },
+               {
+                  "ApiKeyAuth" : [
+                     ]
+               }
+            ],
+            "requestBody" : {
+               "content" : {
+                  "application/json" : {
+                     "schema" : {
+                        "$ref" : "#/components/schemas/CalculatePciStatusRequest"
+                     }
+                  }
+               }
+            },
+            "parameters" : [
+               {
+                  "description" : "The unique identifier of the legal entity to calculate PCI status.",
+                  "name" : "id",
+                  "in" : "path",
+                  "required" : true,
+                  "schema" : {
+                     "type" : "string"
+                  }
+               }
+            ],
+            "responses" : {
+               "200" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/CalculatePciStatusResponse"
+                        }
+                     }
+                  },
+                  "description" : "OK - the request has succeeded."
+               },
+               "400" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/ServiceError"
+                        }
+                     }
+                  },
+                  "description" : "Bad Request - a problem reading or understanding the request."
+               },
+               "401" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/ServiceError"
+                        }
+                     }
+                  },
+                  "description" : "Unauthorized - authentication required."
+               },
+               "403" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/ServiceError"
+                        }
+                     }
+                  },
+                  "description" : "Forbidden - insufficient permissions to process the request."
+               },
+               "422" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/ServiceError"
+                        }
+                     }
+                  },
+                  "description" : "Unprocessable Entity - a request validation error."
+               },
+               "500" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/ServiceError"
+                        }
+                     }
+                  },
+                  "description" : "Internal Server Error - the server could not process the request."
+               }
+            }
+         }
+      },
       "/legalEntities/{id}/pciQuestionnaires/{pciid}" : {
          "get" : {
             "tags" : [
@@ -3380,6 +3485,35 @@
             ],
             "type" : "object"
          },
+         "CalculatePciStatusRequest" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "additionalSalesChannels" : {
+                  "description" : "An array of additional sales channels to generate PCI questionnaires. Include the relevant sales channels if you need your user to sign PCI questionnaires. Not required if you [create stores](https://docs.adyen.com/platforms) and [add payment methods](https://docs.adyen.com/adyen-for-platforms-model) before you generate the questionnaires.\n\nPossible values:\n*  **eCommerce**\n*  **pos**\n*  **ecomMoto**\n*  **posMoto**\n\n",
+                  "items" : {
+                     "enum" : [
+                        "eCommerce",
+                        "ecomMoto",
+                        "pos",
+                        "posMoto"
+                     ],
+                     "type" : "string"
+                  },
+                  "type" : "array"
+               }
+            },
+            "type" : "object"
+         },
+         "CalculatePciStatusResponse" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "signingRequired" : {
+                  "description" : "Indicates if the user is required to sign PCI questionnaires. If **false**, they do not need to sign any questionnaires.",
+                  "type" : "boolean"
+               }
+            },
+            "type" : "object"
+         },
          "CalculateTermsOfServiceStatusResponse" : {
             "additionalProperties" : false,
             "properties" : {
@@ -3664,7 +3798,7 @@
                   "type" : "string"
                },
                "pciTemplateReferences" : {
-                  "description" : "The array of Adyen-generated unique identifiers for the questionnaires.",
+                  "description" : "The array of Adyen-generated unique identifiers for the questionnaires. If empty, the user is not required to sign questionnaires.",
                   "items" : {
                      "type" : "string"
                   },
@@ -3951,6 +4085,10 @@
                   ],
                   "type" : "string"
                },
+               "unincorporatedPartnership" : {
+                  "description" : "Information about the unincorporated partnership. Required if `type` is **unincorporatedPartnership**.",
+                  "$ref" : "#/components/schemas/UnincorporatedPartnership"
+               },
                "verificationPlan" : {
                   "description" : "A key-value pair that specifies the verification process for a legal entity. Set to **upfront** for upfront verification for [marketplaces](https://docs.adyen.com/marketplaces/verification-overview/verification-types/#upfront-verification).",
                   "type" : "string"
@@ -4000,11 +4138,12 @@
                   "type" : "array"
                },
                "type" : {
-                  "description" : "Defines the relationship of the legal entity to the current legal entity.\n\nPossible value for individuals: **legalRepresentative**.\n\nPossible values for organizations: **uboThroughOwnership**, **uboThroughControl**, **director**, **signatory**, or **ultimateParentCompany**.\n\nPossible values for sole proprietorships: **soleProprietorship**.\n\nPossible value for trusts: **trust**.\n\nPossible values for trust members: **definedBeneficiary**, **protector**, **secondaryTrustee**, **settlor**, **uboThroughControl**, or **uboThroughOwnership**.",
+                  "description" : "Defines the relationship of the legal entity to the current legal entity.\n\nPossible value for individuals: **legalRepresentative**.\n\nPossible values for organizations: **uboThroughOwnership**, **uboThroughControl**, **director**, **signatory**, or **ultimateParentCompany**.\n\nPossible values for sole proprietorships: **soleProprietorship**.\n\nPossible value for trusts: **trust**.\n\nPossible values for trust members: **definedBeneficiary**, **protector**, **secondaryTrustee**, **settlor**, **uboThroughControl**, or **uboThroughOwnership**.\n\nPossible value for unincorporated partnership: **unincorporatedPartnership**.\n\nPossible values for unincorporated partnership members: **secondaryPartner**, **uboThroughControl**, **uboThroughOwnership**",
                   "enum" : [
                      "definedBeneficiary",
                      "director",
                      "protector",
+                     "secondaryPartner",
                      "secondaryTrustee",
                      "settlor",
                      "signatory",
@@ -4126,6 +4265,10 @@
                   ],
                   "type" : "string"
                },
+               "unincorporatedPartnership" : {
+                  "description" : "Information about the unincorporated partnership. Required if `type` is **unincorporatedPartnership**.",
+                  "$ref" : "#/components/schemas/UnincorporatedPartnership"
+               },
                "verificationPlan" : {
                   "description" : "A key-value pair that specifies the verification process for a legal entity. Set to **upfront** for upfront verification for [marketplaces](https://docs.adyen.com/marketplaces/verification-overview/verification-types/#upfront-verification).",
                   "type" : "string"
@@ -4175,6 +4318,10 @@
                      "organization"
                   ],
                   "type" : "string"
+               },
+               "unincorporatedPartnership" : {
+                  "description" : "Information about the unincorporated partnership. Required if `type` is **unincorporatedPartnership**.",
+                  "$ref" : "#/components/schemas/UnincorporatedPartnership"
                },
                "verificationPlan" : {
                   "description" : "A key-value pair that specifies the verification process for a legal entity. Set to **upfront** for upfront verification for [marketplaces](https://docs.adyen.com/marketplaces/verification-overview/verification-types/#upfront-verification).",
@@ -4848,6 +4995,87 @@
                "countryOfGoverningLaw",
                "registeredAddress",
                "type"
+            ],
+            "type" : "object"
+         },
+         "UnincorporatedPartnership" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "countryOfGoverningLaw" : {
+                  "description" : "The two-character [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country code of the governing country.",
+                  "type" : "string"
+               },
+               "doingBusinessAs" : {
+                  "description" : "The registered name, if different from the `name`.",
+                  "type" : "string"
+               },
+               "name" : {
+                  "description" : "The legal name.",
+                  "type" : "string"
+               },
+               "principalPlaceOfBusiness" : {
+                  "description" : "The business address. Required if the principal place of business is different from the `registeredAddress`.",
+                  "$ref" : "#/components/schemas/Address"
+               },
+               "registeredAddress" : {
+                  "description" : "The address registered at the registrar, such as the Chamber of Commerce.",
+                  "$ref" : "#/components/schemas/Address"
+               },
+               "registrationNumber" : {
+                  "description" : "The registration number.",
+                  "type" : "string"
+               },
+               "type" : {
+                  "description" : "Type of Partnership.\n\nPossible values:\n*  **limitedPartnership**\n*  **generalPartnership**\n*  **familyPartnership**\n*  **commercialPartnership**\n*  **publicPartnership**\n*  **otherPartnership**\n*  **gbr**\n*  **gmbh**\n*  **kgaa**\n*  **cv**\n*  **vof**\n*  **maatschap**\n*  **privateFundLimitedPartnership**\n*  **businessTrustEntity**\n*  **businessPartnership**\n*  **limitedLiabilityPartnership**\n*  **eg**\n*  **cooperative**\n*  **vos**\n*  **comunidadDeBienes**\n*  **herenciaYacente**\n*  **comunidadDePropietarios**\n*  **sep**\n*  **sca**\n*  **bt**\n*  **kkt**\n*  **scs**\n*  **snc**\n\n",
+                  "enum" : [
+                     "limitedPartnership",
+                     "generalPartnership",
+                     "familyPartnership",
+                     "commercialPartnership",
+                     "publicPartnership",
+                     "otherPartnership",
+                     "gbr",
+                     "gmbh",
+                     "kgaa",
+                     "cv",
+                     "vof",
+                     "maatschap",
+                     "privateFundLimitedPartnership",
+                     "businessTrustEntity",
+                     "businessPartnership",
+                     "limitedLiabilityPartnership",
+                     "eg",
+                     "cooperative",
+                     "vos",
+                     "comunidadDeBienes",
+                     "herenciaYacente",
+                     "comunidadDePropietarios",
+                     "sep",
+                     "sca",
+                     "bt",
+                     "kkt",
+                     "scs",
+                     "snc"
+                  ],
+                  "type" : "string"
+               },
+               "vatAbsenceReason" : {
+                  "description" : "The reason for not providing a VAT number.\n\nPossible values: **industryExemption**, **belowTaxThreshold**.",
+                  "enum" : [
+                     "industryExemption",
+                     "belowTaxThreshold"
+                  ],
+                  "type" : "string"
+               },
+               "vatNumber" : {
+                  "description" : "The VAT number.",
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "name",
+               "countryOfGoverningLaw",
+               "registeredAddress"
             ],
             "type" : "object"
          },

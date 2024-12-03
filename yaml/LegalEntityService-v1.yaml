@@ -32,9 +32,9 @@ tags:
 - name: Business lines
 - name: Documents
 - name: Terms of Service
+- name: PCI questionnaires
 - name: Tax eDelivery consent
 - name: Hosted Onboarding
-- name: PCI questionnaires
 paths:
   /businessLines:
     post:
@@ -1079,6 +1079,68 @@ paths:
                   $ref: '#/components/examples/post-legalEntities-id-pciQuestionnaires-signPciTemplates-signPciQuestionnaire-200'
               schema:
                 $ref: '#/components/schemas/PciSigningResponse'
+          description: OK - the request has succeeded.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Bad Request - a problem reading or understanding the request.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Unauthorized - authentication required.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Forbidden - insufficient permissions to process the request.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Unprocessable Entity - a request validation error.
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+          description: Internal Server Error - the server could not process the request.
+  /legalEntities/{id}/pciQuestionnaires/signingRequired:
+    post:
+      tags:
+      - PCI questionnaires
+      summary: Calculate PCI status of a legal entity
+      description: Calculate PCI status of a legal entity.
+      x-addedInVersion: '1'
+      operationId: post-legalEntities-id-pciQuestionnaires-signingRequired
+      x-sortIndex: 5
+      x-methodName: calculatePciStatusOfLegalEntity
+      security:
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CalculatePciStatusRequest'
+      parameters:
+      - description: The unique identifier of the legal entity to calculate PCI status.
+        name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalculatePciStatusResponse'
           description: OK - the request has succeeded.
         '400':
           content:
@@ -2254,6 +2316,46 @@ components:
       required:
       - businessLines
       type: object
+    CalculatePciStatusRequest:
+      additionalProperties: false
+      properties:
+        additionalSalesChannels:
+          description: 'An array of additional sales channels to generate PCI questionnaires.
+            Include the relevant sales channels if you need your user to sign PCI
+            questionnaires. Not required if you [create stores](https://docs.adyen.com/platforms)
+            and [add payment methods](https://docs.adyen.com/adyen-for-platforms-model)
+            before you generate the questionnaires.
+
+
+            Possible values:
+
+            *  **eCommerce**
+
+            *  **pos**
+
+            *  **ecomMoto**
+
+            *  **posMoto**
+
+
+            '
+          items:
+            enum:
+            - eCommerce
+            - ecomMoto
+            - pos
+            - posMoto
+            type: string
+          type: array
+      type: object
+    CalculatePciStatusResponse:
+      additionalProperties: false
+      properties:
+        signingRequired:
+          description: Indicates if the user is required to sign PCI questionnaires.
+            If **false**, they do not need to sign any questionnaires.
+          type: boolean
+      type: object
     CalculateTermsOfServiceStatusResponse:
       additionalProperties: false
       properties:
@@ -2508,6 +2610,7 @@ components:
           type: string
         pciTemplateReferences:
           description: The array of Adyen-generated unique identifiers for the questionnaires.
+            If empty, the user is not required to sign questionnaires.
           items:
             type: string
           type: array
@@ -2789,6 +2892,10 @@ components:
           - individual
           - organization
           type: string
+        unincorporatedPartnership:
+          description: Information about the unincorporated partnership. Required
+            if `type` is **unincorporatedPartnership**.
+          $ref: '#/components/schemas/UnincorporatedPartnership'
         verificationPlan:
           description: A key-value pair that specifies the verification process for
             a legal entity. Set to **upfront** for upfront verification for [marketplaces](https://docs.adyen.com/marketplaces/verification-overview/verification-types/#upfront-verification).
@@ -2864,11 +2971,19 @@ components:
 
 
             Possible values for trust members: **definedBeneficiary**, **protector**,
-            **secondaryTrustee**, **settlor**, **uboThroughControl**, or **uboThroughOwnership**.'
+            **secondaryTrustee**, **settlor**, **uboThroughControl**, or **uboThroughOwnership**.
+
+
+            Possible value for unincorporated partnership: **unincorporatedPartnership**.
+
+
+            Possible values for unincorporated partnership members: **secondaryPartner**,
+            **uboThroughControl**, **uboThroughOwnership**'
           enum:
           - definedBeneficiary
           - director
           - protector
+          - secondaryPartner
           - secondaryTrustee
           - settlor
           - signatory
@@ -3001,6 +3116,10 @@ components:
           - individual
           - organization
           type: string
+        unincorporatedPartnership:
+          description: Information about the unincorporated partnership. Required
+            if `type` is **unincorporatedPartnership**.
+          $ref: '#/components/schemas/UnincorporatedPartnership'
         verificationPlan:
           description: A key-value pair that specifies the verification process for
             a legal entity. Set to **upfront** for upfront verification for [marketplaces](https://docs.adyen.com/marketplaces/verification-overview/verification-types/#upfront-verification).
@@ -3046,6 +3165,10 @@ components:
           - individual
           - organization
           type: string
+        unincorporatedPartnership:
+          description: Information about the unincorporated partnership. Required
+            if `type` is **unincorporatedPartnership**.
+          $ref: '#/components/schemas/UnincorporatedPartnership'
         verificationPlan:
           description: A key-value pair that specifies the verification process for
             a legal entity. Set to **upfront** for upfront verification for [marketplaces](https://docs.adyen.com/marketplaces/verification-overview/verification-types/#upfront-verification).
@@ -3722,6 +3845,141 @@ components:
       - countryOfGoverningLaw
       - registeredAddress
       - type
+      type: object
+    UnincorporatedPartnership:
+      additionalProperties: false
+      properties:
+        countryOfGoverningLaw:
+          description: The two-character [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)
+            country code of the governing country.
+          type: string
+        doingBusinessAs:
+          description: The registered name, if different from the `name`.
+          type: string
+        name:
+          description: The legal name.
+          type: string
+        principalPlaceOfBusiness:
+          description: The business address. Required if the principal place of business
+            is different from the `registeredAddress`.
+          $ref: '#/components/schemas/Address'
+        registeredAddress:
+          description: The address registered at the registrar, such as the Chamber
+            of Commerce.
+          $ref: '#/components/schemas/Address'
+        registrationNumber:
+          description: The registration number.
+          type: string
+        type:
+          description: 'Type of Partnership.
+
+
+            Possible values:
+
+            *  **limitedPartnership**
+
+            *  **generalPartnership**
+
+            *  **familyPartnership**
+
+            *  **commercialPartnership**
+
+            *  **publicPartnership**
+
+            *  **otherPartnership**
+
+            *  **gbr**
+
+            *  **gmbh**
+
+            *  **kgaa**
+
+            *  **cv**
+
+            *  **vof**
+
+            *  **maatschap**
+
+            *  **privateFundLimitedPartnership**
+
+            *  **businessTrustEntity**
+
+            *  **businessPartnership**
+
+            *  **limitedLiabilityPartnership**
+
+            *  **eg**
+
+            *  **cooperative**
+
+            *  **vos**
+
+            *  **comunidadDeBienes**
+
+            *  **herenciaYacente**
+
+            *  **comunidadDePropietarios**
+
+            *  **sep**
+
+            *  **sca**
+
+            *  **bt**
+
+            *  **kkt**
+
+            *  **scs**
+
+            *  **snc**
+
+
+            '
+          enum:
+          - limitedPartnership
+          - generalPartnership
+          - familyPartnership
+          - commercialPartnership
+          - publicPartnership
+          - otherPartnership
+          - gbr
+          - gmbh
+          - kgaa
+          - cv
+          - vof
+          - maatschap
+          - privateFundLimitedPartnership
+          - businessTrustEntity
+          - businessPartnership
+          - limitedLiabilityPartnership
+          - eg
+          - cooperative
+          - vos
+          - comunidadDeBienes
+          - herenciaYacente
+          - comunidadDePropietarios
+          - sep
+          - sca
+          - bt
+          - kkt
+          - scs
+          - snc
+          type: string
+        vatAbsenceReason:
+          description: 'The reason for not providing a VAT number.
+
+
+            Possible values: **industryExemption**, **belowTaxThreshold**.'
+          enum:
+          - industryExemption
+          - belowTaxThreshold
+          type: string
+        vatNumber:
+          description: The VAT number.
+          type: string
+      required:
+      - name
+      - countryOfGoverningLaw
+      - registeredAddress
       type: object
     VerificationError:
       additionalProperties: false
