@@ -1513,17 +1513,34 @@
             ],
             "type" : "object"
          },
+         "Airline" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "legs" : {
+                  "description" : "Details about the flight legs for this ticket.",
+                  "items" : {
+                     "$ref" : "#/components/schemas/Leg"
+                  },
+                  "type" : "array"
+               },
+               "ticketNumber" : {
+                  "description" : "The ticket's unique identifier",
+                  "type" : "string"
+               }
+            },
+            "type" : "object"
+         },
          "Amount" : {
             "additionalProperties" : false,
             "properties" : {
                "currency" : {
-                  "description" : "The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).",
+                  "description" : "The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes#currency-codes).",
                   "maxLength" : 3,
                   "minLength" : 3,
                   "type" : "string"
                },
                "value" : {
-                  "description" : "The amount of the transaction, in [minor units](https://docs.adyen.com/development-resources/currency-codes).",
+                  "description" : "The amount of the transaction, in [minor units](https://docs.adyen.com/development-resources/currency-codes#minor-units).",
                   "format" : "int64",
                   "type" : "integer"
                }
@@ -2468,6 +2485,36 @@
          "JSONObject" : {
             "type" : "object"
          },
+         "Leg" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "arrivalAirportCode" : {
+                  "description" : "The IATA 3-letter airport code of the destination airport. This field is required if the airline data includes leg details.",
+                  "type" : "string"
+               },
+               "basicFareCode" : {
+                  "description" : "The basic fare code for this leg.",
+                  "type" : "string"
+               },
+               "carrierCode" : {
+                  "description" : "IATA code of the carrier operating the flight.",
+                  "type" : "string"
+               },
+               "departureAirportCode" : {
+                  "description" : "The IATA three-letter airport code of the departure airport. This field is required if the airline data includes leg details",
+                  "type" : "string"
+               },
+               "departureDate" : {
+                  "description" : "The flight departure date.",
+                  "type" : "string"
+               },
+               "flightNumber" : {
+                  "description" : "The flight identifier.",
+                  "type" : "string"
+               }
+            },
+            "type" : "object"
+         },
          "Link" : {
             "additionalProperties" : false,
             "properties" : {
@@ -2516,6 +2563,27 @@
                   "type" : "string"
                }
             },
+            "type" : "object"
+         },
+         "MerchantPurchaseData" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "airline" : {
+                  "description" : "Airline information.",
+                  "$ref" : "#/components/schemas/Airline"
+               },
+               "type" : {
+                  "default" : "merchantPurchaseData",
+                  "description" : "The type of events data. \n\nPossible values: \n\n - **merchantPurchaseData**: merchant purchase data",
+                  "enum" : [
+                     "merchantPurchaseData"
+                  ],
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "type"
+            ],
             "type" : "object"
          },
          "Modification" : {
@@ -2839,7 +2907,7 @@
                },
                "platformPaymentType" : {
                   "x-addedInVersion" : "4",
-                  "description" : "The type of the related split.",
+                  "description" : "Specifies the nature of the transfer. This parameter helps categorize transfers so you can reconcile transactions at a later time, using the Balance Platform Accounting Report for [marketplaces](https://docs.adyen.com/marketplaces/reports-and-fees/balance-platform-accounting-report/) or [platforms](https://docs.adyen.com/platforms/reports-and-fees/balance-platform-accounting-report/).\n\nPossible values:\n\n* **AcquiringFees**: for the acquiring fee incurred on a transaction.\n\n* **AdyenCommission**: for the transaction fee due to Adyen under [blended rates](https://www.adyen.com/knowledge-hub/guides/payments-training-guide/get-the-best-from-your-card-processing).\n\n* **AdyenFees**: for all the transaction fees due to Adyen. This is the sum of Adyen's commission and Adyen's markup.\n\n* **AdyenMarkup**: for the transaction fee due to Adyen under [Interchange++ pricing](https://www.adyen.com/pricing).\n\n* **BalanceAccount**: or the sale amount of a transaction.\n\n* **Commission**: for your platform's commission on a transaction.\n\n* **Interchange**: for the interchange fee (fee paid to the issuer) incurred on a transaction.\n\n* **PaymentFee**: for all of the transaction fees.\n\n* **Remainder**: for the left over amount after currency conversion.\n\n* **SchemeFee**: for the scheme fee incurred on a transaction. This is the sum of the interchange fees and the acquiring fees.\n\n* **Surcharge**: for the surcharge paid by the customer on a transaction.\n\n* **Tip**: for the tip paid by the customer.\n\n* **TopUp**: for an incoming transfer to top up your user's balance account.\n\n* **VAT**: for the Value Added Tax.",
                   "enum" : [
                      "AcquiringFees",
                      "AdyenCommission",
@@ -3394,13 +3462,14 @@
                },
                "category" : {
                   "x-addedInVersion" : "3",
-                  "description" : "The category of the transfer.\n\nPossible values:\n\n - **bank**: a transfer involving a [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments__resParam_id) or a bank account.\n\n- **card**: a transfer involving a third-party card.\n\n- **internal**: a transfer between [balance accounts](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__resParam_id) within your platform.\n\n- **issuedCard**: a transfer initiated by an Adyen-issued card.\n\n- **platformPayment**: funds movements related to payments that are acquired for your users.",
+                  "description" : "The category of the transfer.\n\nPossible values:\n\n - **bank**: a transfer involving a [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments__resParam_id) or a bank account.\n\n- **card**: a transfer involving a third-party card.\n\n- **internal**: a transfer between [balance accounts](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__resParam_id) within your platform.\n\n- **issuedCard**: a transfer initiated by a Adyen-issued card.\n\n- **platformPayment**: funds movements related to payments that are acquired for your users.\n\n- **topUp**: an incoming transfer initiated by your user to top up their balance account.",
                   "enum" : [
                      "bank",
                      "card",
                      "internal",
                      "issuedCard",
-                     "platformPayment"
+                     "platformPayment",
+                     "topUp"
                   ],
                   "type" : "string"
                },
@@ -3667,13 +3736,14 @@
                },
                "category" : {
                   "x-addedInVersion" : "3",
-                  "description" : "The category of the transfer.\n\nPossible values:\n\n - **bank**: a transfer involving a [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments__resParam_id) or a bank account.\n\n- **card**: a transfer involving a third-party card.\n\n- **internal**: a transfer between [balance accounts](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__resParam_id) within your platform.\n\n- **issuedCard**: a transfer initiated by an Adyen-issued card.\n\n- **platformPayment**: funds movements related to payments that are acquired for your users.",
+                  "description" : "The category of the transfer.\n\nPossible values:\n\n - **bank**: a transfer involving a [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments__resParam_id) or a bank account.\n\n- **card**: a transfer involving a third-party card.\n\n- **internal**: a transfer between [balance accounts](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__resParam_id) within your platform.\n\n- **issuedCard**: a transfer initiated by a Adyen-issued card.\n\n- **platformPayment**: funds movements related to payments that are acquired for your users.\n\n- **topUp**: an incoming transfer initiated by your user to top up their balance account.",
                   "enum" : [
                      "bank",
                      "card",
                      "internal",
                      "issuedCard",
-                     "platformPayment"
+                     "platformPayment",
+                     "topUp"
                   ],
                   "type" : "string"
                },
@@ -3723,6 +3793,11 @@
                      "incoming",
                      "outgoing"
                   ],
+                  "type" : "string"
+               },
+               "eventId" : {
+                  "x-addedInVersion" : "4",
+                  "description" : "The event id listed under events, that triggered the notification.",
                   "type" : "string"
                },
                "events" : {
@@ -3974,6 +4049,18 @@
                   "format" : "date-time",
                   "type" : "string"
                },
+               "eventsData" : {
+                  "x-addedInVersion" : "4",
+                  "description" : "A list of event data.",
+                  "items" : {
+                     "oneOf" : [
+                        {
+                           "$ref" : "#/components/schemas/MerchantPurchaseData"
+                        }
+                     ]
+                  },
+                  "type" : "array"
+               },
                "externalReason" : {
                   "x-addedInVersion" : "3",
                   "description" : "The external reason for the transfer status.",
@@ -4164,13 +4251,14 @@
                },
                "category" : {
                   "x-addedInVersion" : "3",
-                  "description" : "The category of the transfer.\n\nPossible values:\n\n - **bank**: a transfer involving a [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments__resParam_id) or a bank account.\n\n- **card**: a transfer involving a third-party card.\n\n- **internal**: a transfer between [balance accounts](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__resParam_id) within your platform.\n\n- **issuedCard**: a transfer initiated by a Adyen-issued card.\n\n- **platformPayment**: funds movements related to payments that are acquired for your users.",
+                  "description" : "The category of the transfer.\n\nPossible values:\n\n - **bank**: a transfer involving a [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments__resParam_id) or a bank account.\n\n- **card**: a transfer involving a third-party card.\n\n- **internal**: a transfer between [balance accounts](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__resParam_id) within your platform.\n\n- **issuedCard**: a transfer initiated by a Adyen-issued card.\n\n- **platformPayment**: funds movements related to payments that are acquired for your users.\n\n- **topUp**: an incoming transfer initiated by your user to top up their balance account.",
                   "enum" : [
                      "bank",
                      "card",
                      "internal",
                      "issuedCard",
-                     "platformPayment"
+                     "platformPayment",
+                     "topUp"
                   ],
                   "type" : "string"
                },
