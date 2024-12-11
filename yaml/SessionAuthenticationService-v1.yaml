@@ -1,9 +1,9 @@
 openapi: 3.1.0
 servers:
-- url: https://authe-live.adyen.com/authe/api/v1
-  description: Live Environment
 - url: https://test.adyen.com/authe/api/v1
   description: Test Environment
+- url: https://authe-live.adyen.com/authe/api/v1
+  description: Live Environment
 info:
   title: Session authentication API
   description: "The Session authentication API enables you to create and manage the\
@@ -31,7 +31,7 @@ info:
     name: Adyen Developer Experience team
     url: https://github.com/Adyen/adyen-openapi
   version: '1'
-  x-timestamp: '2024-10-17T10:29:09Z'
+  x-timestamp: '2024-12-10T11:26:50Z'
 tags:
 - name: Session authentication
 paths:
@@ -60,7 +60,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SessionRequest'
+              $ref: '#/components/schemas/AuthenticationSessionRequest'
             examples:
               create-session-platform:
                 summary: Create a session token for platform components
@@ -97,7 +97,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SessionResponse'
+                $ref: '#/components/schemas/AuthenticationSessionResponse'
               examples:
                 create-session-platform:
                   summary: Session token created
@@ -165,6 +165,7 @@ paths:
                     detail: User doesn't have access to all token policy resources
                     requestId: d42c493b5176df89e51516c6060cc34c
                     status: 403
+      x-methodName: createAuthenticationSession
       x-sortIndex: 0
 components:
   schemas:
@@ -182,6 +183,33 @@ components:
               For [Platform Experience components](https://docs.adyen.com/platforms/build-user-dashboards),
               this is the account holder linked to the balance account shown in the
               component.
+    AuthenticationSessionRequest:
+      required:
+      - allowOrigin
+      - policy
+      - product
+      type: object
+      properties:
+        allowOrigin:
+          type: string
+          description: The URL where the component will appear. In your live environment,
+            you must protect the URL with an SSL certificate and ensure that it starts
+            with `https://`.
+        policy:
+          description: An object that contains a description of the allowed resources
+            and roles for the requested session.
+          $ref: '#/components/schemas/Policy'
+        product:
+          description: 'The type of component.
+
+
+            For [Onboarding components](https://docs.adyen.com/platforms/onboard-users/components),
+            set this to **onboarding**.
+
+
+            For [Platform Experience components](https://docs.adyen.com/platforms/build-user-dashboards),
+            set this to **platform**.'
+          $ref: '#/components/schemas/ProductType'
     BalanceAccountResource:
       required:
       - balanceAccountId
@@ -288,34 +316,7 @@ components:
       - accountHolder
       - merchantAccount
       - paymentInstrument
-    SessionRequest:
-      required:
-      - allowOrigin
-      - policy
-      - product
-      type: object
-      properties:
-        allowOrigin:
-          type: string
-          description: The URL where the component will appear. In your live environment,
-            you must protect the URL with an SSL certificate and ensure that it starts
-            with `https://`.
-        policy:
-          description: An object that contains a description of the allowed resources
-            and roles for the requested session.
-          $ref: '#/components/schemas/Policy'
-        product:
-          description: 'The type of component.
-
-
-            For [Onboarding components](https://docs.adyen.com/platforms/onboard-users/components),
-            set this to **onboarding**.
-
-
-            For [Platform Experience components](https://docs.adyen.com/platforms/build-user-dashboards),
-            set this to **platform**.'
-          $ref: '#/components/schemas/ProductType'
-    SessionResponse:
+    AuthenticationSessionResponse:
       type: object
       properties:
         id:
