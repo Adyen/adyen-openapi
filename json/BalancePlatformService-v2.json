@@ -7188,13 +7188,13 @@
             "additionalProperties" : false,
             "properties" : {
                "currency" : {
-                  "description" : "The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).",
+                  "description" : "The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes#currency-codes).",
                   "maxLength" : 3,
                   "minLength" : 3,
                   "type" : "string"
                },
                "value" : {
-                  "description" : "The amount of the transaction, in [minor units](https://docs.adyen.com/development-resources/currency-codes).",
+                  "description" : "The amount of the transaction, in [minor units](https://docs.adyen.com/development-resources/currency-codes#minor-units).",
                   "format" : "int64",
                   "type" : "integer"
                }
@@ -7325,12 +7325,12 @@
             "additionalProperties" : false,
             "properties" : {
                "available" : {
-                  "description" : "The current balance minus any reserved balance.",
+                  "description" : "The balance available for use.",
                   "format" : "int64",
                   "type" : "integer"
                },
                "balance" : {
-                  "description" : "The current balance of funds in the balance account. These are the funds from all transactions with a value date in the past that have not yet been paid out.",
+                  "description" : "The sum of transactions that have already been settled.",
                   "format" : "int64",
                   "type" : "integer"
                },
@@ -7339,12 +7339,12 @@
                   "type" : "string"
                },
                "pending" : {
-                  "description" : "The amount of funds that Adyen has processed for this account, but will be settled in a future date.\n\nFor more information, see how to settle funds for users in your [platform](https://docs.adyen.com/platforms/settle-funds) and [marketplace](https://docs.adyen.com/marketplaces/settle-funds).",
+                  "description" : "The sum of the transactions that will be settled in the future.",
                   "format" : "int64",
                   "type" : "integer"
                },
                "reserved" : {
-                  "description" : "The amount reserved for payments that have been [authorised](https://docs.adyen.com/issuing/payment-stages/#authorised), but not yet [captured](https://docs.adyen.com/issuing/payment-stages/#captured) by the merchant.\n\nApplies only to [Adyen-issued cards](https://docs.adyen.com/issuing).",
+                  "description" : "The balance currently held in reserve.",
                   "format" : "int64",
                   "type" : "integer"
                }
@@ -8556,9 +8556,35 @@
                   "type" : "string"
                },
                "value" : {
-                  "description" : "List of counterparty Bank Institutions and the operation.",
+                  "description" : "The list of counterparty bank institutions to be evaluated.",
                   "items" : {
                      "$ref" : "#/components/schemas/BankIdentification"
+                  },
+                  "type" : "array"
+               }
+            },
+            "required" : [
+               "operation"
+            ],
+            "type" : "object"
+         },
+         "CounterpartyTypesRestriction" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "operation" : {
+                  "description" : "Defines how the condition must be evaluated.",
+                  "type" : "string"
+               },
+               "value" : {
+                  "description" : "The list of counterparty types to be evaluated.",
+                  "items" : {
+                     "enum" : [
+                        "balanceAccount",
+                        "bankAccount",
+                        "card",
+                        "transferInstrument"
+                     ],
+                     "type" : "string"
                   },
                   "type" : "array"
                }
@@ -10258,7 +10284,7 @@
                   "type" : "string"
                },
                "settlementDelayDays" : {
-                  "description" : "Specifies after how many business days the funds in a [settlement batch](https://docs.adyen.com/platforms/settle-funds/sales-day-settlement#settlement-batch) are made available in this balance account.\n\nPossible values: **1** to **10**, or **null**.\n* Setting this value to an integer enables Sales day settlement in this balance account. See how Sales day settlement works in your [marketplace](https://docs.adyen.com/marketplaces/settle-funds/sales-day-settlement) or [platform](https://docs.adyen.com/platforms/settle-funds/sales-day-settlement).\n* Setting this value to **null** enables Pass-through settlement in this balance account. See how Pass-through settlement works in your [marketplace](https://docs.adyen.com/marketplaces/settle-funds/pass-through-settlement) or [platform](https://docs.adyen.com/platforms/settle-funds/pass-through-settlement).\n\nDefault value: **null**.",
+                  "description" : "Specifies after how many business days the funds in a [settlement batch](https://docs.adyen.com/platforms/settle-funds/sales-day-settlement#settlement-batch) are made available in this balance account.\n\nPossible values: **1** to **20**, or **null**.\n* Setting this value to an integer enables Sales day settlement in this balance account. See how Sales day settlement works in your [marketplace](https://docs.adyen.com/marketplaces/settle-funds/sales-day-settlement) or [platform](https://docs.adyen.com/platforms/settle-funds/sales-day-settlement).\n* Setting this value to **null** enables Pass-through settlement in this balance account. See how Pass-through settlement works in your [marketplace](https://docs.adyen.com/marketplaces/settle-funds/pass-through-settlement) or [platform](https://docs.adyen.com/platforms/settle-funds/pass-through-settlement).\n\nDefault value: **null**.",
                   "format" : "int32",
                   "type" : "integer"
                }
@@ -10662,6 +10688,30 @@
                   "type" : "integer"
                }
             },
+            "type" : "object"
+         },
+         "SourceAccountTypesRestriction" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "operation" : {
+                  "description" : "Defines how the condition must be evaluated.",
+                  "type" : "string"
+               },
+               "value" : {
+                  "description" : "The list of source account types to be evaluated.",
+                  "items" : {
+                     "enum" : [
+                        "balanceAccount",
+                        "businessAccount"
+                     ],
+                     "type" : "string"
+                  },
+                  "type" : "array"
+               }
+            },
+            "required" : [
+               "operation"
+            ],
             "type" : "object"
          },
          "StringMatch" : {
@@ -11210,8 +11260,12 @@
                   "$ref" : "#/components/schemas/BrandVariantsRestriction"
                },
                "counterpartyBank" : {
-                  "description" : "List of counterparty Institutions and the operation. Supported operations: **anyMatch**, **noneMatch**.",
+                  "description" : "Contains a list of counterparty financial institutions and how they must be evaluated.\n\nSupported operations: **anyMatch**, **noneMatch**.",
                   "$ref" : "#/components/schemas/CounterpartyBankRestriction"
+               },
+               "counterpartyTypes" : {
+                  "description" : "Contains a list of counterparty types and how they must be evaluated.\n\nSupported operations: **anyMatch**, **noneMatch**.\n\nSupported value inputs:\n- **balanceAccount**\n- **bankAccount**\n- **card**\n- **transferInstrument**",
+                  "$ref" : "#/components/schemas/CounterpartyTypesRestriction"
                },
                "countries" : {
                   "description" : "List of countries and the operation.\n\nSupported operations: **anyMatch**, **noneMatch**.",
@@ -11268,6 +11322,10 @@
                "sameCounterpartyRestriction" : {
                   "description" : "Checks if a user has recently made multiple transfers to the same counterparty.\n\nTo use this restriction, you must:\n\n- Set the rule `type` to **velocity**.\n\n- Specify a time `interval`.\n\n- Specify a number of `matchingTransactions`.\n\nSupported operations: **equals**.",
                   "$ref" : "#/components/schemas/SameCounterpartyRestriction"
+               },
+               "sourceAccountTypes" : {
+                  "description" : "Contains a list of source account types and how they must be evaluated.\n\nSupported operations: **anyMatch**, **noneMatch**.\n\nSupported value inputs:\n- **balanceAccount**\n- **businessAccount**.",
+                  "$ref" : "#/components/schemas/SourceAccountTypesRestriction"
                },
                "timeOfDay" : {
                   "description" : "A start and end time in a time-only ISO-8601 extended offset format. Supported operations: **equals**, **notEquals**.",
