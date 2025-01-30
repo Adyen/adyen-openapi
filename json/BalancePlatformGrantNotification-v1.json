@@ -1,0 +1,331 @@
+{
+   "openapi" : "3.1.0",
+   "info" : {
+      "version" : "1",
+      "x-publicVersion" : true,
+      "title" : "Grants webhooks",
+      "description" : "After a grant is initiation, Adyen sends webhooks with information about the grant.\n\n",
+      "termsOfService" : "https://www.adyen.com/legal/terms-and-conditions",
+      "contact" : {
+         "name" : "Adyen Developer Experience team",
+         "url" : "https://github.com/Adyen/adyen-openapi"
+      }
+   },
+   "tags" : [
+      {
+         "name" : "General"
+      }
+   ],
+   "webhooks" : {
+      "balancePlatform.grants.created" : {
+         "post" : {
+            "tags" : [
+               "General"
+            ],
+            "summary" : "Grant created",
+            "description" : "After a grant is initiated, Adyen sends this webhook with information about the grant.\n\n",
+            "x-addedInVersion" : "1",
+            "operationId" : "post-balancePlatform.grants.created",
+            "x-sortIndex" : 0,
+            "x-methodName" : "grantCreated",
+            "security" : [
+               {
+                  "BasicAuth" : [
+                     ]
+               }
+            ],
+            "requestBody" : {
+               "content" : {
+                  "application/json" : {
+                     "schema" : {
+                        "$ref" : "#/components/schemas/Grant"
+                     }
+                  }
+               }
+            },
+            "responses" : {
+               "200" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/BalancePlatformNotificationResponse"
+                        }
+                     }
+                  },
+                  "description" : "OK - the request has succeeded."
+               }
+            }
+         }
+      },
+      "balancePlatform.grants.updated" : {
+         "post" : {
+            "tags" : [
+               "General"
+            ],
+            "summary" : "Grant updated",
+            "description" : "After a grant is updated, Adyen sends this webhook with information about the grant.\n\n",
+            "x-addedInVersion" : "1",
+            "operationId" : "post-balancePlatform.grants.updated",
+            "x-sortIndex" : 0,
+            "x-methodName" : "grantUpdated",
+            "security" : [
+               {
+                  "BasicAuth" : [
+                     ]
+               }
+            ],
+            "requestBody" : {
+               "content" : {
+                  "application/json" : {
+                     "schema" : {
+                        "$ref" : "#/components/schemas/Grant"
+                     }
+                  }
+               }
+            },
+            "responses" : {
+               "200" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/BalancePlatformNotificationResponse"
+                        }
+                     }
+                  },
+                  "description" : "OK - the request has succeeded."
+               }
+            }
+         }
+      }
+   },
+   "components" : {
+      "schemas" : {
+         "Amount" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "currency" : {
+                  "description" : "The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes#currency-codes).",
+                  "maxLength" : 3,
+                  "minLength" : 3,
+                  "type" : "string"
+               },
+               "value" : {
+                  "description" : "The amount of the transaction, in [minor units](https://docs.adyen.com/development-resources/currency-codes#minor-units).",
+                  "format" : "int64",
+                  "type" : "integer"
+               }
+            },
+            "required" : [
+               "value",
+               "currency"
+            ],
+            "type" : "object"
+         },
+         "Balance" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "currency" : {
+                  "description" : "The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).",
+                  "type" : "string"
+               },
+               "fee" : {
+                  "description" : "The amount of the grant fee.",
+                  "format" : "int64",
+                  "type" : "integer"
+               },
+               "principal" : {
+                  "description" : "The grant amount that is paid out to the user for business financing.",
+                  "format" : "int64",
+                  "type" : "integer"
+               },
+               "total" : {
+                  "description" : "The total amount of the grant that the user must repay. It is the sum of the fee amount and the principal amount.",
+                  "format" : "int64",
+                  "type" : "integer"
+               }
+            },
+            "required" : [
+               "principal",
+               "fee",
+               "total",
+               "currency"
+            ],
+            "type" : "object"
+         },
+         "BalancePlatformNotificationResponse" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "notificationResponse" : {
+                  "description" : "Respond with any **2xx** HTTP status code to [accept the webhook](https://docs.adyen.com/development-resources/webhooks#accept-notifications).",
+                  "type" : "string"
+               }
+            },
+            "type" : "object"
+         },
+         "Counterparty" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "accountHolderId" : {
+                  "description" : "The unique identifier of the account holder that receives the grant. If no `balanceAccountId` is provided, the grant funds are disbursed to the primary balance account of this account holder.",
+                  "type" : "string"
+               },
+               "balanceAccountId" : {
+                  "description" : "The unique identifier of the balance account where the funds are disbursed. The balance account must belong to the specified account holder.",
+                  "type" : "string"
+               },
+               "transferInstrumentId" : {
+                  "description" : "The unique identifier of the transfer instrument where the funds are disbursed. The transfer instrument must belong to the legal entity of the specified account holder.",
+                  "type" : "string"
+               }
+            },
+            "type" : "object"
+         },
+         "Fee" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "amount" : {
+                  "description" : "Contains the amount of the grant fee.",
+                  "$ref" : "#/components/schemas/Amount"
+               }
+            },
+            "required" : [
+               "amount"
+            ],
+            "type" : "object"
+         },
+         "Grant" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "amount" : {
+                  "description" : "Contains information about the amount of the grant. This is the sum of the amounts of all the disbursements related to the grant.",
+                  "$ref" : "#/components/schemas/Amount"
+               },
+               "balances" : {
+                  "description" : "Contains information about the balances of the grant.",
+                  "$ref" : "#/components/schemas/Balance"
+               },
+               "counterparty" : {
+                  "description" : "Contains the details of the party that receives the grant. Setting either an `accountHolderId`, `balanceAccountId`, or both is required.",
+                  "$ref" : "#/components/schemas/Counterparty"
+               },
+               "fee" : {
+                  "description" : "Contains information about the fee that your user must pay for the grant. This is the sum of the fees of all the disbursements related to the grant.",
+                  "$ref" : "#/components/schemas/Fee"
+               },
+               "grantAccountId" : {
+                  "description" : "The unique identifier of the grant account that tracks this grant.",
+                  "type" : "string"
+               },
+               "grantOfferId" : {
+                  "description" : "The unique identifier of the selected grant offer. Adyen uses the details of the selected grant offer to create a grant.",
+                  "type" : "string"
+               },
+               "id" : {
+                  "description" : "The unique identifier of the grant reference.",
+                  "type" : "string"
+               },
+               "repayment" : {
+                  "description" : "Contains information about the repayment configuration of the grant. By default, this repayment configuration applies to all the disbursements related to the grant.",
+                  "$ref" : "#/components/schemas/Repayment"
+               },
+               "status" : {
+                  "description" : "Contains the status of the grant.",
+                  "$ref" : "#/components/schemas/Status"
+               }
+            },
+            "required" : [
+               "grantAccountId",
+               "grantOfferId",
+               "id",
+               "status",
+               "balances"
+            ],
+            "type" : "object"
+         },
+         "Repayment" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "basisPoints" : {
+                  "description" : "The percentage of your user's incoming net volume that is deducted for repaying the grant. The percentage expressed in [basis points](https://www.investopedia.com/terms/b/basispoint.asp).",
+                  "format" : "int32",
+                  "type" : "integer"
+               },
+               "term" : {
+                  "description" : "Contains information about the time period in which your user must repay the total amount of the grant.",
+                  "$ref" : "#/components/schemas/RepaymentTerm"
+               },
+               "threshold" : {
+                  "description" : "Contains the minimum threshold amount that your user must repay every 30-day period.",
+                  "$ref" : "#/components/schemas/ThresholdRepayment"
+               }
+            },
+            "required" : [
+               "basisPoints"
+            ],
+            "type" : "object"
+         },
+         "RepaymentTerm" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "estimatedDays" : {
+                  "description" : "The estimated duration of the repayment term, in days.",
+                  "format" : "int32",
+                  "type" : "integer"
+               },
+               "maximumDays" : {
+                  "description" : "The maximum duration of the repayment term, in days. Only applies when `contractType` is **loan**.",
+                  "format" : "int32",
+                  "type" : "integer"
+               }
+            },
+            "required" : [
+               "estimatedDays"
+            ],
+            "type" : "object"
+         },
+         "Status" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "code" : {
+                  "description" : "The code for the status of the grant. Possible values:\n- **Pending**\n- **Active**\n- **Repaid**\n- **WrittenOff**\n- **Failed**\n- **Revoked**",
+                  "enum" : [
+                     "Active",
+                     "Failed",
+                     "Pending",
+                     "Repaid",
+                     "Revoked",
+                     "WrittenOff"
+                  ],
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "code"
+            ],
+            "type" : "object"
+         },
+         "ThresholdRepayment" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "amount" : {
+                  "description" : "The minimum threshold amount that your user must repay on every 30-day period.",
+                  "$ref" : "#/components/schemas/Amount"
+               }
+            },
+            "required" : [
+               "amount"
+            ],
+            "type" : "object"
+         }
+      },
+      "securitySchemes" : {
+         "BasicAuth" : {
+            "scheme" : "basic",
+            "type" : "http"
+         }
+      },
+      "examples" : {
+         
+      }
+   }
+}
