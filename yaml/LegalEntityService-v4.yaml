@@ -1,8 +1,8 @@
 openapi: 3.1.0
 servers:
-- url: https://kyc-test.adyen.com/lem/v3
+- url: https://kyc-test.adyen.com/lem/v4
 info:
-  version: '3'
+  version: '4'
   x-publicVersion: true
   title: Legal Entity Management API
   description: "The Legal Entity Management API enables you to manage legal entities\
@@ -18,12 +18,12 @@ info:
     \ YOUR_API_KEY\" \\\n-H \"Content-Type: application/json\" \\\n...\n```\n## Versioning\n\
     The Legal Entity Management API supports [versioning](https://docs.adyen.com/development-resources/versioning)\
     \ using a version suffix in the endpoint URL. This suffix has the following format:\
-    \ \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://kyc-test.adyen.com/lem/v3/legalEntities\n\
+    \ \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://kyc-test.adyen.com/lem/v4/legalEntities\n\
     ```\n## Going live\nWhen going live, generate an API key in your [live Customer\
     \ Area](https://ca-live.adyen.com/ca/) if you have an Adyen for Platforms integration\
     \ or [live Balance Platform Customer Area](https://balanceplatform-live.adyen.com/balanceplatform/)\
     \ if you have an Adyen Issuing integration.You can then use the API key to send\
-    \ requests to `https://kyc-live.adyen.com/lem/v3`.\n\n"
+    \ requests to `https://kyc-live.adyen.com/lem/v4`.\n\n"
   termsOfService: https://www.adyen.com/legal/terms-and-conditions
   contact:
     name: Adyen Developer Experience team
@@ -2529,20 +2529,6 @@ components:
     BusinessLine:
       additionalProperties: false
       properties:
-        capability:
-          deprecated: true
-          x-deprecatedInVersion: '3'
-          x-deprecatedMessage: Use `service` instead.
-          description: 'The capability for which you are creating the business line.
-
-
-            Possible values: **receivePayments**, **receiveFromPlatformPayments**,
-            **issueBankAccount**'
-          enum:
-          - receivePayments
-          - receiveFromPlatformPayments
-          - issueBankAccount
-          type: string
         id:
           description: The unique identifier of the business line.
           readOnly: true
@@ -2586,17 +2572,20 @@ components:
 
             *  **paymentProcessing**
 
+            *  **issuing**
+
             *  **banking**
 
 
             '
           enum:
           - paymentProcessing
+          - issuing
           - banking
           type: string
         sourceOfFunds:
           description: Contains information about the source of your user's funds.
-            Required only for the `service` **banking**.
+            Required only if the `service` is **banking** or **issuing**.
           $ref: '#/components/schemas/SourceOfFunds'
         webData:
           description: List of website URLs where your user's goods or services are
@@ -2617,20 +2606,6 @@ components:
     BusinessLineInfo:
       additionalProperties: false
       properties:
-        capability:
-          deprecated: true
-          x-deprecatedInVersion: '3'
-          x-deprecatedMessage: Use `service` instead.
-          description: 'The capability for which you are creating the business line.
-
-
-            Possible values: **receivePayments**, **receiveFromPlatformPayments**,
-            **issueBankAccount**'
-          enum:
-          - receivePayments
-          - receiveFromPlatformPayments
-          - issueBankAccount
-          type: string
         industryCode:
           description: A code that represents the industry of the legal entity for
             [marketplaces](https://docs.adyen.com/marketplaces/verification-requirements/reference-additional-products/#list-industry-codes)
@@ -2663,17 +2638,20 @@ components:
 
             *  **paymentProcessing**
 
+            *  **issuing**
+
             *  **banking**
 
 
             '
           enum:
           - paymentProcessing
+          - issuing
           - banking
           type: string
         sourceOfFunds:
           description: Contains information about the source of your user's funds.
-            Required only for the `service` **banking**.
+            Required only if the `service` is **banking** or **issuing**.
           $ref: '#/components/schemas/SourceOfFunds'
         webData:
           description: List of website URLs where your user's goods or services are
@@ -2710,7 +2688,7 @@ components:
           type: array
         sourceOfFunds:
           description: Contains information about the source of your user's funds.
-            Required only for the `service` **banking**.
+            Required only if the `service` is **banking** or **issuing**.
           $ref: '#/components/schemas/SourceOfFunds'
         webData:
           description: List of website URLs where your user's goods or services are
@@ -3052,7 +3030,7 @@ components:
 
             * For **organization**, the `type` values can be **proofOfAddress**, **registrationDocument**,
             **vatDocument**, **proofOfOrganizationTaxInfo**, **proofOfOwnership**,
-            **proofOfIndustry**, **proofOfSignatory**, or **proofOfFundingOrWealthSource**.
+            **proofOfIndustry**, **proofOfSignatory**, **proofOfDirector**, or **proofOfFundingOrWealthSource**.
 
 
             * For **individual**, the `type` values can be **identityCard**, **driversLicense**,
@@ -3092,6 +3070,7 @@ components:
           - constitutionalDocument
           - proofOfFundingOrWealthSource
           - proofOfRelationship
+          - proofOfDirector
           type: string
       required:
       - description
@@ -3175,6 +3154,27 @@ components:
           x-addedInVersion: '3'
           description: The net assets of the business.
           type: string
+      type: object
+    Financier:
+      additionalProperties: false
+      properties:
+        amount:
+          description: The amount of the funds the financier provided.
+          $ref: '#/components/schemas/Amount'
+        firstName:
+          description: The financier's first name.
+          type: string
+        lastName:
+          description: The financier's last name.
+          type: string
+        location:
+          description: The location of the financier.
+          type: string
+      required:
+      - firstName
+      - lastName
+      - amount
+      - location
       type: object
     GeneratePciDescriptionRequest:
       additionalProperties: false
@@ -3531,6 +3531,10 @@ components:
         residentialAddress:
           description: The residential address of the individual.
           $ref: '#/components/schemas/Address'
+        support:
+          x-addedInVersion: '4'
+          description: Support information for the legal entity.
+          $ref: '#/components/schemas/Support'
         taxInformation:
           x-addedInVersion: '2'
           description: The tax information of the individual.
@@ -3951,6 +3955,16 @@ components:
       required:
       - type
       type: object
+    LocalDate:
+      additionalProperties: false
+      properties:
+        month:
+          format: int32
+          type: integer
+        year:
+          format: int32
+          type: integer
+      type: object
     NOLocalAccountIdentification:
       additionalProperties: false
       properties:
@@ -4264,6 +4278,11 @@ components:
           description: The organization's trading name, if different from the registered
             legal name.
           type: string
+        doingBusinessAsAbsent:
+          x-addedInVersion: '4'
+          description: '`Doing business as` is absent.'
+          nullable: true
+          type: boolean
         email:
           description: The email address of the legal entity.
           type: string
@@ -4294,6 +4313,10 @@ components:
           description: Information about the organization's publicly traded stock.
             Provide this object only if `type` is **listedPublicCompany**.
           $ref: '#/components/schemas/StockData'
+        support:
+          x-addedInVersion: '4'
+          description: Support information for the legal entity.
+          $ref: '#/components/schemas/Support'
         taxInformation:
           x-addedInVersion: '2'
           description: The tax information of the organization.
@@ -4551,6 +4574,11 @@ components:
         doingBusinessAs:
           description: The registered name, if different from the `name`.
           type: string
+        doingBusinessAsAbsent:
+          x-addedInVersion: '4'
+          description: '`Doing business as` is absent.'
+          nullable: true
+          type: boolean
         financialReports:
           x-addedInVersion: '3'
           description: The information from the financial report of the sole proprietorship.
@@ -4602,29 +4630,178 @@ components:
     SourceOfFunds:
       additionalProperties: false
       properties:
-        acquiringBusinessLineId:
-          deprecated: true
-          x-deprecatedInVersion: '3'
-          x-deprecatedMessage: This field will be removed in v4.
-          description: The unique identifier of the business line that will be the
-            source of funds.This must be a business line for a **receivePayments**
-            or **receiveFromPlatformPayments** capability.
-          type: string
         adyenProcessedFunds:
           description: Indicates whether the funds are coming from transactions processed
-            by Adyen. If **false**, a `description` is required.
+            by Adyen. If **false**, `type` is required.
           type: boolean
+        amount:
+          x-addedInVersion: '4'
+          description: The amount of the funds. Required if `type` is **assetSale**,
+            **gamblingWinnings** or **inheritance**.
+          $ref: '#/components/schemas/Amount'
+        annualTurnover:
+          x-addedInVersion: '4'
+          description: The annual turnover of the business. Required if `type` is
+            **business**.
+          type: string
+        assetMonthsHeld:
+          x-addedInVersion: '4'
+          description: 'The number of months that the asset has been in possession
+            of the user.
+
+
+            For example, if the source of funds is of type **cryptocurrencyIncome**
+            then `assetMonthsHeld` is the number of months the user has owned the
+            cryptocurrency.'
+          format: int32
+          type: integer
+        cryptocurrencyExchange:
+          x-addedInVersion: '4'
+          description: The cryptocurrency exchange where the funds were acquired.
+            Required if `type` is **cryptocurrencyIncome**.
+          type: string
+        dateOfFundsReceived:
+          x-addedInVersion: '4'
+          description: The date the funds were received, in YYYY-MM-DD format. Required
+            if `type` is **donations** or **inheritance**.
+          $ref: '#/components/schemas/LocalDate'
+        dateOfSourceEvent:
+          x-addedInVersion: '4'
+          description: 'The date when the source of funds became available, in YYYY-MM-DD
+            format. Required if `type` is **assetSale** or **gamblingWinnings**.
+
+
+            For example, if the source of funds is of type **assetSale**, the dateOfSourceEvent
+            is the date of the sale. If the source of funds is of type **gamblingWinnings**,
+            the dateOfSourceEvent is the date of winnings.'
+          $ref: '#/components/schemas/LocalDate'
         description:
-          description: Text describing the source of funds. For example, for `type`
-            **business**, provide a description of where the business transactions
-            come from, such as payments through bank transfer. Required when `adyenProcessedFunds`
-            is **false**.
+          description: 'Text describing the source of funds. Required if `type` is
+            **business** or **assetSale**.
+
+
+            For example, for `type` **business**, provide a description of where the
+            business transactions come from, such as payments through bank transfer.
+            For `type` **assetSale**, provide a description of the asset. For example,
+            the address of a residential property if it is a property sale.'
+          type: string
+        financiers:
+          x-addedInVersion: '4'
+          description: Information about the financiers. Required if `type` is **thirdPartyFunding**.
+          items:
+            $ref: '#/components/schemas/Financier'
+          type: array
+        originatorLegalEntityId:
+          x-addedInVersion: '4'
+          description: 'The legal entity ID representing the originator of the source
+            of funds. Required if `type` is **donations** or **inheritance**.
+
+
+            For example, if the source of funds is **inheritance**, then `originatorOfFundsReference`
+            should be the legal entity reference of the benefactor.'
+          type: string
+        originatorSourceOfFundsType:
+          x-addedInVersion: '4'
+          description: 'Where the funds originated from. Required if `type` is **donations**
+            or **inheritance**.
+
+
+            For example, if the source of funds is **donations**, then `originatorSourceOfFundsType`
+            must be the `type` of the donated funds.'
+          enum:
+          - assetSale
+          - business
+          - cryptocurrencyIncome
+          - dividendIncome
+          - donations
+          - employment
+          - financialAid
+          - gamblingWinnings
+          - inheritance
+          - insuranceSettlement
+          - loans
+          - pensionIncome
+          - rentalIncome
+          - royaltyIncome
+          - thirdPartyFunding
+          type: string
+        purpose:
+          x-addedInVersion: '4'
+          description: The reasoning behind receiving the funds. Required if `type`
+            is **donations**.
+          type: string
+        relationship:
+          x-addedInVersion: '4'
+          description: The relationship of the originator of the funds to the recipient.
+            Required if `type` is **donations** or **inheritance**.
           type: string
         type:
-          description: 'The type of the source of funds. Possible value: **business**.'
+          description: 'The type of the source of funds.
+
+
+
+
+            Possible values:
+
+            *  **business**
+
+            *  **employment**
+
+            *  **donations**
+
+            *  **inheritance**
+
+            *  **financialAid**
+
+            *  **rentalIncome**
+
+            *  **dividendIncome**
+
+            *  **royaltyIncome**
+
+            *  **thirdPartyFunding**
+
+            *  **pensionIncome**
+
+            *  **insuranceSettlement**
+
+            *  **cryptocurrencyIncome**
+
+            *  **assetSale**
+
+            *  **loans**
+
+            *  **gamblingWinnings**
+
+
+            '
           enum:
           - business
+          - employment
+          - donations
+          - inheritance
+          - financialAid
+          - rentalIncome
+          - dividendIncome
+          - royaltyIncome
+          - thirdPartyFunding
+          - pensionIncome
+          - insuranceSettlement
+          - cryptocurrencyIncome
+          - assetSale
+          - loans
+          - gamblingWinnings
           type: string
+        website:
+          x-addedInVersion: '4'
+          description: 'The location of the gambling site. Required if `type` is **gamblingWinnings**.
+
+
+            If the source of funds is online gambling, provide the website of the
+            gambling company.'
+          type: string
+      required:
+      - adyenProcessedFunds
       type: object
     StockData:
       additionalProperties: false
@@ -4640,6 +4817,18 @@ components:
         tickerSymbol:
           description: The stock ticker symbol.
           type: string
+      type: object
+    Support:
+      additionalProperties: false
+      properties:
+        email:
+          x-addedInVersion: '4'
+          description: The email address of the legal entity.
+          type: string
+        phone:
+          x-addedInVersion: '4'
+          description: The phone number of the legal entity.
+          $ref: '#/components/schemas/PhoneNumber'
       type: object
     SupportingEntityCapability:
       additionalProperties: false
@@ -4931,6 +5120,11 @@ components:
         doingBusinessAs:
           description: The registered name, if different from the `name`.
           type: string
+        doingBusinessAsAbsent:
+          x-addedInVersion: '4'
+          description: '`Doing business as` is absent.'
+          nullable: true
+          type: boolean
         name:
           description: The legal name.
           type: string
@@ -5092,6 +5286,11 @@ components:
         doingBusinessAs:
           description: The registered name, if different from the `name`.
           type: string
+        doingBusinessAsAbsent:
+          x-addedInVersion: '4'
+          description: '`Doing business as` is absent.'
+          nullable: true
+          type: boolean
         name:
           description: The legal name.
           type: string
