@@ -19,7 +19,7 @@ info:
     \ to the Transfers API must be signed with an API key. Generate an API key in\
     \ your Customer Area if you have a [platform setup](https://docs.adyen.com/platforms/manage-access/api-credentials-web-service/#generate-api-key)\
     \ or [marketplace setup](https://docs.adyen.com/marketplaces/manage-access/api-credentials-web-service/#generate-api-key).\n\
-    \nIf you have an Adyen Issuing integration,[generate an API key](https://docs.adyen.com/issuing/manage-access/api-credentials-web-service/#generate-api-key)\
+    \nIf you have an Adyen Issuing integration, [generate an API key](https://docs.adyen.com/issuing/manage-access/api-credentials-web-service/#generate-api-key)\
     \ in your Balance Platform Customer Area.\n\nTo connect to the API, add an `X-API-Key`\
     \ header with the API key as the value, for example:\n\n ```\ncurl\n-H \"Content-Type:\
     \ application/json\" \\\n-H \"X-API-Key: YOUR_API_KEY\" \\\n...\n```\n\n## Roles\
@@ -32,7 +32,7 @@ info:
     ```\n## Going live\nWhen going live, generate an API key in your [live Customer\
     \ Area](https://ca-live.adyen.com/ca/) if you have an Adyen for Platforms integration\
     \ or [live Balance Platform Customer Area](https://balanceplatform-live.adyen.com/balanceplatform/)\
-    \ if you have an Adyen Issuing integration.You can then use the API key to send\
+    \ if you have an Adyen Issuing integration. You can then use the API key to send\
     \ requests to `https://balanceplatform-api-live.adyen.com/btl/v4`.\n\n"
   termsOfService: https://www.adyen.com/legal/terms-and-conditions
   contact:
@@ -49,6 +49,10 @@ paths:
       - Capital
       summary: Get a capital account
       description: Returns a list of grants with status and outstanding balances.
+      deprecated: true
+      x-deprecatedInVersion: '4'
+      x-deprecatedMessage: Use the `/grants` endpoint from the [Capital API](https://docs.adyen.com/api-explorer/capital/latest/get/grants)
+        instead.
       x-addedInVersion: '3'
       operationId: get-grants
       x-sortIndex: 2
@@ -112,6 +116,10 @@ paths:
       - Capital
       summary: Request a grant payout
       description: Requests the payout of the selected grant offer.
+      deprecated: true
+      x-deprecatedInVersion: '4'
+      x-deprecatedMessage: Use the `/grants` endpoint from the [Capital API](https://docs.adyen.com/api-explorer/capital/latest/post/grants)
+        instead.
       x-addedInVersion: '3'
       operationId: post-grants
       x-sortIndex: 1
@@ -188,6 +196,11 @@ paths:
       - Capital
       summary: Get grant reference details
       description: Returns the details of a capital account specified in the path.
+      deprecated: true
+      x-deprecatedInVersion: '4'
+      x-deprecatedMessage: Use the `/grants/{grantId}` endpoint from the [Capital
+        API](https://docs.adyen.com/api-explorer/capital/latest/get/grants/(grantId))
+        instead.
       x-addedInVersion: '3'
       operationId: get-grants-id
       x-sortIndex: 3
@@ -785,6 +798,9 @@ paths:
       requestBody:
         content:
           application/json:
+            examples:
+              transfers-approve:
+                $ref: '#/components/examples/post-transfers-approve-transfers-approve'
             schema:
               $ref: '#/components/schemas/ApproveTransfersRequest'
       parameters:
@@ -797,6 +813,11 @@ paths:
           type: string
       responses:
         '200':
+          content:
+            application/json:
+              examples:
+                transfers-approve:
+                  $ref: '#/components/examples/post-transfers-approve-transfers-approve-200'
           description: 'No Content - look at the actual response code for the status
             of the request. '
           headers:
@@ -861,12 +882,20 @@ paths:
       requestBody:
         content:
           application/json:
+            examples:
+              transfers-cancel:
+                $ref: '#/components/examples/post-transfers-cancel-transfers-cancel'
             schema:
               $ref: '#/components/schemas/CancelTransfersRequest'
       parameters:
       - $ref: '#/components/parameters/Idempotency-Key'
       responses:
         '200':
+          content:
+            application/json:
+              examples:
+                transfers-cancel:
+                  $ref: '#/components/examples/post-transfers-cancel-transfers-cancel-200'
           description: 'No Content - look at the actual response code for the status
             of the request. '
           headers:
@@ -3840,26 +3869,11 @@ components:
     TransferReview:
       additionalProperties: false
       properties:
-        numberOfApprovalsCompleted:
-          description: Shows the number of approvals completed for the transfer.
-          format: int32
-          type: integer
         numberOfApprovalsRequired:
           description: Shows the number of [approvals](https://docs.adyen.com/api-explorer/transfers/latest/post/transfers/approve)
             required to process the transfer.
           format: int32
           type: integer
-        scaOnApproval:
-          description: 'Shows the status of the Strong Customer Authentication (SCA)
-            process.
-
-
-            Possible values: **required**, **completed**, **notApplicable**.'
-          enum:
-          - completed
-          - notApplicable
-          - required
-          type: string
       type: object
     TransferServiceRestServiceError:
       additionalProperties: false
@@ -4402,6 +4416,28 @@ components:
         repayment:
           basisPoints: 1400
         status: Pending
+    post-transfers-approve-transfers-approve:
+      summary: Approve transfers
+      description: Example request for approving transfers
+      value:
+        transferIds:
+        - APUFHASUDF4AS
+        - 407ASFPUAHSFA
+    post-transfers-approve-transfers-approve-200:
+      summary: Successfully approved transfers (No content)
+      description: Example response for approving transfers (No content)
+      value: {}
+    post-transfers-cancel-transfers-cancel:
+      summary: Cancel transfers
+      description: Example request for canceling transfers
+      value:
+        transferIds:
+        - APUFHASUDF4AS
+        - 407ASFPUAHSFA
+    post-transfers-cancel-transfers-cancel-200:
+      summary: Successfully canceled transfers (No content)
+      description: Example response for cancelling transfers (No content)
+      value: {}
     post-transfers-payout-cross-border:
       summary: Make a cross-border transfer
       description: Example request to make a cross-border transfer
