@@ -1054,7 +1054,7 @@
                "Payment links"
             ],
             "summary" : "Create a payment link",
-            "description" : "Creates a payment link to our hosted payment form where shoppers can pay. The list of payment methods presented to the shopper depends on the `currency` and `country` parameters sent in the request.\n\nFor more information, refer to [Pay by Link documentation](https://docs.adyen.com/online-payments/pay-by-link#create-payment-links-through-api).",
+            "description" : "Creates a payment link to a [Pay by Link](https://docs.adyen.com/unified-commerce/pay-by-link/) page where the shopper can pay. The list of payment methods presented to the shopper depends on the `currency` and `country` parameters sent in the request.\n\nFor more information, refer to [Pay by Link documentation](https://docs.adyen.com/online-payments/pay-by-link#create-payment-links-through-api).",
             "operationId" : "post-paymentLinks",
             "x-sortIndex" : 1,
             "x-methodName" : "paymentLinks",
@@ -5239,6 +5239,10 @@
                   "description" : "The card expiry year. Only collect raw card data if you are [fully PCI compliant](https://docs.adyen.com/development-resources/pci-dss-compliance-guide).",
                   "type" : "string"
                },
+               "fastlaneData" : {
+                  "description" : "The encoded fastlane data blob",
+                  "type" : "string"
+               },
                "fundingSource" : {
                   "description" : "The funding source that should be used when multiple sources are available. For Brazilian combo cards, by default the funding source is credit. To use debit, set this value to **debit**.",
                   "enum" : [
@@ -5420,6 +5424,10 @@
                },
                "expiryYear" : {
                   "description" : "The card expiry year. Only collect raw card data if you are [fully PCI compliant](https://docs.adyen.com/development-resources/pci-dss-compliance-guide).",
+                  "type" : "string"
+               },
+               "fastlaneData" : {
+                  "description" : "The encoded fastlane data blob",
                   "type" : "string"
                },
                "fundingSource" : {
@@ -7138,6 +7146,42 @@
                   "type" : "string"
                }
             },
+            "type" : "object"
+         },
+         "FastlaneDetails" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "fastlaneData" : {
+                  "description" : "The encoded fastlane data blob",
+                  "type" : "string"
+               },
+               "recurringDetailReference" : {
+                  "deprecated" : true,
+                  "x-deprecatedInVersion" : "49",
+                  "x-deprecatedMessage" : "Use `storedPaymentMethodId` instead.",
+                  "description" : "This is the `recurringDetailReference` returned in the response when you created the token.",
+                  "type" : "string"
+               },
+               "storedPaymentMethodId" : {
+                  "x-addedInVersion" : "49",
+                  "description" : "This is the `recurringDetailReference` returned in the response when you created the token.",
+                  "maxLength" : 64,
+                  "type" : "string"
+               },
+               "type" : {
+                  "default" : "fastlane",
+                  "description" : "**fastlane**",
+                  "enum" : [
+                     "fastlane"
+                  ],
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "type",
+               "fastlaneData"
+            ],
+            "title" : "Fastlane",
             "type" : "object"
          },
          "ForexQuote" : {
@@ -10171,6 +10215,9 @@
                      },
                      {
                         "$ref" : "#/components/schemas/EftDetails"
+                     },
+                     {
+                        "$ref" : "#/components/schemas/FastlaneDetails"
                      },
                      {
                         "$ref" : "#/components/schemas/GenericIssuerPaymentMethodDetails"
@@ -17715,8 +17762,7 @@
                },
                "reference" : "Your order number",
                "paymentMethod" : {
-                  "type" : "ideal",
-                  "issuer" : "1121"
+                  "type" : "ideal"
                },
                "returnUrl" : "https://your-company.com/...",
                "merchantAccount" : "YOUR_MERCHANT_ACCOUNT"

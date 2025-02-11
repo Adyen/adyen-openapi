@@ -1054,7 +1054,7 @@
                "Payment links"
             ],
             "summary" : "Create a payment link",
-            "description" : "Creates a payment link to our hosted payment form where shoppers can pay. The list of payment methods presented to the shopper depends on the `currency` and `country` parameters sent in the request.\n\nFor more information, refer to [Pay by Link documentation](https://docs.adyen.com/online-payments/pay-by-link#create-payment-links-through-api).",
+            "description" : "Creates a payment link to a [Pay by Link](https://docs.adyen.com/unified-commerce/pay-by-link/) page where the shopper can pay. The list of payment methods presented to the shopper depends on the `currency` and `country` parameters sent in the request.\n\nFor more information, refer to [Pay by Link documentation](https://docs.adyen.com/online-payments/pay-by-link#create-payment-links-through-api).",
             "operationId" : "post-paymentLinks",
             "x-sortIndex" : 1,
             "x-methodName" : "paymentLinks",
@@ -3048,7 +3048,7 @@
                "Payments"
             ],
             "summary" : "Create a payment session",
-            "description" : "Creates a payment session for [Web Drop-in](https://docs.adyen.com/online-payments/web-drop-in) and [Web Components](https://docs.adyen.com/online-payments/web-components) integrations.\n\nThe response contains encrypted payment session data. The front end then uses the session data to make any required server-side calls for the payment flow.\n\nYou get the payment outcome asynchronously, in an [AUTHORISATION](https://docs.adyen.com/api-explorer/#/Webhooks/latest/post/AUTHORISATION) webhook.",
+            "description" : "Creates a payment session for [Drop-in](https://docs.adyen.com/online-payments/build-your-integration/sessions-flow/?platform=Web&integration=Drop-in), [Components](https://docs.adyen.com/online-payments/build-your-integration/sessions-flow/?platform=Web&integration=Components), and [Hosted Checkout](https://docs.adyen.com/online-payments/build-your-integration/sessions-flow/?platform=Web&integration=Hosted+Checkout) integrations.\n\nThe response contains encrypted payment session data. The front end then uses the session data to make any required server-side calls for the payment flow.\n\nYou get the payment outcome asynchronously, in an [AUTHORISATION](https://docs.adyen.com/api-explorer/#/Webhooks/latest/post/AUTHORISATION) webhook.",
             "x-addedInVersion" : "68",
             "operationId" : "post-sessions",
             "x-sortIndex" : 1,
@@ -5601,6 +5601,10 @@
                   "description" : "The card expiry year. Only collect raw card data if you are [fully PCI compliant](https://docs.adyen.com/development-resources/pci-dss-compliance-guide).",
                   "type" : "string"
                },
+               "fastlaneData" : {
+                  "description" : "The encoded fastlane data blob",
+                  "type" : "string"
+               },
                "fundingSource" : {
                   "description" : "The funding source that should be used when multiple sources are available. For Brazilian combo cards, by default the funding source is credit. To use debit, set this value to **debit**.",
                   "enum" : [
@@ -5787,6 +5791,10 @@
                },
                "expiryYear" : {
                   "description" : "The card expiry year. Only collect raw card data if you are [fully PCI compliant](https://docs.adyen.com/development-resources/pci-dss-compliance-guide).",
+                  "type" : "string"
+               },
+               "fastlaneData" : {
+                  "description" : "The encoded fastlane data blob",
                   "type" : "string"
                },
                "fundingSource" : {
@@ -8293,6 +8301,47 @@
                   "type" : "string"
                }
             },
+            "type" : "object"
+         },
+         "FastlaneDetails" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "checkoutAttemptId" : {
+                  "x-addedInVersion" : "68",
+                  "description" : "The checkout attempt identifier.",
+                  "type" : "string"
+               },
+               "fastlaneData" : {
+                  "description" : "The encoded fastlane data blob",
+                  "type" : "string"
+               },
+               "recurringDetailReference" : {
+                  "deprecated" : true,
+                  "x-deprecatedInVersion" : "49",
+                  "x-deprecatedMessage" : "Use `storedPaymentMethodId` instead.",
+                  "description" : "This is the `recurringDetailReference` returned in the response when you created the token.",
+                  "type" : "string"
+               },
+               "storedPaymentMethodId" : {
+                  "x-addedInVersion" : "49",
+                  "description" : "This is the `recurringDetailReference` returned in the response when you created the token.",
+                  "maxLength" : 64,
+                  "type" : "string"
+               },
+               "type" : {
+                  "default" : "fastlane",
+                  "description" : "**fastlane**",
+                  "enum" : [
+                     "fastlane"
+                  ],
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "type",
+               "fastlaneData"
+            ],
+            "title" : "Fastlane",
             "type" : "object"
          },
          "ForexQuote" : {
@@ -11543,6 +11592,9 @@
                      },
                      {
                         "$ref" : "#/components/schemas/EftDetails"
+                     },
+                     {
+                        "$ref" : "#/components/schemas/FastlaneDetails"
                      },
                      {
                         "$ref" : "#/components/schemas/GenericIssuerPaymentMethodDetails"
@@ -17288,8 +17340,7 @@
                },
                "reference" : "Your order number",
                "paymentMethod" : {
-                  "type" : "ideal",
-                  "issuer" : "1121"
+                  "type" : "ideal"
                },
                "returnUrl" : "https://your-company.com/...",
                "merchantAccount" : "YOUR_MERCHANT_ACCOUNT"

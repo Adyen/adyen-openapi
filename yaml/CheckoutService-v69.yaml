@@ -736,9 +736,9 @@ paths:
       tags:
       - Payment links
       summary: Create a payment link
-      description: 'Creates a payment link to our hosted payment form where shoppers
-        can pay. The list of payment methods presented to the shopper depends on the
-        `currency` and `country` parameters sent in the request.
+      description: 'Creates a payment link to a [Pay by Link](https://docs.adyen.com/unified-commerce/pay-by-link/)
+        page where the shopper can pay. The list of payment methods presented to the
+        shopper depends on the `currency` and `country` parameters sent in the request.
 
 
         For more information, refer to [Pay by Link documentation](https://docs.adyen.com/online-payments/pay-by-link#create-payment-links-through-api).'
@@ -2013,8 +2013,9 @@ paths:
       tags:
       - Payments
       summary: Create a payment session
-      description: 'Creates a payment session for [Web Drop-in](https://docs.adyen.com/online-payments/web-drop-in)
-        and [Web Components](https://docs.adyen.com/online-payments/web-components)
+      description: 'Creates a payment session for [Drop-in](https://docs.adyen.com/online-payments/build-your-integration/sessions-flow/?platform=Web&integration=Drop-in),
+        [Components](https://docs.adyen.com/online-payments/build-your-integration/sessions-flow/?platform=Web&integration=Components),
+        and [Hosted Checkout](https://docs.adyen.com/online-payments/build-your-integration/sessions-flow/?platform=Web&integration=Hosted+Checkout)
         integrations.
 
 
@@ -5249,6 +5250,9 @@ components:
           description: The card expiry year. Only collect raw card data if you are
             [fully PCI compliant](https://docs.adyen.com/development-resources/pci-dss-compliance-guide).
           type: string
+        fastlaneData:
+          description: The encoded fastlane data blob
+          type: string
         fundingSource:
           description: The funding source that should be used when multiple sources
             are available. For Brazilian combo cards, by default the funding source
@@ -5420,6 +5424,9 @@ components:
         expiryYear:
           description: The card expiry year. Only collect raw card data if you are
             [fully PCI compliant](https://docs.adyen.com/development-resources/pci-dss-compliance-guide).
+          type: string
+        fastlaneData:
+          description: The encoded fastlane data blob
           type: string
         fundingSource:
           description: The funding source that should be used when multiple sources
@@ -8018,6 +8025,40 @@ components:
         version:
           description: Version of the field. For example, Version of External Platform.
           type: string
+      type: object
+    FastlaneDetails:
+      additionalProperties: false
+      properties:
+        checkoutAttemptId:
+          x-addedInVersion: '68'
+          description: The checkout attempt identifier.
+          type: string
+        fastlaneData:
+          description: The encoded fastlane data blob
+          type: string
+        recurringDetailReference:
+          deprecated: true
+          x-deprecatedInVersion: '49'
+          x-deprecatedMessage: Use `storedPaymentMethodId` instead.
+          description: This is the `recurringDetailReference` returned in the response
+            when you created the token.
+          type: string
+        storedPaymentMethodId:
+          x-addedInVersion: '49'
+          description: This is the `recurringDetailReference` returned in the response
+            when you created the token.
+          maxLength: 64
+          type: string
+        type:
+          default: fastlane
+          description: '**fastlane**'
+          enum:
+          - fastlane
+          type: string
+      required:
+      - type
+      - fastlaneData
+      title: Fastlane
       type: object
     ForexQuote:
       additionalProperties: false
@@ -11214,6 +11255,7 @@ components:
           - $ref: '#/components/schemas/EBankingFinlandDetails'
           - $ref: '#/components/schemas/EcontextVoucherDetails'
           - $ref: '#/components/schemas/EftDetails'
+          - $ref: '#/components/schemas/FastlaneDetails'
           - $ref: '#/components/schemas/GenericIssuerPaymentMethodDetails'
           - $ref: '#/components/schemas/GiropayDetails'
           - $ref: '#/components/schemas/GooglePayDetails'
@@ -16116,7 +16158,6 @@ components:
         reference: Your order number
         paymentMethod:
           type: ideal
-          issuer: '1121'
         returnUrl: https://your-company.com/...
         merchantAccount: YOUR_MERCHANT_ACCOUNT
     post-payments-ideal-200:
