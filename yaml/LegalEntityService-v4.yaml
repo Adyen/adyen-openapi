@@ -47,7 +47,7 @@ paths:
         \ about your user's line of business, including their industry and their source\
         \ of funds. Adyen uses this information to verify your users as required by\
         \ payment industry regulations.Adyen informs you of the verification results\
-        \ through webhooks or API responses.\n\nYou can create a maximum of 3 business\
+        \ through webhooks or API responses.\n\nYou can create a maximum of 200 business\
         \ lines per legal entity for payment processing.\n\n"
       x-addedInVersion: '1'
       operationId: post-businessLines
@@ -62,6 +62,8 @@ paths:
             examples:
               createBusinessLines-businessAccounts:
                 $ref: '#/components/examples/post-businessLines-createBusinessLines-businessAccounts'
+              createBusinessLines-issuing:
+                $ref: '#/components/examples/post-businessLines-createBusinessLines-issuing'
               createBusinessLines-receive:
                 $ref: '#/components/examples/post-businessLines-createBusinessLines-receive'
             schema:
@@ -73,6 +75,8 @@ paths:
               examples:
                 createBusinessLines-businessAccounts:
                   $ref: '#/components/examples/post-businessLines-createBusinessLines-businessAccounts-200'
+                createBusinessLines-issuing:
+                  $ref: '#/components/examples/post-businessLines-createBusinessLines-issuing-200'
                 createBusinessLines-receive:
                   $ref: '#/components/examples/post-businessLines-createBusinessLines-receive-200'
               schema:
@@ -4664,18 +4668,18 @@ components:
           x-addedInVersion: '4'
           description: The date the funds were received, in YYYY-MM-DD format. Required
             if `type` is **donations** or **inheritance**.
-          format: date-time
+          format: date
           type: string
         dateOfSourceEvent:
           x-addedInVersion: '4'
-          description: 'The date when the source of funds became available, in YYYY-MM-DD
-            format. Required if `type` is **assetSale** or **gamblingWinnings**.
+          description: 'The date the funds were received, in YYYY-MM-DD format. Required
+            if `type` is **assetSale** or **gamblingWinnings**.
 
 
             For example, if the source of funds is of type **assetSale**, the dateOfSourceEvent
             is the date of the sale. If the source of funds is of type **gamblingWinnings**,
             the dateOfSourceEvent is the date of winnings.'
-          format: date-time
+          format: date
           type: string
         description:
           description: 'Text describing the source of funds. Required if `type` is
@@ -6261,6 +6265,7 @@ components:
         legalEntityId: LE00000000000000000000001
         sourceOfFunds:
           type: business
+          annualTurnover: '123678'
           adyenProcessedFunds: false
           description: Funds from my flower shop business
     post-businessLines-createBusinessLines-businessAccounts-200:
@@ -6272,15 +6277,47 @@ components:
         service: banking
         sourceOfFunds:
           adyenProcessedFunds: false
+          annualTurnover: '123678'
           description: Funds from my flower shop business
           type: business
         webData:
         - webAddress: https://www.adyen.com
           webAddressId: SE322JV223222F5H4CQGS77V4
         id: SE322KT223222D5FJ7TJN2986
+    post-businessLines-createBusinessLines-issuing:
+      summary: Create a business line for card issuing
+      description: Example request for creating a business line for card issuing
+      value:
+        legalEntityId: LE00000000000000000000001
+        service: issuing
+        industryCode: '45391'
+        sourceOfFunds:
+          adyenProcessedFunds: false
+          type: assetSale
+          dateOfSourceEvent: '2024-12-03'
+          description: Sale of my property at Turfmarkt 654A, Haarlem, 2011CA.
+          amount:
+            currency: EUR
+            value: 600000
+    post-businessLines-createBusinessLines-issuing-200:
+      summary: Business line created
+      description: Example response for creating a business line for card issuing
+      value:
+        industryCode: '45391'
+        legalEntityId: LE00000000000000000000001
+        service: issuing
+        sourceOfFunds:
+          adyenProcessedFunds: false
+          amount:
+            currency: EUR
+            value: 600000
+          dateOfSourceEvent: '2024-12-03'
+          description: Sale of my property at Turfmarkt 654A, Haarlem, 2011CA.
+          type: assetSale
+        id: SE3292Q22322695M2KT779RHG
     post-businessLines-createBusinessLines-receive:
       summary: Create a business line for receiving payments
-      description: Example request for receiving payments
+      description: Example request for creating a business line for receiving payments
       value:
         service: paymentProcessing
         industryCode: 339E
