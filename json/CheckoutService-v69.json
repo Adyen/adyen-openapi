@@ -1459,7 +1459,7 @@
                "Payments"
             ],
             "summary" : "Get a list of available payment methods",
-            "description" : "Queries the available payment methods for a transaction based on the transaction context (like amount, country, and currency). Besides giving back a list of the available payment methods, the response also returns which input details you need to collect from the shopper (to be submitted to `/payments`).\n\nAlthough we highly recommend using this endpoint to ensure you are always offering the most up-to-date list of payment methods, its usage is optional. You can, for example, also cache the `/paymentMethods` response and update it once a week.",
+            "description" : "Retrieves the list of available payment methods for the transaction, based on the transaction information like amount, country, and currency.",
             "operationId" : "post-paymentMethods",
             "x-sortIndex" : 2,
             "x-methodName" : "paymentMethods",
@@ -3630,7 +3630,7 @@
                   "type" : "string"
                },
                "threeDSVersion" : {
-                  "description" : "Indicates your preference for the 3D Secure version. \n> If you use this parameter, you override the checks from Adyen's Authentication Engine. We recommend to use this field only if you have an extensive knowledge of 3D Secure.\n\nPossible values:\n* **1.0.2**: Apply 3D Secure version 1.0.2. \n* **2.1.0**: Apply 3D Secure version 2.1.0. \n* **2.2.0**: Apply 3D Secure version 2.2.0. If the issuer does not support version 2.2.0, we will fall back to 2.1.0.\n\nThe following rules apply:\n* If you prefer 2.1.0 or 2.2.0 but we receive a negative `transStatus` in the `ARes`, we will apply the fallback policy configured in your account. For example, if the configuration is to fall back to 3D Secure 1, we will apply version 1.0.2.\n* If you prefer 2.1.0 or 2.2.0 but the BIN is not enrolled, you will receive an error.\n\n",
+                  "description" : "Indicates your preference for the 3D Secure version. \n> If you use this parameter, you override the checks from Adyen's Authentication Engine. We recommend to use this field only if you have an extensive knowledge of 3D Secure.\n\nPossible values:\n* **2.1.0**: Apply 3D Secure version 2.1.0. \n* **2.2.0**: Apply 3D Secure version 2.2.0. If the issuer does not support version 2.2.0, we will fall back to 2.1.0.\n\nThe following rules apply:\n* If you prefer 2.1.0 or 2.2.0 but we receive a negative `transStatus` in the `ARes`, we will apply the fallback policy configured in your account.\n* If you the BIN is not enrolled, you will receive an error.\n\n",
                   "type" : "string"
                }
             },
@@ -5069,7 +5069,7 @@
                   "$ref" : "#/components/schemas/Address"
                },
                "browserInfo" : {
-                  "description" : "The shopper's browser information.\n> For 3D Secure, the full object is required for web integrations. For mobile app integrations, include the `userAgent` and `acceptHeader` fields to indicate  that your integration can support a redirect in case a payment is routed to 3D Secure 1.",
+                  "description" : "The shopper's browser information.\n> For 3D Secure, the full object is required for web integrations. For mobile app integrations, include the `userAgent` and `acceptHeader` fields to indicate  that your integration can support a redirect in case a payment is routed to 3D Secure 2 redirect.",
                   "$ref" : "#/components/schemas/BrowserInfo"
                },
                "captureDelayHours" : {
@@ -7817,7 +7817,7 @@
                   "type" : "array"
                },
                "browserInfo" : {
-                  "description" : "The shopper's browser information.\n> For 3D Secure, the full object is required for web integrations. For mobile app integrations, include the `userAgent` and `acceptHeader` fields to indicate  that your integration can support a redirect in case a payment is routed to 3D Secure 1.",
+                  "description" : "The shopper's browser information.\n> For 3D Secure, the full object is required for web integrations. For mobile app integrations, include the `userAgent` and `acceptHeader` fields to indicate  that your integration can support a redirect in case a payment is routed to 3D Secure 2 redirect.",
                   "$ref" : "#/components/schemas/BrowserInfo"
                },
                "captureDelayHours" : {
@@ -10282,7 +10282,6 @@
                      "molpay_ebanking_MY",
                      "molpay_ebanking_direct_MY",
                      "swish",
-                     "pix",
                      "bizum",
                      "walley",
                      "walley_b2b",
@@ -11585,7 +11584,7 @@
                   "$ref" : "#/components/schemas/BillingAddress"
                },
                "browserInfo" : {
-                  "description" : "The shopper's browser information.\n> For 3D Secure, the full object is required for web integrations. For mobile app integrations, include the `userAgent` and `acceptHeader` fields to indicate  that your integration can support a redirect in case a payment is routed to 3D Secure 1.",
+                  "description" : "The shopper's browser information.\n> For 3D Secure, the full object is required for web integrations. For mobile app integrations, include the `userAgent` and `acceptHeader` fields to indicate  that your integration can support a redirect in case a payment is routed to 3D Secure 2 redirect.",
                   "$ref" : "#/components/schemas/BrowserInfo"
                },
                "captureDelayHours" : {
@@ -11868,6 +11867,9 @@
                      },
                      {
                         "$ref" : "#/components/schemas/PaymentDetails"
+                     },
+                     {
+                        "$ref" : "#/components/schemas/PixDetails"
                      },
                      {
                         "$ref" : "#/components/schemas/PseDetails"
@@ -12345,6 +12347,91 @@
                   "type" : "string"
                }
             },
+            "type" : "object"
+         },
+         "PixDetails" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "checkoutAttemptId" : {
+                  "x-addedInVersion" : "68",
+                  "description" : "The checkout attempt identifier.",
+                  "type" : "string"
+               },
+               "pixRecurring" : {
+                  "$ref" : "#/components/schemas/PixRecurring"
+               },
+               "recurringDetailReference" : {
+                  "deprecated" : true,
+                  "x-deprecatedInVersion" : "49",
+                  "x-deprecatedMessage" : "Use `storedPaymentMethodId` instead.",
+                  "description" : "This is the `recurringDetailReference` returned in the response when you created the token.",
+                  "type" : "string"
+               },
+               "storedPaymentMethodId" : {
+                  "x-addedInVersion" : "49",
+                  "description" : "This is the `recurringDetailReference` returned in the response when you created the token.",
+                  "maxLength" : 64,
+                  "type" : "string"
+               },
+               "type" : {
+                  "description" : "The payment method type.",
+                  "enum" : [
+                     "pix"
+                  ],
+                  "type" : "string"
+               }
+            },
+            "title" : "Stored Payment Method",
+            "type" : "object"
+         },
+         "PixRecurring" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "billingDate" : {
+                  "description" : "The date on which the shopper's payment method will be charged, in YYYY-MM-DD format.",
+                  "type" : "string"
+               },
+               "endsAt" : {
+                  "description" : "End date of the billing plan, in YYYY-MM-DD format. The end date must align with the frequency and the start date of the billing plan. If left blank, the subscription will continue indefinitely unless it is cancelled by the shopper.",
+                  "type" : "string"
+               },
+               "frequency" : {
+                  "description" : "The frequency at which the shopper will be charged.",
+                  "enum" : [
+                     "weekly",
+                     "monthly",
+                     "quarterly",
+                     "half-yearly",
+                     "yearly"
+                  ],
+                  "type" : "string"
+               },
+               "minAmount" : {
+                  "description" : "For a billing plan where the payment amounts are variable, the minimum amount to charge the shopper for each recurring payment. When a shopper approves the billing plan, they can also specify a maximum amount in their banking app.",
+                  "$ref" : "#/components/schemas/Amount"
+               },
+               "originalPspReference" : {
+                  "description" : "The pspReference for the failed recurring payment. Find this in AUTHORISATION webhook you received after the billing date.",
+                  "type" : "string"
+               },
+               "recurringAmount" : {
+                  "description" : "For a billing plan where the payment amount is fixed, the amount the shopper will be charged for each recurring payment.",
+                  "$ref" : "#/components/schemas/Amount"
+               },
+               "recurringStatement" : {
+                  "description" : "The text that that will be shown on the shopper's bank statement for the recurring payments. We recommend to add a descriptive text about the subscription to let your shoppers recognize your recurring payments.\nMaximum length: 35 characters.",
+                  "type" : "string"
+               },
+               "retryPolicy" : {
+                  "description" : "When set to true, you can retry for failed recurring payments. The default value is true.",
+                  "type" : "boolean"
+               },
+               "startsAt" : {
+                  "description" : "Start date of the billing plan, in YYYY-MM-DD format. The default value is the transaction date.",
+                  "type" : "string"
+               }
+            },
+            "title" : "pixRecurring",
             "type" : "object"
          },
          "PlatformChargebackLogic" : {
@@ -12857,12 +12944,29 @@
                   "description" : "The 3D Secure 2 version.",
                   "type" : "string"
                },
+               "tokenization.shopperReference" : {
+                  "description" : "The provided reference of the shopper.",
+                  "type" : "string"
+               },
+               "tokenization.store.operationType" : {
+                  "description" : "The store operation performed on the token.",
+                  "enum" : [
+                     "created",
+                     "updated",
+                     "alreadyStored"
+                  ],
+                  "type" : "string"
+               },
+               "tokenization.storedPaymentMethodId" : {
+                  "description" : "The reference that uniquely identifies tokenized payment details.",
+                  "type" : "string"
+               },
                "visaTransactionId" : {
                   "description" : "The `visaTransactionId`, has a fixed length of 15 numeric characters.\n\n> Contact Support Team to enable this field.",
                   "type" : "string"
                },
                "xid" : {
-                  "description" : "The 3DS transaction ID of the 3DS session sent in notifications. The value is Base64-encoded and is returned for transactions with directoryResponse 'N' or 'Y'. If you want to submit the xid in your 3D Secure 1 request, use the `mpiData.xid`, field.\n\nExample: ODgxNDc2MDg2MDExODk5MAAAAAA=",
+                  "description" : "The 3DS transaction ID of the 3DS session sent in notifications. The value is Base64-encoded and is returned for transactions with directoryResponse 'N' or 'Y'. \n\nExample: ODgxNDc2MDg2MDExODk5MAAAAAA=",
                   "type" : "string"
                }
             },
@@ -14506,7 +14610,7 @@
             "additionalProperties" : false,
             "properties" : {
                "authenticationResponse" : {
-                  "description" : "In 3D Secure 1, the authentication response if the shopper was redirected.\n\nIn 3D Secure 2, this is the `transStatus` from the challenge result. If the transaction was frictionless, omit this parameter.",
+                  "description" : "In 3D Secure 2, this is the `transStatus` from the challenge result. If the transaction was frictionless, omit this parameter.\n\n",
                   "enum" : [
                      "Y",
                      "N",
@@ -14539,7 +14643,7 @@
                   "type" : "string"
                },
                "directoryResponse" : {
-                  "description" : "In 3D Secure 1, this is the enrollment response from the 3D directory server.\n\nIn 3D Secure 2, this is the `transStatus` from the `ARes`.",
+                  "description" : "In 3D Secure 2, this is the `transStatus` from the `ARes`.\n\n",
                   "enum" : [
                      "A",
                      "C",
