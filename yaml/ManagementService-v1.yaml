@@ -10028,6 +10028,15 @@ components:
           description: Additional address details, if any.
           type: string
       type: object
+    AffirmInfo:
+      additionalProperties: false
+      properties:
+        supportEmail:
+          description: Merchant support email
+          type: string
+      required:
+      - supportEmail
+      type: object
     AfterpayTouchInfo:
       additionalProperties: false
       properties:
@@ -10141,6 +10150,12 @@ components:
             * `invalid`: there is something wrong with the APK file of the app.\n\
             * `ready`: the app has been signed and converted.\n* `archived`: the app\
             \ is no longer available."
+          enum:
+          - archived
+          - error
+          - invalid
+          - processing
+          - ready
           type: string
         versionCode:
           description: The version number of the app.
@@ -12599,6 +12614,23 @@ components:
       - subject
       - payerId
       type: object
+    PayToInfo:
+      additionalProperties: false
+      properties:
+        merchantName:
+          description: Merchant name displayed to the shopper in the Agreements
+          type: string
+        payToPurpose:
+          description: 'Represents the purpose of the Agreements created, it relates
+            to the business type
+
+            **Allowed values**: mortgage, utility, loan, gambling, retail, salary,
+            personal, government, pension, tax, other'
+          type: string
+      required:
+      - merchantName
+      - payToPurpose
+      type: object
     Payment:
       additionalProperties: false
       properties:
@@ -12621,6 +12653,9 @@ components:
         accel:
           description: ACCEL details.
           $ref: '#/components/schemas/AccelInfo'
+        affirm:
+          description: Affirm details.
+          $ref: '#/components/schemas/AffirmInfo'
         afterpayTouch:
           description: Afterpay Touch details.
           $ref: '#/components/schemas/AfterpayTouchInfo'
@@ -12680,6 +12715,9 @@ components:
             payment method instead. Discover is automatically requested, together
             with Diners.
           $ref: '#/components/schemas/GenericPmWithTdiInfo'
+        eft_directdebit_CA:
+          description: EFT Direct Debit Canada details.
+          $ref: '#/components/schemas/GenericPmWithTdiInfo'
         eftpos_australia:
           description: Eftpos Australia details.
           $ref: '#/components/schemas/GenericPmWithTdiInfo'
@@ -12735,6 +12773,9 @@ components:
         paypal:
           description: PayPal details.
           $ref: '#/components/schemas/PayPalInfo'
+        payto:
+          description: PayTo details.
+          $ref: '#/components/schemas/PayToInfo'
         pulse:
           description: PULSE details.
           $ref: '#/components/schemas/PulseInfo'
@@ -12830,11 +12871,13 @@ components:
           items:
             enum:
             - accel
+            - ach
             - affirm
             - afterpaytouch
             - alelo
             - alipay
             - alipay_hk
+            - alipay_wap
             - amex
             - applepay
             - banese_card
@@ -12854,6 +12897,7 @@ components:
             - directdebit_GB
             - discover
             - ebanking_FI
+            - eft_directdebit_CA
             - eftpos_australia
             - elo
             - elocredit
@@ -12884,6 +12928,7 @@ components:
             - paynow_pos
             - paypal
             - payshop
+            - payto
             - pulse
             - sodexo
             - star
@@ -12914,6 +12959,9 @@ components:
         accel:
           description: ACCEL details.
           $ref: '#/components/schemas/AccelInfo'
+        affirm:
+          description: Affirm details.
+          $ref: '#/components/schemas/AffirmInfo'
         afterpayTouch:
           description: Afterpay Touch details.
           $ref: '#/components/schemas/AfterpayTouchInfo'
@@ -12969,6 +13017,9 @@ components:
             payment method instead. Discover is automatically requested, together
             with Diners.
           $ref: '#/components/schemas/GenericPmWithTdiInfo'
+        eft_directdebit_CA:
+          description: EFT Direct Debit Canada details.
+          $ref: '#/components/schemas/GenericPmWithTdiInfo'
         eftpos_australia:
           description: Eftpos Australia details.
           $ref: '#/components/schemas/GenericPmWithTdiInfo'
@@ -13017,6 +13068,9 @@ components:
         paypal:
           description: PayPal details.
           $ref: '#/components/schemas/PayPalInfo'
+        payto:
+          description: PayTo details.
+          $ref: '#/components/schemas/PayToInfo'
         pulse:
           description: PULSE details.
           $ref: '#/components/schemas/PulseInfo'
@@ -13068,11 +13122,13 @@ components:
           description: Payment method [variant](https://docs.adyen.com/development-resources/paymentmethodvariant#management-api).
           enum:
           - accel
+          - ach
           - affirm
           - afterpaytouch
           - alelo
           - alipay
           - alipay_hk
+          - alipay_wap
           - amex
           - applepay
           - banese_card
@@ -13092,6 +13148,7 @@ components:
           - directdebit_GB
           - discover
           - ebanking_FI
+          - eft_directdebit_CA
           - eftpos_australia
           - elo
           - elocredit
@@ -13122,6 +13179,7 @@ components:
           - paynow_pos
           - paypal
           - payshop
+          - payto
           - pulse
           - sodexo
           - star
@@ -13962,11 +14020,23 @@ components:
             Its value must be a three-character [ISO currency code](https://en.wikipedia.org/wiki/ISO_4217).'
           type: string
         fundingSource:
-          description: 'The funding source condition of the payment method (only for
-            cards).
+          description: 'The funding source of the payment method. This only applies
+            to card transactions.
 
 
-            Possible values: **credit**, **debit**, or **ANY**.'
+            Possible values:
+
+            * **credit**
+
+            * **debit**
+
+            * **prepaid**
+
+            * **deferred_debit**
+
+            * **charged**
+
+            * **ANY**'
           enum:
           - credit
           - debit
@@ -14312,6 +14382,9 @@ components:
           items:
             $ref: '#/components/schemas/Configuration'
           type: array
+        excludeGratuityFromSurcharge:
+          description: Exclude the tip amount from the surcharge calculation.
+          type: boolean
       type: object
     SwishInfo:
       additionalProperties: false
@@ -15300,6 +15373,9 @@ components:
         discover:
           description: Discover details.
           $ref: '#/components/schemas/GenericPmWithTdiInfo'
+        eft_directdebit_CA:
+          description: EFT Direct Debit Canada details.
+          $ref: '#/components/schemas/GenericPmWithTdiInfo'
         eftpos_australia:
           description: Eftpos Australia details.
           $ref: '#/components/schemas/GenericPmWithTdiInfo'
@@ -15567,11 +15643,23 @@ components:
             Its value must be a three-character [ISO currency code](https://en.wikipedia.org/wiki/ISO_4217).'
           type: string
         fundingSource:
-          description: 'The funding source condition of the payment method (only for
-            cards).
+          description: 'The funding source of the payment method. This only applies
+            to card transactions.
 
 
-            Possible values: **credit**, **debit**, or **ANY**.'
+            Possible values:
+
+            * **credit**
+
+            * **debit**
+
+            * **prepaid**
+
+            * **deferred_debit**
+
+            * **charged**
+
+            * **ANY**'
           type: string
         paymentMethod:
           description: 'The payment method condition that defines whether the split
@@ -17674,7 +17762,7 @@ components:
           stateOrProvince: NY
         description: City centre store
         merchantId: YOUR_MERCHANT_ACCOUNT_ID
-        phoneNumber: '+1813702551707653'
+        phoneNumber: '+13123456789'
         reference: Springfield Shop
         status: active
         _links:
@@ -17707,7 +17795,7 @@ components:
             stateOrProvince: NY
           description: City centre store
           merchantId: YOUR_MERCHANT_ACCOUNT_ID
-          phoneNumber: '+1813702551707653'
+          phoneNumber: '+13123456789'
           reference: Springfield Shop
           status: active
           _links:
@@ -18441,7 +18529,7 @@ components:
           stateOrProvince: NY
         description: City centre store
         merchantId: YOUR_MERCHANT_ACCOUNT_ID
-        phoneNumber: '+1813702551707653'
+        phoneNumber: '+13123456789'
         reference: Springfield Shop
         status: active
         _links:
@@ -18563,7 +18651,7 @@ components:
             stateOrProvince: NY
           description: City centre store
           merchantId: YOUR_MERCHANT_ACCOUNT_ID
-          phoneNumber: '+1813702551707653'
+          phoneNumber: '+1312345678'
           reference: Springfield Shop
           status: active
           _links:
@@ -19664,7 +19752,7 @@ components:
         description: City centre store
         merchantId: YOUR_MERCHANT_ACCOUNT_ID
         shopperStatement: Springfield Shop
-        phoneNumber: '+1813702551707653'
+        phoneNumber: '+13123456789'
         reference: Spring_store_2
         status: active
         _links:
@@ -19693,7 +19781,7 @@ components:
         description: City centre store
         merchantId: YOUR_MERCHANT_ACCOUNT_ID
         shopperStatement: Springfield Shop
-        phoneNumber: '+1813702551707653'
+        phoneNumber: '+13123456789'
         reference: Spring_store_2
         splitConfiguration:
           balanceAccountId: BA3227C223222H5HQ2XX77VVH
@@ -20113,7 +20201,7 @@ components:
         description: City centre store
         merchantId: YOUR_MERCHANT_ACCOUNT_ID
         shopperStatement: Springfield Shop
-        phoneNumber: '+1813702551707653'
+        phoneNumber: '+13123456789'
         reference: Spring_store_2
         status: active
         _links:
@@ -21352,7 +21440,7 @@ components:
       value:
         description: City centre store
         shopperStatement: Springfield Shop
-        phoneNumber: '1813702551707653'
+        phoneNumber: '13123456789'
         reference: Spring_store_2
         address:
           country: US
@@ -21378,7 +21466,7 @@ components:
         description: City centre store
         merchantId: YOUR_MERCHANT_ACCOUNT_ID
         shopperStatement: Springfield Shop
-        phoneNumber: '1813702551707653'
+        phoneNumber: '13123456789'
         reference: Spring_store_2
         status: active
         _links:
@@ -21712,7 +21800,7 @@ components:
         merchantId: YOUR_MERCHANT_ACCOUNT_ID
         description: City centre store
         shopperStatement: Springfield Shop
-        phoneNumber: '+1813702551707653'
+        phoneNumber: '+13123456789'
         reference: Spring_store_2
         address:
           country: US
@@ -21738,7 +21826,7 @@ components:
         description: City centre store
         merchantId: YOUR_MERCHANT_ACCOUNT_ID
         shopperStatement: Springfield Shop
-        phoneNumber: '+1813702551707653'
+        phoneNumber: '+13123456789'
         reference: Spring_store_2
         status: active
         _links:
