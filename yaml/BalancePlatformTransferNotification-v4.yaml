@@ -860,6 +860,17 @@ components:
           description: The flight identifier.
           type: string
       type: object
+    Lodging:
+      additionalProperties: false
+      properties:
+        checkInDate:
+          description: The check-in date.
+          type: string
+        numberOfNights:
+          description: The total number of nights the room is booked for.
+          format: int32
+          type: integer
+      type: object
     MerchantData:
       additionalProperties: false
       properties:
@@ -870,13 +881,13 @@ components:
           description: The merchant category code.
           type: string
         merchantId:
-          description: The merchant identifier.
+          description: The unique identifier of the merchant.
           type: string
         nameLocation:
-          description: Contains the merchant's name and location.
+          description: Contains the name and location of the merchant.
           $ref: '#/components/schemas/NameLocation'
         postalCode:
-          description: The merchant postal code.
+          description: The postal code of the merchant.
           type: string
       type: object
     MerchantPurchaseData:
@@ -885,6 +896,11 @@ components:
         airline:
           description: Airline information.
           $ref: '#/components/schemas/Airline'
+        lodging:
+          description: Lodging information.
+          items:
+            $ref: '#/components/schemas/Lodging'
+          type: array
         type:
           default: merchantPurchaseData
           description: "The type of events data. \n\nPossible values: \n\n - **merchantPurchaseData**:\
@@ -1214,6 +1230,10 @@ components:
             * **Commission**: for your platform''s commission on a transaction.
 
 
+            * **DCCPlatformCommission**: for the DCC Commission for the platform on
+            a transaction.
+
+
             * **Interchange**: for the interchange fee (fee paid to the issuer) incurred
             on a transaction.
 
@@ -1245,6 +1265,7 @@ components:
           - AdyenMarkup
           - BalanceAccount
           - Commission
+          - DCCPlatformCommission
           - Default
           - Interchange
           - PaymentFee
@@ -1736,11 +1757,13 @@ components:
       properties:
         amount:
           x-addedInVersion: '3'
-          description: The original journal amount.
+          description: The original journal amount. Only applicable for [issuing](https://docs.adyen.com/issuing/)
+            integrations.
           $ref: '#/components/schemas/Amount'
         amountAdjustments:
           x-addedInVersion: '3'
-          description: The amount adjustments in this transfer.
+          description: The amount adjustments in this transfer. Only applicable for
+            [issuing](https://docs.adyen.com/issuing/) integrations.
           items:
             $ref: '#/components/schemas/AmountAdjustment'
           type: array
@@ -1777,7 +1800,8 @@ components:
           type: string
         modification:
           x-addedInVersion: '3'
-          description: Payment modification.
+          description: The payment modification. Only applicable for [returned internal
+            transfers](https://docs.adyen.com/platforms/internal-fund-transfers/internal-transfer-webhooks/#returned-internal-transfer).
           $ref: '#/components/schemas/Modification'
         mutations:
           x-addedInVersion: '3'
@@ -1787,7 +1811,8 @@ components:
           type: array
         originalAmount:
           x-addedInVersion: '3'
-          description: The amount in the original currency.
+          description: 'The amount in the original currency. Only applicable for [issuing](https://docs.adyen.com/issuing/)
+            integrations. '
           $ref: '#/components/schemas/Amount'
         reason:
           x-addedInVersion: '3'
@@ -1957,13 +1982,13 @@ components:
           description: The merchant category code.
           type: string
         merchantId:
-          description: The merchant identifier.
+          description: The unique identifier of the merchant.
           type: string
         name:
           description: The name of the merchant's shop or service.
           type: string
         postalCode:
-          description: The merchant postal code.
+          description: The postal code of the merchant.
           type: string
       type: object
     TransferNotificationRequest:

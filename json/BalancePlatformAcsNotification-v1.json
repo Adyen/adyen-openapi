@@ -14,6 +14,9 @@
    "tags" : [
       {
          "name" : "General"
+      },
+      {
+         "name" : "Out-of-band"
       }
    ],
    "webhooks" : {
@@ -78,6 +81,96 @@
                }
             }
          }
+      },
+      "balancePlatform.authentication.relayed" : {
+         "post" : {
+            "tags" : [
+               "Out-of-band"
+            ],
+            "summary" : "Out-of-band authentication requested",
+            "description" : "Adyen sends this webhook when a cardholder must perform [out-of-band authentication](https://docs.adyen.com/issuing/3d-secure/oob-auth-sdk/authenticate-cardholders).\n\nTo complete the authentication process, respond to this webhook with an **HTTP 200** response. Include the `authenticationDecision` in the response body.\n\nIf we do not receive the response within two seconds, the authentication process stops.",
+            "x-addedInVersion" : "1",
+            "operationId" : "post-balancePlatform.authentication.relayed",
+            "x-sortIndex" : 2,
+            "x-methodName" : "outofbandAuthenticationRequested",
+            "security" : [
+               {
+                  "BasicAuth" : [
+                     ]
+               }
+            ],
+            "requestBody" : {
+               "content" : {
+                  "application/json" : {
+                     "schema" : {
+                        "$ref" : "#/components/schemas/RelayedAuthenticationRequest"
+                     }
+                  }
+               }
+            },
+            "responses" : {
+               "200" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/RelayedAuthenticationResponse"
+                        }
+                     }
+                  },
+                  "description" : "OK - the request has succeeded."
+               },
+               "400" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/ServiceError"
+                        }
+                     }
+                  },
+                  "description" : "Bad Request - a problem reading or understanding the request."
+               },
+               "401" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/ServiceError"
+                        }
+                     }
+                  },
+                  "description" : "Unauthorized - authentication required."
+               },
+               "403" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/ServiceError"
+                        }
+                     }
+                  },
+                  "description" : "Forbidden - insufficient permissions to process the request."
+               },
+               "422" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/ServiceError"
+                        }
+                     }
+                  },
+                  "description" : "Unprocessable Entity - a request validation error."
+               },
+               "500" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/ServiceError"
+                        }
+                     }
+                  },
+                  "description" : "Internal Server Error - the server could not process the request."
+               }
+            }
+         }
       }
    },
    "components" : {
@@ -100,6 +193,23 @@
             "required" : [
                "value",
                "currency"
+            ],
+            "type" : "object"
+         },
+         "AuthenticationDecision" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "status" : {
+                  "description" : "The status of the authentication. \n\nPossible values: \n\n* **refused** \n\n* **proceed** \n\nFor more information, refer to [Authenticate cardholders using the Authentication SDK](https://docs.adyen.com/issuing/3d-secure/oob-auth-sdk/authenticate-cardholders/).",
+                  "enum" : [
+                     "proceed",
+                     "refused"
+                  ],
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "status"
             ],
             "type" : "object"
          },
@@ -397,6 +507,30 @@
             ],
             "type" : "object"
          },
+         "Purchase" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "date" : {
+                  "description" : "The time of the purchase.",
+                  "format" : "date-time",
+                  "type" : "string"
+               },
+               "merchantName" : {
+                  "description" : "The name of the merchant.",
+                  "type" : "string"
+               },
+               "originalAmount" : {
+                  "description" : "The amount of the purchase in the original currency.",
+                  "$ref" : "#/components/schemas/Amount"
+               }
+            },
+            "required" : [
+               "date",
+               "merchantName",
+               "originalAmount"
+            ],
+            "type" : "object"
+         },
          "PurchaseInfo" : {
             "additionalProperties" : false,
             "properties" : {
@@ -420,6 +554,42 @@
             ],
             "type" : "object"
          },
+         "RelayedAuthenticationRequest" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "id" : {
+                  "description" : "The unique identifier of the challenge.",
+                  "type" : "string"
+               },
+               "paymentInstrumentId" : {
+                  "description" : "The unique identifier of the [payment instrument](https://docs.adyen.com/api-explorer/balanceplatform/latest/get/paymentInstruments/_id_) used for the purchase.",
+                  "type" : "string"
+               },
+               "purchase" : {
+                  "description" : "The details of the purchase.",
+                  "$ref" : "#/components/schemas/Purchase"
+               }
+            },
+            "required" : [
+               "id",
+               "purchase",
+               "paymentInstrumentId"
+            ],
+            "type" : "object"
+         },
+         "RelayedAuthenticationResponse" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "authenticationDecision" : {
+                  "description" : "The decision regarding the authentication.",
+                  "$ref" : "#/components/schemas/AuthenticationDecision"
+               }
+            },
+            "required" : [
+               "authenticationDecision"
+            ],
+            "type" : "object"
+         },
          "Resource" : {
             "additionalProperties" : false,
             "properties" : {
@@ -435,6 +605,33 @@
                "id" : {
                   "description" : "The ID of the resource.",
                   "type" : "string"
+               }
+            },
+            "type" : "object"
+         },
+         "ServiceError" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "errorCode" : {
+                  "description" : "The error code mapped to the error message.",
+                  "type" : "string"
+               },
+               "errorType" : {
+                  "description" : "The category of the error.",
+                  "type" : "string"
+               },
+               "message" : {
+                  "description" : "A short explanation of the issue.",
+                  "type" : "string"
+               },
+               "pspReference" : {
+                  "description" : "The PSP reference of the payment.",
+                  "type" : "string"
+               },
+               "status" : {
+                  "description" : "The HTTP response status.",
+                  "format" : "int32",
+                  "type" : "integer"
                }
             },
             "type" : "object"
