@@ -24,6 +24,7 @@ webhooks:
       summary: ACH Notification of Change
       description: An ACH Notification of Change was processed regarding changed bank
         account details.
+      deprecated: true
       operationId: post-ACH_NOTIFICATION_OF_CHANGE
       x-sortIndex: 0
       x-methodName: achNotificationOfChange
@@ -109,27 +110,6 @@ webhooks:
                 $ref: '#/components/examples/post-AUTORESCUE-autorescue'
             schema:
               $ref: '#/components/schemas/AutoRescueNotificationRequest'
-      responses:
-        '200':
-          description: No Content - webhook events are accepted on the basis of the
-            HTTP status code.
-  /AUTORESCUE_NEXT_ATTEMPT:
-    post:
-      tags:
-      - Additional configuration
-      summary: Auto Rescue process next attempt
-      description: The [Auto Rescue process](https://docs.adyen.com/online-payments/auto-rescue)
-        ended.
-      operationId: post-AUTORESCUE_NEXT_ATTEMPT
-      x-sortIndex: 0
-      x-methodName: autoRescueProcessNextAttempt
-      security:
-      - BasicAuth: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/NextAttemptNotificationRequest'
       responses:
         '200':
           description: No Content - webhook events are accepted on the basis of the
@@ -295,6 +275,32 @@ webhooks:
                 $ref: '#/components/examples/post-CHARGEBACK_REVERSED-chargeback_reversed'
             schema:
               $ref: '#/components/schemas/NotificationRequest'
+      responses:
+        '200':
+          description: No Content - webhook events are accepted on the basis of the
+            HTTP status code.
+  /DIRECT_DEBIT_NOTICE_OF_CHANGE:
+    post:
+      tags:
+      - Other webhooks
+      summary: Direct Debit Notice of Change
+      description: A Direct Debit Notice of Change was processed regarding changed
+        bank account details.
+      operationId: post-DIRECT_DEBIT_NOTICE_OF_CHANGE
+      x-sortIndex: 0
+      x-methodName: directDebitNoticeOfChange
+      security:
+      - BasicAuth: []
+      requestBody:
+        content:
+          application/json:
+            examples:
+              ach_notice_of_change:
+                $ref: '#/components/examples/post-DIRECT_DEBIT_NOTICE_OF_CHANGE-ach_notice_of_change'
+              eft_notice_of_change:
+                $ref: '#/components/examples/post-DIRECT_DEBIT_NOTICE_OF_CHANGE-eft_notice_of_change'
+            schema:
+              $ref: '#/components/schemas/AchNotificationOfChangeNotificationRequest'
       responses:
         '200':
           description: No Content - webhook events are accepted on the basis of the
@@ -763,6 +769,9 @@ webhooks:
       summary: Recurring contract created
       description: A recurring contract has been created. [Enable this webhook](https://docs.adyen.com/development-resources/webhooks/webhook-types#non-default-event-codes)
         in your Customer Area.
+      deprecated: true
+      x-deprecatedInVersion: '1'
+      x-deprecatedMessage: Use Tokenization webhooks instead.
       operationId: post-RECURRING_CONTRACT
       x-sortIndex: 0
       x-methodName: recurringContractCreated
@@ -1026,7 +1035,7 @@ components:
       properties:
         notificationOfChange:
           description: The Notification of Change information.
-          $ref: '#/components/schemas/AchNotificationOfChangeNotificationRequestDataNoc'
+          $ref: '#/components/schemas/Object'
         pspReference:
           description: PSP Reference.
           type: string
@@ -1037,78 +1046,6 @@ components:
       - pspReference
       - shopperReference
       - notificationOfChange
-      type: object
-    AchNotificationOfChangeNotificationRequestDataNoc:
-      additionalProperties: false
-      properties:
-        newBankAccountNumber:
-          description: New bank account number.
-          type: string
-        newBankAccountType:
-          description: 'New bank account type.
-
-
-            Possible values:
-
-            *  **Savings**
-
-            *  **Checking**
-
-
-            '
-          enum:
-          - Checking
-          - Savings
-          type: string
-        newBranchCode:
-          description: New branch code.
-          type: string
-        reasonCode:
-          description: 'Notification of Change reason code.
-
-
-            Possible values:
-
-            *  **C01** : Incorrect bank account number.
-
-            *  **C02** : Incorrect transit/routing number.
-
-            *  **C03** : Incorrect transit/routing number and bank account number.
-
-            *  **C04** : Bank account name change.
-
-            *  **C05** : Incorrect payment code.
-
-            *  **C06** : Incorrect bank account number and transit code.
-
-            *  **C07** : Incorrect transit/routing number, bank account number and
-            payment code.
-
-            *  **C09** : Incorrect individual ID number.
-
-            *  **C10** : Incorrect company name.
-
-            *  **C11** : Incorrect company identification.
-
-            *  **C12** : Incorrect company name and company ID.
-
-
-            '
-          enum:
-          - C01
-          - C02
-          - C03
-          - C04
-          - C05
-          - C06
-          - C07
-          - C09
-          - C10
-          - C11
-          - C12
-          type: string
-      required:
-      - reasonCode
       type: object
     Amount:
       additionalProperties: false
@@ -1908,13 +1845,9 @@ components:
         visaTransactionId:
           type: string
         xid:
-          description: 'The 3DS transaction ID of the 3DS session sent in notifications.
-            The value is Base64-encoded and is returned for transactions with directoryResponse
-            ''N'' or ''Y''. If you want to submit the xid in your 3D Secure 1 request,
-            use the `mpiData.xid`, field.
-
-
-            Example: ODgxNDc2MDg2MDExODk5MAAAAAA='
+          description: "The 3DS transaction ID of the 3DS session sent in notifications.\
+            \ The value is Base64-encoded and is returned for transactions with directoryResponse\
+            \ 'N' or 'Y'. \n\nExample: ODgxNDc2MDg2MDExODk5MAAAAAA="
           type: string
       type: object
     AuthorisationNotificationRequest:
@@ -3442,214 +3375,6 @@ components:
       properties:
         NotificationRequestItem:
           $ref: '#/components/schemas/ModificationNotificationRequestItem'
-    NextAttemptAdditionalData:
-      additionalProperties: false
-      properties:
-        bookingDate:
-          type: string
-        hmacSignature:
-          type: string
-        paymentMethodVariant:
-          type: string
-        retry.nextAttemptDate:
-          type: string
-        retry.orderAttemptNumber:
-          type: string
-        retry.rescueReference:
-          type: string
-      type: object
-    NextAttemptNotificationRequest:
-      additionalProperties: false
-      properties:
-        live:
-          description: Informs about the origin of the notification. The value is
-            **true** when originating from the live environment, **false** for the
-            test environment.
-          type: string
-        notificationItems:
-          description: A container object for the details included in the notification.
-          items:
-            $ref: '#/components/schemas/NextAttemptNotificationRequestItemWrapper'
-          type: array
-      type: object
-    NextAttemptNotificationRequestItem:
-      additionalProperties: false
-      properties:
-        additionalData:
-          description: This object is a generic container that can hold extra fields.
-          $ref: '#/components/schemas/NextAttemptAdditionalData'
-        amount:
-          description: The payment amount. For HTTP POST notifications, currency and
-            value are returned as URL parameters.
-          $ref: '#/components/schemas/Amount'
-        eventCode:
-          description: The type of event the notification item is for.
-          enum:
-          - AUTHORISATION_ADJUSTMENT
-          - AUTORESCUE
-          - CANCELLATION
-          - CANCEL_AUTORESCUE
-          - CANCEL_OR_REFUND
-          - CAPTURE
-          - CAPTURE_FAILED
-          - CHARGEBACK
-          - CHARGEBACK_REVERSED
-          - MANUAL_REVIEW_ACCEPT
-          - MANUAL_REVIEW_REJECT
-          - NOTIFICATION_OF_CHARGEBACK
-          - NOTIFICATION_OF_FRAUD
-          - OFFER_CLOSED
-          - ORDER_CLOSED
-          - ORDER_OPENED
-          - PAYOUT_DECLINE
-          - PAYOUT_EXPIRE
-          - PAYOUT_THIRDPARTY
-          - POSTPONED_REFUND
-          - PREARBITRATION_LOST
-          - PREARBITRATION_WON
-          - REFUND
-          - REFUNDED_REVERSED
-          - REFUND_FAILED
-          - REFUND_WITH_DATA
-          - REQUEST_FOR_INFORMATION
-          - SECOND_CHARGEBACK
-          - TECHNICAL_CANCEL
-          - VOID_PENDING_REFUND
-          type: string
-        eventDate:
-          description: 'The time when the event was generated. Format: ISO 8601; yyyy-MM-DDThh:mm:ssTZD'
-          example: '2021-07-17T13:42:40+01:00'
-          format: date-time
-          type: string
-        merchantAccountCode:
-          description: The merchant account identifier used in the transaction the
-            notification item is for.
-          type: string
-        merchantReference:
-          description: Your reference to uniquely identify the payment.
-          type: string
-        originalReference:
-          description: For modifications, this field corresponds to the payment request
-            assigned to the original payment.
-          type: string
-        paymentMethod:
-          description: The payment method used in the transaction.
-          example: visa, mc, iDeal
-          type: string
-        pspReference:
-          description: Adyen's 16-character unique reference associated with the transaction
-            or request. This value is globally unique. Use it when communicating with
-            us about this request.
-          type: string
-        reason:
-          description: If `success` = `false`, then this includes a short message
-            with an explanation for the refusal.
-          type: string
-        success:
-          description: "Informs about the outcome of the event (`eventCode`) the notification\
-            \ is for. \nIf `true`: the event was executed successfully. \nIf `false`:\
-            \ the event was not executed successfully."
-          type: string
-      required:
-      - pspReference
-      - merchantReference
-      - merchantAccountCode
-      - eventDate
-      - eventCode
-      - amount
-      - success
-      type: object
-    NextAttemptNotificationRequestItem-recursive:
-      additionalProperties: false
-      properties:
-        eventCode:
-          description: The type of event the notification item is for.
-          enum:
-          - AUTHORISATION_ADJUSTMENT
-          - AUTORESCUE
-          - CANCELLATION
-          - CANCEL_AUTORESCUE
-          - CANCEL_OR_REFUND
-          - CAPTURE
-          - CAPTURE_FAILED
-          - CHARGEBACK
-          - CHARGEBACK_REVERSED
-          - MANUAL_REVIEW_ACCEPT
-          - MANUAL_REVIEW_REJECT
-          - NOTIFICATION_OF_CHARGEBACK
-          - NOTIFICATION_OF_FRAUD
-          - OFFER_CLOSED
-          - ORDER_CLOSED
-          - ORDER_OPENED
-          - PAYOUT_DECLINE
-          - PAYOUT_EXPIRE
-          - PAYOUT_THIRDPARTY
-          - POSTPONED_REFUND
-          - PREARBITRATION_LOST
-          - PREARBITRATION_WON
-          - REFUND
-          - REFUNDED_REVERSED
-          - REFUND_FAILED
-          - REFUND_WITH_DATA
-          - REQUEST_FOR_INFORMATION
-          - SECOND_CHARGEBACK
-          - TECHNICAL_CANCEL
-          - VOID_PENDING_REFUND
-          type: string
-        merchantAccountCode:
-          description: The merchant account identifier used in the transaction the
-            notification item is for.
-          type: string
-        originalReference:
-          description: For modifications, this field corresponds to the payment request
-            assigned to the original payment.
-          type: string
-        reason:
-          description: If `success` = `false`, then this includes a short message
-            with an explanation for the refusal.
-          type: string
-        amount:
-          description: The payment amount. For HTTP POST notifications, currency and
-            value are returned as URL parameters.
-          $ref: '#/components/schemas/Amount'
-        success:
-          description: "Informs about the outcome of the event (`eventCode`) the notification\
-            \ is for. \nIf `true`: the event was executed successfully. \nIf `false`:\
-            \ the event was not executed successfully."
-          type: string
-        paymentMethod:
-          description: The payment method used in the transaction.
-          example: visa, mc, iDeal
-          type: string
-        additionalData:
-          description: This object is a generic container that can hold extra fields.
-          $ref: '#/components/schemas/NextAttemptAdditionalData'
-        merchantReference:
-          description: Your reference to uniquely identify the payment.
-          type: string
-        pspReference:
-          description: Adyen's 16-character unique reference associated with the transaction
-            or request. This value is globally unique. Use it when communicating with
-            us about this request.
-          type: string
-        eventDate:
-          description: 'The time when the event was generated. Format: ISO 8601; yyyy-MM-DDThh:mm:ssTZD'
-          example: '2021-07-17T13:42:40+01:00'
-          format: date-time
-          type: string
-      required:
-      - pspReference
-      - merchantReference
-      - merchantAccountCode
-      - eventDate
-      - eventCode
-      - amount
-      - success
-      type: object
-    NextAttemptNotificationRequestItemWrapper:
-      properties:
-        NotificationRequestItem:
-          $ref: '#/components/schemas/NextAttemptNotificationRequestItem'
     NotificationAdditionalData:
       additionalProperties: false
       properties:
@@ -4052,13 +3777,9 @@ components:
           description: Card summary without tokenization.
           type: string
         xid:
-          description: 'The 3DS transaction ID of the 3DS session sent in notifications.
-            The value is Base64-encoded and is returned for transactions with directoryResponse
-            ''N'' or ''Y''. If you want to submit the xid in your 3D Secure 1 request,
-            use the `mpiData.xid`, field.
-
-
-            Example: ODgxNDc2MDg2MDExODk5MAAAAAA='
+          description: "The 3DS transaction ID of the 3DS session sent in notifications.\
+            \ The value is Base64-encoded and is returned for transactions with directoryResponse\
+            \ 'N' or 'Y'. \n\nExample: ODgxNDc2MDg2MDExODk5MAAAAAA="
           type: string
       type: object
     NotificationRequest:
@@ -4253,6 +3974,9 @@ components:
       properties:
         NotificationRequestItem:
           $ref: '#/components/schemas/NotificationRequestItem'
+    Object:
+      additionalProperties: false
+      type: object
     PaidoutReversedNotificationRequest:
       additionalProperties: false
       properties:
@@ -5007,13 +4731,9 @@ components:
           description: Card summary without tokenization.
           type: string
         xid:
-          description: 'The 3DS transaction ID of the 3DS session sent in notifications.
-            The value is Base64-encoded and is returned for transactions with directoryResponse
-            ''N'' or ''Y''. If you want to submit the xid in your 3D Secure 1 request,
-            use the `mpiData.xid`, field.
-
-
-            Example: ODgxNDc2MDg2MDExODk5MAAAAAA='
+          description: "The 3DS transaction ID of the 3DS session sent in notifications.\
+            \ The value is Base64-encoded and is returned for transactions with directoryResponse\
+            \ 'N' or 'Y'. \n\nExample: ODgxNDc2MDg2MDExODk5MAAAAAA="
           type: string
       type: object
     RecurringContractNotificationRequest:
@@ -6049,8 +5769,9 @@ components:
         notificationItems:
         - NotificationRequestItem:
             additionalData:
-              recurring.recurringDetailReference: '9915692881181044'
-              recurring.shopperReference: YOUR_SHOPPER_REFERENCE
+              tokenization.shopperReference: YOUR_SHOPPER_REFERENCE
+              tokenization.storedPaymentMethodId: M5N7TQ4TG5PFWR50
+              tokenization.store.operationType: created
             amount:
               currency: EUR
               value: 1000
@@ -6253,6 +5974,34 @@ components:
             pspReference: QFQTPCQ8HXSKGK82
             reason: Fraudulent Processing of Transactions
             success: 'true'
+    post-DIRECT_DEBIT_NOTICE_OF_CHANGE-ach_notice_of_change:
+      summary: ACH_NOTIFICATION_OF_CHANGE example
+      value:
+        type: ach.notificationOfChange
+        version: '1'
+        createdAt: '2021-01-01T01:00:00+01:00'
+        environment: test
+        data:
+          pspReference: QFQTPCQ8HXSKGK82
+          shopperReference: YOUR_SHOPPER_REFERENCE
+          notificationOfChange:
+            reasonCode: C07
+            newBankAccountNumber: '****'
+            newBranchCode: '12345'
+            newBankAccountType: Checking
+    post-DIRECT_DEBIT_NOTICE_OF_CHANGE-eft_notice_of_change:
+      summary: EFT_NOTICE_OF_CHANGE example
+      value:
+        type: eft.notificationOfChange
+        version: '1'
+        createdAt: '2021-01-01T01:00:00+01:00'
+        environment: test
+        data:
+          pspReference: QFQTPCQ8HXSKGK82
+          shopperReference: YOUR_SHOPPER_REFERENCE
+          notificationOfChange:
+            newBankAccountNumber: '****'
+            newBankLocationId: '****'
     post-EXPIRE-expire:
       summary: EXPIRE example
       value:
