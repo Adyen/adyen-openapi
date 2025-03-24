@@ -16,7 +16,7 @@
       "url" : "https://github.com/Adyen/adyen-openapi"
     },
     "version" : "1",
-    "x-timestamp" : "2025-02-26T15:35:54Z"
+    "x-timestamp" : "2025-03-21T17:33:57Z"
   },
   "tags" : [ {
     "name" : "Dispute Attachments"
@@ -404,6 +404,10 @@
             "description" : "The amount for which you dispute the transaction. The disputed amount cannot be greater than the transaction amount. If you do not provide an amount, the entire transaction amount will be disputed.",
             "$ref" : "#/components/schemas/Amount"
           },
+          "duplicateInfo" : {
+            "description" : "Additional information for raising a dispute of `type` **duplicate**. Required for disputes of `type` **duplicate**.",
+            "$ref" : "#/components/schemas/DuplicateInfo"
+          },
           "fraudInfo" : {
             "description" : "Additional information for raising a dispute of `type` **fraud**. Required for disputes of `type` **fraud**.",
             "$ref" : "#/components/schemas/FraudInfo"
@@ -432,7 +436,25 @@
       },
       "DisputeType" : {
         "type" : "string",
-        "x-extensible-enum" : [ "notDelivered", "fraud" ]
+        "x-extensible-enum" : [ "notDelivered", "fraud", "duplicate" ]
+      },
+      "DuplicateInfo" : {
+        "required" : [ "duplicateTransactionId", "sameCard" ],
+        "type" : "object",
+        "properties" : {
+          "duplicateTransactionId" : {
+            "type" : "string",
+            "description" : "The transaction id associated with the duplicate charge for which you are disputing. The disputed transaction must be in the same amount as the duplicate transaction."
+          },
+          "sameCard" : {
+            "type" : "boolean",
+            "description" : "The duplicate charge was made on the same card. Possible values: **true**, **false**."
+          },
+          "sameIssuer" : {
+            "type" : "boolean",
+            "description" : "The issuer associated with each charge is the same. Possible values: **true**, **false**."
+          }
+        }
       },
       "FraudInfo" : {
         "required" : [ "cardDoesNotBelongToCardholder", "cardWasCounterfeited", "descriptionOfIssue" ],
@@ -509,6 +531,9 @@
             "description" : "The amount for which you dispute the transaction. The disputed amount cannot be greater than the transaction amount. If you do not provide an amount, the entire transaction amount will be disputed.",
             "$ref" : "#/components/schemas/Amount"
           },
+          "duplicateInfo" : {
+            "$ref" : "#/components/schemas/DuplicateInfo"
+          },
           "fraudInfo" : {
             "description" : "Additional information for raising a dispute of `type` **fraud**. Required for disputes of `type` **fraud**.",
             "$ref" : "#/components/schemas/FraudInfo"
@@ -539,6 +564,15 @@
       "PatchableDisputeRequest" : {
         "type" : "object",
         "properties" : {
+          "duplicateInfo" : {
+            "type" : "object",
+            "description" : "Additional information for raising a dispute of `type` **duplicate**. Required for disputes of `type` **duplicate**.",
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/PatchableDuplicateInfo"
+            }, {
+              "type" : "null"
+            } ]
+          },
           "fraudInfo" : {
             "type" : "object",
             "description" : "Additional information for raising a dispute of `type` **fraud**. Required for disputes of `type` **fraud**.",
@@ -565,6 +599,23 @@
             }, {
               "type" : "null"
             } ]
+          }
+        }
+      },
+      "PatchableDuplicateInfo" : {
+        "type" : "object",
+        "properties" : {
+          "duplicateTransactionId" : {
+            "type" : "string",
+            "description" : "The transaction id associated with the duplicate charge for which you are disputing. The disputed transaction must be in the same amount as the duplicate transaction."
+          },
+          "sameCard" : {
+            "type" : "boolean",
+            "description" : "The duplicate charge was made on the same card. Possible values: **true**, **false**."
+          },
+          "sameIssuer" : {
+            "type" : [ "boolean", "null" ],
+            "description" : "The issuer associated with each charge is the same. Possible values: **true**, **false**."
           }
         }
       },
