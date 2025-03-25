@@ -4038,12 +4038,20 @@
                   "description" : "This field is required if the transaction is performed by a registered payment facilitator. This field must contain the three-letter country code of the actual merchant's address.\n* Format: alpha-numeric.\n* Fixed length: 3 characters.",
                   "type" : "string"
                },
+               "subMerchantEmail" : {
+                  "description" : "This field is required for transactions performed by registered payment facilitators. This field contains the email address of the sub-merchant.\n* Format: Alphanumeric\n* Maximum length: 40 characters",
+                  "type" : "string"
+               },
                "subMerchantID" : {
                   "description" : "This field contains an identifier of the actual merchant when a transaction is submitted via a payment facilitator. The payment facilitator must send in this unique ID.\n\nA unique identifier per submerchant that is required if the transaction is performed by a registered payment facilitator.\n* Format: alpha-numeric.\n* Fixed length: 15 characters.",
                   "type" : "string"
                },
                "subMerchantName" : {
                   "description" : "This field is required if the transaction is performed by a registered payment facilitator. This field must contain the name of the actual merchant.\n* Format: alpha-numeric.\n* Maximum length: 22 characters.",
+                  "type" : "string"
+               },
+               "subMerchantPhoneNumber" : {
+                  "description" : "This field is required for transactions performed by registered payment facilitators. This field contains the phone number of the sub-merchant.* Format: Alphanumeric\n* Maximum length: 20 characters",
                   "type" : "string"
                },
                "subMerchantPostalCode" : {
@@ -4528,6 +4536,10 @@
                   "description" : "Required for transactions performed by registered payment facilitators. The three-letter country code of the sub-merchant's address. For example, **BRA** for Brazil. \n* Format: [ISO 3166-1 alpha-3](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3)\n* Fixed length: 3 characters",
                   "type" : "string"
                },
+               "subMerchant.subSeller[subSellerNr].email" : {
+                  "description" : "Required for transactions performed by registered payment facilitators. The email address of the sub-merchant.\n* Format: Alphanumeric\n* Maximum length: 40 characters",
+                  "type" : "string"
+               },
                "subMerchant.subSeller[subSellerNr].id" : {
                   "description" : "Required for transactions performed by registered payment facilitators. A unique identifier that you create for the sub-merchant, used by schemes to identify the sub-merchant. \n* Format: Alphanumeric\n* Maximum length: 15 characters",
                   "type" : "string"
@@ -4538,6 +4550,10 @@
                },
                "subMerchant.subSeller[subSellerNr].name" : {
                   "description" : "Required for transactions performed by registered payment facilitators. The name of the sub-merchant. Based on scheme specifications, this value will overwrite the shopper statement  that will appear in the card statement.\n* Format: Alphanumeric\n* Maximum length: 22 characters",
+                  "type" : "string"
+               },
+               "subMerchant.subSeller[subSellerNr].phoneNumber" : {
+                  "description" : "Required for transactions performed by registered payment facilitators. The phone number of the sub-merchant.* Format: Alphanumeric\n* Maximum length: 20 characters",
                   "type" : "string"
                },
                "subMerchant.subSeller[subSellerNr].postalCode" : {
@@ -6479,9 +6495,10 @@
             "additionalProperties" : false,
             "properties" : {
                "plans" : {
-                  "description" : "Defines the type of installment plan. If not set, defaults to **regular**.\n\nPossible values:\n* **regular**\n* **revolving**",
+                  "description" : "Defines the type of installment plan. If not set, defaults to **regular**.\n\nPossible values:\n* **regular**\n* **revolving*** **bonus**\n* **with_interest**\n* **buynow_paylater**\n* **nointerest_bonus**\n* **interest_bonus**\n* **refund_prctg**\n* **nointeres_refund_prctg**\n* **interes_refund_prctg**",
                   "items" : {
                      "enum" : [
+                        "bonus",
                         "buynow_paylater",
                         "interes_refund_prctg",
                         "interest_bonus",
@@ -9010,6 +9027,7 @@
                   "description" : "Defines the type of installment plan. If not set, defaults to **regular**.\n\nPossible values:\n* **regular**\n* **revolving**",
                   "items" : {
                      "enum" : [
+                        "bonus",
                         "buynow_paylater",
                         "interes_refund_prctg",
                         "interest_bonus",
@@ -9055,6 +9073,7 @@
                   "x-addedInVersion" : "64",
                   "description" : "The installment plan, used for [card installments in Japan](https://docs.adyen.com/payment-methods/cards/credit-card-installments#make-a-payment-japan).\nand [Mexico](https://docs.adyen.com/payment-methods/cards/credit-card-installments/#getting-paid-mexico).\nBy default, this is set to **regular**.\n",
                   "enum" : [
+                     "bonus",
                      "buynow_paylater",
                      "interes_refund_prctg",
                      "interest_bonus",
@@ -11257,6 +11276,11 @@
                   "description" : "The card verification code. Only collect raw card data if you are [fully PCI compliant](https://docs.adyen.com/development-resources/pci-dss-compliance-guide).",
                   "type" : "string"
                },
+               "encryptedCard" : {
+                  "description" : "The encrypted card.",
+                  "maxLength" : 40000,
+                  "type" : "string"
+               },
                "encryptedCardNumber" : {
                   "description" : "The encrypted card number.",
                   "maxLength" : 15000,
@@ -12016,6 +12040,9 @@
                         "$ref" : "#/components/schemas/PseDetails"
                      },
                      {
+                        "$ref" : "#/components/schemas/RakutenPayDetails"
+                     },
+                     {
                         "$ref" : "#/components/schemas/RatepayDetails"
                      },
                      {
@@ -12725,6 +12752,39 @@
                "identification"
             ],
             "title" : "PSE Latam",
+            "type" : "object"
+         },
+         "RakutenPayDetails" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "checkoutAttemptId" : {
+                  "x-addedInVersion" : "68",
+                  "description" : "The checkout attempt identifier.",
+                  "type" : "string"
+               },
+               "recurringDetailReference" : {
+                  "deprecated" : true,
+                  "x-deprecatedInVersion" : "49",
+                  "x-deprecatedMessage" : "Use `storedPaymentMethodId` instead.",
+                  "description" : "This is the `recurringDetailReference` returned in the response when you created the token.",
+                  "type" : "string"
+               },
+               "storedPaymentMethodId" : {
+                  "x-addedInVersion" : "49",
+                  "description" : "This is the `recurringDetailReference` returned in the response when you created the token.",
+                  "maxLength" : 64,
+                  "type" : "string"
+               },
+               "type" : {
+                  "default" : "rakutenpay",
+                  "description" : "**rakutenpay**",
+                  "enum" : [
+                     "rakutenpay"
+                  ],
+                  "type" : "string"
+               }
+            },
+            "title" : "RakutenPay",
             "type" : "object"
          },
          "RatepayDetails" : {
