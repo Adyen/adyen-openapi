@@ -10040,6 +10040,9 @@ components:
     AfterpayTouchInfo:
       additionalProperties: false
       properties:
+        supportEmail:
+          description: Support Email
+          type: string
         supportUrl:
           description: Support Url
           type: string
@@ -11072,6 +11075,8 @@ components:
 
             - **ach-notification-of-change-notification**
 
+            - **direct-debit-notice-of-change**
+
             - **pending-notification**
 
             - **ideal-notification**
@@ -11340,6 +11345,8 @@ components:
             - **directdebit-notification**
 
             - **ach-notification-of-change-notification**
+
+            - **direct-debit-notice-of-change**
 
             - **pending-notification**
 
@@ -11660,15 +11667,6 @@ components:
             > You cannot configure the transaction description in the test environment.'
           $ref: '#/components/schemas/TransactionDescriptionInfo'
       type: object
-    GiroPayInfo:
-      additionalProperties: false
-      properties:
-        supportEmail:
-          description: The email address of merchant support.
-          type: string
-      required:
-      - supportEmail
-      type: object
     GooglePayInfo:
       additionalProperties: false
       properties:
@@ -11801,7 +11799,10 @@ components:
       properties:
         midNumber:
           description: 'MID (Merchant ID) number. Required for merchants operating
-            in Japan.Format: 14 numeric characters.'
+            in Japan or merchants operating in Canada, Australia and New Zealand when
+            requesting `gatewayContract` or `paymentDesignatorContract` service levels.Format:
+            14 numeric characters for Japan, 10 numeric characters for Canada, Australia
+            and New Zealand.'
           maxLength: 14
           type: string
         reuseMidNumber:
@@ -11816,13 +11817,20 @@ components:
 
             Possible values:
 
-            * **noContract**: Adyen holds the contract with JCB.
+            * **noContract**: Adyen holds the contract with JCB for merchants operating
+            in Japan or American Express for merchants operating in Canada, Australia
+            and New Zealand.
 
-            * **gatewayContract**: JCB receives the settlement and handles disputes,
-            then pays out to you or your sub-merchant directly.'
+            * **gatewayContract**: JCB or American Express receives the settlement
+            and handles disputes, then pays out to you or your sub-merchant directly.
+
+            * **paymentDesignatorContract**: Available only for merchants operating
+            in Canada, Australia and New Zealand. Adyen receives the settlement, and
+            handles disputes and payouts.'
           enum:
           - noContract
           - gatewayContract
+          - paymentDesignatorContract
           type: string
         transactionDescription:
           description: 'Information regarding the transaction description.
@@ -12568,6 +12576,39 @@ components:
           nullable: true
           type: string
       type: object
+    PayByBankPlaidInfo:
+      additionalProperties: false
+      properties:
+        countryCode:
+          description: Country Code.
+          type: string
+        logo:
+          description: 'Merchant logo (max. size 150kB). Format: Base64-encoded string.'
+          type: string
+        merchantCity:
+          description: The city the merchant is doing business in.
+          type: string
+        merchantLegalName:
+          description: Legal Business Name of the Merchant.
+          type: string
+        merchantShopUrl:
+          description: Merchant shop url.
+          type: string
+        merchantStateProvince:
+          description: The state/province of the merchant.
+          type: string
+        merchantStreetAddress:
+          description: The street address of the merchant.
+          type: string
+        transactionDescription:
+          description: 'Information regarding the transaction description.
+
+            x> You cannot configure the transaction description in the test environment.'
+          $ref: '#/components/schemas/TransactionDescriptionInfo'
+        zipCode:
+          description: The zip code of the account.
+          type: string
+      type: object
     PayMeInfo:
       additionalProperties: false
       properties:
@@ -12717,9 +12758,6 @@ components:
           description: Indicates whether the payment method is enabled (**true**)
             or disabled (**false**).
           type: boolean
-        giroPay:
-          description: giropay details.
-          $ref: '#/components/schemas/GiroPayInfo'
         girocard:
           description: Girocard details.
           $ref: '#/components/schemas/GenericPmWithTdiInfo'
@@ -12759,6 +12797,9 @@ components:
         nyce:
           description: NYCE details.
           $ref: '#/components/schemas/NyceInfo'
+        paybybank_plaid:
+          description: PayByBank Plaid details.
+          $ref: '#/components/schemas/PayByBankPlaidInfo'
         payme:
           description: PayMe details.
           $ref: '#/components/schemas/PayMeInfo'
@@ -12914,12 +12955,12 @@ components:
             - nyce
             - onlineBanking_PL
             - paybybank
+            - paybybank_plaid
             - payme
             - payme_pos
             - paynow
             - paynow_pos
             - paypal
-            - payshop
             - payto
             - pulse
             - sodexo
@@ -13015,9 +13056,6 @@ components:
         eftpos_australia:
           description: Eftpos Australia details.
           $ref: '#/components/schemas/GenericPmWithTdiInfo'
-        giroPay:
-          description: giropay details.
-          $ref: '#/components/schemas/GiroPayInfo'
         girocard:
           description: Girocard details.
           $ref: '#/components/schemas/GenericPmWithTdiInfo'
@@ -13054,6 +13092,9 @@ components:
         nyce:
           description: NYCE details.
           $ref: '#/components/schemas/NyceInfo'
+        paybybank_plaid:
+          description: PayByBank Plaid details.
+          $ref: '#/components/schemas/PayByBankPlaidInfo'
         payme:
           description: PayMe details.
           $ref: '#/components/schemas/PayMeInfo'
@@ -13165,12 +13206,12 @@ components:
           - nyce
           - onlineBanking_PL
           - paybybank
+          - paybybank_plaid
           - payme
           - payme_pos
           - paynow
           - paynow_pos
           - paypal
-          - payshop
           - payto
           - pulse
           - sodexo
@@ -13367,6 +13408,10 @@ components:
           description: Indicates whether this is your preferred wireless network.
             If **true**, the terminal will try connecting to this network first.
           type: boolean
+        domainSuffix:
+          description: Specifies the server domain name for EAP-TLS and EAP-PEAP WiFi
+            profiles on Android 11 and above.
+          type: string
         eap:
           description: 'For `authType` **wpa-eap** or **wpa2-eap**. Possible values:
             **tls**, **peap**, **leap**, **fast**'
@@ -14030,8 +14075,11 @@ components:
 
             * **ANY**'
           enum:
+          - charged
           - credit
           - debit
+          - deferred_debit
+          - prepaid
           - ANY
           type: string
         paymentMethod:
@@ -14095,6 +14143,10 @@ components:
           maxLength: 3
           minLength: 3
           type: string
+        enableGratuities:
+          description: Indicates whether the tipping options specified in `gratuities`
+            are enabled on the standalone terminal.
+          type: boolean
         enableStandalone:
           description: Enable standalone mode.
           type: boolean
@@ -14789,7 +14841,7 @@ components:
             is about.
           type: string
         output:
-          description: 'The response your server returned for the test webhook.
+          description: 'A short, human-readable explanation of the test result.
 
 
             Your server must respond with **HTTP 2xx* for the test webhook to be successful
@@ -15397,6 +15449,9 @@ components:
         nyce:
           description: NYCE details.
           $ref: '#/components/schemas/NyceInfo'
+        paybybank_plaid:
+          description: PayByBank Plaid details.
+          $ref: '#/components/schemas/PayByBankPlaidInfo'
         pulse:
           description: PULSE details.
           $ref: '#/components/schemas/PulseInfo'
@@ -15981,6 +16036,8 @@ components:
             - **directdebit-notification**
 
             - **ach-notification-of-change-notification**
+
+            - **direct-debit-notice-of-change**
 
             - **pending-notification**
 
