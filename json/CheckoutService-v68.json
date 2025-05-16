@@ -9708,6 +9708,31 @@
             "title" : "Google Pay",
             "type" : "object"
          },
+         "Payment" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "amount" : {
+                  "description" : "Authorised amount in the transaction.",
+                  "$ref" : "#/components/schemas/Amount"
+               },
+               "paymentMethod" : {
+                  "description" : "Only returned for `resultCode`: **Authorised**. \nDetails about the payment method used in the transaction.",
+                  "$ref" : "#/components/schemas/ResponsePaymentMethod"
+               },
+               "pspReference" : {
+                  "description" : "Adyen's 16-character reference associated with the transaction/request. This value is globally unique. Use this reference when you communicate with us about this request.",
+                  "type" : "string"
+               },
+               "resultCode" : {
+                  "description" : "The result of the payment. For more information, see [Result codes](https://docs.adyen.com/online-payments/payment-result-codes).\n\nPossible values:\n\n* **Authorised** – The payment was successfully authorised. This state serves as an indicator to proceed with the delivery of goods and services. This is a final state.\n",
+                  "enum" : [
+                     "Authorised"
+                  ],
+                  "type" : "string"
+               }
+            },
+            "type" : "object"
+         },
          "PaymentAmountUpdateRequest" : {
             "additionalProperties" : false,
             "properties" : {
@@ -11008,6 +11033,10 @@
                   },
                   "type" : "array"
                },
+               "browserInfo" : {
+                  "description" : "The shopper's browser information.\n> For 3D Secure, the full object is required for web integrations. For mobile app integrations, include the `userAgent` and `acceptHeader` fields to indicate  that your integration can support a redirect in case a payment is routed to 3D Secure 2 redirect.",
+                  "$ref" : "#/components/schemas/BrowserInfo"
+               },
                "channel" : {
                   "description" : "The platform where a payment transaction takes place. This field can be used for filtering out payment methods that are only available on specific platforms. Possible values:\n* iOS\n* Android\n* Web",
                   "enum" : [
@@ -11033,6 +11062,14 @@
                "shopperConversionId" : {
                   "description" : "A unique ID that can be used to associate `/paymentMethods` and `/payments` requests with the same shopper transaction, offering insights into conversion rates.",
                   "maxLength" : 256,
+                  "type" : "string"
+               },
+               "shopperEmail" : {
+                  "description" : "The shopper's email address. We recommend that you provide this data, as it is used in velocity fraud checks.\n> For 3D Secure 2 transactions, schemes require `shopperEmail` for all browser-based and mobile implementations.",
+                  "type" : "string"
+               },
+               "shopperIP" : {
+                  "description" : "The shopper's IP address. In general, we recommend that you provide this data, as it is used in a number of risk checks (for instance, number of payment attempts or location-based checks).\n> For 3D Secure 2 transactions, schemes require `shopperIP` for all browser-based implementations.\nThis field is also mandatory for some merchants depending on your business model. For more information, [contact Support](https://www.adyen.help/hc/en-us/requests/new).",
                   "type" : "string"
                },
                "shopperLocale" : {
@@ -11064,6 +11101,11 @@
                      "inclusive",
                      "skipFilter"
                   ],
+                  "type" : "string"
+               },
+               "telephoneNumber" : {
+                  "x-addedInVersion" : "7",
+                  "description" : "The shopper's telephone number.",
                   "type" : "string"
                }
             },
@@ -12542,7 +12584,7 @@
                   "type" : "string"
                },
                "fraudRiskLevel" : {
-                  "description" : "The risk level of the transaction as classified by the [machine learning](https://docs.adyen.com/risk-management/configure-your-risk-profile/machine-learning-rules/) fraud risk rule. The risk level indicates the likelihood that a transaction will result in a fraudulent dispute. The possible return values are:\\n* veryLow\\n* low\\n* medium\\n* high\\n* veryHigh\\n\\n>",
+                  "description" : "The risk level of the transaction as classified by the [machine learning](https://docs.adyen.com/risk-management/configure-your-risk-profile/machine-learning-rules/) fraud risk rule. The risk level indicates the likelihood that a transaction will result in a fraudulent dispute. The possible return values are:\n* veryLow\n* low\n* medium\n* high\n* veryHigh\n\n>",
                   "enum" : [
                      "veryLow",
                      "low",
@@ -12844,6 +12886,21 @@
             },
             "type" : "object"
          },
+         "ResponsePaymentMethod" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "brand" : {
+                  "description" : "The card brand that the shopper used to pay. Only returned if `paymentMethod.type` is **scheme**.",
+                  "type" : "string"
+               },
+               "type" : {
+                  "description" : "The `paymentMethod.type` value used in the request.",
+                  "type" : "string"
+               }
+            },
+            "title" : "paymentResponse",
+            "type" : "object"
+         },
          "RiskData" : {
             "additionalProperties" : false,
             "properties" : {
@@ -13090,8 +13147,55 @@
          "SessionResultResponse" : {
             "additionalProperties" : false,
             "properties" : {
+               "additionalData" : {
+                  "additionalProperties" : {
+                     "type" : "string"
+                  },
+                  "x-anyOf" : [
+                     {
+                        "$ref" : "#/components/schemas/ResponseAdditionalData3DSecure"
+                     },
+                     {
+                        "$ref" : "#/components/schemas/ResponseAdditionalDataBillingAddress"
+                     },
+                     {
+                        "$ref" : "#/components/schemas/ResponseAdditionalDataCard"
+                     },
+                     {
+                        "$ref" : "#/components/schemas/ResponseAdditionalDataCommon"
+                     },
+                     {
+                        "$ref" : "#/components/schemas/ResponseAdditionalDataDomesticError"
+                     },
+                     {
+                        "$ref" : "#/components/schemas/ResponseAdditionalDataInstallments"
+                     },
+                     {
+                        "$ref" : "#/components/schemas/ResponseAdditionalDataNetworkTokens"
+                     },
+                     {
+                        "$ref" : "#/components/schemas/ResponseAdditionalDataOpi"
+                     },
+                     {
+                        "$ref" : "#/components/schemas/ResponseAdditionalDataSepa"
+                     }
+                  ],
+                  "description" : "Contains additional information about the payment. Some fields are included only if you enable them. To enable these fields in your Customer Area, go to **Developers** > **Additional data**.",
+                  "type" : "object"
+               },
                "id" : {
                   "description" : "A unique identifier of the session.",
+                  "type" : "string"
+               },
+               "payments" : {
+                  "description" : "A list of all authorised payments done for this session.",
+                  "items" : {
+                     "$ref" : "#/components/schemas/Payment"
+                  },
+                  "type" : "array"
+               },
+               "reference" : {
+                  "description" : "The unique reference that you provided in the original `/sessions` request. This identifies the payment and is used in all communication with you about the payment status.",
                   "type" : "string"
                },
                "status" : {
