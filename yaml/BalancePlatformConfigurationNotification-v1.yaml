@@ -19,6 +19,7 @@ tags:
 - name: Balance account
 - name: Payment instrument
 - name: Card order
+- name: Network token
 webhooks:
   balancePlatform.accountHolder.created:
     post:
@@ -252,6 +253,54 @@ webhooks:
           application/json:
             schema:
               $ref: '#/components/schemas/CardOrderNotificationRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BalancePlatformNotificationResponse'
+          description: OK - the request has succeeded.
+  balancePlatform.networkToken.created:
+    post:
+      tags:
+      - Network token
+      summary: Network token created
+      description: Adyen sends this webhook when you initiate a request for provisioning
+        a network token.
+      operationId: post-balancePlatform.networkToken.created
+      x-sortIndex: 1
+      x-methodName: networkTokenCreated
+      security:
+      - BasicAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NetworkTokenNotificationRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BalancePlatformNotificationResponse'
+          description: OK - the request has succeeded.
+  balancePlatform.networkToken.updated:
+    post:
+      tags:
+      - Network token
+      summary: Network token updated
+      description: Adyen sends this webhook when there is an internal status update
+        for the network token during the provisioning process.
+      operationId: post-balancePlatform.networkToken.updated
+      x-sortIndex: 2
+      x-methodName: networkTokenUpdated
+      security:
+      - BasicAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NetworkTokenNotificationRequest'
       responses:
         '200':
           content:
@@ -1098,7 +1147,8 @@ components:
           description: 'Allocates a specific product range for either a physical or
             a virtual card. Possible values: **fullySupported**, **secureCorporate**.
 
-            >Reach out to your Adyen contact to get the values relevant for your integration.'
+            > Reach out to your Adyen contact to get the values relevant for your
+            integration.'
           type: string
       required:
       - formFactor
@@ -1312,6 +1362,21 @@ components:
       - phone
       - address
       type: object
+    Device:
+      additionalProperties: false
+      properties:
+        formFactor:
+          description: 'The form factor of the device used for provisioning the network
+            token.
+
+
+            Possible values: **virtual**, **physical**.'
+          type: string
+        osName:
+          description: The operating system of the device used for provisioning the
+            network token.
+          type: string
+      type: object
     Expiry:
       additionalProperties: false
       properties:
@@ -1353,6 +1418,81 @@ components:
       required:
       - firstName
       - lastName
+      type: object
+    NetworkTokenNotificationDataV2:
+      additionalProperties: false
+      properties:
+        authentication:
+          description: Contains information about the authentication process triggered
+            during token provisioning.
+          $ref: '#/components/schemas/TokenAuthentication'
+        authenticationApplied:
+          description: Specifies whether the authentication process was triggered
+            during token provisioning.
+          type: boolean
+        balancePlatform:
+          description: The unique identifier of the balance platform.
+          type: string
+        decision:
+          description: 'The decision about the network token provisioning.
+
+
+            Possible values: **approved**, **declined**, **requiresAuthentication**.'
+          type: string
+        id:
+          description: The unique identifier of the network token.
+          type: string
+        paymentInstrumentId:
+          description: The unique identifier of the payment instrument to which the
+            network token is associated.
+          type: string
+        status:
+          description: The status of the network token.
+          type: string
+        tokenLastFour:
+          description: The last four digits of the network token. Use this value to
+            help your user to identify their network token.
+          type: string
+        type:
+          description: The type of network token.
+          type: string
+        validationFacts:
+          description: The rules used to validate the request for provisioning the
+            network token.
+          items:
+            $ref: '#/components/schemas/ValidationFacts'
+          type: array
+        wallet:
+          description: Contains information about the wallet for which the network
+            token is provisioned.
+          $ref: '#/components/schemas/Wallet'
+      type: object
+    NetworkTokenNotificationRequest:
+      additionalProperties: false
+      properties:
+        data:
+          description: Contains event details.
+          $ref: '#/components/schemas/NetworkTokenNotificationDataV2'
+        environment:
+          description: 'The environment from which the webhook originated.
+
+
+            Possible values: **test**, **live**.'
+          type: string
+        timestamp:
+          description: When the event was queued.
+          format: date-time
+          type: string
+        type:
+          description: The type of webhook.
+          enum:
+          - balancePlatform.networkToken.created
+          - balancePlatform.networkToken.updated
+          type: string
+      required:
+      - environment
+      - type
+      - data
       type: object
     PaymentInstrument:
       additionalProperties: false
@@ -1863,6 +2003,46 @@ components:
       required:
       - type
       type: object
+    TokenAuthentication:
+      additionalProperties: false
+      properties:
+        method:
+          description: 'The method used to complete the authentication process.
+
+
+            Possible values: **sms_OTP**, **email_OTP**.'
+          type: string
+        result:
+          description: The result of the authentication process.
+          type: string
+      type: object
+    ValidationFacts:
+      additionalProperties: false
+      properties:
+        reasons:
+          description: 'The reason for the `result` of the validations. For example:
+            **walletValidation**, **paymentInstrument**.
+
+
+            Sent only when `result` is **invalid**.'
+          items:
+            type: string
+          type: array
+        result:
+          description: 'The evaluation result of the validation facts.
+
+
+            Possible values: **valid**, **invalid**, **notValidated**, **notApplicable**.'
+          enum:
+          - invalid
+          - notApplicable
+          - notValidated
+          - valid
+          type: string
+        type:
+          description: The type of the validation fact.
+          type: string
+      type: object
     VerificationDeadline:
       additionalProperties: false
       properties:
@@ -2119,6 +2299,72 @@ components:
             $ref: '#/components/schemas/RemediatingAction'
           type: array
       required: []
+      type: object
+    Wallet:
+      additionalProperties: false
+      properties:
+        accountScore:
+          description: 'The confidence score of the wallet account, calculated by
+            the wallet provider.
+
+
+            A high score means that account is considered trustworthy. A low score
+            means that the account is considered suspicious.
+
+
+            Possible values: **1** to **5**.'
+          type: string
+        device:
+          description: Contains information about the device used for provisioning
+            the network token.
+          $ref: '#/components/schemas/Device'
+        deviceScore:
+          description: 'The confidence score of the device, calculated by the wallet
+            provider.
+
+
+            A high score means that device is considered trustworthy. A low score
+            means that the device is considered suspicious.
+
+
+            Possible values: **1** to **5**.'
+          type: string
+        provisioningMethod:
+          description: 'The method used for provisioning the network token.
+
+
+            Possible values: **push**, **manual**.'
+          type: string
+        recommendationReasons:
+          description: A list of codes that specify the reasons for the provided scores.
+          items:
+            enum:
+            - accountCardTooNew
+            - accountHighRisk
+            - accountRecentlyChanged
+            - accountTooNew
+            - accountTooNewSinceLaunch
+            - deviceRecentlyLost
+            - hasSuspendedTokens
+            - inactiveAccount
+            - lowAccountScore
+            - lowDeviceScore
+            - lowPhoneNumberScore
+            - outSideHomeTerritory
+            - suspiciousActivity
+            - tooManyDifferentCardholders
+            - tooManyRecentAttempts
+            - tooManyRecentTokens
+            - unableToAssess
+            - unknown
+            type: string
+          type: array
+        type:
+          description: 'The type of wallet that the network token is associated with.
+
+
+            Possible values: **applePay**, **googlePay**, **garminPay**.'
+          type: string
       type: object
   securitySchemes:
     BasicAuth:
