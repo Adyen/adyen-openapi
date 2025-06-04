@@ -2,86 +2,72 @@ openapi: 3.1.0
 info:
   version: '1'
   title: Adyen Terminal API
-  description: 'The Adyen [Terminal API](https://docs.adyen.com/point-of-sale/design-your-integration/terminal-api/)
-    lets you make payments, issue refunds, collect shopper information, and perform
-    other shopper-terminal interactions using a payment terminal supplied by Adyen.
-
-
-    ## Authentication and endpoints
-
-    Authentication and endpoints depend on whether you are using a [cloud or a local](https://docs.adyen.com/point-of-sale/design-your-integration/choose-your-architecture/)
-    Terminal API integration.
-
-
-    ### Cloud
-
-    Each request to the cloud Terminal API must be signed with an API key. [Generate
-    your API Key](https://docs.adyen.com/development-resources/api-credentials#generate-api-key)
-    in the Customer Area and set this key to the `X-API-Key` header value.
-
-
-    The cloud Terminal API endpoint you need to use depends on whether your integration
-    will receive transaction results synchronously or asynchronously:
-
-
-    - Synchronous: `https://terminal-api-test.adyen.com/sync`
-
-    - Asynchronous: `https://terminal-api-test.adyen.com/async`
-
-
-    When you are ready to go live, you need to generate a new web service user credential
-    and switch to one of the [live endpoints](https://docs.adyen.com/point-of-sale/design-your-integration/terminal-api/#cloud).
-
-
-    ### Local
-
-    If your integration uses local communications, API requests are made from a POS
-    app directly to a terminal''s IP address. To learn how to set up and protect local
-    communications, refer to [Building a local integration](https://docs.adyen.com/point-of-sale/design-your-integration/choose-your-architecture/local/).
-
-
-    ## API structure
-
-    Terminal API communicates with the terminal using JSON messages. All requests
-    and responses have the following structure:
-
-    - `MessageHeader`: identifies the type of transaction, the terminal being used,
-    and unique transaction identifiers.
-
-    - **Request body**: a request or response object, depending on the type of transaction.
-    For example, when you make a payment request this is a `PaymentRequest` object,
-    and when you receive a payment response this is a `PaymentResponse` object.
-
-
-    ### Requests
-
-    Each Terminal API request you make is contained in a `SaletoPOIRequest` object
-    and needs to have the following objects:
-
-    * `MessageHeader`: for each request you need to include this object and specify
-    the [required parameters](https://docs.adyen.com/point-of-sale/design-your-integration/terminal-api/#request-message-header).
-
-    * Request body: the name and structure of this object depends on the type of request.
-    You can use this specification to create the structure of the request body. For
-    example, to make a payment you need to include a `PaymentRequest` object and the
-    `MessageHeader` inside the `SaletoPOIRequest` object.
-
-
-    ### Responses
-
-    Each terminal API response you receive is contained in a `SaleToPOIResponse` object
-    and includes:
-
-    * `MessageHeader`: this object echoes the values you provided in the request.
-    The only exception is the `MessageType`, which is always **Response**.
-
-    * **Response body**: the values you receive in the response body depend on the
-    type of transaction request you made. For example, when making a `PaymentRequest`
-    you would receive a `PaymentResponse` as the response body.
-
-
-    Below, you can find the list of available Terminal API requests with the structure
-    of the request/response body parameters:'
+  description: "The Adyen [Terminal API](https://docs.adyen.com/point-of-sale/design-your-integration/terminal-api/)\
+    \ lets you make payments, issue refunds, collect shopper information, and perform\
+    \ other shopper-device interactions using a payment terminal supplied by Adyen.\
+    \ The Terminal API is also used for transactions in [Adyen Mobile solutions](https://docs.adyen.com/point-of-sale/ipp-mobile/).\n\
+    \n## API structure\nThe architecture of Terminal API is determined by the [nexo\
+    \ Sale to POI Protocol Specifications](https://www.nexo-standards.org/standards/nexo-retailer-protocol).\n\
+    \nA Terminal API request is a JSON message consisting of a `SaleToPOIRequest`\
+    \ object with:\n- [`MessageHeader`](https://docs.adyen.com/point-of-sale/design-your-integration/terminal-api/#request-message-header):\
+    \ identifies the type of transaction, the terminal or Mobile SDK instance being\
+    \ used, and unique transaction identifiers.\n- **Request body**: content depending\
+    \ on the type of transaction or operation, for example, a `PaymentRequest`.\n\n\
+    A Terminal API response is a JSON message consisting of a `SaletoPOIResponse`with:\n\
+    * [`MessageHeader`](https://docs.adyen.com/point-of-sale/design-your-integration/terminal-api/#response-message-header):\
+    \ echoes the values provided in the request, except for `MessageType`, which is\
+    \ always **Response**.\n* Response body: content depending on the type of transaction\
+    \ or operation, for example, a `PaymentResponse`.\n\n## Sending and receiving\n\
+    In an integration with Ayden payment terminals, you can send and receive Terminal\
+    \ API messages in the following ways:\n- [Local communications](https://docs.adyen.com/point-of-sale/design-your-integration/choose-your-architecture/local/):\
+    \ using your local network, your POS system sends the request directly to the\
+    \ IP address of the terminal, and receives the result synchronously.\n- [Cloud\
+    \ communications](https://docs.adyen.com/point-of-sale/design-your-integration/choose-your-architecture/cloud/):\
+    \ using the internet to access the cloud, your POS system sends the request to\
+    \ an Adyen endpoint, and Adyen forwards the request to the terminal. Your POS\
+    \ system either keeps the connection open and receives the response synchronously,\
+    \ or closes the connection and receives the response asynchronously in an event\
+    \ notification.\n\n## Using local communications\nTo learn how to set up and protect\
+    \ local communications, refer to [Building a local integration](https://docs.adyen.com/point-of-sale/design-your-integration/choose-your-architecture/local/).\n\
+    \n## Endpoints for cloud communications\nIf your POS system is cloud-based, you\
+    \ POST your Terminal API requests to a **Cloud device API** endpoint, using path\
+    \ and query parameters to identify the device that you want to send the request\
+    \ to.\n- If your POS system is designed to keep the connection open to wait for\
+    \ the response, use the endpoints ending in `/sync`.\n- If your POS system is\
+    \ designed to close the connection so that it can initiate a new request, use\
+    \ the endpoints ending in `/async`.\n\n### Test endpoints\n- `https://device-api-test.adyen.com/v1/merchants/{merchantAccount}/devices/{deviceId}/sync`\n\
+    - `https://device-api-test.adyen.com/v1/merchants/{merchantAccount}/devices/{deviceId}/async`\n\
+    \n### Live endpoints\nThe live endpoints differ per region. In addition to using\
+    \ a regional endpoint, you must select the geographically closest data center\
+    \ in your live Customer Area.\n\n**Australia**\n- `https://device-api-live-au.adyen.com/v1/merchants/{merchantId}/devices/{deviceId}/sync`\n\
+    - `https://device-api-live-au.adyen.com/v1/merchants/{merchantId}/devices/{deviceId}/async`\n\
+    \n**East Asia**\n- `https://device-api-live-apse.adyen.com/v1/merchants/{merchantId}/devices/{deviceId}/sync`\n\
+    - `https://device-api-live-apse.adyen.com/v1/merchants/{merchantId}/devices/{deviceId}/async`\n\
+    \n**Europe**\n- `https://device-api-live.adyen.com/v1/merchants/{merchantId}/devices/{deviceId}/sync`\n\
+    - `https://device-api-live.adyen.com/v1/merchants/{merchantId}/devices/{deviceId}/async`\n\
+    \n**United States**\n- `https://device-api-live-us.adyen.com/v1/merchants/{merchantId}/devices/{deviceId}/sync`\n\
+    - `https://device-api-live-us.adyen.com/v1/merchants/{merchantId}/devices/{deviceId}/async`\n\
+    \n ### Old endpoints\nIf you currently use endpoints with a base URL that includes\
+    \ `terminal-api`, we strongly recommend migrating to Cloud device API endpoints,\
+    \ for the following reasons:\n- When using Cloud device API, the API logs in the\
+    \ Customer Area include the Terminal API requests and responses.\n- Cloud device\
+    \ API endpoints offer technical advantages such as versioning and better routing.\n\
+    - Future enhancements and features will be based on Cloud device API.\n\nThere\
+    \ will be no future development on the old endpoints, but we continue to support\
+    \ them.\n\n**Old test endpoints**:\n- `https://terminal-api-test.adyen.com/sync`\
+    \ and `https://terminal-api-test.adyen.com/async`\n\n**Old live endpoints Australia**:\n\
+    - `https://terminal-api-live-au.adyen.com/sync` and `https://terminal-api-live-au.adyen.com/async`\n\
+    \n**Old live endpoints East Asia**:\n- `https://terminal-api-live-apse.adyen.com/sync`\
+    \ and `https://terminal-api-live-apse.adyen.com/async`\n\n**Old live endpoints\
+    \ Europe**:\n- `https://terminal-api-live.adyen.com/sync` and `https://terminal-api-live.adyen.com/async`\n\
+    \n**Old live endpoints United States**:\n- `https://terminal-api-live-us.adyen.com/sync`\
+    \ and `https://terminal-api-live-us.adyen.com/async`\n\n## Authentication for\
+    \ cloud communications\nEach request to a **Cloud device API** endpoint must be\
+    \ signed with an API key that has the **Cloud Device API role**. [Generate your\
+    \ API Key](https://docs.adyen.com/development-resources/api-credentials#generate-api-key)\
+    \ in the Customer Area and set this key to the `X-API-Key` header value of the\
+    \ Cloud device API request.\n\nWhen going live, generate a new API key in the\
+    \ live Customer Area.\n\n## Available Terminal API requests\n"
 servers:
 - description: with cloud integration
   url: https://terminal-api-test.adyen.com/sync
@@ -1234,7 +1220,7 @@ components:
       - Unload
     ReversalReason:
       type: string
-      description: 'Reason of the payment or loyalty reversal..
+      description: 'Reason of the payment or loyalty reversal.
 
         Possible values:
 
@@ -4242,7 +4228,7 @@ components:
       type: object
       description: 'It contains: - the identification of the stored value accounts
         or the stored value cards, if provided by the Sale System, and - the associated
-        products sold by the Sale System..
+        products sold by the Sale System.
 
         Data related to the stored value card.'
       properties:
@@ -4320,7 +4306,7 @@ components:
       description: 'For each stored value card loaded or reloaded, in the StoredValue
         response message.
 
-        Result of loading/reloading a stored value card..'
+        Result of loading/reloading a stored value card.'
       properties:
         StoredValueTransactionType:
           $ref: '#/components/schemas/StoredValueTransactionType'
@@ -5706,12 +5692,12 @@ components:
           type: number
           maximum: 99999999.999999
           minimum: 0.0
-          description: 'Amount of the payment or loyalty to reverse..
+          description: 'Amount of the payment or loyalty to reverse.
 
-            ReversedAmount is implicitely the AuthorizedAmount if absent.'
+            ReversedAmount is implicitly equal to the AuthorizedAmount if absent.'
         ReversalReason:
           $ref: '#/components/schemas/ReversalReason'
-          description: 'Reason of the payment or loyalty reversal..
+          description: 'Reason of the payment or loyalty reversal.
 
             Possible values:
 
@@ -6297,7 +6283,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/StoredValueResult'
-          description: 'Result of loading/reloading a stored value card..
+          description: 'Result of loading/reloading a stored value card.
 
             If StoredValueResponse.Result is Success or Partial, one entry per StoredValueRequest.StoredValueData
             loaded or activated.'
@@ -6330,7 +6316,7 @@ components:
           type: number
           maximum: 99999999.999999
           minimum: 0.0
-          description: 'Amount of the payment or loyalty to reverse..
+          description: 'Amount of the payment or loyalty to reverse.
 
             Copy.'
         CustomerOrder:
