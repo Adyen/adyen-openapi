@@ -11041,6 +11041,9 @@
                         },
                         "patch-stores-splitConfiguration" : {
                            "$ref" : "#/components/examples/patch-merchants-merchantId-stores-storeId-patch-stores-splitConfiguration"
+                        },
+                        "patch-stores-subMerchantData" : {
+                           "$ref" : "#/components/examples/patch-merchants-merchantId-stores-storeId-patch-stores-subMerchantData"
                         }
                      },
                      "schema" : {
@@ -11079,6 +11082,9 @@
                            },
                            "patch-stores-splitConfiguration" : {
                               "$ref" : "#/components/examples/patch-merchants-merchantId-stores-storeId-patch-stores-splitConfiguration-200"
+                           },
+                           "patch-stores-subMerchantData" : {
+                              "$ref" : "#/components/examples/patch-merchants-merchantId-stores-storeId-patch-stores-subMerchantData-200"
                            }
                         },
                         "schema" : {
@@ -14095,6 +14101,9 @@
                         },
                         "patch-stores-splitConfiguration" : {
                            "$ref" : "#/components/examples/patch-stores-storeId-patch-stores-splitConfiguration"
+                        },
+                        "patch-stores-subMerchantData" : {
+                           "$ref" : "#/components/examples/patch-stores-storeId-patch-stores-subMerchantData"
                         }
                      },
                      "schema" : {
@@ -14121,6 +14130,9 @@
                         "examples" : {
                            "patch-stores" : {
                               "$ref" : "#/components/examples/patch-stores-storeId-patch-stores-200"
+                           },
+                           "patch-stores-subMerchantData" : {
+                              "$ref" : "#/components/examples/patch-stores-storeId-patch-stores-subMerchantData-200"
                            }
                         },
                         "schema" : {
@@ -17484,7 +17496,7 @@
                   "type" : "string"
                },
                "passphrase" : {
-                  "description" : "The secure passphrase to protect the shared key.",
+                  "description" : "The secure passphrase to protect the shared key. Must consist of: \n\n* At least 12 characters.\n\n* At least 1 uppercase letter: `[A-Z]`. \n\n* At least 1 lowercase letter: `[a-z]`. \n\n* At least 1 digit: `[0-9]`. \n\n * At least 1 special character. Limited to the following: `~`, `@`, `$`, `%`, `^`, `&`, `*`, `(`, `)`, `_`, `+`, `=`, `}`, `{`, `]`, `[`, `;`, `:`, `?`, `.`, `,`, `>`, `<`. \n\n ",
                   "type" : "string"
                },
                "version" : {
@@ -18669,7 +18681,7 @@
                   "$ref" : "#/components/schemas/SwishInfo"
                },
                "ticket" : {
-                  "description" : "Edenred details.",
+                  "description" : "Edenred (Brazil) details.",
                   "$ref" : "#/components/schemas/TicketInfo"
                },
                "twint" : {
@@ -19009,7 +19021,7 @@
                   "$ref" : "#/components/schemas/SwishInfo"
                },
                "ticket" : {
-                  "description" : "Edenred details.",
+                  "description" : "Edenred (Brazil) details.",
                   "$ref" : "#/components/schemas/TicketInfo"
                },
                "twint" : {
@@ -19929,6 +19941,16 @@
                   "description" : "The payment method condition that defines whether the split logic applies.\n\nPossible values:\n* [Payment method variant](https://docs.adyen.com/development-resources/paymentmethodvariant): Apply the split logic for a specific payment method.\n* **ANY**: Apply the split logic for all available payment methods.",
                   "type" : "string"
                },
+               "regionality" : {
+                  "description" : "",
+                  "enum" : [
+                     "international",
+                     "intraRegional",
+                     "interRegional",
+                     "ANY"
+                  ],
+                  "type" : "string"
+               },
                "ruleId" : {
                   "description" : "The unique identifier of the split configuration rule.",
                   "readOnly" : true,
@@ -20058,6 +20080,11 @@
                      "inactive"
                   ],
                   "type" : "string"
+               },
+               "subMerchantData" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "The sub-merchant data relevant for registered payment facilitators transacting on standalone terminals.",
+                  "$ref" : "#/components/schemas/SubMerchantData"
                }
             },
             "type" : "object"
@@ -20121,6 +20148,11 @@
                "splitConfiguration" : {
                   "description" : "Rules for Adyen for Platforms merchants to split the transaction amount and fees.",
                   "$ref" : "#/components/schemas/StoreSplitConfiguration"
+               },
+               "subMerchantData" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "The sub-merchant data relevant for registered payment facilitators transacting on standalone terminals.",
+                  "$ref" : "#/components/schemas/SubMerchantData"
                }
             },
             "required" : [
@@ -20172,6 +20204,11 @@
                "splitConfiguration" : {
                   "description" : "Rules for Adyen for Platforms merchants to split the transaction amount and fees.",
                   "$ref" : "#/components/schemas/StoreSplitConfiguration"
+               },
+               "subMerchantData" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "The sub-merchant data relevant for registered payment facilitators transacting on standalone terminals.",
+                  "$ref" : "#/components/schemas/SubMerchantData"
                }
             },
             "required" : [
@@ -20232,6 +20269,35 @@
                   "type" : "string"
                }
             },
+            "type" : "object"
+         },
+         "SubMerchantData" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "email" : {
+                  "description" : "The email associated with the sub-merchant's account.",
+                  "maxLength" : 320,
+                  "type" : "string"
+               },
+               "id" : {
+                  "description" : "A unique identifier that you create for the sub-merchant, used by schemes to identify the sub-merchant.\n* Format: Alphanumeric\n* Maximum length: 15 characters",
+                  "type" : "string"
+               },
+               "mcc" : {
+                  "description" : "The sub-merchant's 4-digit Merchant Category Code (MCC).\n* Format: Numeric\n* Fixed length: 4 digits",
+                  "type" : "string"
+               },
+               "name" : {
+                  "description" : "The name of the sub-merchant. Based on scheme specifications, this value will overwrite the shopper statement that will appear in the card statement.\n* Format: Alphanumeric\n* Maximum length: 22 characters",
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "id",
+               "name",
+               "mcc",
+               "email"
+            ],
             "type" : "object"
          },
          "SupportedCardTypes" : {
@@ -21662,6 +21728,10 @@
                   "description" : "The payment method condition that defines whether the split logic applies.\n\nPossible values:\n* [Payment method variant](https://docs.adyen.com/development-resources/paymentmethodvariant): Apply the split logic for a specific payment method.\n* **ANY**: Apply the split logic for all available payment methods.",
                   "type" : "string"
                },
+               "regionality" : {
+                  "description" : "",
+                  "type" : "string"
+               },
                "shopperInteraction" : {
                   "description" : "The sales channel condition that defines whether the split logic applies.\n\nPossible values:\n* **Ecommerce**: Online transactions where the cardholder is present.\n* **ContAuth**: Card on file and/or subscription transactions, where the cardholder is known to the merchant (returning customer).\n* **Moto**: Mail-order and telephone-order transactions where the customer is in contact with the merchant via email or telephone.\n* **POS**: Point-of-sale transactions where the customer is physically present to make a payment using a secure payment terminal.\n* **ANY**: All sales channels.",
                   "type" : "string"
@@ -21712,6 +21782,11 @@
                      "inactive"
                   ],
                   "type" : "string"
+               },
+               "subMerchantData" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "The sub-merchant data relevant for registered payment facilitators transacting on standalone terminals.",
+                  "$ref" : "#/components/schemas/SubMerchantData"
                }
             },
             "type" : "object"
@@ -27226,6 +27301,51 @@
                }
             }
          },
+         "patch-merchants-merchantId-stores-storeId-patch-stores-subMerchantData" : {
+            "summary" : "Add sub-merchant data to store",
+            "description" : "Example request to add a sub-merchant data to the store",
+            "value" : {
+               "subMerchantData" : {
+                  "id" : "12345",
+                  "name" : "Test Merchant",
+                  "mcc" : "7999",
+                  "email" : "test@email.com"
+               }
+            }
+         },
+         "patch-merchants-merchantId-stores-storeId-patch-stores-subMerchantData-200" : {
+            "summary" : "Sub-merchant data added to store",
+            "description" : "Example response after adding a sub-merchant data to the store",
+            "value" : {
+               "id" : "YOUR_STORE_ID",
+               "address" : {
+                  "country" : "US",
+                  "line1" : "1776 West Pinewood Avenue",
+                  "line2" : "Heartland Building",
+                  "line3" : "",
+                  "city" : "Springfield",
+                  "stateOrProvince" : "NY",
+                  "postalCode" : "20251"
+               },
+               "description" : "City centre store",
+               "merchantId" : "YOUR_MERCHANT_ACCOUNT_ID",
+               "shopperStatement" : "Springfield Shop",
+               "phoneNumber" : "+13123456789",
+               "reference" : "Spring_store_2",
+               "subMerchantData" : {
+                  "id" : "12345",
+                  "name" : "Test Merchant",
+                  "mcc" : "7999",
+                  "email" : "test@email.com"
+               },
+               "status" : "active",
+               "_links" : {
+                  "self" : {
+                     "href" : "https://management-test.adyen.com/v1/stores/YOUR_STORE_ID"
+                  }
+               }
+            }
+         },
          "patch-merchants-merchantId-terminalLogos-remove-logo" : {
             "summary" : "Remove logo to restore the logo from a higher level",
             "description" : "Example request to remove the payment terminal logo configured at the current level, and inherit the logo from a higher level",
@@ -27765,6 +27885,51 @@
                "splitConfiguration" : {
                   "balanceAccountId" : "BA3227C223222H5HQ2XX77VVH",
                   "splitConfigurationId" : "SCNF4224P22322585HPCX384JV6JGX"
+               }
+            }
+         },
+         "patch-stores-storeId-patch-stores-subMerchantData" : {
+            "summary" : "Add sub-merchant data to store",
+            "description" : "Example request to add a sub-merchant data to the store",
+            "value" : {
+               "subMerchantData" : {
+                  "id" : "12345",
+                  "name" : "Test Merchant",
+                  "mcc" : "7999",
+                  "email" : "test@email.com"
+               }
+            }
+         },
+         "patch-stores-storeId-patch-stores-subMerchantData-200" : {
+            "summary" : "Sub-merchant data added to store",
+            "description" : "Example response after adding a sub-merchant data to the store",
+            "value" : {
+               "id" : "YOUR_STORE_ID",
+               "address" : {
+                  "country" : "US",
+                  "line1" : "1776 West Pinewood Avenue",
+                  "line2" : "Heartland Building",
+                  "line3" : "",
+                  "city" : "Springfield",
+                  "stateOrProvince" : "NY",
+                  "postalCode" : "20251"
+               },
+               "description" : "City centre store",
+               "merchantId" : "YOUR_MERCHANT_ACCOUNT_ID",
+               "shopperStatement" : "Springfield Shop",
+               "phoneNumber" : "+13123456789",
+               "reference" : "Spring_store_2",
+               "subMerchantData" : {
+                  "id" : "12345",
+                  "name" : "Test Merchant",
+                  "mcc" : "7999",
+                  "email" : "test@email.com"
+               },
+               "status" : "active",
+               "_links" : {
+                  "self" : {
+                     "href" : "https://management-test.adyen.com/v1/stores/YOUR_STORE_ID"
+                  }
                }
             }
          },
