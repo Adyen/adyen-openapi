@@ -436,6 +436,14 @@ paths:
         schema:
           type: integer
           format: int32
+      - name: legalEntityId
+        in: query
+        description: The legal entity reference whose tax form you want to retrieve
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
       responses:
         '200':
           description: OK - the request has succeeded.
@@ -4528,6 +4536,7 @@ paths:
                     detail: There is not any legal entity tied to this payment instrument.
                     requestId: 4949a74bb7be732e559808a8ac3a86fc
                     status: 422
+      x-methodName: getAllAuthorisedCardUsers
       x-sortIndex: 2
     post:
       tags:
@@ -4631,6 +4640,7 @@ paths:
                     detail: Given payment instrument is not a multi use payment instrument.
                     requestId: 4a7beaa203f673074e029916d4325602
                     status: 422
+      x-methodName: createAuthorisedCardUsers
       x-sortIndex: 1
     delete:
       tags:
@@ -4682,6 +4692,7 @@ paths:
                     detail: Not allowed for card partner yet.
                     requestId: d42c493b5176df89e51516c6060cc34c
                     status: 403
+      x-methodName: deleteAuthorisedCardUsers
       x-sortIndex: 4
     patch:
       tags:
@@ -4787,6 +4798,7 @@ paths:
                     detail: Request must have maximum 10 legal entity reference.
                     requestId: aeadb5646efe065f5e027d2fb6b137ec
                     status: 422
+      x-methodName: updateAuthorisedCardUsers
       x-sortIndex: 3
   /balancePlatforms/{balancePlatformId}/webhooks/{webhookId}/settings:
     get:
@@ -6152,8 +6164,8 @@ components:
           readOnly: true
         platformPaymentConfiguration:
           $ref: '#/components/schemas/PlatformPaymentConfiguration'
-          description: Contains key-value pairs to the configure the settlement model
-            in a balance account.
+          description: Contains key-value pairs to configure the sales day closing
+            time and settlement delay for a balance account.
         reference:
           type: string
           description: Your reference for the balance account, maximum 150 characters.
@@ -6220,8 +6232,8 @@ components:
           readOnly: true
         platformPaymentConfiguration:
           $ref: '#/components/schemas/PlatformPaymentConfiguration'
-          description: Contains key-value pairs to the configure the settlement model
-            in a balance account.
+          description: Contains key-value pairs to configure the sales day closing
+            time and settlement delay for a balance account.
         reference:
           type: string
           description: Your reference for the balance account, maximum 150 characters.
@@ -6285,8 +6297,8 @@ components:
           readOnly: true
         platformPaymentConfiguration:
           $ref: '#/components/schemas/PlatformPaymentConfiguration'
-          description: Contains key-value pairs to the configure the settlement model
-            in a balance account.
+          description: Contains key-value pairs to configure the sales day closing
+            time and settlement delay for a balance account.
         reference:
           type: string
           description: Your reference for the balance account, maximum 150 characters.
@@ -6326,8 +6338,8 @@ components:
             pairs will result in the deletion of those key-value pairs.'
         platformPaymentConfiguration:
           $ref: '#/components/schemas/PlatformPaymentConfiguration'
-          description: Contains key-value pairs to the configure the settlement model
-            in a balance account.
+          description: Contains key-value pairs to configure the sales day closing
+            time and settlement delay for a balance account.
         reference:
           type: string
           description: Your reference to the balance account.
@@ -7295,7 +7307,8 @@ components:
             fees. Recommended for high-priority, high-value transactions.
 
 
-            * **instant**: for instant funds transfers in [SEPA countries](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).
+            * **instant**: for instant funds transfers within the United States and
+            in [SEPA locations](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).
 
 
             * **crossBorder**: for high-value transfers to a recipient in a different
@@ -8142,9 +8155,23 @@ components:
         tokenLastFour:
           type: string
           description: The last four digits of the network token `id`.
+        tokenRequestor:
+          $ref: '#/components/schemas/NetworkTokenRequestor'
+          description: The token requestor is an entity who requested tokenization
+            of the card for secure payments.
         type:
           type: string
           description: The type of network token. For example, **wallet**, **cof**.
+    NetworkTokenRequestor:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          description: The id of the network token requestor.
+        name:
+          type: string
+          description: The name of the network token requestor.
     NumberAndBicAccountIdentification:
       type: object
       additionalProperties: false
@@ -8773,8 +8800,7 @@ components:
         salesDayClosingTime:
           type: string
           format: time
-          description: 'Specifies at what time a [sales day](https://docs.adyen.com/platforms/settle-funds/sales-day-settlement#sales-day)
-            ends for this account.
+          description: 'Specifies at what time a sales day ends for this account.
 
 
             Possible values: Time in **"HH:MM"** format. **HH** ranges from **00**
@@ -8785,20 +8811,11 @@ components:
         settlementDelayDays:
           type: integer
           format: int32
-          description: 'Specifies after how many business days the funds in a [settlement
-            batch](https://docs.adyen.com/platforms/settle-funds/sales-day-settlement#settlement-batch)
-            are made available in this balance account.
+          description: 'Specifies after how many business days the funds in a settlement
+            batch are made available in this balance account.
 
 
             Possible values: **1** to **20**, or **null**.
-
-            * Setting this value to an integer enables Sales day settlement in this
-            balance account. See how Sales day settlement works in your [marketplace](https://docs.adyen.com/marketplaces/settle-funds/sales-day-settlement)
-            or [platform](https://docs.adyen.com/platforms/settle-funds/sales-day-settlement).
-
-            * Setting this value to **null** enables Pass-through settlement in this
-            balance account. See how Pass-through settlement works in your [marketplace](https://docs.adyen.com/marketplaces/settle-funds/pass-through-settlement)
-            or [platform](https://docs.adyen.com/platforms/settle-funds/pass-through-settlement).
 
 
             Default value: **null**.'
@@ -9233,7 +9250,8 @@ components:
             fees. Recommended for high-priority, high-value transactions.
 
 
-            * **instant**: for instant funds transfers in [SEPA countries](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).
+            * **instant**: for instant funds transfers within the United States and
+            in [SEPA locations](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).
 
 
             * **crossBorder**: for high-value transfers to a recipient in a different
@@ -10175,7 +10193,8 @@ components:
             fees. Recommended for high-priority, high-value transactions.
 
 
-            * **instant**: for instant funds transfers in [SEPA countries](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).
+            * **instant**: for instant funds transfers within the United States and
+            in [SEPA locations](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).
 
 
             * **crossBorder**: for high-value transfers to a recipient in a different
@@ -10260,7 +10279,8 @@ components:
             fees. Recommended for high-priority, high-value transactions.
 
 
-            * **instant**: for instant funds transfers in [SEPA countries](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).
+            * **instant**: for instant funds transfers within the United States and
+            in [SEPA locations](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).
 
 
             * **crossBorder**: for high-value transfers to a recipient in a different
@@ -10583,7 +10603,8 @@ components:
             fees. Recommended for high-priority, high-value transactions.
 
 
-            * **instant**: for instant funds transfers in [SEPA countries](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).
+            * **instant**: for instant funds transfers within the United States and
+            in [SEPA locations](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).
 
 
             * **crossBorder**: for high-value transfers to a recipient in a different

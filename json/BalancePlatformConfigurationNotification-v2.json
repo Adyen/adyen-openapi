@@ -1012,7 +1012,7 @@
                   "type" : "string"
                },
                "platformPaymentConfiguration" : {
-                  "description" : "Contains key-value pairs to the configure the settlement model in a balance account.",
+                  "description" : "Contains key-value pairs to configure the sales day closing time and settlement delay for a balance account.",
                   "$ref" : "#/components/schemas/PlatformPaymentConfiguration"
                },
                "reference" : {
@@ -1748,6 +1748,11 @@
                   "description" : "The last four digits of the network token. Use this value to help your user to identify their network token.",
                   "type" : "string"
                },
+               "tokenRequestor" : {
+                  "x-addedInVersion" : "2",
+                  "description" : "The token requestor is an entity who requested tokenization of the card for secure payments.",
+                  "$ref" : "#/components/schemas/NetworkTokenRequestor"
+               },
                "type" : {
                   "description" : "The type of network token.",
                   "type" : "string"
@@ -1796,6 +1801,20 @@
                "type",
                "data"
             ],
+            "type" : "object"
+         },
+         "NetworkTokenRequestor" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "id" : {
+                  "description" : "The id of the network token requestor.",
+                  "type" : "string"
+               },
+               "name" : {
+                  "description" : "The name of the network token requestor.",
+                  "type" : "string"
+               }
+            },
             "type" : "object"
          },
          "PaymentInstrument" : {
@@ -2001,12 +2020,12 @@
             "additionalProperties" : false,
             "properties" : {
                "salesDayClosingTime" : {
-                  "description" : "Specifies at what time a [sales day](https://docs.adyen.com/platforms/settle-funds/sales-day-settlement#sales-day) ends for this account.\n\nPossible values: Time in **\"HH:MM\"** format. **HH** ranges from **00** to **07**. **MM** must be **00**.\n\nDefault value: **\"00:00\"**.",
+                  "description" : "Specifies at what time a sales day ends for this account.\n\nPossible values: Time in **\"HH:MM\"** format. **HH** ranges from **00** to **07**. **MM** must be **00**.\n\nDefault value: **\"00:00\"**.",
                   "format" : "time",
                   "type" : "string"
                },
                "settlementDelayDays" : {
-                  "description" : "Specifies after how many business days the funds in a [settlement batch](https://docs.adyen.com/platforms/settle-funds/sales-day-settlement#settlement-batch) are made available in this balance account.\n\nPossible values: **1** to **20**, or **null**.\n* Setting this value to an integer enables Sales day settlement in this balance account. See how Sales day settlement works in your [marketplace](https://docs.adyen.com/marketplaces/settle-funds/sales-day-settlement) or [platform](https://docs.adyen.com/platforms/settle-funds/sales-day-settlement).\n* Setting this value to **null** enables Pass-through settlement in this balance account. See how Pass-through settlement works in your [marketplace](https://docs.adyen.com/marketplaces/settle-funds/pass-through-settlement) or [platform](https://docs.adyen.com/platforms/settle-funds/pass-through-settlement).\n\nDefault value: **null**.",
+                  "description" : "Specifies after how many business days the funds in a settlement batch are made available in this balance account.\n\nPossible values: **1** to **20**, or **null**.\n\nDefault value: **null**.",
                   "format" : "int32",
                   "type" : "integer"
                }
@@ -2128,7 +2147,7 @@
                },
                "priorities" : {
                   "x-addedInVersion" : "2",
-                  "description" : "The list of priorities for the bank transfer. This sets the speed at which the transfer is sent and the fees that you have to pay. You can provide multiple priorities, ordered by your preference. Adyen will try to pay out using the priorities in the given order. If the first priority is not currently supported or enabled for your platform, the system will try the next one, and so on.\n\nThe request will be accepted as long as **at least one** of the provided priorities is valid (i.e., supported by Adyen and activated for your platform). For example, if you provide `[\"wire\",\"regular\"]`, and `wire` is not supported but `regular` is, the request will still be accepted and processed.\n\nPossible values:\n\n* **regular**: for normal, low-value transactions.\n\n* **fast**: a faster way to transfer funds, but the fees are higher. Recommended for high-priority, low-value transactions.\n\n* **wire**: the fastest way to transfer funds, but this has the highest fees. Recommended for high-priority, high-value transactions.\n\n* **instant**: for instant funds transfers in [SEPA countries](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).\n\n* **crossBorder**: for high-value transfers to a recipient in a different country.\n\n* **internal**: for transfers to an Adyen-issued business bank account (by bank account number/IBAN).\n\nSet `category` to **bank**. For more details, see optional priorities setup for [marketplaces](https://docs.adyen.com/marketplaces/payout-to-users/scheduled-payouts#optional-priorities-setup) or [platforms](https://docs.adyen.com/platforms/payout-to-users/scheduled-payouts#optional-priorities-setup).",
+                  "description" : "The list of priorities for the bank transfer. This sets the speed at which the transfer is sent and the fees that you have to pay. You can provide multiple priorities, ordered by your preference. Adyen will try to pay out using the priorities in the given order. If the first priority is not currently supported or enabled for your platform, the system will try the next one, and so on.\n\nThe request will be accepted as long as **at least one** of the provided priorities is valid (i.e., supported by Adyen and activated for your platform). For example, if you provide `[\"wire\",\"regular\"]`, and `wire` is not supported but `regular` is, the request will still be accepted and processed.\n\nPossible values:\n\n* **regular**: for normal, low-value transactions.\n\n* **fast**: a faster way to transfer funds, but the fees are higher. Recommended for high-priority, low-value transactions.\n\n* **wire**: the fastest way to transfer funds, but this has the highest fees. Recommended for high-priority, high-value transactions.\n\n* **instant**: for instant funds transfers within the United States and in [SEPA locations](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).\n\n* **crossBorder**: for high-value transfers to a recipient in a different country.\n\n* **internal**: for transfers to an Adyen-issued business bank account (by bank account number/IBAN).\n\nSet `category` to **bank**. For more details, see optional priorities setup for [marketplaces](https://docs.adyen.com/marketplaces/payout-to-users/scheduled-payouts#optional-priorities-setup) or [platforms](https://docs.adyen.com/platforms/payout-to-users/scheduled-payouts#optional-priorities-setup).",
                   "items" : {
                      "enum" : [
                         "crossBorder",
@@ -2614,7 +2633,7 @@
                   "type" : "string"
                },
                "recommendationReasons" : {
-                  "description" : "A list of risk indicators triggered at the time of provisioning the network token.\n\nPossible values:\n\n* **accountTooNewSinceLaunch**\n* **accountTooNew**\n* **accountCardTooNew**\n* **accountRecentlyChanged**\n* **suspiciousActivity**\n* **inactiveAccount**\n* **hasSuspendedTokens**\n* **deviceRecentlyLost**\n* **tooManyRecentAttempts**\n* **tooManyRecentTokens**\n* **tooManyDifferentCardholders**\n* **lowDeviceScore**\n* **lowAccountScore**\n* **outSideHomeTerritory**\n* **unableToAssess**\n* **accountHighRisk**\n* **lowPhoneNumberScore**\n* **unknown**",
+                  "description" : "A list of risk indicators triggered at the time of provisioning the network token.\n\nSome example values of risk indicators are:\n\n* **accountTooNewSinceLaunch**\n* **tooManyRecentAttempts**\n* **lowDeviceScore**\n* **lowAccountScore**\n",
                   "items" : {
                      "enum" : [
                         "accountCardTooNew",
@@ -2622,25 +2641,51 @@
                         "accountRecentlyChanged",
                         "accountTooNew",
                         "accountTooNewSinceLaunch",
+                        "cardholderPanAssociatedToAccountWithinThresholdDays",
+                        "changesMadeToAccountDataWithinThresholdDays",
+                        "deviceProvisioningLocationOutsideOfCardholdersWalletAccountHomeCountry",
                         "deviceRecentlyLost",
+                        "encryptedPaymentInstrumentDataIsBeingPushedByTheIssuerToTheSameDeviceThatIssuerApplicationAuthenticatedButWithSuccessfulUpfrontAuthentication",
+                        "encryptedPaymentInstrumentDataIsBeingPushedByTheIssuerToTheSameDeviceThatIssuerApplicationAuthenticatedButWithoutAnyUpfrontAuthentication",
+                        "encryptedPaymentInstrumentDataIsPushedToADifferentDeviceThanTheOneThatIssuerApplicationAuthenticated",
+                        "encryptedPaymentInstrumentDataIsPushedToADifferentUserThanTheCardHolder",
                         "hasSuspendedTokens",
                         "inactiveAccount",
+                        "issuerDeferredIDVDecision",
+                        "issuerEncryptedPaymentInstrumentDataExpired",
                         "lowAccountScore",
                         "lowDeviceScore",
                         "lowPhoneNumberScore",
+                        "numberOfActiveTokensGreaterThanThreshold",
+                        "numberOfActiveTokensOnAllDevicesIsGreaterThanThreshold",
+                        "numberOfDaysSinceDeviceWasLastReportedLostIsLessThanThresholdDays",
+                        "numberOfDevicesWithSameUseridWithTokenIsGreaterThanThreshold",
+                        "numberOfTransactionsInLast12MonthsLessThanThresholdNumber",
                         "outSideHomeTerritory",
+                        "suspendedCardsInTheWALLETAccountIsGreaterThanThreshold",
                         "suspiciousActivity",
+                        "theNumberOfProvisioningAttemptsAcrossAllCardsOnThisDeviceInTheLast24HoursExceedsTheThreshold",
+                        "theWALLETAccountIntoWhichTheCardIsBeingProvisionedContainDistinctNamesGreaterThanThreshold",
+                        "thisAccountHasNotHadActivityWithinThresholdPeriod",
                         "tooManyDifferentCardholders",
                         "tooManyRecentAttempts",
                         "tooManyRecentTokens",
                         "unableToAssess",
-                        "unknown"
+                        "unknown",
+                        "userAccountWasCreatedWithinThresholdDays",
+                        "userDeviceReceivingEncryptedPaymentInstrumentDataIsDifferentThanTheOneThatIsProvisioningTheToken",
+                        "usersAccountOnDeviceLessThanThresholdDays",
+                        "walletAccountCreatedWithinThresholdDays",
+                        "walletAccountHolderNameOnFileDoesNotMatchCardholderEnteredName"
                      ],
                      "type" : "string"
                   },
                   "type" : "array"
                },
                "type" : {
+                  "deprecated" : true,
+                  "x-deprecatedInVersion" : "2",
+                  "x-deprecatedMessage" : "Use name of the `tokenRequestor` instead.",
                   "description" : "The type of wallet that the network token is associated with.\n\nPossible values: **applePay**, **googlePay**, **garminPay**.",
                   "type" : "string"
                }

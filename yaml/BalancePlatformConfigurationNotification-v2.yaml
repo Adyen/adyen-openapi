@@ -835,8 +835,8 @@ components:
             holder in the classic integration.
           type: string
         platformPaymentConfiguration:
-          description: Contains key-value pairs to the configure the settlement model
-            in a balance account.
+          description: Contains key-value pairs to configure the sales day closing
+            time and settlement delay for a balance account.
           $ref: '#/components/schemas/PlatformPaymentConfiguration'
         reference:
           description: Your reference for the balance account, maximum 150 characters.
@@ -1510,6 +1510,11 @@ components:
           description: The last four digits of the network token. Use this value to
             help your user to identify their network token.
           type: string
+        tokenRequestor:
+          x-addedInVersion: '2'
+          description: The token requestor is an entity who requested tokenization
+            of the card for secure payments.
+          $ref: '#/components/schemas/NetworkTokenRequestor'
         type:
           description: The type of network token.
           type: string
@@ -1550,6 +1555,16 @@ components:
       - environment
       - type
       - data
+      type: object
+    NetworkTokenRequestor:
+      additionalProperties: false
+      properties:
+        id:
+          description: The id of the network token requestor.
+          type: string
+        name:
+          description: The name of the network token requestor.
+          type: string
       type: object
     PaymentInstrument:
       additionalProperties: false
@@ -1748,8 +1763,7 @@ components:
       additionalProperties: false
       properties:
         salesDayClosingTime:
-          description: 'Specifies at what time a [sales day](https://docs.adyen.com/platforms/settle-funds/sales-day-settlement#sales-day)
-            ends for this account.
+          description: 'Specifies at what time a sales day ends for this account.
 
 
             Possible values: Time in **"HH:MM"** format. **HH** ranges from **00**
@@ -1760,20 +1774,11 @@ components:
           format: time
           type: string
         settlementDelayDays:
-          description: 'Specifies after how many business days the funds in a [settlement
-            batch](https://docs.adyen.com/platforms/settle-funds/sales-day-settlement#settlement-batch)
-            are made available in this balance account.
+          description: 'Specifies after how many business days the funds in a settlement
+            batch are made available in this balance account.
 
 
             Possible values: **1** to **20**, or **null**.
-
-            * Setting this value to an integer enables Sales day settlement in this
-            balance account. See how Sales day settlement works in your [marketplace](https://docs.adyen.com/marketplaces/settle-funds/sales-day-settlement)
-            or [platform](https://docs.adyen.com/platforms/settle-funds/sales-day-settlement).
-
-            * Setting this value to **null** enables Pass-through settlement in this
-            balance account. See how Pass-through settlement works in your [marketplace](https://docs.adyen.com/marketplaces/settle-funds/pass-through-settlement)
-            or [platform](https://docs.adyen.com/platforms/settle-funds/pass-through-settlement).
 
 
             Default value: **null**.'
@@ -1918,7 +1923,8 @@ components:
             fees. Recommended for high-priority, high-value transactions.
 
 
-            * **instant**: for instant funds transfers in [SEPA countries](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).
+            * **instant**: for instant funds transfers within the United States and
+            in [SEPA locations](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).
 
 
             * **crossBorder**: for high-value transfers to a recipient in a different
@@ -2481,44 +2487,18 @@ components:
             the network token.
 
 
-            Possible values:
+            Some example values of risk indicators are:
 
 
             * **accountTooNewSinceLaunch**
 
-            * **accountTooNew**
-
-            * **accountCardTooNew**
-
-            * **accountRecentlyChanged**
-
-            * **suspiciousActivity**
-
-            * **inactiveAccount**
-
-            * **hasSuspendedTokens**
-
-            * **deviceRecentlyLost**
-
             * **tooManyRecentAttempts**
-
-            * **tooManyRecentTokens**
-
-            * **tooManyDifferentCardholders**
 
             * **lowDeviceScore**
 
             * **lowAccountScore**
 
-            * **outSideHomeTerritory**
-
-            * **unableToAssess**
-
-            * **accountHighRisk**
-
-            * **lowPhoneNumberScore**
-
-            * **unknown**'
+            '
           items:
             enum:
             - accountCardTooNew
@@ -2526,22 +2506,48 @@ components:
             - accountRecentlyChanged
             - accountTooNew
             - accountTooNewSinceLaunch
+            - cardholderPanAssociatedToAccountWithinThresholdDays
+            - changesMadeToAccountDataWithinThresholdDays
+            - deviceProvisioningLocationOutsideOfCardholdersWalletAccountHomeCountry
             - deviceRecentlyLost
+            - encryptedPaymentInstrumentDataIsBeingPushedByTheIssuerToTheSameDeviceThatIssuerApplicationAuthenticatedButWithSuccessfulUpfrontAuthentication
+            - encryptedPaymentInstrumentDataIsBeingPushedByTheIssuerToTheSameDeviceThatIssuerApplicationAuthenticatedButWithoutAnyUpfrontAuthentication
+            - encryptedPaymentInstrumentDataIsPushedToADifferentDeviceThanTheOneThatIssuerApplicationAuthenticated
+            - encryptedPaymentInstrumentDataIsPushedToADifferentUserThanTheCardHolder
             - hasSuspendedTokens
             - inactiveAccount
+            - issuerDeferredIDVDecision
+            - issuerEncryptedPaymentInstrumentDataExpired
             - lowAccountScore
             - lowDeviceScore
             - lowPhoneNumberScore
+            - numberOfActiveTokensGreaterThanThreshold
+            - numberOfActiveTokensOnAllDevicesIsGreaterThanThreshold
+            - numberOfDaysSinceDeviceWasLastReportedLostIsLessThanThresholdDays
+            - numberOfDevicesWithSameUseridWithTokenIsGreaterThanThreshold
+            - numberOfTransactionsInLast12MonthsLessThanThresholdNumber
             - outSideHomeTerritory
+            - suspendedCardsInTheWALLETAccountIsGreaterThanThreshold
             - suspiciousActivity
+            - theNumberOfProvisioningAttemptsAcrossAllCardsOnThisDeviceInTheLast24HoursExceedsTheThreshold
+            - theWALLETAccountIntoWhichTheCardIsBeingProvisionedContainDistinctNamesGreaterThanThreshold
+            - thisAccountHasNotHadActivityWithinThresholdPeriod
             - tooManyDifferentCardholders
             - tooManyRecentAttempts
             - tooManyRecentTokens
             - unableToAssess
             - unknown
+            - userAccountWasCreatedWithinThresholdDays
+            - userDeviceReceivingEncryptedPaymentInstrumentDataIsDifferentThanTheOneThatIsProvisioningTheToken
+            - usersAccountOnDeviceLessThanThresholdDays
+            - walletAccountCreatedWithinThresholdDays
+            - walletAccountHolderNameOnFileDoesNotMatchCardholderEnteredName
             type: string
           type: array
         type:
+          deprecated: true
+          x-deprecatedInVersion: '2'
+          x-deprecatedMessage: Use name of the `tokenRequestor` instead.
           description: 'The type of wallet that the network token is associated with.
 
 
