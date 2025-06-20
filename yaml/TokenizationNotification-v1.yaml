@@ -3,8 +3,10 @@ info:
   version: '1'
   x-publicVersion: true
   title: Tokenization webhooks
-  description: Adyen sends webhooks to inform you about token life-cycle management
-    events.
+  description: "With Adyen, you can securely store payment details of your shoppers\
+    \ with their consent. We refer to these saved payment details as tokens.\n\n We\
+    \ use webhooks to inform you about token lifecycle events. For more information,\
+    \ refer to our [documentation](https://docs.adyen.com/online-payments/tokenization/)."
   termsOfService: https://www.adyen.com/legal/terms-and-conditions
   contact:
     name: Adyen Developer Experience team
@@ -17,8 +19,8 @@ webhooks:
       tags:
       - General
       summary: Token already exists
-      description: Adyen sends this webhook when a token for stored payment details
-        already exists.
+      description: Adyen sends this webhook when you attempt to create or update a
+        token with details that match an already existing token.
       operationId: post-recurring.token.alreadyExisting
       x-sortIndex: 0
       x-methodName: tokenAlreadyExists
@@ -28,21 +30,20 @@ webhooks:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RechargeDetailsAlreadyExistingNotification'
+              $ref: '#/components/schemas/TokenizationAlreadyExistingDetailsNotificationRequest'
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RechargeNotificationResponse'
+                $ref: '#/components/schemas/TokenizationNotificationResponse'
           description: OK - the request has succeeded.
   recurring.token.created:
     post:
       tags:
       - General
       summary: Token created
-      description: Adyen sends this webhook when a token for stored payment details
-        is created.
+      description: Adyen sends this webhook when a token is created.
       operationId: post-recurring.token.created
       x-sortIndex: 0
       x-methodName: tokenCreated
@@ -52,21 +53,22 @@ webhooks:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RechargeCreatedDetailsNotification'
+              $ref: '#/components/schemas/TokenizationCreatedDetailsNotificationRequest'
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RechargeNotificationResponse'
+                $ref: '#/components/schemas/TokenizationNotificationResponse'
           description: OK - the request has succeeded.
   recurring.token.disabled:
     post:
       tags:
       - General
       summary: Token disabled
-      description: Adyen sends this webhook when a token for stored payment details
-        is disabled.
+      description: Adyen sends this webhook when a token is disabled. For example,
+        when you [delete stored payment details](https://docs.adyen.com/online-payments/tokenization/managing-tokens/#delete-stored-details),
+        or when a third party disables the payment details.
       operationId: post-recurring.token.disabled
       x-sortIndex: 0
       x-methodName: tokenDisabled
@@ -76,21 +78,22 @@ webhooks:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RechargeDisabledDetailsNotification'
+              $ref: '#/components/schemas/TokenizationDisabledDetailsNotificationRequest'
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RechargeNotificationResponse'
+                $ref: '#/components/schemas/TokenizationNotificationResponse'
           description: OK - the request has succeeded.
   recurring.token.updated:
     post:
       tags:
       - General
       summary: Token updated
-      description: Adyen sends this webhook when you update the token for stored payment
-        details.
+      description: Adyen sends this webhook when a token is updated, for example,
+        when you [update stored details](https://docs.adyen.com/online-payments/tokenization/managing-tokens/#update-stored-details).
+        Tokens can also be updated by card networks.
       operationId: post-recurring.token.updated
       x-sortIndex: 0
       x-methodName: tokenUpdated
@@ -100,93 +103,16 @@ webhooks:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RechargeUpdatedDetailsNotification'
+              $ref: '#/components/schemas/TokenizationUpdatedDetailsNotificationRequest'
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RechargeNotificationResponse'
+                $ref: '#/components/schemas/TokenizationNotificationResponse'
           description: OK - the request has succeeded.
 components:
   schemas:
-    RechargeCreatedDetailsNotification:
-      additionalProperties: false
-      properties:
-        createdAt:
-          format: date-time
-          type: string
-        data:
-          $ref: '#/components/schemas/RecurringTokenStoreOperation'
-        environment:
-          type: string
-        eventId:
-          type: string
-        type:
-          type: string
-        version:
-          type: string
-      type: object
-    RechargeDetailsAlreadyExistingNotification:
-      additionalProperties: false
-      properties:
-        createdAt:
-          format: date-time
-          type: string
-        data:
-          $ref: '#/components/schemas/RecurringTokenStoreOperation'
-        environment:
-          type: string
-        eventId:
-          type: string
-        type:
-          type: string
-        version:
-          type: string
-      type: object
-    RechargeDisabledDetailsNotification:
-      additionalProperties: false
-      properties:
-        createdAt:
-          format: date-time
-          type: string
-        data:
-          $ref: '#/components/schemas/RecurringToken'
-        environment:
-          type: string
-        eventId:
-          type: string
-        type:
-          type: string
-        version:
-          type: string
-      type: object
-    RechargeNotificationResponse:
-      additionalProperties: false
-      properties:
-        notificationResponse:
-          description: Respond with an HTTP 200 OK and include notificationResponse
-            field with **[accepted]** value in the body of the response to acknowledge
-            that your server received a webhook from Adyen.
-          type: string
-      type: object
-    RechargeUpdatedDetailsNotification:
-      additionalProperties: false
-      properties:
-        createdAt:
-          format: date-time
-          type: string
-        data:
-          $ref: '#/components/schemas/RecurringTokenStoreOperation'
-        environment:
-          type: string
-        eventId:
-          type: string
-        type:
-          type: string
-        version:
-          type: string
-      type: object
     RecurringToken:
       additionalProperties: false
       properties:
@@ -212,6 +138,177 @@ components:
           type: string
         type:
           type: string
+      type: object
+    TokenizationAlreadyExistingDetailsNotificationRequest:
+      additionalProperties: false
+      properties:
+        createdAt:
+          description: The date and time when the event happened, in ISO 8601 extended
+            format.
+          example: '2024-10-29T16:15:29+01:00'
+          format: date-time
+          type: string
+        data:
+          $ref: '#/components/schemas/RecurringTokenStoreOperation'
+        environment:
+          description: 'The environment from which the webhook originated.
+
+
+            Possible values: **test**, **live**.'
+          enum:
+          - test
+          - live
+          example: live
+          type: string
+        eventId:
+          type: string
+        type:
+          description: The type of webhook.
+          enum:
+          - recurring.token.created
+          - recurring.token.alreadyExisting
+          - recurring.token.updated
+          - recurring.token.disabled
+          type: string
+        version:
+          description: The version of this entity.
+          example: '1'
+          type: string
+      required:
+      - environment
+      - createdAt
+      - version
+      - type
+      type: object
+    TokenizationCreatedDetailsNotificationRequest:
+      additionalProperties: false
+      properties:
+        createdAt:
+          description: The date and time when the event happened, in ISO 8601 extended
+            format.
+          example: '2024-10-29T16:15:29+01:00'
+          format: date-time
+          type: string
+        data:
+          $ref: '#/components/schemas/RecurringTokenStoreOperation'
+        environment:
+          description: 'The environment from which the webhook originated.
+
+
+            Possible values: **test**, **live**.'
+          enum:
+          - test
+          - live
+          example: live
+          type: string
+        eventId:
+          type: string
+        type:
+          description: The type of webhook.
+          enum:
+          - recurring.token.created
+          - recurring.token.alreadyExisting
+          - recurring.token.updated
+          - recurring.token.disabled
+          type: string
+        version:
+          description: The version of this entity.
+          example: '1'
+          type: string
+      required:
+      - environment
+      - createdAt
+      - version
+      - type
+      type: object
+    TokenizationDisabledDetailsNotificationRequest:
+      additionalProperties: false
+      properties:
+        createdAt:
+          description: The date and time when the event happened, in ISO 8601 extended
+            format.
+          example: '2024-10-29T16:15:29+01:00'
+          format: date-time
+          type: string
+        data:
+          $ref: '#/components/schemas/RecurringToken'
+        environment:
+          description: 'The environment from which the webhook originated.
+
+
+            Possible values: **test**, **live**.'
+          enum:
+          - test
+          - live
+          example: live
+          type: string
+        eventId:
+          type: string
+        type:
+          description: The type of webhook.
+          enum:
+          - recurring.token.created
+          - recurring.token.alreadyExisting
+          - recurring.token.updated
+          - recurring.token.disabled
+          type: string
+        version:
+          description: The version of this entity.
+          example: '1'
+          type: string
+      required:
+      - environment
+      - createdAt
+      - version
+      - type
+      type: object
+    TokenizationNotificationResponse:
+      additionalProperties: false
+      properties:
+        notificationResponse:
+          description: Respond with any **2xx** HTTP status code to [accept the webhook](https://docs.adyen.com/development-resources/webhooks/#accept-webhooks).
+          type: string
+      type: object
+    TokenizationUpdatedDetailsNotificationRequest:
+      additionalProperties: false
+      properties:
+        createdAt:
+          description: The date and time when the event happened, in ISO 8601 extended
+            format.
+          example: '2024-10-29T16:15:29+01:00'
+          format: date-time
+          type: string
+        data:
+          $ref: '#/components/schemas/RecurringTokenStoreOperation'
+        environment:
+          description: 'The environment from which the webhook originated.
+
+
+            Possible values: **test**, **live**.'
+          enum:
+          - test
+          - live
+          example: live
+          type: string
+        eventId:
+          type: string
+        type:
+          description: The type of webhook.
+          enum:
+          - recurring.token.created
+          - recurring.token.alreadyExisting
+          - recurring.token.updated
+          - recurring.token.disabled
+          type: string
+        version:
+          description: The version of this entity.
+          example: '1'
+          type: string
+      required:
+      - environment
+      - createdAt
+      - version
+      - type
       type: object
   securitySchemes:
     BasicAuth:
