@@ -367,6 +367,20 @@ paths:
         schema:
           format: date-time
           type: string
+      - description: "The transactions sorting order.\n\nPossible values:\n\n - **asc**:\
+          \ Ascending order, from older to most recent.\n\n- **desc**: Descending\
+          \ order, from most recent to older."
+        name: sortOrder
+        in: query
+        required: false
+        schema:
+          x-enum:
+          - value: asc
+          - value: desc
+          enum:
+          - asc
+          - desc
+          type: string
       - description: The number of items returned per page, maximum of 100 items.
           By default, the response returns 10 items per page.
         name: limit
@@ -607,6 +621,20 @@ paths:
         required: true
         schema:
           format: date-time
+          type: string
+      - description: "The transfers sorting order.\n\nPossible values:\n\n - **asc**:\
+          \ Ascending order, from older to most recent.\n\n- **desc**: Descending\
+          \ order, from most recent to older."
+        name: sortOrder
+        in: query
+        required: false
+        schema:
+          x-enum:
+          - value: asc
+          - value: desc
+          enum:
+          - asc
+          - desc
           type: string
       - description: The `cursor` returned in the links of the previous response.
         name: cursor
@@ -1336,7 +1364,8 @@ components:
             fees. Recommended for high-priority, high-value transactions.
 
 
-            * **instant**: for instant funds transfers in [SEPA countries](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).
+            * **instant**: for instant funds transfers within the United States and
+            in [SEPA locations](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).
 
 
             * **crossBorder**: for high-value transfers to a recipient in a different
@@ -1630,7 +1659,7 @@ components:
       additionalProperties: false
       properties:
         status:
-          description: "The status of the transfer.\n\nPossible values:\n\n  - **credited**:\
+          description: "The status of the transfer.\n\nPossible values:\n\n - **credited**:\
             \ the funds are credited to your user's transfer instrument or bank account."
           enum:
           - credited
@@ -1910,8 +1939,9 @@ components:
           type: string
         status:
           description: "The status of the transfer.\n\nPossible values:\n\n - **pending**:\
-            \ the transfer is under internal review.\n\n- **failed**: the transfer\
-            \ failed Adyen's internal review. For details, see `reason`.\n\n"
+            \ the transfer is under internal review by Adyen.\n\n- **failed**: the\
+            \ transfer failed Adyen's internal review. For details, see `reason`.\n\
+            \n"
           enum:
           - pending
           - failed
@@ -2003,6 +2033,10 @@ components:
           description: The unique identifier created by the scheme. This ID can be
             alphanumeric or numeric depending on the scheme.
           type: string
+        threeDSecure:
+          x-addedInVersion: '4'
+          description: The data of the result from the 3DS authentication.
+          $ref: '#/components/schemas/ThreeDSecure'
         type:
           default: issuedCard
           description: '**issuedCard**'
@@ -2684,7 +2718,8 @@ components:
             fees. Recommended for high-priority, high-value transactions.
 
 
-            * **instant**: for instant funds transfers in [SEPA countries](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).
+            * **instant**: for instant funds transfers within the United States and
+            in [SEPA locations](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).
 
 
             * **crossBorder**: for high-value transfers to a recipient in a different
@@ -2774,6 +2809,14 @@ components:
           description: The HTTP response status.
           format: int32
           type: integer
+      type: object
+    ThreeDSecure:
+      additionalProperties: false
+      properties:
+        acsTransactionId:
+          x-addedInVersion: '4'
+          description: The transaction identifier for the Access Control Server
+          type: string
       type: object
     ThresholdRepayment:
       additionalProperties: false
@@ -2996,8 +3039,17 @@ components:
           x-addedInVersion: '3'
           description: The other party in the transfer.
           $ref: '#/components/schemas/CounterpartyV3'
+        createdAt:
+          x-addedInVersion: '3'
+          description: The date and time when the transfer was created, in ISO 8601
+            extended format. For example, **2020-12-18T10:15:30+01:00**.
+          format: date-time
+          type: string
         creationDate:
           x-addedInVersion: '3'
+          deprecated: true
+          x-deprecatedInVersion: '3'
+          x-deprecatedMessage: Use createdAt or updatedAt
           description: The date and time when the event was triggered, in ISO 8601
             extended format. For example, **2020-12-18T10:15:30+01:00**.
           format: date-time
@@ -3104,8 +3156,12 @@ components:
           $ref: '#/components/schemas/TransferReview'
         status:
           x-addedInVersion: '2'
-          description: "The result of the transfer.\n\n For example, **authorised**,\
-            \ **refused**, or **error**."
+          description: "The result of the transfer.\n\nFor example:\n\n- **received**:\
+            \ an outgoing transfer request is created.\n- **authorised**: the transfer\
+            \ request is authorized and the funds are reserved.\n- **booked**: the\
+            \ funds are deducted from your user's balance account.\n - **failed**:\
+            \ the transfer is rejected by the counterparty's bank.\n- **returned**:\
+            \ the transfer is returned by the counterparty's bank."
           enum:
           - approvalPending
           - atmWithdrawal
@@ -3281,8 +3337,17 @@ components:
           x-addedInVersion: '3'
           description: The other party in the transfer.
           $ref: '#/components/schemas/TransferNotificationCounterParty'
+        createdAt:
+          x-addedInVersion: '3'
+          description: The date and time when the transfer was created, in ISO 8601
+            extended format. For example, **2020-12-18T10:15:30+01:00**.
+          format: date-time
+          type: string
         creationDate:
           x-addedInVersion: '3'
+          deprecated: true
+          x-deprecatedInVersion: '3'
+          x-deprecatedMessage: Use createdAt or updatedAt
           description: The date and time when the event was triggered, in ISO 8601
             extended format. For example, **2020-12-18T10:15:30+01:00**.
           format: date-time
@@ -3415,8 +3480,12 @@ components:
           type: integer
         status:
           x-addedInVersion: '2'
-          description: "The result of the transfer.\n\n For example, **authorised**,\
-            \ **refused**, or **error**."
+          description: "The result of the transfer.\n\nFor example:\n\n- **received**:\
+            \ an outgoing transfer request is created.\n- **authorised**: the transfer\
+            \ request is authorized and the funds are reserved.\n- **booked**: the\
+            \ funds are deducted from your user's balance account.\n - **failed**:\
+            \ the transfer is rejected by the counterparty's bank.\n- **returned**:\
+            \ the transfer is returned by the counterparty's bank."
           enum:
           - approvalPending
           - atmWithdrawal
@@ -3540,6 +3609,12 @@ components:
           - balanceAdjustment
           - balanceRollover
           - balanceMigration
+          type: string
+        updatedAt:
+          x-addedInVersion: '3'
+          description: The date and time when the event was triggered, in ISO 8601
+            extended format. For example, **2020-12-18T10:15:30+01:00**.
+          format: date-time
           type: string
       required:
       - status
@@ -3833,7 +3908,7 @@ components:
             \ for high-priority, low-value transactions.\n\n* **wire**: the fastest\
             \ way to transfer funds, but this has the highest fees. Recommended for\
             \ high-priority, high-value transactions.\n\n* **instant**: for instant\
-            \ funds transfers in [SEPA countries](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).\n\
+            \ funds transfers within the United States and in [SEPA locations](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).\n\
             \n* **crossBorder**: for high-value transfers to a recipient in a different\
             \ country.\n\n* **internal**: for transfers to an Adyen-issued business\
             \ bank account (by bank account number/IBAN).\n\nRequired for transfers\
@@ -3869,7 +3944,8 @@ components:
             fees. Recommended for high-priority, high-value transactions.
 
 
-            * **instant**: for instant funds transfers in [SEPA countries](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).
+            * **instant**: for instant funds transfers within the United States and
+            in [SEPA locations](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).
 
 
             * **crossBorder**: for high-value transfers to a recipient in a different

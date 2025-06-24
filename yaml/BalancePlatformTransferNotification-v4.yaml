@@ -362,7 +362,8 @@ components:
             fees. Recommended for high-priority, high-value transactions.
 
 
-            * **instant**: for instant funds transfers in [SEPA countries](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).
+            * **instant**: for instant funds transfers within the United States and
+            in [SEPA locations](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).
 
 
             * **crossBorder**: for high-value transfers to a recipient in a different
@@ -543,7 +544,7 @@ components:
       additionalProperties: false
       properties:
         status:
-          description: "The status of the transfer.\n\nPossible values:\n\n  - **credited**:\
+          description: "The status of the transfer.\n\nPossible values:\n\n - **credited**:\
             \ the funds are credited to your user's transfer instrument or bank account."
           enum:
           - credited
@@ -769,8 +770,9 @@ components:
           type: string
         status:
           description: "The status of the transfer.\n\nPossible values:\n\n - **pending**:\
-            \ the transfer is under internal review.\n\n- **failed**: the transfer\
-            \ failed Adyen's internal review. For details, see `reason`.\n\n"
+            \ the transfer is under internal review by Adyen.\n\n- **failed**: the\
+            \ transfer failed Adyen's internal review. For details, see `reason`.\n\
+            \n"
           enum:
           - pending
           - failed
@@ -845,6 +847,10 @@ components:
           description: The unique identifier created by the scheme. This ID can be
             alphanumeric or numeric depending on the scheme.
           type: string
+        threeDSecure:
+          x-addedInVersion: '4'
+          description: The data of the result from the 3DS authentication.
+          $ref: '#/components/schemas/ThreeDSecure'
         type:
           default: issuedCard
           description: '**issuedCard**'
@@ -1420,6 +1426,14 @@ components:
       - accountNumber
       - bic
       type: object
+    ThreeDSecure:
+      additionalProperties: false
+      properties:
+        acsTransactionId:
+          x-addedInVersion: '4'
+          description: The transaction identifier for the Access Control Server
+          type: string
+      type: object
     TransactionEventViolation:
       additionalProperties: false
       properties:
@@ -1549,8 +1563,17 @@ components:
           x-addedInVersion: '3'
           description: The other party in the transfer.
           $ref: '#/components/schemas/TransferNotificationCounterParty'
+        createdAt:
+          x-addedInVersion: '3'
+          description: The date and time when the transfer was created, in ISO 8601
+            extended format. For example, **2020-12-18T10:15:30+01:00**.
+          format: date-time
+          type: string
         creationDate:
           x-addedInVersion: '3'
+          deprecated: true
+          x-deprecatedInVersion: '3'
+          x-deprecatedMessage: Use createdAt or updatedAt
           description: The date and time when the event was triggered, in ISO 8601
             extended format. For example, **2020-12-18T10:15:30+01:00**.
           format: date-time
@@ -1683,8 +1706,12 @@ components:
           type: integer
         status:
           x-addedInVersion: '2'
-          description: "The result of the transfer.\n\n For example, **authorised**,\
-            \ **refused**, or **error**."
+          description: "The result of the transfer.\n\nFor example:\n\n- **received**:\
+            \ an outgoing transfer request is created.\n- **authorised**: the transfer\
+            \ request is authorized and the funds are reserved.\n- **booked**: the\
+            \ funds are deducted from your user's balance account.\n - **failed**:\
+            \ the transfer is rejected by the counterparty's bank.\n- **returned**:\
+            \ the transfer is returned by the counterparty's bank."
           enum:
           - approvalPending
           - atmWithdrawal
@@ -1808,6 +1835,12 @@ components:
           - balanceAdjustment
           - balanceRollover
           - balanceMigration
+          type: string
+        updatedAt:
+          x-addedInVersion: '3'
+          description: The date and time when the event was triggered, in ISO 8601
+            extended format. For example, **2020-12-18T10:15:30+01:00**.
+          format: date-time
           type: string
       required:
       - status
