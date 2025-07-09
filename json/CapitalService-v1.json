@@ -16,7 +16,7 @@
       "url" : "https://github.com/Adyen/adyen-openapi"
     },
     "version" : "1",
-    "x-timestamp" : "2025-03-20T17:41:19Z"
+    "x-timestamp" : "2025-07-09T14:38:57Z"
   },
   "tags" : [ {
     "name" : "Grants",
@@ -76,6 +76,8 @@
             }
           }
         },
+        "x-group-parameters" : "false",
+        "x-methodName" : "getAllGrants",
         "x-sortIndex" : 2
       },
       "post" : {
@@ -114,6 +116,7 @@
             }
           }
         },
+        "x-methodName" : "requestGrant",
         "x-sortIndex" : 1
       }
     },
@@ -164,6 +167,7 @@
             }
           }
         },
+        "x-methodName" : "getGrant",
         "x-sortIndex" : 3
       }
     },
@@ -214,6 +218,7 @@
             }
           }
         },
+        "x-methodName" : "getAllGrantDisbursements",
         "x-sortIndex" : 4
       }
     },
@@ -244,7 +249,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/PatchableDisbursement"
+                "$ref" : "#/components/schemas/DisbursementInfoUpdate"
               }
             }
           },
@@ -282,6 +287,7 @@
             }
           }
         },
+        "x-methodName" : "updateGrantDisbursement",
         "x-sortIndex" : 6
       }
     },
@@ -431,6 +437,7 @@
             }
           }
         },
+        "x-group-parameters" : "false",
         "x-sortIndex" : 1
       }
     }
@@ -500,6 +507,20 @@
           }
         }
       },
+      "Action" : {
+        "required" : [ "actionCode", "resolved" ],
+        "type" : "object",
+        "properties" : {
+          "actionCode" : {
+            "type" : "string",
+            "description" : "The code identifying the action that needs to be completed."
+          },
+          "resolved" : {
+            "type" : "boolean",
+            "description" : "Indicates whether this action has been successfully completed."
+          }
+        }
+      },
       "Amount" : {
         "required" : [ "currency", "value" ],
         "type" : "object",
@@ -557,16 +578,6 @@
           }
         }
       },
-      "Fee" : {
-        "required" : [ "amount" ],
-        "type" : "object",
-        "properties" : {
-          "amount" : {
-            "description" : "Contains the amount of the grant fee.",
-            "$ref" : "#/components/schemas/Amount"
-          }
-        }
-      },
       "Grant" : {
         "required" : [ "balances", "grantAccountId", "grantOfferId", "id", "status" ],
         "type" : "object",
@@ -583,10 +594,6 @@
             "description" : "Contains the details of the party that receives the grant. Setting either an `accountHolderId`, `balanceAccountId`, or both is required.",
             "$ref" : "#/components/schemas/Counterparty"
           },
-          "fee" : {
-            "description" : "Contains information about the fee that your user must pay for the grant. This is the sum of the fees of all the disbursements related to the grant.",
-            "$ref" : "#/components/schemas/Fee"
-          },
           "grantAccountId" : {
             "type" : "string",
             "description" : "The unique identifier of the grant account that tracks this grant."
@@ -599,48 +606,9 @@
             "type" : "string",
             "description" : "The unique identifier of the grant reference."
           },
-          "repayment" : {
-            "description" : "Contains information about the repayment configuration of the grant. By default, this repayment configuration applies to all the disbursements related to the grant.",
-            "$ref" : "#/components/schemas/Repayment"
-          },
           "status" : {
             "description" : "Contains the status of the grant.",
             "$ref" : "#/components/schemas/Status"
-          }
-        }
-      },
-      "Repayment" : {
-        "required" : [ "basisPoints" ],
-        "type" : "object",
-        "properties" : {
-          "basisPoints" : {
-            "type" : "integer",
-            "description" : "The percentage of your user's incoming net volume that is deducted for repaying the grant. The percentage expressed in [basis points](https://www.investopedia.com/terms/b/basispoint.asp).",
-            "format" : "int32"
-          },
-          "term" : {
-            "description" : "Contains information about the time period in which your user must repay the total amount of the grant.",
-            "$ref" : "#/components/schemas/RepaymentTerm"
-          },
-          "threshold" : {
-            "description" : "Contains the minimum threshold amount that your user must repay every 30-day period.",
-            "$ref" : "#/components/schemas/ThresholdRepayment"
-          }
-        }
-      },
-      "RepaymentTerm" : {
-        "required" : [ "estimatedDays" ],
-        "type" : "object",
-        "properties" : {
-          "estimatedDays" : {
-            "type" : "integer",
-            "description" : "The estimated duration of the repayment term, in days.",
-            "format" : "int32"
-          },
-          "maximumDays" : {
-            "type" : "integer",
-            "description" : "The maximum duration of the repayment term, in days. Only applies when `contractType` is **loan**.",
-            "format" : "int32"
           }
         }
       },
@@ -648,19 +616,16 @@
         "required" : [ "code" ],
         "type" : "object",
         "properties" : {
+          "actions" : {
+            "type" : "array",
+            "description" : "A list of actions that need to be completed to proceed with the grant. ",
+            "items" : {
+              "$ref" : "#/components/schemas/Action"
+            }
+          },
           "code" : {
             "description" : "The code for the status of the grant. Possible values:\n- **Pending**\n- **Active**\n- **Repaid**\n- **WrittenOff**\n- **Failed**\n- **Revoked**",
             "enum" : [ "Pending", "Active", "Repaid", "WrittenOff", "Failed", "Revoked" ]
-          }
-        }
-      },
-      "ThresholdRepayment" : {
-        "required" : [ "amount" ],
-        "type" : "object",
-        "properties" : {
-          "amount" : {
-            "description" : "The minimum threshold amount that your user must repay on every 30-day period.",
-            "$ref" : "#/components/schemas/Amount"
           }
         }
       },
@@ -676,10 +641,6 @@
             "description" : "Contains the details of the party that receives the grant. Setting either an `accountHolderId`, `balanceAccountId`, or both is required.",
             "$ref" : "#/components/schemas/Counterparty"
           },
-          "fee" : {
-            "description" : "Contains information about the fee that your user must pay for the grant. This is the sum of the fees of all the disbursements related to the grant.",
-            "$ref" : "#/components/schemas/Fee"
-          },
           "grantAccountId" : {
             "type" : "string",
             "description" : "The unique identifier of the grant account that tracks this grant."
@@ -687,10 +648,6 @@
           "grantOfferId" : {
             "type" : "string",
             "description" : "The unique identifier of the selected grant offer. Adyen uses the details of the selected grant offer to create a grant."
-          },
-          "repayment" : {
-            "description" : "Contains information about the repayment configuration of the grant. By default, this repayment configuration applies to all the disbursements related to the grant.",
-            "$ref" : "#/components/schemas/Repayment"
           }
         }
       },
@@ -743,7 +700,7 @@
             "description" : "The value of the additional bank identification."
           },
           "type" : {
-            "description" : "The type of additional bank identification, depending on the country.\n\nPossible values:\n\n * **gbSortCode**: The 6-digit [UK sort code](https://en.wikipedia.org/wiki/Sort_code), without separators or spaces\n * **usRoutingNumber**: The 9-digit [routing number](https://en.wikipedia.org/wiki/ABA_routing_transit_number), without separators or spaces.",
+            "description" : "The type of additional bank identification, depending on the country.\n\nPossible values:\n\n * **auBsbCode**: The 6-digit [Australian Bank State Branch (BSB) code](https://en.wikipedia.org/wiki/Bank_state_branch), without separators or spaces.\n * **caRoutingNumber**: The 9-digit [Canadian routing number](https://en.wikipedia.org/wiki/Routing_number_(Canada)), in EFT format, without separators or spaces.\n * **gbSortCode**: The 6-digit [UK sort code](https://en.wikipedia.org/wiki/Sort_code), without separators or spaces\n * **usRoutingNumber**: The 9-digit [routing number](https://en.wikipedia.org/wiki/ABA_routing_transit_number), without separators or spaces.",
             "$ref" : "#/components/schemas/AdditionalBankIdentificationTypes"
           }
         }
@@ -989,6 +946,16 @@
             "items" : {
               "$ref" : "#/components/schemas/Disbursement"
             }
+          }
+        }
+      },
+      "Fee" : {
+        "required" : [ "amount" ],
+        "type" : "object",
+        "properties" : {
+          "amount" : {
+            "description" : "Contains the amount of the grant fee.",
+            "$ref" : "#/components/schemas/Amount"
           }
         }
       },
@@ -1297,16 +1264,16 @@
         "type" : "string",
         "enum" : [ "checking", "savings" ]
       },
-      "PatchableDisbursement" : {
+      "DisbursementInfoUpdate" : {
         "type" : "object",
         "properties" : {
           "repayment" : {
             "description" : "Contains information about the basis points configured for repaying the disbursement.",
-            "$ref" : "#/components/schemas/PatchableDisbursementRepayment"
+            "$ref" : "#/components/schemas/DisbursementRepaymentInfoUpdate"
           }
         }
       },
-      "PatchableDisbursementRepayment" : {
+      "DisbursementRepaymentInfoUpdate" : {
         "type" : "object",
         "properties" : {
           "basisPoints" : {
@@ -1377,7 +1344,7 @@
           },
           "fee" : {
             "description" : "Contains information about the fee that your user would pay for the grant.",
-            "$ref" : "#/components/schemas/Fee"
+            "$ref" : "#/components/schemas/GrantOfferFee"
           },
           "id" : {
             "type" : "string",
@@ -1391,6 +1358,66 @@
             "type" : "string",
             "description" : "The date when the grant offer becomes available.",
             "format" : "date-time"
+          }
+        }
+      },
+      "GrantOfferFee" : {
+        "required" : [ "amount" ],
+        "type" : "object",
+        "properties" : {
+          "amount" : {
+            "description" : "Contains the amount of the grant offer fee.",
+            "$ref" : "#/components/schemas/Amount"
+          },
+          "aprBasisPoints" : {
+            "type" : "integer",
+            "description" : "Annual Percentage Rate (APR) of the offer. The percentage is expressed in [basis points](https://www.investopedia.com/terms/b/basispoint.asp).",
+            "format" : "int32"
+          }
+        }
+      },
+      "Repayment" : {
+        "required" : [ "basisPoints" ],
+        "type" : "object",
+        "properties" : {
+          "basisPoints" : {
+            "type" : "integer",
+            "description" : "The percentage of your user's incoming net volume that is deducted for repaying the grant. The percentage expressed in [basis points](https://www.investopedia.com/terms/b/basispoint.asp).",
+            "format" : "int32"
+          },
+          "term" : {
+            "description" : "Contains information about the time period in which your user must repay the total amount of the grant.",
+            "$ref" : "#/components/schemas/RepaymentTerm"
+          },
+          "threshold" : {
+            "description" : "Contains the minimum threshold amount that your user must repay every 30-day period.",
+            "$ref" : "#/components/schemas/ThresholdRepayment"
+          }
+        }
+      },
+      "RepaymentTerm" : {
+        "required" : [ "estimatedDays" ],
+        "type" : "object",
+        "properties" : {
+          "estimatedDays" : {
+            "type" : "integer",
+            "description" : "The estimated duration of the repayment term, in days.",
+            "format" : "int32"
+          },
+          "maximumDays" : {
+            "type" : "integer",
+            "description" : "The maximum duration of the repayment term, in days. Only applies when `contractType` is **loan**.",
+            "format" : "int32"
+          }
+        }
+      },
+      "ThresholdRepayment" : {
+        "required" : [ "amount" ],
+        "type" : "object",
+        "properties" : {
+          "amount" : {
+            "description" : "The minimum threshold amount that your user must repay on every 30-day period.",
+            "$ref" : "#/components/schemas/Amount"
           }
         }
       },

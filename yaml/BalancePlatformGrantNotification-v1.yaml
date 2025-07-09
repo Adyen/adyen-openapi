@@ -76,6 +76,19 @@ webhooks:
           description: OK - the request has succeeded.
 components:
   schemas:
+    Action:
+      additionalProperties: false
+      properties:
+        actionCode:
+          description: The code identifying the action that needs to be completed.
+          type: string
+        resolved:
+          description: Indicates whether this action has been successfully completed.
+          type: boolean
+      required:
+      - actionCode
+      - resolved
+      type: object
     Amount:
       additionalProperties: false
       properties:
@@ -122,7 +135,7 @@ components:
       additionalProperties: false
       properties:
         notificationResponse:
-          description: Respond with any **2xx** HTTP status code to [accept the webhook](https://docs.adyen.com/development-resources/webhooks#accept-notifications).
+          description: Respond with any **2xx** HTTP status code to [accept the webhook](https://docs.adyen.com/development-resources/webhooks/#accept-webhooks).
           type: string
       type: object
     Counterparty:
@@ -144,15 +157,6 @@ components:
             entity of the specified account holder.
           type: string
       type: object
-    Fee:
-      additionalProperties: false
-      properties:
-        amount:
-          description: Contains the amount of the grant fee.
-          $ref: '#/components/schemas/Amount'
-      required:
-      - amount
-      type: object
     Grant:
       additionalProperties: false
       properties:
@@ -167,11 +171,6 @@ components:
           description: Contains the details of the party that receives the grant.
             Setting either an `accountHolderId`, `balanceAccountId`, or both is required.
           $ref: '#/components/schemas/Counterparty'
-        fee:
-          description: Contains information about the fee that your user must pay
-            for the grant. This is the sum of the fees of all the disbursements related
-            to the grant.
-          $ref: '#/components/schemas/Fee'
         grantAccountId:
           description: The unique identifier of the grant account that tracks this
             grant.
@@ -183,11 +182,6 @@ components:
         id:
           description: The unique identifier of the grant reference.
           type: string
-        repayment:
-          description: Contains information about the repayment configuration of the
-            grant. By default, this repayment configuration applies to all the disbursements
-            related to the grant.
-          $ref: '#/components/schemas/Repayment'
         status:
           description: Contains the status of the grant.
           $ref: '#/components/schemas/Status'
@@ -198,43 +192,15 @@ components:
       - status
       - balances
       type: object
-    Repayment:
-      additionalProperties: false
-      properties:
-        basisPoints:
-          description: The percentage of your user's incoming net volume that is deducted
-            for repaying the grant. The percentage expressed in [basis points](https://www.investopedia.com/terms/b/basispoint.asp).
-          format: int32
-          type: integer
-        term:
-          description: Contains information about the time period in which your user
-            must repay the total amount of the grant.
-          $ref: '#/components/schemas/RepaymentTerm'
-        threshold:
-          description: Contains the minimum threshold amount that your user must repay
-            every 30-day period.
-          $ref: '#/components/schemas/ThresholdRepayment'
-      required:
-      - basisPoints
-      type: object
-    RepaymentTerm:
-      additionalProperties: false
-      properties:
-        estimatedDays:
-          description: The estimated duration of the repayment term, in days.
-          format: int32
-          type: integer
-        maximumDays:
-          description: The maximum duration of the repayment term, in days. Only applies
-            when `contractType` is **loan**.
-          format: int32
-          type: integer
-      required:
-      - estimatedDays
-      type: object
     Status:
       additionalProperties: false
       properties:
+        actions:
+          description: 'A list of actions that need to be completed to proceed with
+            the grant. '
+          items:
+            $ref: '#/components/schemas/Action'
+          type: array
         code:
           description: 'The code for the status of the grant. Possible values:
 
@@ -259,16 +225,6 @@ components:
           type: string
       required:
       - code
-      type: object
-    ThresholdRepayment:
-      additionalProperties: false
-      properties:
-        amount:
-          description: The minimum threshold amount that your user must repay on every
-            30-day period.
-          $ref: '#/components/schemas/Amount'
-      required:
-      - amount
       type: object
   securitySchemes:
     BasicAuth:
