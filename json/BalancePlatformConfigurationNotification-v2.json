@@ -977,7 +977,7 @@
             "additionalProperties" : false,
             "properties" : {
                "accountHolderId" : {
-                  "description" : "The unique identifier of the [account holder](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/accountHolders__resParam_id) associated with the balance account.",
+                  "description" : "The unique identifier of the [account holder](https://docs.adyen.com/api-explorer/balanceplatform/latest/post/accountHolders#responses-200-id) associated with the balance account.",
                   "type" : "string"
                },
                "balances" : {
@@ -1090,7 +1090,7 @@
             "additionalProperties" : false,
             "properties" : {
                "notificationResponse" : {
-                  "description" : "Respond with any **2xx** HTTP status code to [accept the webhook](https://docs.adyen.com/development-resources/webhooks#accept-notifications).",
+                  "description" : "Respond with any **2xx** HTTP status code to [accept the webhook](https://docs.adyen.com/development-resources/webhooks/#accept-webhooks).",
                   "type" : "string"
                }
             },
@@ -1363,6 +1363,10 @@
                "threeDSecure" : {
                   "description" : "The 3DS configuration of the physical or the virtual card. Possible values: **fullySupported**, **secureCorporate**.\n> Reach out to your Adyen contact to get the values relevant for your integration.",
                   "type" : "string"
+               },
+               "usage" : {
+                  "description" : "Specifies how many times the card can be used. Possible values: **singleUse**, **multiUse**.\n\n> Reach out to your Adyen contact to determine the value relevant for your integration.",
+                  "type" : "string"
                }
             },
             "required" : [
@@ -1456,7 +1460,7 @@
                   "type" : "string"
                },
                "creationDate" : {
-                  "description" : "The date and time when the event was triggered, in ISO 8601 extended format. For example, **2020-12-18T10:15:30+01:00**.",
+                  "description" : "The date and time when the event was triggered, in ISO 8601 extended format. For example, **2025-03-19T10:15:30+01:00**.",
                   "format" : "date-time",
                   "type" : "string"
                },
@@ -1750,11 +1754,16 @@
                },
                "tokenRequestor" : {
                   "x-addedInVersion" : "2",
-                  "description" : "The token requestor is an entity who requested tokenization of the card for secure payments.",
+                  "description" : "Contains information about the entity or organization that is requesting the network token.",
                   "$ref" : "#/components/schemas/NetworkTokenRequestor"
                },
+               "transactionRulesResult" : {
+                  "x-addedInVersion" : "2",
+                  "description" : "Contains the results of the evaluation of the transaction rules that apply to network token creation.",
+                  "$ref" : "#/components/schemas/NetworkTokenTransactionRulesResult"
+               },
                "type" : {
-                  "description" : "The type of network token.",
+                  "description" : "The type of network token.\n\nPossible values: **wallet**, **cof**.",
                   "type" : "string"
                },
                "validationFacts" : {
@@ -1807,12 +1816,97 @@
             "additionalProperties" : false,
             "properties" : {
                "id" : {
-                  "description" : "The id of the network token requestor.",
+                  "description" : "The unique identifier of the network token requestor.",
                   "type" : "string"
                },
                "name" : {
                   "description" : "The name of the network token requestor.",
                   "type" : "string"
+               }
+            },
+            "type" : "object"
+         },
+         "NetworkTokenRiskRuleData" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "description" : {
+                  "description" : "The description of the transaction rule.",
+                  "type" : "string"
+               },
+               "id" : {
+                  "description" : "The unique identifier of the transaction rule.",
+                  "type" : "string"
+               },
+               "outcomeType" : {
+                  "description" : "The outcome type of the transaction rule.",
+                  "type" : "string"
+               },
+               "reference" : {
+                  "description" : "The reference for the transaction rule.",
+                  "type" : "string"
+               },
+               "score" : {
+                  "description" : "The transaction score determined by the rule.",
+                  "format" : "int32",
+                  "type" : "integer"
+               }
+            },
+            "type" : "object"
+         },
+         "NetworkTokenRiskRuleSource" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "id" : {
+                  "description" : "The unique identifier of the resource to which the transaction rule applies.",
+                  "type" : "string"
+               },
+               "type" : {
+                  "description" : "Indicates the type of resource for which the transaction rule is defined.\n\nPossible values:\n\n * **PaymentInstrumentGroup**\n\n* **PaymentInstrument**\n\n* **BalancePlatform**\n\n* **EntityUsageConfiguration**\n\n* **PlatformRule**: The transaction rule is a platform-wide rule imposed by Adyen.",
+                  "type" : "string"
+               }
+            },
+            "type" : "object"
+         },
+         "NetworkTokenTransactionRulesResult" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "advice" : {
+                  "description" : "The advice given by the Risk analysis.",
+                  "type" : "string"
+               },
+               "allHardBlockRulesPassed" : {
+                  "description" : "Indicates whether the transaction passed all rules with `outcomeType` **hardBlock**.",
+                  "type" : "boolean"
+               },
+               "score" : {
+                  "description" : "The score of the Risk analysis.",
+                  "format" : "int32",
+                  "type" : "integer"
+               },
+               "triggeredTransactionRules" : {
+                  "description" : "Contains a list of all triggered transaction rules and the corresponding data.",
+                  "items" : {
+                     "$ref" : "#/components/schemas/NetworkTokenTriggeredRiskRule"
+                  },
+                  "type" : "array"
+               }
+            },
+            "type" : "object"
+         },
+         "NetworkTokenTriggeredRiskRule" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "reason" : {
+                  "description" : "Explains why the transaction rule failed.",
+                  "type" : "string"
+               },
+               "transactionRule" : {
+                  "description" : "Contains information about the transaction rule.",
+                  "$ref" : "#/components/schemas/NetworkTokenRiskRuleData"
+               },
+               "transactionRuleSource" : {
+                  "description" : "Contains information about the resource to which the transaction rule applies.",
+                  "$ref" : "#/components/schemas/NetworkTokenRiskRuleSource"
                }
             },
             "type" : "object"
@@ -2054,7 +2148,7 @@
                   "type" : "string"
                },
                "creationDate" : {
-                  "description" : "The date and time when the event was triggered, in ISO 8601 extended format. For example, **2020-12-18T10:15:30+01:00**.",
+                  "description" : "The date and time when the event was triggered, in ISO 8601 extended format. For example, **2025-03-19T10:15:30+01:00**.",
                   "format" : "date-time",
                   "type" : "string"
                },
@@ -2166,6 +2260,7 @@
                   "enum" : [
                      "accountHierarchyNotActive",
                      "amountLimitExceeded",
+                     "approvalExpired",
                      "approved",
                      "balanceAccountTemporarilyBlockedByTransactionRule",
                      "counterpartyAccountBlocked",
