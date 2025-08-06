@@ -15,12 +15,38 @@ info:
     name: Adyen Developer Experience team
     url: https://github.com/Adyen/adyen-openapi
 tags:
-- name: General
+- name: Grant offers
+- name: Grants
 webhooks:
+  balancePlatform.balanceAccountHolder.capitalOffer.created:
+    post:
+      tags:
+      - Grant offers
+      summary: Capital offer created
+      description: Adyen sends this webhook to provide details about a Capital offer
+        that has been created for an account holder.
+      x-addedInVersion: '1'
+      operationId: post-balancePlatform.balanceAccountHolder.capitalOffer.created
+      x-sortIndex: 1
+      x-methodName: capitalOfferCreated
+      security:
+      - BasicAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GrantOffer'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BalancePlatformNotificationResponse'
+          description: OK - the request has succeeded.
   balancePlatform.grants.created:
     post:
       tags:
-      - General
+      - Grants
       summary: Grant created
       description: 'After a grant is created, Adyen sends this webhook with information
         about the grant.
@@ -29,7 +55,7 @@ webhooks:
         '
       x-addedInVersion: '1'
       operationId: post-balancePlatform.grants.created
-      x-sortIndex: 0
+      x-sortIndex: 1
       x-methodName: grantCreated
       security:
       - BasicAuth: []
@@ -48,7 +74,7 @@ webhooks:
   balancePlatform.grants.updated:
     post:
       tags:
-      - General
+      - Grants
       summary: Grant updated
       description: 'After a grant is updated, Adyen sends this webhook with information
         about the grant.
@@ -58,7 +84,7 @@ webhooks:
         to your user, or when your user repays the financing amount.'
       x-addedInVersion: '1'
       operationId: post-balancePlatform.grants.updated
-      x-sortIndex: 0
+      x-sortIndex: 2
       x-methodName: grantUpdated
       security:
       - BasicAuth: []
@@ -192,6 +218,94 @@ components:
       - status
       - balances
       type: object
+    GrantOffer:
+      additionalProperties: false
+      properties:
+        accountHolderId:
+          description: The unique identifier of the account holder to which the grant
+            is offered.
+          type: string
+        amount:
+          description: The amount that would be paid out to the user for business
+            financing.
+          $ref: '#/components/schemas/Amount'
+        contractType:
+          description: 'The contract type of the grant offer. Possible values: **cashAdvance**,
+            **loan**.'
+          enum:
+          - cashAdvance
+          - loan
+          type: string
+        expiresAt:
+          description: The date when the grant offer expires.
+          format: date-time
+          type: string
+        fee:
+          description: Contains information about the fee that your user would pay
+            for the grant.
+          $ref: '#/components/schemas/GrantOfferFee'
+        id:
+          description: The unique identifier of the grant offer.
+          type: string
+        repayment:
+          description: Contains information about the repayment configuration of the
+            grant.
+          $ref: '#/components/schemas/Repayment'
+        startsAt:
+          description: The date when the grant offer becomes available.
+          format: date-time
+          type: string
+      required:
+      - accountHolderId
+      type: object
+    GrantOfferFee:
+      additionalProperties: false
+      properties:
+        amount:
+          description: Contains the amount of the grant offer fee.
+          $ref: '#/components/schemas/Amount'
+        aprBasisPoints:
+          description: Annual Percentage Rate (APR) of the offer. The percentage is
+            expressed in [basis points](https://www.investopedia.com/terms/b/basispoint.asp).
+          format: int32
+          type: integer
+      required:
+      - amount
+      type: object
+    Repayment:
+      additionalProperties: false
+      properties:
+        basisPoints:
+          description: The percentage of your user's incoming net volume that is deducted
+            for repaying the grant. The percentage expressed in [basis points](https://www.investopedia.com/terms/b/basispoint.asp).
+          format: int32
+          type: integer
+        term:
+          description: Contains information about the time period in which your user
+            must repay the total amount of the grant.
+          $ref: '#/components/schemas/RepaymentTerm'
+        threshold:
+          description: Contains the minimum threshold amount that your user must repay
+            every 30-day period.
+          $ref: '#/components/schemas/ThresholdRepayment'
+      required:
+      - basisPoints
+      type: object
+    RepaymentTerm:
+      additionalProperties: false
+      properties:
+        estimatedDays:
+          description: The estimated duration of the repayment term, in days.
+          format: int32
+          type: integer
+        maximumDays:
+          description: The maximum duration of the repayment term, in days. Only applies
+            when `contractType` is **loan**.
+          format: int32
+          type: integer
+      required:
+      - estimatedDays
+      type: object
     Status:
       additionalProperties: false
       properties:
@@ -214,7 +328,21 @@ components:
 
             - **Failed**
 
-            - **Revoked**'
+            - **Revoked**
+
+            - **Requested**
+
+            - **Underwriting**
+
+            - **Reviewing**
+
+            - **Assessed**
+
+            - **Approved**
+
+            - **Rejected**
+
+            - **Cancelled**'
           enum:
           - Pending
           - Active
@@ -222,9 +350,26 @@ components:
           - WrittenOff
           - Failed
           - Revoked
+          - Requested
+          - Underwriting
+          - Reviewing
+          - Assessed
+          - Approved
+          - Rejected
+          - Cancelled
           type: string
       required:
       - code
+      type: object
+    ThresholdRepayment:
+      additionalProperties: false
+      properties:
+        amount:
+          description: The minimum threshold amount that your user must repay on every
+            30-day period.
+          $ref: '#/components/schemas/Amount'
+      required:
+      - amount
       type: object
   securitySchemes:
     BasicAuth:

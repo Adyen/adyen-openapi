@@ -34,7 +34,7 @@ info:
     name: Adyen Developer Experience team
     url: https://github.com/Adyen/adyen-openapi
   version: '1'
-  x-timestamp: '2025-07-09T14:38:57Z'
+  x-timestamp: '2025-08-01T22:37:58Z'
 tags:
 - name: Grants
   x-groupIndex: 1
@@ -141,17 +141,23 @@ paths:
                 $ref: '#/components/schemas/DefaultErrorResponseEntity'
       x-methodName: getGrant
       x-sortIndex: 3
-  /grants/{grantId}/disbursements:
+  /grants/{grantId}/disbursements/{disbursementId}:
     get:
       tags:
       - Grants
-      summary: Get all the disbursements of a grant
-      description: Returns the disbursements of a specified grant.
-      operationId: get-grants-grantId-disbursements
+      summary: Get disbursement details
+      description: Returns the details of a disbursement specified in the path.
+      operationId: get-grants-grantId-disbursements-disbursementId
       parameters:
       - name: grantId
         in: path
         description: The unique identifier of the grant reference.
+        required: true
+        schema:
+          type: string
+      - name: disbursementId
+        in: path
+        description: The unique identifier of the disbursement.
         required: true
         schema:
           type: string
@@ -161,7 +167,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Disbursements'
+                $ref: '#/components/schemas/Disbursement'
         '404':
           description: Not Found - The entity was not found.
           content:
@@ -174,9 +180,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DefaultErrorResponseEntity'
-      x-methodName: getAllGrantDisbursements
-      x-sortIndex: 4
-  /grants/{grantId}/disbursements/{disbursementId}:
+      x-methodName: getGrantDisbursement
+      x-sortIndex: 5
     patch:
       tags:
       - Grants
@@ -224,6 +229,41 @@ paths:
                 $ref: '#/components/schemas/DefaultErrorResponseEntity'
       x-methodName: updateGrantDisbursement
       x-sortIndex: 6
+  /grants/{grantId}/disbursements:
+    get:
+      tags:
+      - Grants
+      summary: Get all the disbursements of a grant
+      description: Returns the disbursements of a specified grant.
+      operationId: get-grants-grantId-disbursements
+      parameters:
+      - name: grantId
+        in: path
+        description: The unique identifier of the grant reference.
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK - The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Disbursements'
+        '404':
+          description: Not Found - The entity was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '422':
+          description: Unprocessable Entity - A request validation error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+      x-methodName: getAllGrantDisbursements
+      x-sortIndex: 4
   /grantAccounts/{id}:
     get:
       tags:
@@ -509,7 +549,21 @@ components:
 
             - **Failed**
 
-            - **Revoked**'
+            - **Revoked**
+
+            - **Requested**
+
+            - **Underwriting**
+
+            - **Reviewing**
+
+            - **Assessed**
+
+            - **Approved**
+
+            - **Rejected**
+
+            - **Cancelled**'
           enum:
           - Pending
           - Active
@@ -517,6 +571,13 @@ components:
           - WrittenOff
           - Failed
           - Revoked
+          - Requested
+          - Underwriting
+          - Reviewing
+          - Assessed
+          - Approved
+          - Rejected
+          - Cancelled
     GrantInfo:
       required:
       - grantAccountId
@@ -820,17 +881,6 @@ components:
           description: The percentage of your user's incoming net volume that is deducted
             for repaying the grant. The percentage expressed in [basis points](https://www.investopedia.com/terms/b/basispoint.asp).
           format: int32
-    Disbursements:
-      required:
-      - disbursements
-      type: object
-      properties:
-        disbursements:
-          type: array
-          description: Contains a list of all disbursements related to the specified
-            grant.
-          items:
-            $ref: '#/components/schemas/Disbursement'
     Fee:
       required:
       - amount
@@ -1114,6 +1164,17 @@ components:
       enum:
       - checking
       - savings
+    Disbursements:
+      required:
+      - disbursements
+      type: object
+      properties:
+        disbursements:
+          type: array
+          description: Contains a list of all disbursements related to the specified
+            grant.
+          items:
+            $ref: '#/components/schemas/Disbursement'
     DisbursementInfoUpdate:
       type: object
       properties:
