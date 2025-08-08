@@ -26,6 +26,9 @@
       },
       {
          "name" : "Network token"
+      },
+      {
+         "name" : "Score"
       }
    ],
    "webhooks" : {
@@ -586,6 +589,45 @@
                }
             }
          }
+      },
+      "balancePlatform.score.triggered" : {
+         "post" : {
+            "tags" : [
+               "Score"
+            ],
+            "summary" : "Score signal triggered",
+            "description" : "For merchants who opt in to the Score product, Adyen sends this webhook when a score signal is triggered against an account holder.",
+            "operationId" : "post-balancePlatform.score.triggered",
+            "x-sortIndex" : 1,
+            "x-methodName" : "scoreSignalTriggered",
+            "security" : [
+               {
+                  "BasicAuth" : [
+                     ]
+               }
+            ],
+            "requestBody" : {
+               "content" : {
+                  "application/json" : {
+                     "schema" : {
+                        "$ref" : "#/components/schemas/ScoreNotificationRequest"
+                     }
+                  }
+               }
+            },
+            "responses" : {
+               "200" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/BalancePlatformNotificationResponse"
+                        }
+                     }
+                  },
+                  "description" : "OK - the request has succeeded."
+               }
+            }
+         }
       }
    },
    "components" : {
@@ -1127,6 +1169,59 @@
             "required" : [
                "type"
             ],
+            "type" : "object"
+         },
+         "BankScoreSignalTriggeredData" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "accountHolder" : {
+                  "description" : "Contains information about the account holder.",
+                  "$ref" : "#/components/schemas/ResourceReference"
+               },
+               "accountHolderStatus" : {
+                  "description" : "The status of the account holder.",
+                  "type" : "string"
+               },
+               "automatedActions" : {
+                  "description" : "The automated action(s) taken as a result of the score signals that were triggered.",
+                  "items" : {
+                     "type" : "string"
+                  },
+                  "type" : "array"
+               },
+               "balancePlatform" : {
+                  "description" : "The unique identifier of the balance platform.",
+                  "type" : "string"
+               },
+               "creationDate" : {
+                  "description" : "The date and time when the event was triggered, in ISO 8601 extended format. For example, **2025-03-19T10:15:30+01:00**.",
+                  "format" : "date-time",
+                  "type" : "string"
+               },
+               "id" : {
+                  "description" : "The ID of the resource.",
+                  "type" : "string"
+               },
+               "riskScore" : {
+                  "description" : "The score of the identity resulting from the signal(s) that were triggered.",
+                  "format" : "int32",
+                  "type" : "integer"
+               },
+               "scoreSignalsTriggered" : {
+                  "description" : "The name(s) of the score signals that were triggered.",
+                  "items" : {
+                     "type" : "string"
+                  },
+                  "type" : "array"
+               },
+               "signalSourceTypes" : {
+                  "description" : "The type(s) of the score signals that were triggered.",
+                  "items" : {
+                     "type" : "string"
+                  },
+                  "type" : "array"
+               }
+            },
             "type" : "object"
          },
          "BulkAddress" : {
@@ -2008,6 +2103,55 @@
                   "type" : "string"
                }
             },
+            "type" : "object"
+         },
+         "ResourceReference" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "description" : {
+                  "description" : "The description of the resource.",
+                  "type" : "string"
+               },
+               "id" : {
+                  "description" : "The unique identifier of the resource.",
+                  "type" : "string"
+               },
+               "reference" : {
+                  "description" : "The reference for the resource.",
+                  "type" : "string"
+               }
+            },
+            "type" : "object"
+         },
+         "ScoreNotificationRequest" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "data" : {
+                  "description" : "Contains event details.",
+                  "$ref" : "#/components/schemas/BankScoreSignalTriggeredData"
+               },
+               "environment" : {
+                  "description" : "The environment from which the webhook originated.\n\nPossible values: **test**, **live**.",
+                  "type" : "string"
+               },
+               "timestamp" : {
+                  "description" : "When the event was queued.",
+                  "format" : "date-time",
+                  "type" : "string"
+               },
+               "type" : {
+                  "description" : "Type of webhook.",
+                  "enum" : [
+                     "balancePlatform.score.triggered"
+                  ],
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "environment",
+               "type",
+               "data"
+            ],
             "type" : "object"
          },
          "SweepConfigurationNotificationData" : {
