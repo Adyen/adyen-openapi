@@ -7,18 +7,19 @@ servers:
 info:
   title: Raise disputes API
   description: "Disputes API for Issuing that you can use to raise disputes on transactions\
-    \ made with an Adyen-issued card. You can also add attachments as supporting information\
-    \ for a raised dispute, update information about the dispute, submit the dispute\
-    \ for a chargeback, or close the dispute.\n\n## Authentication\nYour Adyen contact\
-    \ will provide your API credential and an API key. To connect to the API, add\
-    \ an `X-API-Key` header with the API key as the value, for example:\n\n ```\n\
-    curl\n-H \"Content-Type: application/json\" \\\n-H \"X-API-Key: YOUR_API_KEY\"\
-    \ \\\n...\n```\n\nAlternatively, you can use the username and password to connect\
-    \ to the API using basic authentication. For example:\n\n```\ncurl\n-H \"Content-Type:\
-    \ application/json\" \\\n-U \"ws@BalancePlatform.YOUR_BALANCE_PLATFORM\":\"YOUR_WS_PASSWORD\"\
-    \ \\\n...\n```\n## Roles and permissions\nTo use the Disputes API, you need an\
-    \ additional role for your API credential. Your Adyen contact will set up the\
-    \ roles and permissions for you.\n## Versioning\nThe Disputes API supports [versioning](https://docs.adyen.com/development-resources/versioning)\
+    \ made with an Adyen-issued card, or to report instances of fraud. You can also\
+    \ add attachments as supporting information for a raised dispute, update information\
+    \ about the dispute, submit the dispute for a chargeback, or close the dispute.\n\
+    \n## Authentication\nYour Adyen contact will provide your API credential and an\
+    \ API key. To connect to the API, add an `X-API-Key` header with the API key as\
+    \ the value, for example:\n\n ```\ncurl\n-H \"Content-Type: application/json\"\
+    \ \\\n-H \"X-API-Key: YOUR_API_KEY\" \\\n...\n```\n\nAlternatively, you can use\
+    \ the username and password to connect to the API using basic authentication.\
+    \ For example:\n\n```\ncurl\n-H \"Content-Type: application/json\" \\\n-U \"ws@BalancePlatform.YOUR_BALANCE_PLATFORM\"\
+    :\"YOUR_WS_PASSWORD\" \\\n...\n```\n## Roles and permissions\nTo use the Disputes\
+    \ API, you need an additional role for your API credential. Your Adyen contact\
+    \ will set up the roles and permissions for you.\n## Versioning\nThe Disputes\
+    \ API supports [versioning](https://docs.adyen.com/development-resources/versioning)\
     \ using a version suffix in the endpoint URL. This suffix has the following format:\
     \ \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://balanceplatform-api-test.adyen.com/btl/api/v{version}/disputes\n\
     ```\n## Going live\nWhen going live, your Adyen contact will provide your API\
@@ -30,7 +31,7 @@ info:
     name: Adyen Developer Experience team
     url: https://github.com/Adyen/adyen-openapi
   version: '1'
-  x-timestamp: '2025-04-09T01:29:14Z'
+  x-timestamp: '2025-08-27T22:49:45Z'
 tags:
 - name: Dispute Attachments
 - name: Raise Disputes
@@ -58,6 +59,25 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/DisputeAttachment'
+        '401':
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '403':
+          description: Insufficient permissions to process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '422':
+          description: A request validation error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+      x-methodName: getAllAttachments
       x-sortIndex: 2
     post:
       tags:
@@ -87,6 +107,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AttachDocumentResponse'
+        '401':
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '403':
+          description: Insufficient permissions to process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '422':
+          description: A request validation error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+      x-methodName: createAttachment
       x-sortIndex: 2
   /disputes/{disputeId}/attachments/{attachmentId}:
     get:
@@ -116,6 +155,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DisputeAttachment'
+        '401':
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '403':
+          description: Insufficient permissions to process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '422':
+          description: A request validation error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+      x-methodName: getAttachment
       x-sortIndex: 2
     delete:
       tags:
@@ -139,10 +197,26 @@ paths:
           type: string
       responses:
         '204':
-          description: No Content - the request has been successfully processed, but
-            there is no additional content.
+          description: The attachment was successfully removed
+        '401':
+          description: Authentication required.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '403':
+          description: Insufficient permissions to process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '422':
+          description: A request validation error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+      x-methodName: deleteAttachment
       x-sortIndex: 2
   /disputes:
     get:
@@ -205,7 +279,29 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/DisputeResponse'
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/DisputeResponse'
+        '401':
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '403':
+          description: Insufficient permissions to process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '422':
+          description: A request validation error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+      x-group-parameters: 'false'
+      x-methodName: getAllDisputes
       x-sortIndex: 1
     post:
       tags:
@@ -233,6 +329,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DisputeResponse'
+        '401':
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '403':
+          description: Insufficient permissions to process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '422':
+          description: A request validation error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+      x-methodName: createDispute
       x-sortIndex: 1
   /disputes/{id}:
     get:
@@ -255,6 +370,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DisputeResponse'
+        '401':
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '403':
+          description: Insufficient permissions to process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '422':
+          description: A request validation error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+      x-methodName: getDispute
       x-sortIndex: 1
     patch:
       tags:
@@ -291,6 +425,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DisputeResponse'
+        '401':
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '403':
+          description: Insufficient permissions to process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '422':
+          description: A request validation error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+      x-methodName: updateDispute
       x-sortIndex: 1
 components:
   schemas:
@@ -314,7 +467,10 @@ components:
         content:
           type: string
           description: The content of the image. An attachment must be base64-encoded
-            data.
+            data. Please ensure that all Base64 encoded strings are generated without
+            line breaks or "wrapping" (e.g., using Base64.NO_WRAP in Java or equivalent
+            in other languages). Newline characters at the end of the string will
+            result in a malformed input error.
         fileName:
           maxLength: 17
           minLength: 4
@@ -333,6 +489,58 @@ components:
           type: string
           description: The unique identifier of the attachment.
           readOnly: true
+    DefaultErrorResponseEntity:
+      type: object
+      properties:
+        detail:
+          type: string
+          description: A human-readable explanation specific to this occurrence of
+            the problem.
+        errorCode:
+          type: string
+          description: Unique business error code.
+        instance:
+          type: string
+          description: A URI that identifies the specific occurrence of the problem
+            if applicable.
+        invalidFields:
+          type: array
+          description: Array of fields with validation errors when applicable.
+          items:
+            $ref: '#/components/schemas/InvalidField'
+        requestId:
+          type: string
+          description: The unique reference for the request.
+        status:
+          type: integer
+          description: The HTTP status code.
+          format: int32
+        title:
+          type: string
+          description: A short, human-readable summary of the problem type.
+        type:
+          type: string
+          description: A URI that identifies the validation error type. It points
+            to human-readable documentation for the problem type.
+      description: Standardized error response following RFC-7807 format
+      externalDocs:
+        url: https://www.rfc-editor.org/rfc/rfc7807
+    InvalidField:
+      required:
+      - message
+      - name
+      - value
+      type: object
+      properties:
+        name:
+          type: string
+          description: The field that has an invalid value.
+        value:
+          type: string
+          description: The invalid value.
+        message:
+          type: string
+          description: Description of the validation error.
     Amount:
       required:
       - currency
@@ -379,6 +587,10 @@ components:
           description: Additional information for raising a dispute of `type` **notDelivered**.
             Required for disputes of `type` **notDelivered**.
           $ref: '#/components/schemas/NotDeliveredInfo'
+        otherInfo:
+          description: Additional information for raising a dispute of `type` **other**.
+            Required for disputes of `type` **other**.
+          $ref: '#/components/schemas/OtherInfo'
         status:
           description: 'The current status of the dispute.
 
@@ -414,6 +626,7 @@ components:
       - notDelivered
       - fraud
       - duplicate
+      - other
     DuplicateInfo:
       required:
       - duplicateTransactionId
@@ -470,7 +683,7 @@ components:
           minLength: 0
           type: string
           description: The delivery location specified by the cardholder. Required
-            if `deliveredToWrongLocation` is **true**.
+            if **deliveredToWrongLocation** is **true**.
         dateOfCancellation:
           type: string
           description: The date the undelivered goods or services were cancelled in
@@ -491,12 +704,14 @@ components:
         didCardholderReturn:
           type: boolean
           description: 'Indicates if the cardholder returned the goods to the merchant.
+            Required if **isDeliveryLate** is **true**.
 
 
             Possible values: **true**, **false**.'
         isDeliveryLate:
           type: boolean
-          description: 'Indicates if the goods or services were delivered late.
+          description: 'Indicates if the goods or services were delivered late. Required
+            if **whatWasNotDelivered** is **goods**.
 
 
             Possible values: **true**, **false**.'
@@ -530,11 +745,44 @@ components:
 
             Possible values: **merchant**, **cardholder**.'
           $ref: '#/components/schemas/CancellingEntity'
+    OtherInfo:
+      required:
+      - descriptionOfIssue
+      - subType
+      - whatWasPurchased
+      type: object
+      properties:
+        descriptionOfIssue:
+          maxLength: 2500
+          minLength: 0
+          type: string
+          description: Your description of the issue for raising a dispute of `type`
+            **other**.
+        subType:
+          description: 'The specific category of **other** dispute that you are raising.\n\nPossible
+            values: **atmDispute**, **cancelledGoodsServices**, **cancelledRecurring**,
+            **counterfeit**, **creditNotProcessed**, **notAsDescribed**.'
+          $ref: '#/components/schemas/SubType'
+        whatWasPurchased:
+          description: 'The type of product that you purchased.
+
+
+            Possible values: **goods**, **services**.'
+          $ref: '#/components/schemas/ProductType'
     ProductType:
       type: string
       enum:
       - goods
       - services
+    SubType:
+      type: string
+      enum:
+      - atmDispute
+      - cancelledGoodsServices
+      - cancelledRecurring
+      - creditNotProcessed
+      - counterfeit
+      - notAsDescribed
     DisputeResponse:
       required:
       - transactionId
@@ -571,6 +819,10 @@ components:
           description: Additional information for raising a dispute of `type` **notDelivered**.
             Required for disputes of `type` **notDelivered**.
           $ref: '#/components/schemas/NotDeliveredInfo'
+        otherInfo:
+          description: Additional information for raising a dispute of `type` **other**.
+            Required for disputes of `type` **other**.
+          $ref: '#/components/schemas/OtherInfo'
         status:
           description: 'The current status of the dispute.
 
@@ -614,6 +866,13 @@ components:
             Required for disputes of `type` **notDelivered**.
           oneOf:
           - $ref: '#/components/schemas/PatchableNotDeliveredInfo'
+          - type: 'null'
+        otherInfo:
+          type: object
+          description: Additional information for raising a dispute of `type` **other**.
+            Required for disputes of `type` **other**.
+          oneOf:
+          - $ref: '#/components/schemas/PatchableOtherInfo'
           - type: 'null'
         status:
           type: object
@@ -679,7 +938,7 @@ components:
           - string
           - 'null'
           description: The delivery location specified by the cardholder. Required
-            if `deliveredToWrongLocation` is **true**.
+            if **deliveredToWrongLocation** is **true**.
         dateOfCancellation:
           type:
           - string
@@ -706,6 +965,7 @@ components:
           - boolean
           - 'null'
           description: 'Indicates if the cardholder returned the goods to the merchant.
+            Required if **isDeliveryLate** is **true**.
 
 
             Possible values: **true**, **false**.'
@@ -713,7 +973,8 @@ components:
           type:
           - boolean
           - 'null'
-          description: 'Indicates if the goods or services were delivered late.
+          description: 'Indicates if the goods or services were delivered late. Required
+            if **whatWasNotDelivered** is **goods**.
 
 
             Possible values: **true**, **false**.'
@@ -754,6 +1015,26 @@ components:
           oneOf:
           - $ref: '#/components/schemas/CancellingEntity'
           - type: 'null'
+    PatchableOtherInfo:
+      type: object
+      properties:
+        descriptionOfIssue:
+          maxLength: 2500
+          minLength: 0
+          type: string
+          description: Your description of the issue for raising a dispute of `type`
+            **other**.
+        subType:
+          description: 'The specific category of **other** dispute that you are raising.\n\nPossible
+            values: **atmDispute**, **cancelledGoodsServices**, **cancelledRecurring**,
+            **counterfeit**, **creditNotProcessed**, **notAsDescribed**.'
+          $ref: '#/components/schemas/SubType'
+        whatWasPurchased:
+          description: 'The type of product that you purchased.
+
+
+            Possible values: **goods**, **services**.'
+          $ref: '#/components/schemas/ProductType'
   securitySchemes:
     ApiKeyAuth:
       type: apiKey
