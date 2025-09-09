@@ -44,6 +44,8 @@ tags:
 - name: Manage card PIN
 - name: Transfer routes
 - name: SCA device management
+- name: Transfer limits - balance account level
+- name: Transfer limits - balance platform level
 - name: Manage SCA devices
 paths:
   /accountHolders:
@@ -5491,6 +5493,769 @@ paths:
                 $ref: '#/components/schemas/DefaultErrorResponseEntity'
       x-methodName: updateWebhookSetting
       x-sortIndex: 2
+  /balanceAccounts/{id}/transferLimits/approve:
+    post:
+      tags:
+      - Transfer limits - balance account level
+      summary: Approve pending transfer limits
+      description: 'Approve transfer limits that are pending SCA authentication.
+
+        '
+      operationId: post-balanceAccounts-id-transferLimits-approve
+      parameters:
+      - name: WWW-Authenticate
+        in: header
+        description: Header for authenticating using SCA.
+        required: false
+        style: simple
+        explode: false
+        schema:
+          type: string
+        example: SCA realm="TransferLimit" auth-param1="eyJjaGFsbGVuZ2UiOiJiVlV6ZW5wek0waFNl..."
+      - name: id
+        in: path
+        description: The unique identifier of the balance account.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApproveTransferLimitRequest'
+            examples:
+              Approve pending transfer limits requests:
+                summary: Approve pending transfer limits requests
+                description: Approve pending transfer limits requests
+                value:
+                  transferLimitIds:
+                  - TRLI00000000000000000000000001
+                  - TRLI00000000000000000000000002
+        required: true
+      responses:
+        '204':
+          description: No Content - The request has succeeded.
+        '404':
+          description: Not found - One of the transfer limits could not be found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '422':
+          description: Unprocessable Content - A request validation error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+      x-methodName: approvePendingTransferLimits
+      x-sortIndex: 2
+  /balanceAccounts/{id}/transferLimits:
+    get:
+      tags:
+      - Transfer limits - balance account level
+      summary: Filter and view the transfer limits
+      description: 'Filter and view the transfer limits configured for a balance account
+        using the balance account''s unique `id` and the available query parameters.
+
+        '
+      operationId: get-balanceAccounts-id-transferLimits
+      parameters:
+      - name: id
+        in: path
+        description: The unique identifier of the balance account.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: scope
+        in: query
+        description: 'The scope to which the transfer limit applies. Possible values:
+
+          * **perTransaction**: you set a maximum amount for each transfer made from
+          the balance account or balance platform.
+
+          * **perDay**: you set a maximum total amount for all transfers made from
+          the balance account or balance platform in a day.'
+        required: false
+        style: form
+        explode: true
+        schema:
+          $ref: '#/components/schemas/Scope'
+      - name: transferType
+        in: query
+        description: 'The type of transfer to which the limit applies. Possible values:
+
+          * **instant**: the limit applies to transfers with an **instant** priority.
+
+          * **all**: the limit applies to all transfers, regardless of priority.'
+        required: false
+        style: form
+        explode: true
+        schema:
+          $ref: '#/components/schemas/TransferType'
+      - name: status
+        in: query
+        description: "The status of the transfer limit. Possible values:   \n* **active**:\
+          \ the limit is currently active.\n* **inactive**: the limit is currently\
+          \ inactive.\n* **pendingSCA**: the limit is pending until your user performs\
+          \ SCA.\n* **scheduled**: the limit is scheduled to become active at a future\
+          \ date."
+        required: false
+        style: form
+        explode: true
+        schema:
+          $ref: '#/components/schemas/LimitStatus'
+      responses:
+        '200':
+          description: OK - The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferLimitListResponse'
+              examples:
+                'Response code 200: list of transfer limits':
+                  summary: 'Response code 200: list of transfer limits'
+                  description: 'Response code 200: list of transfer limits'
+                  value:
+                    transferLimits:
+                    - amount:
+                        value: 10000
+                        currency: EUR
+                      id: TRLI00000000000000000000000001
+                      endsAt: '2026-08-13T23:00:00+01:00'
+                      scope: perTransaction
+                      reference: Your reference for the transfer limit
+                      scaInformation:
+                        exemption: initialLimit
+                        status: notPerformed
+                      startsAt: '2025-08-13T23:00:00+01:00'
+                      limitStatus: active
+                      transferType: instant
+                    - amount:
+                        value: 20000
+                        currency: EUR
+                      id: TRLI00000000000000000000000002
+                      endsAt: '2026-08-13T23:00:00+01:00'
+                      scope: perTransaction
+                      reference: Your reference for the transfer limit
+                      scaInformation:
+                        exemption: initialLimit
+                        status: notPerformed
+                      startsAt: '2025-08-13T23:00:00+01:00'
+                      limitStatus: active
+                      transferType: all
+        '404':
+          description: Not found - One of the transfer limits could not be found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '422':
+          description: Unprocessable Content - A request validation error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+      x-group-parameters: 'false'
+      x-methodName: getTransferLimits
+      x-sortIndex: 4
+    post:
+      tags:
+      - Transfer limits - balance account level
+      summary: Create a transfer limit
+      description: 'Create a transfer limit for your balance account using the unique
+        `id` of your balance account.
+
+        '
+      operationId: post-balanceAccounts-id-transferLimits
+      parameters:
+      - name: WWW-Authenticate
+        in: header
+        description: Header for authenticating through SCA
+        required: false
+        style: simple
+        explode: false
+        schema:
+          type: string
+        example: SCA realm="TransferLimit" auth-param1="eyJjaGFsbGVuZ2UiOiJiVlV6ZW5wek0waFNl..."
+      - name: id
+        in: path
+        description: The unique identifier of the balance account.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTransferLimitRequest'
+            examples:
+              Create a transfer limit request:
+                summary: Create a transfer limit request
+                description: Create a transfer limit request
+                value:
+                  amount:
+                    currency: EUR
+                    value: 10000
+                  reference: Your reference for the transfer limit
+                  scaInformation:
+                    scaOnApproval: true
+                  scope: perTransaction
+                  startsAt: '2025-08-15T06:36:20+01:00'
+                  endsAt: '2026-08-14T00:00:00+01:00'
+                  transferType: all
+        required: true
+      responses:
+        '200':
+          description: OK - The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferLimit'
+              examples:
+                Create a transfer limit response:
+                  summary: Create a transfer limit response
+                  description: Create a transfer limit response
+                  value:
+                    amount:
+                      value: 10000
+                      currency: EUR
+                    id: TRLI00000000000000000000000001
+                    scope: perTransaction
+                    reference: Your reference for the transfer limit
+                    scaInformation:
+                      status: pending
+                    startsAt: '2025-08-15T06:36:20+01:00'
+                    endsAt: '2026-08-13T23:00:00+01:00'
+                    limitStatus: pendingSCA
+                    transferType: all
+        '400':
+          description: Bad Request - The input is invalid, or no registered device
+            for SCA was found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '401':
+          description: Unauthorized - Authentication required via Strong Customer
+            Authentication (SCA). The client must resolve the provided challenge.
+          headers:
+            WWW-Authenticate:
+              description: SCA challenge header containing the details necessary for
+                completing authentication. The client should solve the challenge contained.
+              required: true
+              style: simple
+              explode: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '422':
+          description: Unprocessable Content - A request validation error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+      x-methodName: createTransferLimit
+      x-sortIndex: 1
+  /balanceAccounts/{id}/transferLimits/current:
+    get:
+      tags:
+      - Transfer limits - balance account level
+      summary: Get all current transfer limits
+      description: 'Get all transfer limits that currently apply to a balance account
+        using the unique `id` of the balance account.
+
+        '
+      operationId: get-balanceAccounts-id-transferLimits-current
+      parameters:
+      - name: id
+        in: path
+        description: The unique identifier of the balance account.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: scope
+        in: query
+        description: 'The scope to which the transfer limit applies. Possible values:
+
+          * **perTransaction**: you set a maximum amount for each transfer made from
+          the balance account or balance platform.
+
+          * **perDay**: you set a maximum total amount for all transfers made from
+          the balance account or balance platform in a day.'
+        required: false
+        style: form
+        explode: true
+        schema:
+          $ref: '#/components/schemas/Scope'
+      - name: transferType
+        in: query
+        description: 'The type of transfer to which the limit applies. Possible values:
+
+          * **instant**: the limit applies to transfers with an **instant** priority.
+
+          * **all**: the limit applies to all transfers, regardless of priority.'
+        required: false
+        style: form
+        explode: true
+        schema:
+          $ref: '#/components/schemas/TransferType'
+      responses:
+        '200':
+          description: OK - The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferLimitListResponse'
+              examples:
+                'Response code 200: list of current transfer limits':
+                  summary: 'Response code 200: list of current transfer limits'
+                  description: 'Response code 200: list of current transfer limits'
+                  value:
+                    transferLimits:
+                    - amount:
+                        value: 10000
+                        currency: EUR
+                      id: TRLI00000000000000000000000001
+                      endsAt: '2026-08-13T23:00:00+01:00'
+                      scope: perDay
+                      reference: Your reference for the transfer limit
+                      scaInformation:
+                        exemption: initialLimit
+                        status: notPerformed
+                      startsAt: '2025-08-13T23:00:00+01:00'
+                      limitStatus: active
+                      transferType: instant
+        '404':
+          description: Not found - One of the transfer limits could not be found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '422':
+          description: Unprocessable Content - A request validation error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+      x-group-parameters: 'false'
+      x-methodName: getCurrentTransferLimits
+      x-sortIndex: 3
+  /balanceAccounts/{id}/transferLimits/{transferLimitId}:
+    get:
+      tags:
+      - Transfer limits - balance account level
+      summary: Get the details of a transfer limit
+      description: 'Get the details of a transfer limit using its unique `transferLimitId`.
+
+        '
+      operationId: get-balanceAccounts-id-transferLimits-transferLimitId
+      parameters:
+      - name: transferLimitId
+        in: path
+        description: The unique identifier of the transfer limit.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: id
+        in: path
+        description: The unique identifier of the balance account.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK - The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferLimit'
+              examples:
+                'Response code 200: transfer limit details':
+                  summary: 'Response code 200: transfer limit details'
+                  description: 'Response code 200: transfer limit details'
+                  value:
+                    amount:
+                      value: 10000
+                      currency: EUR
+                    id: TRLI00000000000000000000000001
+                    endsAt: '2026-08-13T23:00:00+01:00'
+                    scope: perTransaction
+                    reference: Your reference for the transfer limit
+                    scaInformation:
+                      exemption: initialLimit
+                      status: notPerformed
+                    startsAt: '2025-08-13T23:00:00+01:00'
+                    limitStatus: active
+                    transferType: all
+        '404':
+          description: Not found - One of the transfer limits could not be found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '422':
+          description: Unprocessable Content - A request validation error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+      x-methodName: getSpecificTransferLimit
+      x-sortIndex: 5
+    delete:
+      tags:
+      - Transfer limits - balance account level
+      summary: Delete a scheduled or pending transfer limit
+      description: 'Delete a scheduled or pending transfer limit using its unique
+        `transferLimitId`. You cannot delete an active limit.
+
+        '
+      operationId: delete-balanceAccounts-id-transferLimits-transferLimitId
+      parameters:
+      - name: transferLimitId
+        in: path
+        description: The unique identifier of the transfer limit.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: id
+        in: path
+        description: The unique identifier of the balance account.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        '204':
+          description: No Content - The request has succeeded.
+        '404':
+          description: Not found - One of the transfer limits could not be found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '422':
+          description: Unprocessable Content - A request validation error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+      x-methodName: deletePendingTransferLimit
+      x-sortIndex: 6
+  /balancePlatforms/{id}/transferLimits:
+    get:
+      tags:
+      - Transfer limits - balance platform level
+      summary: Filter and view the transfer limits
+      description: 'Filter and view the transfer limits configured for your balance
+        platform using the balance platform''s unique `id` and the available query
+        parameters.
+
+        '
+      operationId: get-balancePlatforms-id-transferLimits
+      parameters:
+      - name: id
+        in: path
+        description: The unique identifier of the balance platform.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: scope
+        in: query
+        description: 'The scope to which the transfer limit applies. Possible values:
+
+          * **perTransaction**: you set a maximum amount for each transfer made from
+          the balance account or balance platform.
+
+          * **perDay**: you set a maximum total amount for all transfers made from
+          the balance account or balance platform in a day.'
+        required: false
+        style: form
+        explode: true
+        schema:
+          $ref: '#/components/schemas/Scope'
+      - name: transferType
+        in: query
+        description: 'The type of transfer to which the limit applies. Possible values:
+
+          * **instant**: the limit applies to transfers with an **instant** priority.
+
+          * **all**: the limit applies to all transfers, regardless of priority.'
+        required: false
+        style: form
+        explode: true
+        schema:
+          $ref: '#/components/schemas/TransferType'
+      - name: status
+        in: query
+        description: "The status of the transfer limit. Possible values:   \n* **active**:\
+          \ the limit is currently active.\n* **inactive**: the limit is currently\
+          \ inactive.\n* **pendingSCA**: the limit is pending until your user performs\
+          \ SCA.\n* **scheduled**: the limit is scheduled to become active at a future\
+          \ date."
+        required: false
+        style: form
+        explode: true
+        schema:
+          $ref: '#/components/schemas/LimitStatus'
+      responses:
+        '200':
+          description: OK - The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferLimitListResponse'
+              examples:
+                'Response code 200: list of transfer limits':
+                  summary: 'Response code 200: list of transfer limits'
+                  description: 'Response code 200: list of transfer limits'
+                  value:
+                    transferLimits:
+                    - amount:
+                        value: 10000
+                        currency: EUR
+                      id: TRLI00000000000000000000000001
+                      endsAt: '2026-08-13T23:00:00+01:00'
+                      scope: perTransaction
+                      reference: Your reference for the transfer limit
+                      scaInformation:
+                        exemption: initialLimit
+                        status: notPerformed
+                      startsAt: '2025-08-13T23:00:00+01:00'
+                      limitStatus: active
+                      transferType: instant
+                    - amount:
+                        value: 20000
+                        currency: EUR
+                      id: TRLI00000000000000000000000002
+                      endsAt: '2026-08-13T23:00:00+01:00'
+                      scope: perTransaction
+                      reference: Your reference for the transfer limit
+                      scaInformation:
+                        exemption: initialLimit
+                        status: notPerformed
+                      startsAt: '2025-08-13T23:00:00+01:00'
+                      limitStatus: active
+                      transferType: all
+        '404':
+          description: Not found - One of the transfer limits could not be found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '422':
+          description: Unprocessable Content - A request validation error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+      x-group-parameters: 'false'
+      x-methodName: getTransferLimits
+      x-sortIndex: 2
+    post:
+      tags:
+      - Transfer limits - balance platform level
+      summary: Create a transfer limit
+      description: 'Create a transfer limit for your balance platform using the unique
+        `id` of your balance platform.
+
+        '
+      operationId: post-balancePlatforms-id-transferLimits
+      parameters:
+      - name: id
+        in: path
+        description: The unique identifier of the balance platform.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTransferLimitRequest'
+            examples:
+              Create a transfer limit request:
+                summary: Create a transfer limit request
+                description: Create a transfer limit request
+                value:
+                  amount:
+                    currency: EUR
+                    value: 10000
+                  reference: Your reference for the transfer limit
+                  scaInformation:
+                    scaOnApproval: true
+                  scope: perTransaction
+                  startsAt: '2025-08-15T06:36:20+01:00'
+                  endsAt: '2026-08-14T00:00:00+01:00'
+                  transferType: all
+        required: true
+      responses:
+        '200':
+          description: OK - The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferLimit'
+              examples:
+                Create a transfer limit response:
+                  summary: Create a transfer limit response
+                  description: Create a transfer limit response
+                  value:
+                    amount:
+                      value: 10000
+                      currency: EUR
+                    id: TRLI00000000000000000000000001
+                    scope: perTransaction
+                    reference: Your reference for the transfer limit
+                    scaInformation:
+                      status: pending
+                    startsAt: '2025-08-15T06:36:20+01:00'
+                    endsAt: '2026-08-13T23:00:00+01:00'
+                    limitStatus: pendingSCA
+                    transferType: all
+        '404':
+          description: Not found - One of the transfer limits could not be found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '422':
+          description: Unprocessable Content - A request validation error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+      x-methodName: createTransferLimit
+      x-sortIndex: 1
+  /balancePlatforms/{id}/transferLimits/{transferLimitId}:
+    get:
+      tags:
+      - Transfer limits - balance platform level
+      summary: Get the details of a transfer limit
+      description: 'Get the details of a transfer limit using its unique `transferLimitId`.
+
+        '
+      operationId: get-balancePlatforms-id-transferLimits-transferLimitId
+      parameters:
+      - name: transferLimitId
+        in: path
+        description: The unique identifier of the transfer limit.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: id
+        in: path
+        description: The unique identifier of the balance platform.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK - The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferLimit'
+              examples:
+                'Response code 200: transfer limit details':
+                  summary: 'Response code 200: transfer limit details'
+                  description: 'Response code 200: transfer limit details'
+                  value:
+                    amount:
+                      value: 10000
+                      currency: EUR
+                    id: TRLI00000000000000000000000001
+                    endsAt: '2026-08-13T23:00:00+01:00'
+                    scope: perTransaction
+                    reference: Your reference for the transfer limit
+                    scaInformation:
+                      exemption: initialLimit
+                      status: notPerformed
+                    startsAt: '2025-08-13T23:00:00+01:00'
+                    limitStatus: active
+                    transferType: all
+        '404':
+          description: Not found - One of the transfer limits could not be found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '422':
+          description: Unprocessable Content - A request validation error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+      x-methodName: getSpecificTransferLimit
+      x-sortIndex: 3
+    delete:
+      tags:
+      - Transfer limits - balance platform level
+      summary: Delete a scheduled or pending transfer limit
+      description: 'Delete a scheduled or pending transfer limit using its unique
+        `transferLimitId`. You cannot delete an active limit.
+
+        '
+      operationId: delete-balancePlatforms-id-transferLimits-transferLimitId
+      parameters:
+      - name: transferLimitId
+        in: path
+        description: The unique identifier of the transfer limit.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: id
+        in: path
+        description: The unique identifier of the balance platform.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        '204':
+          description: No Content - The request has succeeded.
+        '404':
+          description: Not found - One of the transfer limits could not be found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '422':
+          description: Unprocessable Content - A request validation error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+      x-methodName: deletePendingTransferLimit
+      x-sortIndex: 4
 components:
   schemas:
     AULocalAccountIdentification:
@@ -6057,13 +6822,10 @@ components:
       - type
     Amount:
       type: object
-      additionalProperties: false
       properties:
         currency:
           type: string
           description: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes#currency-codes).
-          maxLength: 3
-          minLength: 3
         value:
           type: integer
           format: int64
@@ -11162,10 +11924,13 @@ components:
 
             *  **pendingStatus**
 
+            *  **dataReview**
+
 
             '
           enum:
           - dataMissing
+          - dataReview
           - invalidInput
           - pendingStatus
     VerificationError-recursive:
@@ -11255,10 +12020,13 @@ components:
 
             *  **pendingStatus**
 
+            *  **dataReview**
+
 
             '
           enum:
           - dataMissing
+          - dataReview
           - invalidInput
           - pendingStatus
         remediatingActions:
@@ -11639,6 +12407,282 @@ components:
           - balanceAccount
           - accountHolder
           - balancePlatform
+    ApproveTransferLimitRequest:
+      type: object
+      properties:
+        transferLimitIds:
+          type: array
+          description: A list that includes the `transferLimitId` of all the pending
+            transfer limits you want to approve.
+          items:
+            type: string
+          maxItems: 2147483647
+          minItems: 1
+      required:
+      - transferLimitIds
+    CreateScaInformation:
+      type: object
+      properties:
+        exemption:
+          $ref: '#/components/schemas/ScaExemption'
+          description: 'The type of exemption for Strong Customer Authentication (SCA).
+            Possible values:
+
+            * **lowerLimit**: the newly created limit is lower than the existing limit.
+
+            * **notRegulated**: the limit is created in a country, region, or industry
+            where it is not mandated by law to use SCA.
+
+            * **setByPlatform**: you set a limit for one of your user''s balance accounts,
+            or for your balance platform.
+
+            * **initialLimit**: there are no existing transfer limits set on the balance
+            account or balance platform.
+
+            * **alreadyPerformed**: you are confident about your user''s identity
+            and do not need to verify this using SCA.'
+        scaOnApproval:
+          type: boolean
+          description: 'Indicates whether to initiate Strong Customer Authentication
+            (SCA) later, during approval, or immediately after you submit this request.
+            Possible values:
+
+            * **true**: you can initiate SCA later, during approval, for all pending
+            transfer limits.
+
+            * **false** (default): you initiate SCA immediately after submitting the
+            transfer limit request.'
+    CreateTransferLimitRequest:
+      type: object
+      properties:
+        amount:
+          $ref: '#/components/schemas/Amount'
+          description: The amount for the transfer limit. This is the maximum amount
+            allowed per transfer or per day based on the `scope` of the limit.
+        endsAt:
+          type: string
+          format: date-time
+          description: 'The date and time when the transfer limit becomes inactive.
+            If you do not specify an end date, the limit stays active until you override
+            it with a new limit.
+
+
+            Format [ISO 8601](https://www.w3.org/TR/NOTE-datetime): **YYYY-MM-DDThh:mm:ss.sssTZD**'
+        reference:
+          type: string
+          description: Your reference for the transfer limit.
+        scaInformation:
+          $ref: '#/components/schemas/CreateScaInformation'
+          description: Information for the Strong Customer Authentication (SCA)
+        scope:
+          $ref: '#/components/schemas/Scope'
+          description: 'The scope to which the transfer limit applies. Possible values:
+
+            * **perTransaction**: you set a maximum amount for each transfer made
+            from the balance account or balance platform.
+
+            * **perDay**: you set a maximum total amount for all transfers made from
+            the balance account or balance platform in a day.'
+        startsAt:
+          type: string
+          format: date-time
+          description: 'The date and time when the transfer limit becomes active.
+            If you specify a date in the future, we will schedule a transfer limit.
+
+
+            Format [ISO 8601](https://www.w3.org/TR/NOTE-datetime): **YYYY-MM-DDThh:mm:ss.sssTZD**'
+        transferType:
+          $ref: '#/components/schemas/TransferType'
+          description: 'The type of transfer to which the limit applies. Possible
+            values:
+
+            * **instant**: the limit applies to transfers with an **instant** priority.
+
+            * **all**: the limit applies to all transfers, regardless of priority.'
+      required:
+      - amount
+      - scope
+      - transferType
+    ScaExemption:
+      type: string
+      description: 'The type of exemption for Strong Customer Authentication (SCA).
+        Possible values:
+
+        * **lowerLimit**: the newly created limit is lower than the existing limit.
+
+        * **notRegulated**: the limit is created in a country, region, or industry
+        where it is not mandated by law to use SCA.
+
+        * **setByPlatform**: you set a limit for one of your user''s balance accounts,
+        or for your balance platform.
+
+        * **initialLimit**: there are no existing transfer limits set on the balance
+        account or balance platform.
+
+        * **alreadyPerformed**: you are confident about your user''s identity and
+        do not need to verify this using SCA.'
+      enum:
+      - setByPlatform
+      - initialLimit
+      - lowerLimit
+      - notRegulated
+      - alreadyPerformed
+    Scope:
+      type: string
+      description: 'The scope to which the transfer limit applies. Possible values:
+
+        * **perTransaction**: you set a maximum amount for each transfer made from
+        the balance account or balance platform.
+
+        * **perDay**: you set a maximum total amount for all transfers made from the
+        balance account or balance platform in a day.'
+      enum:
+      - perDay
+      - perTransaction
+    TransferType:
+      type: string
+      description: 'The type of transfer to which the limit applies. Possible values:
+
+        * **instant**: the limit applies to transfers with an **instant** priority.
+
+        * **all**: the limit applies to all transfers, regardless of priority.'
+      enum:
+      - instant
+      - all
+    LimitStatus:
+      type: string
+      description: "The status of the transfer limit. Possible values:   \n* **active**:\
+        \ the limit is currently active.\n* **inactive**: the limit is currently inactive.\n\
+        * **pendingSCA**: the limit is pending until your user performs SCA.\n* **scheduled**:\
+        \ the limit is scheduled to become active at a future date."
+      enum:
+      - active
+      - inactive
+      - pendingSCA
+      - scheduled
+    ScaInformation:
+      type: object
+      properties:
+        exemption:
+          $ref: '#/components/schemas/ScaExemption'
+          description: 'The type of exemption for Strong Customer Authentication (SCA).
+            Possible values:
+
+            * **lowerLimit**: the newly created limit is lower than the existing limit.
+
+            * **notRegulated**: the limit is created in a country, region, or industry
+            where it is not mandated by law to use SCA.
+
+            * **setByPlatform**: you set a limit for one of your user''s balance accounts,
+            or for your balance platform.
+
+            * **initialLimit**: there are no existing transfer limits set on the balance
+            account or balance platform.
+
+            * **alreadyPerformed**: you are confident about your user''s identity
+            and do not need to verify this using SCA.'
+        status:
+          $ref: '#/components/schemas/ScaStatus'
+          description: 'The status of Strong Customer Authentication (SCA). Possible
+            values:
+
+            * **notPerformed**: the requester was unable to successfully authenticate
+            the request using SCA, or has an SCA exemption.
+
+            * **pending**: the request is pending SCA authentication.
+
+            * **performed**: the request is successfully authenticated using SCA.'
+      required:
+      - status
+    ScaStatus:
+      type: string
+      description: 'The status of Strong Customer Authentication (SCA). Possible values:
+
+        * **notPerformed**: the requester was unable to successfully authenticate
+        the request using SCA, or has an SCA exemption.
+
+        * **pending**: the request is pending SCA authentication.
+
+        * **performed**: the request is successfully authenticated using SCA.'
+      enum:
+      - notPerformed
+      - pending
+      - performed
+    TransferLimit:
+      type: object
+      description: The transfer limit configured to regulate outgoing transfers.
+      properties:
+        amount:
+          $ref: '#/components/schemas/Amount'
+          description: The amount for the transfer limit. This is the maximum amount
+            allowed per transfer or per day based on the `scope` of the limit.
+        endsAt:
+          type: string
+          format: date-time
+          description: 'The date and time when the transfer limit becomes inactive.
+            If you do not specify an end date, the limit stays active until you override
+            it with a new limit.
+
+
+            Format [ISO 8601](https://www.w3.org/TR/NOTE-datetime): **YYYY-MM-DDThh:mm:ss.sssTZD**'
+        id:
+          type: string
+          description: The unique identifier of the transfer limit.
+        limitStatus:
+          $ref: '#/components/schemas/LimitStatus'
+          description: "The status of the transfer limit. Possible values:   \n* **active**:\
+            \ the limit is currently active.\n* **inactive**: the limit is currently\
+            \ inactive.\n* **pendingSCA**: the limit is pending until your user performs\
+            \ SCA.\n* **scheduled**: the limit is scheduled to become active at a\
+            \ future date."
+        reference:
+          type: string
+          description: Your reference for the transfer limit.
+        scaInformation:
+          $ref: '#/components/schemas/ScaInformation'
+          description: Information for the Strong Customer Authentication (SCA)
+        scope:
+          $ref: '#/components/schemas/Scope'
+          description: 'The scope to which the transfer limit applies. Possible values:
+
+            * **perTransaction**: you set a maximum amount for each transfer made
+            from the balance account or balance platform.
+
+            * **perDay**: you set a maximum total amount for all transfers made from
+            the balance account or balance platform in a day.'
+        startsAt:
+          type: string
+          format: date-time
+          description: 'The date and time when the transfer limit becomes active.
+            If you specify a date in the future, we will schedule a transfer limit.
+
+
+            Format [ISO 8601](https://www.w3.org/TR/NOTE-datetime): **YYYY-MM-DDThh:mm:ss.sssTZD**'
+        transferType:
+          $ref: '#/components/schemas/TransferType'
+          description: 'The type of transfer to which the limit applies. Possible
+            values:
+
+            * **instant**: the limit applies to transfers with an **instant** priority.
+
+            * **all**: the limit applies to all transfers, regardless of priority.'
+      required:
+      - amount
+      - id
+      - limitStatus
+      - scope
+      - startsAt
+      - transferType
+    TransferLimitListResponse:
+      type: object
+      properties:
+        transferLimits:
+          type: array
+          description: List of available transfer limits.
+          items:
+            $ref: '#/components/schemas/TransferLimit'
+      required:
+      - transferLimits
   examples:
     delete-transactionRules-transactionRuleId-success-200:
       summary: Transaction rule deleted
