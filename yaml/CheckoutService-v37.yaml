@@ -2927,7 +2927,8 @@ components:
             \ transaction amount](https://docs.adyen.com/payment-methods/cards/enhanced-scheme-data/l2-l3#requirements-to-send-level-2-3-esd),\
             \ in [minor units](https://docs.adyen.com/development-resources/currency-codes).\
             \ \n* For example, 2000 means USD 20.00.\n* Encoding: Numeric \n* Max\
-            \ length: 12 characters\n* Must not be all zeros."
+            \ length: 12 characters \n* For L2 data: must not be all zeroes. \n* For\
+            \ L3 data: can be zero."
           type: string
       type: object
     AdditionalDataLodging:
@@ -5631,7 +5632,7 @@ components:
           type: string
         shopperName:
           description: The shopper's full name.
-          $ref: '#/components/schemas/Name'
+          $ref: '#/components/schemas/ShopperName'
         shopperReference:
           description: "Required for recurring payments. \nYour reference to uniquely\
             \ identify this shopper, for example user ID or account ID. Minimum length:\
@@ -7120,6 +7121,7 @@ components:
           - paybright
           - paynow
           - affirm_pos
+          - iris
           - trustly
           - trustlyvector
           - oney
@@ -7140,7 +7142,6 @@ components:
           - wallet_IN
           - payu_IN_cashcard
           - payu_IN_nb
-          - upi_qr
           - paytm
           - molpay_ebanking_VN
           - molpay_ebanking_MY
@@ -8550,6 +8551,7 @@ components:
           - $ref: '#/components/schemas/TwintDetails'
           - $ref: '#/components/schemas/UpiCollectDetails'
           - $ref: '#/components/schemas/UpiIntentDetails'
+          - $ref: '#/components/schemas/UpiQrDetails'
           - $ref: '#/components/schemas/VippsDetails'
           - $ref: '#/components/schemas/VisaCheckoutDetails'
           - $ref: '#/components/schemas/WeChatPayDetails'
@@ -8689,7 +8691,7 @@ components:
           type: string
         shopperName:
           description: The shopper's full name.
-          $ref: '#/components/schemas/Name'
+          $ref: '#/components/schemas/ShopperName'
         shopperReference:
           description: "Required for recurring payments. \nYour reference to uniquely\
             \ identify this shopper, for example user ID or account ID. Minimum length:\
@@ -10181,6 +10183,21 @@ components:
             device.
           type: string
       type: object
+    ShopperName:
+      additionalProperties: false
+      properties:
+        firstName:
+          description: The first name.
+          maxLength: 80
+          type: string
+        lastName:
+          description: The last name.
+          maxLength: 80
+          type: string
+      required:
+      - firstName
+      - lastName
+      type: object
     Split:
       additionalProperties: false
       properties:
@@ -10735,7 +10752,6 @@ components:
           type: string
       required:
       - type
-      - billingSequenceNumber
       title: UPI Collect
       type: object
     UpiIntentDetails:
@@ -10744,6 +10760,11 @@ components:
         appId:
           description: TPAP (Third Party Application) Id that is being used to make
             the UPI payment
+          type: string
+        billingSequenceNumber:
+          description: The sequence number for the debit. For example, send **2**
+            if this is the second debit for the subscription. The sequence number
+            is included in the notification sent to the shopper.
           type: string
         checkoutAttemptId:
           description: The checkout attempt identifier.
@@ -10765,6 +10786,35 @@ components:
       required:
       - type
       title: UPI Intent
+      type: object
+    UpiQrDetails:
+      additionalProperties: false
+      properties:
+        billingSequenceNumber:
+          description: The sequence number for the debit. For example, send **2**
+            if this is the second debit for the subscription. The sequence number
+            is included in the notification sent to the shopper.
+          type: string
+        checkoutAttemptId:
+          description: The checkout attempt identifier.
+          type: string
+        recurringDetailReference:
+          description: This is the `recurringDetailReference` returned in the response
+            when you created the token.
+          type: string
+        shopperNotificationReference:
+          description: The `shopperNotificationReference` returned in the response
+            when you requested to notify the shopper. Used for recurring payment only.
+          type: string
+        type:
+          default: upi_qr
+          description: '**upi_qr**'
+          enum:
+          - upi_qr
+          type: string
+      required:
+      - type
+      title: UPI QR
       type: object
     UtilityRequest:
       additionalProperties: false

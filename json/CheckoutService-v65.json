@@ -3586,7 +3586,7 @@
                   "type" : "string"
                },
                "enhancedSchemeData.totalTaxAmount" : {
-                  "description" : "The amount of state or provincial [tax included in the total transaction amount](https://docs.adyen.com/payment-methods/cards/enhanced-scheme-data/l2-l3#requirements-to-send-level-2-3-esd), in [minor units](https://docs.adyen.com/development-resources/currency-codes). \n* For example, 2000 means USD 20.00.\n* Encoding: Numeric \n* Max length: 12 characters\n* Must not be all zeros.",
+                  "description" : "The amount of state or provincial [tax included in the total transaction amount](https://docs.adyen.com/payment-methods/cards/enhanced-scheme-data/l2-l3#requirements-to-send-level-2-3-esd), in [minor units](https://docs.adyen.com/development-resources/currency-codes). \n* For example, 2000 means USD 20.00.\n* Encoding: Numeric \n* Max length: 12 characters \n* For L2 data: must not be all zeroes. \n* For L3 data: can be zero.",
                   "type" : "string"
                }
             },
@@ -6707,7 +6707,7 @@
                },
                "shopperName" : {
                   "description" : "The shopper's full name.",
-                  "$ref" : "#/components/schemas/Name"
+                  "$ref" : "#/components/schemas/ShopperName"
                },
                "shopperReference" : {
                   "description" : "Required for recurring payments. \nYour reference to uniquely identify this shopper, for example user ID or account ID. Minimum length: 3 characters.\n> Your reference must not include personally identifiable information (PII), for example name or email address.",
@@ -8743,6 +8743,7 @@
                      "paybright",
                      "paynow",
                      "affirm_pos",
+                     "iris",
                      "trustly",
                      "trustlyvector",
                      "oney",
@@ -8763,7 +8764,6 @@
                      "wallet_IN",
                      "payu_IN_cashcard",
                      "payu_IN_nb",
-                     "upi_qr",
                      "paytm",
                      "molpay_ebanking_VN",
                      "molpay_ebanking_MY",
@@ -10267,6 +10267,9 @@
                         "$ref" : "#/components/schemas/UpiIntentDetails"
                      },
                      {
+                        "$ref" : "#/components/schemas/UpiQrDetails"
+                     },
+                     {
                         "$ref" : "#/components/schemas/VippsDetails"
                      },
                      {
@@ -10358,7 +10361,7 @@
                },
                "shopperName" : {
                   "description" : "The shopper's full name.",
-                  "$ref" : "#/components/schemas/Name"
+                  "$ref" : "#/components/schemas/ShopperName"
                },
                "shopperReference" : {
                   "description" : "Required for recurring payments. \nYour reference to uniquely identify this shopper, for example user ID or account ID. Minimum length: 3 characters.\n> Your reference must not include personally identifiable information (PII), for example name or email address.",
@@ -11823,6 +11826,26 @@
             },
             "type" : "object"
          },
+         "ShopperName" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "firstName" : {
+                  "description" : "The first name.",
+                  "maxLength" : 80,
+                  "type" : "string"
+               },
+               "lastName" : {
+                  "description" : "The last name.",
+                  "maxLength" : 80,
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "firstName",
+               "lastName"
+            ],
+            "type" : "object"
+         },
          "Split" : {
             "additionalProperties" : false,
             "properties" : {
@@ -12732,8 +12755,7 @@
                }
             },
             "required" : [
-               "type",
-               "billingSequenceNumber"
+               "type"
             ],
             "title" : "UPI Collect",
             "type" : "object"
@@ -12743,6 +12765,10 @@
             "properties" : {
                "appId" : {
                   "description" : "TPAP (Third Party Application) Id that is being used to make the UPI payment",
+                  "type" : "string"
+               },
+               "billingSequenceNumber" : {
+                  "description" : "The sequence number for the debit. For example, send **2** if this is the second debit for the subscription. The sequence number is included in the notification sent to the shopper.",
                   "type" : "string"
                },
                "checkoutAttemptId" : {
@@ -12779,6 +12805,49 @@
                "type"
             ],
             "title" : "UPI Intent",
+            "type" : "object"
+         },
+         "UpiQrDetails" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "billingSequenceNumber" : {
+                  "description" : "The sequence number for the debit. For example, send **2** if this is the second debit for the subscription. The sequence number is included in the notification sent to the shopper.",
+                  "type" : "string"
+               },
+               "checkoutAttemptId" : {
+                  "description" : "The checkout attempt identifier.",
+                  "type" : "string"
+               },
+               "recurringDetailReference" : {
+                  "deprecated" : true,
+                  "x-deprecatedInVersion" : "49",
+                  "x-deprecatedMessage" : "Use `storedPaymentMethodId` instead.",
+                  "description" : "This is the `recurringDetailReference` returned in the response when you created the token.",
+                  "type" : "string"
+               },
+               "shopperNotificationReference" : {
+                  "description" : "The `shopperNotificationReference` returned in the response when you requested to notify the shopper. Used for recurring payment only.",
+                  "type" : "string"
+               },
+               "storedPaymentMethodId" : {
+                  "x-addedInVersion" : "49",
+                  "description" : "This is the `recurringDetailReference` returned in the response when you created the token.",
+                  "maxLength" : 64,
+                  "type" : "string"
+               },
+               "type" : {
+                  "default" : "upi_qr",
+                  "description" : "**upi_qr**",
+                  "enum" : [
+                     "upi_qr"
+                  ],
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "type"
+            ],
+            "title" : "UPI QR",
             "type" : "object"
          },
          "UtilityRequest" : {

@@ -3553,7 +3553,8 @@ components:
             \ transaction amount](https://docs.adyen.com/payment-methods/cards/enhanced-scheme-data/l2-l3#requirements-to-send-level-2-3-esd),\
             \ in [minor units](https://docs.adyen.com/development-resources/currency-codes).\
             \ \n* For example, 2000 means USD 20.00.\n* Encoding: Numeric \n* Max\
-            \ length: 12 characters\n* Must not be all zeros."
+            \ length: 12 characters \n* For L2 data: must not be all zeroes. \n* For\
+            \ L3 data: can be zero."
     AdditionalDataLodging:
       type: object
       additionalProperties: false
@@ -6397,7 +6398,7 @@ components:
           description: The combination of a language code and a country code to specify
             the language to be used in the payment.
         shopperName:
-          $ref: '#/components/schemas/Name'
+          $ref: '#/components/schemas/ShopperName'
           description: The shopper's full name. This object is required for some payment
             methods such as AfterPay, Klarna, or if you're enrolled in the PayPal
             Seller Protection program.
@@ -6806,7 +6807,7 @@ components:
           description: The combination of a language code and a country code to specify
             the language to be used in the payment.
         shopperName:
-          $ref: '#/components/schemas/Name'
+          $ref: '#/components/schemas/ShopperName'
           description: The shopper's full name. This object is required for some payment
             methods such as AfterPay, Klarna, or if you're enrolled in the PayPal
             Seller Protection program.
@@ -7717,7 +7718,7 @@ components:
           description: The combination of a language code and a country code to specify
             the language to be used in the payment.
         shopperName:
-          $ref: '#/components/schemas/Name'
+          $ref: '#/components/schemas/ShopperName'
           description: The shopper's full name.
         shopperReference:
           type: string
@@ -9574,6 +9575,7 @@ components:
           - paybright
           - paynow
           - affirm_pos
+          - iris
           - trustly
           - trustlyvector
           - oney
@@ -9594,7 +9596,6 @@ components:
           - wallet_IN
           - payu_IN_cashcard
           - payu_IN_nb
-          - upi_qr
           - paytm
           - molpay_ebanking_VN
           - molpay_ebanking_MY
@@ -11208,6 +11209,7 @@ components:
           - $ref: '#/components/schemas/TwintDetails'
           - $ref: '#/components/schemas/UpiCollectDetails'
           - $ref: '#/components/schemas/UpiIntentDetails'
+          - $ref: '#/components/schemas/UpiQrDetails'
           - $ref: '#/components/schemas/VippsDetails'
           - $ref: '#/components/schemas/VisaCheckoutDetails'
           - $ref: '#/components/schemas/WeChatPayDetails'
@@ -11350,7 +11352,7 @@ components:
           description: The combination of a language code and a country code to specify
             the language to be used in the payment.
         shopperName:
-          $ref: '#/components/schemas/Name'
+          $ref: '#/components/schemas/ShopperName'
           description: The shopper's full name.
         shopperReference:
           type: string
@@ -13013,6 +13015,21 @@ components:
           type: string
           description: Version of the operating system on the shopper interaction
             device.
+    ShopperName:
+      type: object
+      additionalProperties: false
+      properties:
+        firstName:
+          type: string
+          description: The first name.
+          maxLength: 80
+        lastName:
+          type: string
+          description: The last name.
+          maxLength: 80
+      required:
+      - firstName
+      - lastName
     Split:
       type: object
       additionalProperties: false
@@ -14485,7 +14502,6 @@ components:
           type: string
           description: The virtual payment address for UPI.
       required:
-      - billingSequenceNumber
       - type
       title: UPI Collect
     UpiIntentDetails:
@@ -14496,6 +14512,11 @@ components:
           type: string
           description: TPAP (Third Party Application) Id that is being used to make
             the UPI payment
+        billingSequenceNumber:
+          type: string
+          description: The sequence number for the debit. For example, send **2**
+            if this is the second debit for the subscription. The sequence number
+            is included in the notification sent to the shopper.
         checkoutAttemptId:
           type: string
           description: The checkout attempt identifier.
@@ -14525,6 +14546,44 @@ components:
       required:
       - type
       title: UPI Intent
+    UpiQrDetails:
+      type: object
+      additionalProperties: false
+      properties:
+        billingSequenceNumber:
+          type: string
+          description: The sequence number for the debit. For example, send **2**
+            if this is the second debit for the subscription. The sequence number
+            is included in the notification sent to the shopper.
+        checkoutAttemptId:
+          type: string
+          description: The checkout attempt identifier.
+        recurringDetailReference:
+          type: string
+          deprecated: true
+          description: This is the `recurringDetailReference` returned in the response
+            when you created the token.
+          x-deprecatedInVersion: '49'
+          x-deprecatedMessage: Use `storedPaymentMethodId` instead.
+        shopperNotificationReference:
+          type: string
+          description: The `shopperNotificationReference` returned in the response
+            when you requested to notify the shopper. Used for recurring payment only.
+        storedPaymentMethodId:
+          type: string
+          description: This is the `recurringDetailReference` returned in the response
+            when you created the token.
+          maxLength: 64
+          x-addedInVersion: '49'
+        type:
+          type: string
+          default: upi_qr
+          description: '**upi_qr**'
+          enum:
+          - upi_qr
+      required:
+      - type
+      title: UPI QR
     UtilityRequest:
       type: object
       additionalProperties: false
@@ -14687,7 +14746,7 @@ components:
           description: Reason for the result.
         result:
           $ref: '#/components/schemas/Result'
-          description: 'Result of the validation. Ex: VALID, INVALID, UNKNOWN'
+          description: 'Result of the validation. Ex: valid, invalid, unknown'
     DefaultErrorResponseEntity:
       type: object
       description: Standardized error response following RFC-7807 format
