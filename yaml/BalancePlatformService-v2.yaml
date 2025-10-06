@@ -47,6 +47,7 @@ tags:
 - name: Transfer limits - balance account level
 - name: Transfer limits - balance platform level
 - name: Manage SCA devices
+- name: SCA association management
 paths:
   /accountHolders:
     post:
@@ -5493,6 +5494,511 @@ paths:
                 $ref: '#/components/schemas/DefaultErrorResponseEntity'
       x-methodName: updateWebhookSetting
       x-sortIndex: 2
+  /scaAssociations:
+    get:
+      tags:
+      - SCA association management
+      summary: Get a list of devices associated with an entity
+      description: Returns a paginated list of the SCA devices associated with a specific
+        entity.
+      operationId: get-scaAssociations
+      parameters:
+      - name: entityType
+        in: query
+        description: "The type of entity you want to retrieve a list of associations\
+          \ for. \n\nPossible values: **accountHolder** or **paymentInstrument**."
+        required: true
+        style: form
+        explode: true
+        schema:
+          $ref: '#/components/schemas/ScaEntityType'
+      - name: entityId
+        in: query
+        description: The unique identifier of the entity.
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+          maxLength: 100
+          minLength: 1
+      - name: pageSize
+        in: query
+        description: "The number of items to have on a page. \n\nDefault: **5**."
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: integer
+          format: int32
+          maximum: 10
+          minimum: 1
+      - name: pageNumber
+        in: query
+        description: "The index of the page to retrieve. The index of the first page\
+          \ is **0** (zero). \n\nDefault:  **0**."
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        '200':
+          description: OK - The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListAssociationsResponse'
+              examples:
+                List SCA Associations Response:
+                  summary: Response for listing SCA associations.
+                  description: This response provides a paginated list of Strong Customer
+                    Authentication (SCA) device information for an associated entity.
+                  value:
+                    _links:
+                      self:
+                        href: https://exampledomain.com/bcl/api/v2/scaAssociations?pageNumber=0&entityType=accountHolder&pageSize=10&entityId=AH3227J223222D5HHM4779X6X
+                    itemsTotal: 2
+                    pagesTotal: 1
+                    data:
+                    - scaDeviceId: BSDR11111111111A1AAA1AAAAA1AA1
+                      scaDeviceName: Device 1
+                      scaDeviceType: ios
+                      entityType: accountHolder
+                      entityId: AH00000000000000000000001
+                      status: active
+                      createdAt: '2025-09-02T14:39:17.232Z'
+                    - scaDeviceId: BSDR22222222222B2BBB2BBBBB2BB2
+                      scaDeviceName: Device 2
+                      scaDeviceType: ios
+                      entityType: accountHolder
+                      entityId: AH00000000000000000000001
+                      status: pendingApproval
+                      createdAt: '2025-09-02T14:39:17.232Z'
+        '400':
+          description: Bad request - The request contains invalid input and fails
+            validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '401':
+          description: Unauthorized - Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '403':
+          description: Forbidden - Insufficient permissions to process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '500':
+          description: Internal Server Error - The server could not process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+      x-group-parameters: 'true'
+      x-methodName: listAssociations
+      x-sortIndex: 0
+    delete:
+      tags:
+      - SCA association management
+      summary: Delete association to devices
+      description: Deletes one or more SCA associations for a device.
+      operationId: delete-scaAssociations
+      parameters:
+      - name: WWW-Authenticate
+        in: header
+        description: The header for authenticating through SCA.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          maxLength: 10000
+          minLength: 1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RemoveAssociationRequest'
+            examples:
+              Remove SCA Association Request:
+                summary: Request to remove an SCA association.
+                description: Use this request to remove an association from a Strong
+                  Customer Authentication (SCA) device.
+                value:
+                  entityType: accountHolder
+                  entityId: AH00000000000000000000001
+                  scaDeviceIds:
+                  - BSDR42XV3223223S5N6CDQDGH53M8H
+      responses:
+        '204':
+          description: No Content - Successful association deletion.
+        '401':
+          description: Unauthorized - Authentication required.
+          headers:
+            WWW-Authenticate:
+              description: Authentication header, a string that you must pass to the
+                authentication SDK to continue with the deletion process.
+              style: simple
+              explode: false
+              schema: {}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '403':
+          description: Forbidden - Insufficient permissions to process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '500':
+          description: Internal Server Error - The server could not process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+      x-methodName: removeAssociation
+      x-sortIndex: 0
+    patch:
+      tags:
+      - SCA association management
+      summary: Approve a pending approval association
+      description: Approves a previously created association that is in a pending
+        state.
+      operationId: patch-scaAssociations
+      parameters:
+      - name: WWW-Authenticate
+        in: header
+        description: The header for authenticating through SCA.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          maxLength: 10000
+          minLength: 1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchableApproveAssociationRequest'
+            examples:
+              Approve SCA Association Request:
+                summary: Request to approve a pending SCA association.
+                description: Use this request to approve a pending association for
+                  a Strong Customer Authentication (SCA) device.
+                value:
+                  status: active
+                  entityType: accountHolder
+                  entityId: AH00000000000000000000001
+                  scaDeviceIds:
+                  - BSDR42XV3223223S5N6CDQDGH53M8H
+      responses:
+        '200':
+          description: OK - Successful approval
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApproveAssociationResponse'
+              examples:
+                Approve SCA Association Response:
+                  summary: Response for a successful SCA association approval.
+                  description: This response indicates that the SCA association has
+                    been successfully approved.
+                  value:
+                    scaAssociations:
+                    - scaDeviceId: BSDR42XV3223223S5N6CDQDGH53M8H
+                      entityType: accountHolder
+                      entityId: AH00000000000000000000001
+                      status: active
+        '401':
+          description: Unauthorized - Authentication required.
+          headers:
+            WWW-Authenticate:
+              description: Authentication header, a string that you must pass to the
+                authentication SDK to continue with the association approval process.
+              style: simple
+              explode: false
+              schema: {}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '403':
+          description: Forbidden - Insufficient permissions to process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '500':
+          description: Internal Server Error - The server could not process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+      x-methodName: approveAssociation
+      x-sortIndex: 0
+  /scaDevices:
+    post:
+      tags:
+      - SCA device management
+      summary: Begin SCA device registration
+      description: Begins the registration process for a new Strong Customer Authentication
+        (SCA) device.
+      operationId: post-scaDevices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BeginScaDeviceRegistrationRequest'
+            examples:
+              Begin SCA Device Registration Request:
+                summary: Request to begin SCA device registration.
+                description: Use this request to start the registration process for
+                  a new Strong Customer Authentication (SCA) device.
+                value:
+                  name: My Device
+                  sdkOutput: eyJjaGFsbGVuZ2UiOiJVWEZaTURONGNXWjZUVFExUlhWV2JuaEJPVzVzTm05cVVEUktUbFZtZGtrPSJ9
+      responses:
+        '201':
+          description: Created - A device resource is created. The initial step of
+            registration is complete, but the device isn't ready for use.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BeginScaDeviceRegistrationResponse'
+              examples:
+                Begin SCA Device Registration Response:
+                  summary: Response for beginning SCA device registration.
+                  description: This response is returned after successfully initiating
+                    the SCA device registration process.
+                  value:
+                    scaDevice:
+                      id: BSDR42XV3223223S5N6CDQDGH53M8H
+                      name: My Device
+                      type: ios
+                    sdkInput: eyJjaGFsbGVuZ2UiOiJVWEZaTURONGNXWjZUVFExUlhWV2JuaEJPVzVzTm05cVVEUktUbFZtZGtrPSJ9
+        '400':
+          description: Bad Request - The request contains invalid input and fails
+            validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '401':
+          description: Unauthorized - Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '403':
+          description: Forbidden - Insufficient permissions to process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '422':
+          description: Unprocessable entity - A request validation error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '500':
+          description: Internal Server Error - The server could not process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+      x-methodName: beginScaDeviceRegistration
+      x-sortIndex: 0
+  /scaDevices/{deviceId}:
+    patch:
+      tags:
+      - SCA device management
+      summary: Finish registration process for a SCA device
+      description: Finishes the registration process for a new Strong Customer Authentication
+        (SCA) device.
+      operationId: patch-scaDevices-deviceId
+      parameters:
+      - name: deviceId
+        in: path
+        description: The unique identifier of the SCA device that you are associating
+          with a resource.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          maxLength: 30
+          minLength: 30
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchableFinishScaDeviceRegistrationRequest'
+            examples:
+              Finish SCA Device Registration Request:
+                summary: Request to finish SCA device registration.
+                description: Use this request to finish the registration of an SCA
+                  device.
+                value:
+                  sdkOutput: eyJjaGFsbGVuZ2UiOiJVWEZaTURONGNXWjZUVFExUlhWV2JuaEJPVzVzTm05cVVEUktUbFZtZGtrPSJ9
+      responses:
+        '200':
+          description: OK - Device registration was completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinishScaDeviceRegistrationResponse'
+              examples:
+                Finish SCA Device Registration Response:
+                  summary: Response for finishing SCA device registration.
+                  description: This response is returned after successfully completing
+                    the SCA device registration process.
+                  value:
+                    scaDevice:
+                      id: BSDR42XV3223223S5N6CDQDGH53M8H
+                      name: Device
+                      type: ios
+        '400':
+          description: Bad Request - The request contains invalid input and fails
+            validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '401':
+          description: Unauthorized - Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '403':
+          description: Forbidden - Insufficient permissions to process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '404':
+          description: Not Found - Device not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '422':
+          description: Unprocessable entity - A request validation error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '500':
+          description: Internal Server Error - The server could not process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+      x-methodName: finishScaDeviceRegistration
+      x-sortIndex: 0
+  /scaDevices/{deviceId}/scaAssociations:
+    post:
+      tags:
+      - SCA device management
+      summary: Create a new SCA association for a device
+      description: Creates an association between an SCA-enabled device and an entity,
+        such as an account holder. This action does not guarantee the association
+        is immediately ready for use; its status may be `pendingApproval` if the account
+        holder has existing devices.
+      operationId: post-scaDevices-deviceId-scaAssociations
+      parameters:
+      - name: deviceId
+        in: path
+        description: The unique identifier of the SCA device that you are associating
+          with a resource.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          maxLength: 30
+          minLength: 30
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitScaAssociationRequest'
+            examples:
+              Submit SCA Association Request:
+                summary: Request to create a new SCA association.
+                description: Use this request to create an association between an
+                  SCA device and an entity.
+                value:
+                  entities:
+                  - type: accountHolder
+                    id: AH00000000000000000000001
+      responses:
+        '201':
+          description: Created - Association created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubmitScaAssociationResponse'
+              examples:
+                Submit SCA Association Response:
+                  summary: Response for a new SCA association.
+                  description: This response is returned after successfully creating
+                    a new SCA association.
+                  value:
+                    scaAssociations:
+                    - scaDeviceId: BSDR11111111111A1AAA1AAAAA1AA1
+                      entityType: accountHolder
+                      entityId: AH00000000000000000000001
+                      status: pendingApproval
+        '400':
+          description: Bad Request - The request contains invalid input and fails
+            validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '401':
+          description: Unauthorized - Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '403':
+          description: Forbidden - Insufficient permissions to process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '404':
+          description: Not Found - Device not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '422':
+          description: Unprocessable Entity - A request validation error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '500':
+          description: Internal Server Error - The server could not process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+      x-methodName: submitScaAssociation
+      x-sortIndex: 0
   /balanceAccounts/{id}/transferLimits/approve:
     post:
       tags:
@@ -5537,6 +6043,22 @@ paths:
       responses:
         '204':
           description: No Content - The request has succeeded.
+        '401':
+          description: Unauthorized - Authentication required via Strong Customer
+            Authentication (SCA). The client must resolve the provided challenge.
+          headers:
+            WWW-Authenticate:
+              description: SCA challenge header containing the details necessary for
+                completing authentication. The client should solve the challenge contained.
+              required: true
+              style: simple
+              explode: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
         '404':
           description: Not found - One of the transfer limits could not be found.
           content:
@@ -8857,7 +9379,6 @@ components:
       - type
     Href:
       type: object
-      additionalProperties: false
       properties:
         href:
           type: string
@@ -8945,7 +9466,6 @@ components:
       type: object
     Link:
       type: object
-      additionalProperties: false
       properties:
         first:
           $ref: '#/components/schemas/Href'
@@ -12157,6 +12677,7 @@ components:
           type: string
           description: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes)
             of the balance.
+          minLength: 1
         status:
           type: string
           description: 'The status of the webhook setting. Possible values:
@@ -12261,6 +12782,7 @@ components:
             * account holder
 
             * account holder''s balance account'
+          minLength: 1
         type:
           type: string
           description: 'The resource for which you want to receive notifications.
@@ -12317,6 +12839,7 @@ components:
           type: string
           description: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes)
             of the balance.
+          minLength: 1
         id:
           type: string
           description: The unique identifier of the webhook setting.
@@ -12367,6 +12890,7 @@ components:
           type: string
           description: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes)
             of the balance.
+          minLength: 1
         status:
           type: string
           description: 'The status of the webhook setting. Possible values:
@@ -12403,6 +12927,7 @@ components:
             * account holder
 
             * account holder''s balance account'
+          minLength: 1
         type:
           type: string
           description: 'The resource for which you want to receive notifications.
@@ -12423,6 +12948,290 @@ components:
           - balanceAccount
           - accountHolder
           - balancePlatform
+    AssociationStatus:
+      type: string
+      enum:
+      - pendingApproval
+      - active
+    PatchableApproveAssociationRequest:
+      type: object
+      properties:
+        entityId:
+          type: string
+          description: The unique identifier of the entity.
+          maxLength: 100
+          minLength: 1
+        entityType:
+          $ref: '#/components/schemas/ScaEntityType'
+          description: "The type of the entity. \n\nPossible values: **accountHolder**\
+            \ or **paymentInstrument**."
+          example: accountHolder
+        scaDeviceIds:
+          type: array
+          description: List of device ids associated to the entity that will be approved.
+          items:
+            type: string
+          maxItems: 5
+          minItems: 0
+        status:
+          $ref: '#/components/schemas/AssociationStatus'
+          description: "The status of the association. \n\nPossible values: **active**\
+            \ or **pendingApproval**."
+          example: active
+    ScaEntityType:
+      type: string
+      enum:
+      - accountHolder
+      - paymentInstrument
+    ApproveAssociationResponse:
+      type: object
+      properties:
+        scaAssociations:
+          type: array
+          description: The list of associations.
+          items:
+            $ref: '#/components/schemas/Association'
+          minItems: 1
+      required:
+      - scaAssociations
+    Association:
+      type: object
+      properties:
+        entityId:
+          type: string
+          description: The unique identifier of the entity.
+          maxLength: 100
+          minLength: 1
+        entityType:
+          $ref: '#/components/schemas/ScaEntityType'
+          description: "The type of entity you are associating the device with. \n\
+            \nPossible values: **accountHolder** or **paymentInstrument**."
+          example: accountHolder
+        scaDeviceId:
+          type: string
+          description: The unique identifier for the SCA device.
+          example: BSDR11111111111A1AAA1AAAAA1AA1
+          maxLength: 30
+          minLength: 30
+        status:
+          $ref: '#/components/schemas/AssociationStatus'
+          description: "The status of the association. \n\nPossible values: **active**\
+            \ or **pendingApproval**."
+          example: pendingApproval
+      required:
+      - entityId
+      - entityType
+      - scaDeviceId
+      - status
+    AssociationListing:
+      type: object
+      properties:
+        createdAt:
+          type: string
+          format: date-time
+          description: The date and time when the association was created.
+        entityId:
+          type: string
+          description: The unique identifier of the entity.
+          maxLength: 100
+          minLength: 1
+        entityType:
+          $ref: '#/components/schemas/ScaEntityType'
+          description: "The type of the entity. \n\nPossible values: **accountHolder**\
+            \ or **paymentInstrument**."
+          example: accountHolder
+        scaDeviceId:
+          type: string
+          description: The unique identifier of the SCA device.
+          example: BSDR11111111111A1AAA1AAAAA1AA1
+          maxLength: 30
+          minLength: 30
+        scaDeviceName:
+          type: string
+          description: The human-readable name for the SCA device that was registered.
+          maxLength: 64
+          minLength: 0
+        scaDeviceType:
+          $ref: '#/components/schemas/ScaDeviceType'
+          description: The type of the device.
+          example: browser
+        status:
+          $ref: '#/components/schemas/AssociationStatus'
+          description: "The status of the association. \n\nPossible values: **active**\
+            \ or **pendingApproval**."
+          example: pendingApproval
+      required:
+      - createdAt
+      - entityId
+      - entityType
+      - scaDeviceId
+      - scaDeviceType
+      - status
+    ListAssociationsResponse:
+      type: object
+      properties:
+        _links:
+          $ref: '#/components/schemas/Link'
+          description: A list of hyperlinks to resources related to this response.
+        data:
+          type: array
+          description: Contains a list of associations and their corresponding details.
+          items:
+            $ref: '#/components/schemas/AssociationListing'
+        itemsTotal:
+          type: integer
+          format: int32
+          description: The total number of items available.
+          example: 1
+        pagesTotal:
+          type: integer
+          format: int32
+          description: The total number of pages available.
+          example: 1
+      required:
+      - _links
+      - data
+      - itemsTotal
+      - pagesTotal
+    ScaDeviceType:
+      type: string
+      enum:
+      - browser
+      - ios
+      - android
+    RemoveAssociationRequest:
+      type: object
+      properties:
+        entityId:
+          type: string
+          description: The unique identifier of the entity.
+          maxLength: 100
+          minLength: 1
+        entityType:
+          $ref: '#/components/schemas/ScaEntityType'
+          description: "The type of the entity.  \n\nPossible values: **accountHolder**\
+            \ or **paymentInstrument**."
+          example: accountHolder
+        scaDeviceIds:
+          type: array
+          description: A list of device ids associated with the entity that should
+            be removed.
+          items:
+            type: string
+            maxLength: 30
+            minLength: 30
+          maxItems: 5
+          minItems: 0
+      required:
+      - entityId
+      - entityType
+      - scaDeviceIds
+    BeginScaDeviceRegistrationRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the SCA device that you are registering. You can
+            use it to help your users identify the device.
+          maxLength: 64
+          minLength: 0
+        sdkOutput:
+          type: string
+          description: A base64-encoded block with the data required to register the
+            SCA device. You obtain this information by using Adyen's authentication
+            SDK.
+          maxLength: 10000
+          minLength: 0
+      required:
+      - name
+      - sdkOutput
+    BeginScaDeviceRegistrationResponse:
+      type: object
+      properties:
+        scaDevice:
+          $ref: '#/components/schemas/ScaDevice'
+        sdkInput:
+          type: string
+          description: A string that you must pass to the authentication SDK to continue
+            with the registration process.
+          maxLength: 10000
+    ScaDevice:
+      type: object
+      description: A resource that contains information about a device, including
+        its unique ID, name, and type.
+      properties:
+        id:
+          type: string
+          description: The unique identifier of the SCA device you are registering.
+        name:
+          type: string
+          description: The name of the SCA device that you are registering. You can
+            use it to help your users identify the device.
+          maxLength: 64
+          minLength: 0
+        type:
+          $ref: '#/components/schemas/ScaDeviceType'
+          description: "Type of device registered. \n\nPossible values: **ios**, **android**,\
+            \ **browser**. "
+      required:
+      - id
+      - name
+      - type
+    PatchableFinishScaDeviceRegistrationRequest:
+      type: object
+      properties:
+        sdkOutput:
+          type: string
+          description: A base64-encoded block with the data required to register the
+            SCA device. You obtain this information by using Adyen's authentication
+            SDK.
+          maxLength: 10000
+          minLength: 0
+    FinishScaDeviceRegistrationResponse:
+      type: object
+      properties:
+        scaDevice:
+          $ref: '#/components/schemas/ScaDevice'
+    ScaEntity:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The unique identifier of the entity.
+          example: AH9999Z99Z999999ZZZZ9999Z
+          maxLength: 100
+          minLength: 0
+        type:
+          $ref: '#/components/schemas/ScaEntityType'
+          description: "The type of the entity that you are associating with the SCA\
+            \ device. \n\nPossible values: **accountHolder** or **paymentInstrument**."
+          example: accountHolder
+      required:
+      - id
+      - type
+    SubmitScaAssociationRequest:
+      type: object
+      properties:
+        entities:
+          type: array
+          description: The list of entities to be associated.
+          items:
+            $ref: '#/components/schemas/ScaEntity'
+          maxItems: 5
+          minItems: 0
+      required:
+      - entities
+    SubmitScaAssociationResponse:
+      type: object
+      properties:
+        scaAssociations:
+          type: array
+          description: List of associations created to the entities and their statuses.
+          items:
+            $ref: '#/components/schemas/Association'
+          minItems: 1
+      required:
+      - scaAssociations
     ApproveTransferLimitRequest:
       type: object
       properties:
