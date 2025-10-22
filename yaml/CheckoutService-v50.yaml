@@ -1067,8 +1067,6 @@ paths:
                 $ref: '#/components/examples/post-payments-oneclick-direct'
               oneclick-securedfields:
                 $ref: '#/components/examples/post-payments-oneclick-securedfields'
-              recurring:
-                $ref: '#/components/examples/post-payments-recurring'
               split-balanceplatform:
                 $ref: '#/components/examples/post-payments-split-balanceplatform'
               split-classic:
@@ -4881,6 +4879,11 @@ components:
     CardDetails:
       additionalProperties: false
       properties:
+        billingSequenceNumber:
+          description: The sequence number for the debit. For example, send **2**
+            if this is the second debit for the subscription. The sequence number
+            is included in the notification sent to the shopper.
+          type: string
         brand:
           description: 'Secondary brand of the card. For example: **plastix**, **hmclub**.'
           type: string
@@ -5060,6 +5063,11 @@ components:
     CardDonations:
       additionalProperties: false
       properties:
+        billingSequenceNumber:
+          description: The sequence number for the debit. For example, send **2**
+            if this is the second debit for the subscription. The sequence number
+            is included in the notification sent to the shopper.
+          type: string
         brand:
           description: 'Secondary brand of the card. For example: **plastix**, **hmclub**.'
           type: string
@@ -5327,11 +5335,17 @@ components:
         accountNumber:
           description: The account number of the bank transfer.
           type: string
+        bankCode:
+          description: The bank code of the bank transfer.
+          type: string
         beneficiary:
           description: The name of the account holder.
           type: string
         bic:
           description: The BIC of the IBAN.
+          type: string
+        branchCode:
+          description: The branch code of the bank transfer.
           type: string
         downloadUrl:
           description: The url to download payment details with.
@@ -6242,7 +6256,16 @@ components:
           maxLength: 80
           type: string
         paymentMethod:
-          description: The type and required details of a payment method to use.
+          description: 'The type and required details of a payment method to use.
+
+
+            When `donationToken` is provided, the payment method is derived from the
+            token and this field becomes optional.
+
+
+            If you are [PCI compliant](https://docs.adyen.com/development-resources/pci-dss-compliance-guide),
+            and make donations using raw card details, you must explicitly provide
+            the payment method details.'
           oneOf:
           - $ref: '#/components/schemas/ApplePayDonations'
           - $ref: '#/components/schemas/CardDonations'
@@ -6450,7 +6473,6 @@ components:
           description: Set to true if the payment should be routed to a trusted MID.
           type: boolean
       required:
-      - paymentMethod
       - returnUrl
       - merchantAccount
       - reference
@@ -6884,6 +6906,7 @@ components:
           - eps
           - onlineBanking_SK
           - onlineBanking_CZ
+          - onlinebanking_IN
           type: string
       required:
       - type
@@ -8165,7 +8188,6 @@ components:
           - omannet
           - gopay_wallet
           - kcp_naverpay
-          - onlinebanking_IN
           - fawry
           - atome
           - moneybookers
@@ -12590,6 +12612,19 @@ components:
           type: string
         openid:
           type: string
+        recurringDetailReference:
+          deprecated: true
+          x-deprecatedInVersion: '49'
+          x-deprecatedMessage: Use `storedPaymentMethodId` instead.
+          description: This is the `recurringDetailReference` returned in the response
+            when you created the token.
+          type: string
+        storedPaymentMethodId:
+          x-addedInVersion: '49'
+          description: This is the `recurringDetailReference` returned in the response
+            when you created the token.
+          maxLength: 64
+          type: string
         type:
           default: wechatpayMiniProgram
           description: '**wechatpayMiniProgram**'
@@ -15198,7 +15233,8 @@ components:
         details:
           redirectResult: X6XtfGC3!Y...
     post-payments-enableOneClick-SF:
-      summary: Tokenize card details for one-off payments, using encrypted card details
+      summary: Tokenize card details for one-click payments, using encrypted card
+        details
       value:
         amount:
           currency: USD
@@ -15212,9 +15248,12 @@ components:
           encryptedSecurityCode: adyenjs_0_1_18$MT6ppy0FAMVMLH...
         shopperReference: YOUR_SHOPPER_REFERENCE
         returnUrl: https://your-company.example.com/...
+        shopperInteraction: Ecommerce
+        recurringProcessingModel: CardOnFile
+        storePaymentMethod: true
         merchantAccount: YOUR_MERCHANT_ACCOUNT
     post-payments-enableOneClick-raw:
-      summary: Tokenize card details for one-off payments
+      summary: Tokenize card details for one-click payments
       value:
         amount:
           currency: USD
@@ -15234,7 +15273,7 @@ components:
         returnUrl: https://your-company.example.com/...
         merchantAccount: YOUR_MERCHANT_ACCOUNT
     post-payments-enableOneClick-raw-200:
-      summary: Card details tokenized for one-off payments
+      summary: Card details tokenized for one-click payments
       value:
         additionalData:
           cvcResult: 1 Matches
@@ -15335,7 +15374,7 @@ components:
           productUrl: URL_TO_PURCHASED_ITEM
           imageUrl: URL_TO_PICTURE_OF_PURCHASED_ITEM
     post-payments-oneclick-direct:
-      summary: Make a one-off payment with a token and CVV
+      summary: Make a one-click payment with a token and CVV
       value:
         amount:
           currency: USD
@@ -15349,7 +15388,8 @@ components:
         returnUrl: https://your-company.example.com/...
         merchantAccount: YOUR_MERCHANT_ACCOUNT
     post-payments-oneclick-securedfields:
-      summary: Make a one-off payment with a token and CVV, using encrypted card details
+      summary: Make a one-click payment with a token and CVV, using encrypted card
+        details
       value:
         amount:
           currency: USD
@@ -15551,21 +15591,6 @@ components:
         reference: YOUR_UNIQUE_REFERENCE
         pspReference: 993617894906488A
         status: received
-    post-payments-recurring:
-      summary: Make a card payment with a token
-      value:
-        amount:
-          currency: USD
-          value: 1000
-        reference: Your order number
-        paymentMethod:
-          type: scheme
-          storedPaymentMethodId: '8316038796685850'
-        shopperReference: YOUR_UNIQUE_SHOPPER_ID_IOfW3subscription
-        returnUrl: https://your-company.example.com/...
-        merchantAccount: YOUR_MERCHANT_ACCOUNT
-        shopperInteraction: ContAuth
-        recurringProcessingModel: Subscription
     post-payments-split-balanceplatform:
       summary: Split a payment between balance accounts
       value:
