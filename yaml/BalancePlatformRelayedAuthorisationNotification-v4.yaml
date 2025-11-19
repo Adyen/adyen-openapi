@@ -1,6 +1,4 @@
 openapi: 3.1.0
-servers:
-- url: https://balanceplatform-api-test.adyen.com/btl/v4
 info:
   version: '4'
   x-publicVersion: true
@@ -90,12 +88,13 @@ components:
       additionalProperties: false
       properties:
         currency:
-          description: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes#currency-codes).
+          description: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes#currency-codes)
+            of the amount.
           maxLength: 3
           minLength: 3
           type: string
         value:
-          description: The amount of the transaction, in [minor units](https://docs.adyen.com/development-resources/currency-codes#minor-units).
+          description: The numeric value of the amount, in [minor units](https://docs.adyen.com/development-resources/currency-codes#minor-units).
           format: int64
           type: integer
       required:
@@ -300,6 +299,11 @@ components:
         mobile:
           description: The full telephone number.
           type: string
+        name:
+          x-addedInVersion: '2'
+          description: "The recipient\u2019s name (person or contact), for example\
+            \ \u2018John Doe\u2019."
+          type: string
         postalCode:
           description: 'The postal code.
 
@@ -353,9 +357,18 @@ components:
           maxLength: 26
           type: string
         configuration:
-          description: "Settings required when creating a physical or a virtual card.\
-            \ \n\nReach out to your Adyen contact to get the values that you can send\
-            \ in this object."
+          description: 'Contains information about the configuration profile for your
+            cards. The configuration profile consists of settings required when creating
+            a physical or a virtual card. You identify a configuration profile with
+            its `configurationProfileId`.
+
+
+            When you provide this field in a request, you can override the settings
+            of an existing configuration profile.
+
+
+            Reach out to your Adyen contact to get the values that you can send in
+            this object.'
           $ref: '#/components/schemas/CardConfiguration'
         cvc:
           description: 'The CVC2 value of the card.
@@ -408,15 +421,17 @@ components:
       - cardholderName
       - brand
       - brandVariant
-      - number
       type: object
     CardConfiguration:
       additionalProperties: false
       properties:
         activation:
-          description: Overrides the activation label design ID defined in the `configurationProfileId`.
-            The activation label is attached to the card and contains the activation
-            instructions.
+          description: 'The activation label attached to the card that contains the
+            activation instructions.
+
+
+            This field overrides the activation label design ID defined in the card
+            configuration profile.'
           type: string
         activationUrl:
           description: "Your app's URL, if you want to activate cards through your\
@@ -427,60 +442,80 @@ components:
           maxLength: 255
           type: string
         bulkAddress:
-          description: Overrides the shipment bulk address defined in the `configurationProfileId`.
+          description: Overrides the shipment bulk address defined in the card configuration
+            profile.
           $ref: '#/components/schemas/BulkAddress'
         cardImageId:
-          description: The ID of the card image. This is the image that will be printed
+          description: The unique identifier of the card image. This image is printed
             on the full front of the card.
           type: string
         carrier:
-          description: Overrides the carrier design ID defined in the `configurationProfileId`.
-            The carrier is the letter or packaging to which the card is attached.
+          description: 'The letter or packaging to which the card is attached.
+
+
+            This field overrides the carrier design ID defined in the card configuration
+            profile. '
           type: string
         carrierImageId:
-          description: The ID of the carrier image. This is the image that will printed
+          description: The unique identifier of the carrier image. This image is printed
             on the letter to which the card is attached.
           type: string
         configurationProfileId:
-          description: 'The ID of the card configuration profile that contains the
-            settings of the card. For example, the envelope and PIN mailer designs
-            or the logistics company handling the shipment. All the settings in the
-            profile are applied to the card, unless you provide other fields to override
-            them.
+          description: 'The unique identifier of the card configuration profile that
+            contains the settings that are applied to the card. For example, the envelope
+            and PIN mailer designs or the logistics company handling the shipment.
 
 
-            For example, send the `shipmentMethod` to override the logistics company
-            defined in the card configuration profile.'
+            You can override some of the existing settings in the configuration profile
+            by providing the corresponding fields in the `configuration` object. For
+            example, send the `shipmentMethod` to override the logistics company defined
+            in the card configuration profile.'
           type: string
         currency:
-          description: The three-letter [ISO-4217](https://en.wikipedia.org/wiki/ISO_4217)
+          description: 'The three-letter [ISO-4217](https://en.wikipedia.org/wiki/ISO_4217)
             currency code of the card. For example, **EUR**.
+
+
+            This field overrides the existing currency setting on the card configuration
+            profile.'
           type: string
         envelope:
-          description: 'Overrides the envelope design ID defined in the `configurationProfileId`. '
+          description: 'Overrides the envelope design ID defined in the card configuration
+            profile. '
           type: string
         insert:
-          description: Overrides the insert design ID defined in the `configurationProfileId`.
-            An insert is any additional material, such as marketing materials, that
-            are shipped together with the card.
+          description: 'Any additional material, such as marketing material, that
+            is shipped together with the card.
+
+
+            This field overrides the insert design ID defined in the card configuration
+            profile.'
           type: string
         languages:
           x-addedInVersion: '3'
-          description: List of two-letter [ISO-639-1](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)
+          description: A list of two-letter [ISO-639-1](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)
             language codes of the card. For example, **[en,es]**.
           items:
             type: string
           type: array
         logoImageId:
-          description: The ID of the logo image. This is the image that will be printed
-            on the partial front of the card, such as a logo on the upper right corner.
+          description: The unique identifier of the logo image. This image is printed
+            on the partial front of the card, for example, a logo on the upper right
+            corner.
           type: string
         pinMailer:
-          description: Overrides the PIN mailer design ID defined in the `configurationProfileId`.
-            The PIN mailer is the letter on which the PIN is printed.
+          description: 'The letter on which the PIN of the card is printed.
+
+
+            This field overrides the PIN mailer design ID defined in the card configuration
+            profile.'
           type: string
         shipmentMethod:
-          description: Overrides the logistics company defined in the `configurationProfileId`.
+          description: 'The logistics company that ships the card.
+
+
+            This field overrides the logistics company defined in the card configuration
+            profile.'
           type: string
       required:
       - configurationProfileId
@@ -818,6 +853,13 @@ components:
           description: 'The entry mode of the information of the payment instrument.
             For example: **contactless**, **chip**, **magstripe**.'
           type: string
+        environment:
+          description: 'The environment from which the webhook originated.
+
+            Possible values: **test**, **live**.
+
+            '
+          type: string
         id:
           description: The unique identifier of the transfer.
           type: string
@@ -860,6 +902,11 @@ components:
         transactionRulesResult:
           description: Contains the results of the evaluation of the transaction rules.
           $ref: '#/components/schemas/TransactionRulesResult'
+        type:
+          description: Type of notification.
+          enum:
+          - balancePlatform.authorisation.relayed
+          type: string
         validationResult:
           description: Contains the checks that Adyen performed to validate the payment
             and the result of each.
