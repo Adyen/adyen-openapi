@@ -20,10 +20,80 @@ info:
     name: Adyen Developer Experience team
     url: https://github.com/Adyen/adyen-openapi
   version: '1'
-  x-timestamp: '2025-08-13T18:46:52Z'
+  x-timestamp: '2025-12-02T14:58:18Z'
 tags:
 - name: Balances
 webhooks:
+  balancePlatform.balanceAccount.balance.block.released:
+    post:
+      tags:
+      - Balances
+      summary: Blocked funds released
+      description: 'Adyen sends this webhook when funds that were previously blocked
+        are released, making them available. Funds may be blocked for reasons such
+        as:
+
+
+        **Collateral for payments**: Funds are held to secure loans or payments, and
+        are released upon repayment.
+
+
+        **Risk mitigation**: Funds are held to cover potential risks like chargebacks,
+        and are released after a set period, such as a return window.
+
+
+        '
+      operationId: post-balancePlatform.balanceAccount.balance.block.released
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReleasedBlockedBalanceNotificationRequest'
+            examples:
+              released-block-balance:
+                summary: Funds released
+                description: Funds that were previously blocked are released.
+                value:
+                  data:
+                    accountHolder:
+                      description: Account holder for retail operations
+                      id: AH00000000000000000001
+                      reference: Store_001
+                    amount:
+                      currency: EUR
+                      value: 25000
+                    balanceAccount:
+                      description: Main operating account
+                      id: BA00000000000000000001
+                      reference: OP_ACCT_MAIN
+                    balancePlatform: YOUR_BALANCE_PLATFORM
+                    batchReference: BATCH_REF_20250925
+                    blockedBalanceAfter:
+                      currency: EUR
+                      value: -75000
+                    blockedBalanceBefore:
+                      currency: EUR
+                      value: -100000
+                    creationDate: '2025-09-25T14:30:00Z'
+                    valueDate: '2025-09-25T14:35:00Z'
+                  environment: test
+                  timestamp: '2025-09-25T14:35:00Z'
+                  type: balancePlatform.balanceAccount.balance.block.released
+      responses:
+        '200':
+          description: OK - the request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BalancePlatformNotificationResponse'
+              examples:
+                released-block-balance:
+                  summary: Acknowledge webhook
+                  description: Acknowledge webhook
+                  value:
+                    notificationResponse: '[accepted]'
+      x-methodName: releasedBlockBalance
+      x-sortIndex: 0
   balanceAccount.balance.updated:
     post:
       tags:
@@ -158,6 +228,100 @@ components:
           type: integer
           description: The balance currently held in reserve.
           format: int64
+    Amount:
+      required:
+      - currency
+      - value
+      type: object
+      properties:
+        currency:
+          type: string
+          description: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes#currency-codes)
+            of the amount.
+        value:
+          type: integer
+          description: The numeric value of the amount, in [minor units](https://docs.adyen.com/development-resources/currency-codes#minor-units).
+          format: int64
+    ReleaseBlockedBalanceNotificationData:
+      required:
+      - accountHolder
+      - amount
+      - balanceAccount
+      type: object
+      properties:
+        accountHolder:
+          description: Contains information about the account holder associated with
+            the `balanceAccount`.
+          $ref: '#/components/schemas/ResourceReference'
+        amount:
+          description: The amount released.
+          $ref: '#/components/schemas/Amount'
+        balanceAccount:
+          description: Contains information about the associated balance account.
+          $ref: '#/components/schemas/ResourceReference'
+        balancePlatform:
+          type: string
+          description: The unique identifier of the balance platform.
+        batchReference:
+          type: string
+          description: The reference of the batch that was released.
+        blockedBalanceAfter:
+          description: The new blocked balance after the funds were released.
+          $ref: '#/components/schemas/Amount'
+        blockedBalanceBefore:
+          description: The blocked balance before the funds were released.
+          $ref: '#/components/schemas/Amount'
+        creationDate:
+          type: string
+          description: The date and time when the event was triggered, in ISO 8601
+            extended format. For example, **2025-03-19T10:15:30+01:00**.
+          format: date-time
+        id:
+          type: string
+          description: The ID of the resource.
+          readOnly: true
+        valueDate:
+          type: string
+          description: The date and time when the amount was released, in ISO 8601
+            extended format. For example, **2025-03-19T10:15:30+01:00**.
+          format: date-time
+    ReleasedBlockedBalanceNotificationRequest:
+      required:
+      - data
+      - environment
+      - type
+      type: object
+      properties:
+        data:
+          description: Contains event details.
+          $ref: '#/components/schemas/ReleaseBlockedBalanceNotificationData'
+        environment:
+          type: string
+          description: 'The environment from which the webhook originated.
+
+
+            Possible values: **test**, **live**.'
+        timestamp:
+          type: string
+          description: When the event was queued.
+          format: date-time
+        type:
+          type: string
+          description: Type of webhook.
+          enum:
+          - balancePlatform.balanceAccount.balance.block.released
+    ResourceReference:
+      type: object
+      properties:
+        description:
+          type: string
+          description: The description of the resource.
+        id:
+          type: string
+          description: The unique identifier of the resource.
+        reference:
+          type: string
+          description: The reference for the resource.
   securitySchemes:
     ApiKeyAuth:
       type: apiKey
