@@ -10134,12 +10134,13 @@ components:
       additionalProperties: false
       properties:
         currency:
-          description: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes#currency-codes).
+          description: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes#currency-codes)
+            of the amount.
           maxLength: 3
           minLength: 3
           type: string
         value:
-          description: The amount of the transaction, in [minor units](https://docs.adyen.com/development-resources/currency-codes#minor-units).
+          description: The numeric value of the amount, in [minor units](https://docs.adyen.com/development-resources/currency-codes#minor-units).
           format: int64
           type: integer
       required:
@@ -11690,6 +11691,30 @@ components:
             > You cannot configure the transaction description in the test environment.'
           $ref: '#/components/schemas/TransactionDescriptionInfo'
       type: object
+    GivexInfo:
+      additionalProperties: false
+      properties:
+        currencyCode:
+          description: The three-character ISO currency code, such as **EUR**.
+          type: string
+        password:
+          description: The password provided by the acquirer.
+          type: string
+        paymentFlow:
+          description: The sales channel used for the payment.
+          enum:
+          - Ecommerce
+          - POS
+          type: string
+        username:
+          description: The username provided by the acquirer.
+          type: string
+      required:
+      - password
+      - username
+      - currencyCode
+      - paymentFlow
+      type: object
     GooglePayInfo:
       additionalProperties: false
       properties:
@@ -12367,6 +12392,23 @@ components:
           description: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).
           type: string
       type: object
+    Moto:
+      additionalProperties: false
+      properties:
+        enableMoto:
+          description: Enable MOTO transactions.
+          type: boolean
+        enableRefunds:
+          description: Enable MOTO refunds.
+          type: boolean
+        maxAmount:
+          description: The maximum amount for MOTO transactions. You need to set the
+            currency for this amount using the [`standalone.currencyCode`](https://docs.adyen.com/api-explorer/Management/1/patch/companies/(companyId)/terminalSettings#request-standalone-currencyCode)
+            parameter. Do not enable standalone, unless you are using a standalone
+            solution.
+          format: int32
+          type: integer
+      type: object
     Name:
       additionalProperties: false
       properties:
@@ -12772,6 +12814,9 @@ components:
         girocard:
           description: Girocard details.
           $ref: '#/components/schemas/GenericPmWithTdiInfo'
+        givex:
+          description: Givex details.
+          $ref: '#/components/schemas/GivexInfo'
         googlePay:
           description: Google Pay details.
           $ref: '#/components/schemas/GooglePayInfo'
@@ -12851,7 +12896,7 @@ components:
             if any.
           type: string
         svs:
-          description: Svs details.
+          description: SVS details.
           $ref: '#/components/schemas/SvsInfo'
         swish:
           description: "Swish details.\n - This field is required only if you have\
@@ -12869,9 +12914,9 @@ components:
         type:
           description: Payment method [variant](https://docs.adyen.com/development-resources/paymentmethodvariant#management-api).
           type: string
-        valueLink:
-          description: ValueLink details.
-          $ref: '#/components/schemas/ValueLinkInfo'
+        valuelink:
+          description: Valuelink details.
+          $ref: '#/components/schemas/ValuelinkInfo'
         verificationStatus:
           description: 'Payment method status. Possible values:
 
@@ -12977,6 +13022,7 @@ components:
             - elocredit
             - elodebit
             - girocard
+            - givex
             - googlepay
             - green_card
             - green_card_credit
@@ -13046,7 +13092,7 @@ components:
             - up_brazil_prepaid
             - vale_refeicao
             - vale_refeicao_prepaid
-            - valueLink
+            - valuelink
             - vegas_card
             - vegas_card_credit
             - vegas_card_debit
@@ -13142,6 +13188,9 @@ components:
         girocard:
           description: Girocard details.
           $ref: '#/components/schemas/GenericPmWithTdiInfo'
+        givex:
+          description: Givex details.
+          $ref: '#/components/schemas/GivexInfo'
         googlePay:
           description: Google Pay details.
           $ref: '#/components/schemas/GooglePayInfo'
@@ -13228,7 +13277,7 @@ components:
             if any.
           type: string
         svs:
-          description: Svs details.
+          description: SVS details.
           $ref: '#/components/schemas/SvsInfo'
         swish:
           description: "Swish details.\n - This field is required only if you have\
@@ -13296,6 +13345,7 @@ components:
           - elocredit
           - elodebit
           - girocard
+          - givex
           - googlepay
           - green_card
           - green_card_credit
@@ -13365,7 +13415,7 @@ components:
           - up_brazil_prepaid
           - vale_refeicao
           - vale_refeicao_prepaid
-          - valueLink
+          - valuelink
           - vegas_card
           - vegas_card_credit
           - vegas_card_debit
@@ -13380,9 +13430,9 @@ components:
           - wechatpay
           - wechatpay_pos
           type: string
-        valueLink:
-          description: ValueLink details.
-          $ref: '#/components/schemas/ValueLinkInfo'
+        valuelink:
+          description: Valuelink details.
+          $ref: '#/components/schemas/ValuelinkInfo'
         vipps:
           description: Vipps details.
           $ref: '#/components/schemas/VippsInfo'
@@ -14303,18 +14353,18 @@ components:
 
             Possible values:
 
-            * **Ecommerce**: online transactions where the cardholder is present.
+            * **Ecommerce**: Online transactions where the cardholder is present.
 
-            * **ContAuth**: card on file and/or subscription transactions, where the
+            * **ContAuth**: Card on file and/or subscription transactions, where the
             cardholder is known to the merchant (returning customer).
 
-            * **Moto**: mail-order and telephone-order transactions where the customer
+            * **Moto**: Mail-order and telephone-order transactions where the customer
             is in contact with the merchant via email or telephone.
 
-            * **POS**: point-of-sale transactions where the customer is physically
+            * **POS**: Point-of-sale transactions where the customer is physically
             present to make a payment using a secure payment terminal.
 
-            * **ANY**: all sales channels.'
+            * **ANY**: All sales channels.'
           enum:
           - Ecommerce
           - ContAuth
@@ -14633,10 +14683,10 @@ components:
       additionalProperties: false
       properties:
         authorisationMid:
-          description: Authorisation Mid
+          description: The merchant ID (MID) that the acquirer recognizes you by.
           type: string
         currencyCode:
-          description: CurrencyCode
+          description: The three-character ISO currency code, example **USD**
           type: string
       required:
       - authorisationMid
@@ -14932,6 +14982,10 @@ components:
           description: Settings for localization.
           nullable: true
           $ref: '#/components/schemas/Localization'
+        moto:
+          description: Settings for Mail Order/Telephone Order transactions.
+          nullable: true
+          $ref: '#/components/schemas/Moto'
         nexo:
           description: Settings for a Terminal API integration.
           nullable: true
@@ -15951,18 +16005,18 @@ components:
 
             Possible values:
 
-            * **Ecommerce**: online transactions where the cardholder is present.
+            * **Ecommerce**: Online transactions where the cardholder is present.
 
-            * **ContAuth**: card on file and/or subscription transactions, where the
+            * **ContAuth**: Card on file and/or subscription transactions, where the
             cardholder is known to the merchant (returning customer).
 
-            * **Moto**: mail-order and telephone-order transactions where the customer
+            * **Moto**: Mail-order and telephone-order transactions where the customer
             is in contact with the merchant via email or telephone.
 
-            * **POS**: point-of-sale transactions where the customer is physically
+            * **POS**: Point-of-sale transactions where the customer is physically
             present to make a payment using a secure payment terminal.
 
-            * **ANY**: all sales channels.'
+            * **ANY**: All sales channels.'
           type: string
       required:
       - paymentMethod
@@ -16077,7 +16131,7 @@ components:
       - username
       - roles
       type: object
-    ValueLinkInfo:
+    ValuelinkInfo:
       additionalProperties: false
       properties:
         authorisationMid:
