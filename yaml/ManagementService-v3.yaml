@@ -5048,8 +5048,9 @@ paths:
       - Payment methods - merchant level
       summary: Request a payment method
       description: "Sends a request to add a new payment method to the merchant account\
-        \ identified in the path.\n\nTo make this request, your API credential must\
-        \ have the following [role](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
+        \ identified in the path.\nDepending the payment method [`type`](https://docs.adyen.com/api-explorer/Management/latest/post/merchants/_merchantId_/paymentMethodSettings#request-type),\
+        \ you may need to send an additional object required for the payment method.\n\
+        \nTo make this request, your API credential must have the following [role](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
         * Management API\u2014Payment methods read and write\n"
       operationId: post-merchants-merchantId-paymentMethodSettings
       x-sortIndex: 1
@@ -5204,8 +5205,9 @@ paths:
       - Payment methods - merchant level
       summary: Update a payment method
       description: "Updates payment method details for the merchant account and the\
-        \ payment method identified in the path.\n\nTo make this request, your API\
-        \ credential must have the following [role](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
+        \ payment method identified in the path.\nDepending the payment method [`type`](https://docs.adyen.com/api-explorer/Management/latest/patch/merchants/_merchantId_/paymentMethodSettings#request-type),\
+        \ you may need to send an additional object required for the payment method.\n\
+        \nTo make this request, your API credential must have the following [role](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
         * Management API\u2014Payment methods read and write\n"
       operationId: patch-merchants-merchantId-paymentMethodSettings-paymentMethodId
       x-sortIndex: 4
@@ -11946,6 +11948,16 @@ components:
       - name
       - data
       type: object
+    ForceRebootDetails:
+      additionalProperties: false
+      properties:
+        type:
+          default: ForceReboot
+          description: 'Type of terminal action: Force Reboot.'
+          enum:
+          - ForceReboot
+          type: string
+      type: object
     GenerateApiKeyResponse:
       additionalProperties: false
       properties:
@@ -12685,9 +12697,6 @@ components:
         enableMoto:
           description: Enable MOTO transactions.
           type: boolean
-        enableRefunds:
-          description: Enable MOTO refunds.
-          type: boolean
         maxAmount:
           description: The maximum amount for MOTO transactions. You need to set the
             currency for this amount using the [`standalone.currencyCode`](https://docs.adyen.com/api-explorer/Management/1/patch/companies/(companyId)/terminalSettings#request-standalone-currencyCode)
@@ -13021,39 +13030,39 @@ components:
       additionalProperties: false
       properties:
         accel:
-          description: ACCEL details.
+          description: Details to provide if `type` is **accel**.
           $ref: '#/components/schemas/AccelInfo'
         affirm:
-          description: Affirm details.
+          description: Details to provide if `type` is **affirm**.
           $ref: '#/components/schemas/AffirmInfo'
         afterpayTouch:
-          description: Afterpay Touch details.
+          description: Details to provide if `type` is **afterpaytouch**.
           $ref: '#/components/schemas/AfterpayTouchInfo'
         alipayPlus:
-          description: AlipayPlus details.
+          description: Details to provide if `type` is **alipay_plus**.
           $ref: '#/components/schemas/AlipayPlusInfo'
         allowed:
           description: Indicates whether receiving payments is allowed. This value
             is set to **true** by Adyen after screening your merchant account.
           type: boolean
         amex:
-          description: Amex details.
+          description: Details to provide if `type` is **amex**.
           $ref: '#/components/schemas/AmexInfo'
         applePay:
-          description: Apple Pay details.
+          description: Details to provide if `type` is **applepay**.
           $ref: '#/components/schemas/ApplePayInfo'
         bcmc:
-          description: Bancontact details.
+          description: Details to provide if `type` is **bcmc** (Bancontact).
           $ref: '#/components/schemas/BcmcInfo'
         businessLineId:
           description: The unique identifier of the business line. Required if you
             are a [platform model](https://docs.adyen.com/platforms).
           type: string
         cartesBancaires:
-          description: Cartes Bancaires details.
+          description: Details to provide if `type` is **cartesbancaire**.
           $ref: '#/components/schemas/CartesBancairesInfo'
         clearpay:
-          description: Clearpay details.
+          description: Details to provide if `type` is **clearpay**.
           $ref: '#/components/schemas/ClearpayInfo'
         countries:
           description: The list of countries where a payment method is available.
@@ -13062,7 +13071,7 @@ components:
             type: string
           type: array
         cup:
-          description: China Union Pay details.
+          description: Details to provide if `type` is **cup** (China Union Pay).
           $ref: '#/components/schemas/GenericPmWithTdiInfo'
         currencies:
           description: The list of currencies that a payment method supports. By default,
@@ -13077,47 +13086,50 @@ components:
             type: string
           type: array
         diners:
-          description: Diners details. For merchants operating in Japan, Diners payments
-            are processed through the JCB network. This means that you must include
-            [JCB-specific fields](https://docs.adyen.com/api-explorer/Management/latest/post/merchants/(merchantId)/paymentMethodSettings/(paymentMethodId)#request-jcb)
-            in this object.
+          description: 'Details to provide if `type` is **diners**.
+
+            For merchants operating in Japan, Diners payments are processed through
+            the JCB network. This means that you must include [JCB-specific fields](https://docs.adyen.com/api-explorer/Management/latest/post/merchants/(merchantId)/paymentMethodSettings/(paymentMethodId)#request-jcb)
+            in this object.'
           $ref: '#/components/schemas/DinersInfo'
         discover:
-          description: Discover details. For merchants operating in Japan, request
-            [Diners](https://docs.adyen.com/api-explorer/Management/latest/post/merchants/(merchantId)/paymentMethodSettings/(paymentMethodId)#request-diners)
+          description: 'Details to provide if `type` is **discover**.
+
+            For merchants operating in Japan, request [Diners](https://docs.adyen.com/api-explorer/Management/latest/post/merchants/(merchantId)/paymentMethodSettings/(paymentMethodId)#request-diners)
             payment method instead. Discover is automatically requested, together
-            with Diners.
+            with Diners.'
           $ref: '#/components/schemas/GenericPmWithTdiInfo'
         eft_directdebit_CA:
-          description: EFT PAD details.
+          description: Details to provide if `type` is **eft_directdebit_CA** (EFT
+            PAD).
           $ref: '#/components/schemas/GenericPmWithTdiInfo'
         eftpos_australia:
-          description: Eftpos Australia details.
+          description: Details to provide if `type` is **eftpos_australia**.
           $ref: '#/components/schemas/GenericPmWithTdiInfo'
         enabled:
           description: Indicates whether the payment method is enabled (**true**)
             or disabled (**false**).
           type: boolean
         girocard:
-          description: Girocard details.
+          description: Details to provide if `type` is **girocard**.
           $ref: '#/components/schemas/GenericPmWithTdiInfo'
         givex:
-          description: Givex details.
+          description: Details to provide if `type` is **givex**.
           $ref: '#/components/schemas/GivexInfo'
         googlePay:
-          description: Google Pay details.
+          description: Details to provide if `type` is **googlepay**.
           $ref: '#/components/schemas/GooglePayInfo'
         id:
           description: The identifier of the resource.
           type: string
         ideal:
-          description: iDeal details.
+          description: Details to provide if `type` is **ideal**.
           $ref: '#/components/schemas/GenericPmWithTdiInfo'
         interac_card:
-          description: Interac Card details.
+          description: Details to provide if `type` is **interac_card**.
           $ref: '#/components/schemas/GenericPmWithTdiInfo'
         jcb:
-          description: 'JCB details.
+          description: 'Details to provide if `type` is **jcb**.
 
             For merchants operating in Japan, `midNumber`, `reuseMidNumber`, and `serviceLevel`
             fields are required.
@@ -13125,38 +13137,41 @@ components:
             For merchants operating outside of Japan, these fields are not required.'
           $ref: '#/components/schemas/JCBInfo'
         klarna:
-          description: Klarna details.
+          description: Details to provide if `type` is **klarna**.
           $ref: '#/components/schemas/KlarnaInfo'
         maestro:
-          description: 'Maestro details. In the US, `maestro` is not supported; use
-            `maestro_usa` instead. '
+          description: 'Details to provide if `type` is **maestro**.
+
+            In the US, `maestro` is not supported; use `maestro_usa` instead. '
           $ref: '#/components/schemas/GenericPmWithTdiInfo'
         maestro_usa:
-          description: Maestro USA details. Only for Maestro USA, for global use `maestro`.
+          description: 'Details to provide if `type` is **maestro_usa**.
+
+            Only for Maestro USA, otherwise use `maestro`.'
           $ref: '#/components/schemas/GenericPmWithTdiInfo'
         mc:
-          description: MasterCard details.
+          description: Details to provide if `type` is **mc**.
           $ref: '#/components/schemas/GenericPmWithTdiInfo'
         mealVoucher_FR:
-          description: Meal Voucher FR details.
+          description: Details to provide if `type` is **mealVoucher_FR**.
           $ref: '#/components/schemas/MealVoucherFRInfo'
         nyce:
-          description: NYCE details.
+          description: Details to provide if `type` is **nyce**.
           $ref: '#/components/schemas/NyceInfo'
         paybybank_plaid:
-          description: PayByBank Plaid details.
+          description: Details to provide if `type` is **paybybank_plaid**.
           $ref: '#/components/schemas/PayByBankPlaidInfo'
         payme:
-          description: PayMe details.
+          description: Details to provide if `type` is **payme**.
           $ref: '#/components/schemas/PayMeInfo'
         paypal:
-          description: PayPal details.
+          description: Details to provide if `type` is **paypal**.
           $ref: '#/components/schemas/PayPalInfo'
         payto:
-          description: PayTo details.
+          description: Details to provide if `type` is **payto**.
           $ref: '#/components/schemas/PayToInfo'
         pulse:
-          description: PULSE details.
+          description: Details to provide if `type` is **pulse**.
           $ref: '#/components/schemas/PulseInfo'
         reference:
           description: Your reference for the payment method. Supported characters
@@ -13164,19 +13179,21 @@ components:
           maxLength: 150
           type: string
         sepadirectdebit:
-          description: Sepa Direct Debit details.
+          description: Details to provide if `type` is **sepadirectdebit**.
           $ref: '#/components/schemas/SepaDirectDebitInfo'
         shopperInteraction:
           description: The sales channel.
           type: string
         sodexo:
-          description: Sodexo details.
+          description: Details to provide if `type` is **sodexo**.
           $ref: '#/components/schemas/SodexoInfo'
         sofort:
+          deprecated: true
+          x-deprecatedInVersion: '1'
           description: Sofort details.
           $ref: '#/components/schemas/SofortInfo'
         star:
-          description: STAR details.
+          description: Details to provide if `type` is **star**.
           $ref: '#/components/schemas/StarInfo'
         storeIds:
           x-addedInVersion: '3'
@@ -13186,26 +13203,26 @@ components:
             type: string
           type: array
         svs:
-          description: SVS details.
+          description: Details to provide if `type` is **svs**.
           $ref: '#/components/schemas/SvsInfo'
         swish:
-          description: "Swish details.\n - This field is required only if you have\
-            \ a contract with Swish. Swish handles settlement directly with you (not\
-            \ through Adyen).\n - If not specified then it's assumed that you are\
-            \ using Adyen's contract with Swish.You don't have a direct relationship\
-            \ with Swish.\n"
+          description: "Details to provide if `type` is **swish**.\n - This field\
+            \ is required only if you have a contract with Swish. Swish handles settlement\
+            \ directly with you (not through Adyen).\n - If not specified then it's\
+            \ assumed that you are using Adyen's contract with Swish.You don't have\
+            \ a direct relationship with Swish.\n"
           $ref: '#/components/schemas/SwishInfo'
         ticket:
-          description: Edenred (Brazil) details.
+          description: Details to provide if `type` is **ticket** (Edenred Brazil).
           $ref: '#/components/schemas/TicketInfo'
         twint:
-          description: Twint details.
+          description: Details to provide if `type` is **twint**.
           $ref: '#/components/schemas/TwintInfo'
         type:
           description: Payment method [variant](https://docs.adyen.com/development-resources/paymentmethodvariant#management-api).
           type: string
         valuelink:
-          description: Valuelink details.
+          description: Details to provide if `type` is **valuelink**.
           $ref: '#/components/schemas/ValuelinkInfo'
         verificationStatus:
           description: 'Payment method status. Possible values:
@@ -13224,16 +13241,16 @@ components:
           - rejected
           type: string
         vipps:
-          description: Vipps details.
+          description: Details to provide if `type` is **vipps**.
           $ref: '#/components/schemas/VippsInfo'
         visa:
-          description: Visa details.
+          description: Details to provide if `type` is **visa**.
           $ref: '#/components/schemas/GenericPmWithTdiInfo'
         wechatpay:
-          description: WeChat Pay details.
+          description: Details to provide if `type` is **wechatpay**.
           $ref: '#/components/schemas/WeChatPayInfo'
         wechatpay_pos:
-          description: WeChat Pay POS details.
+          description: Details to provide if `type` is **wechatpay_pos**.
           $ref: '#/components/schemas/WeChatPayPosInfo'
       required:
       - id
@@ -13286,6 +13303,7 @@ components:
             - banese_card_prepaid
             - bcmc
             - blik
+            - blik_pos
             - br_schemes
             - cartebancaire
             - clearpay
@@ -13406,35 +13424,35 @@ components:
       additionalProperties: false
       properties:
         accel:
-          description: ACCEL details.
+          description: Details to provide if `type` is **accel**.
           $ref: '#/components/schemas/AccelInfo'
         affirm:
-          description: Affirm details.
+          description: Details to provide if `type` is **affirm**.
           $ref: '#/components/schemas/AffirmInfo'
         afterpayTouch:
-          description: Afterpay Touch details.
+          description: Details to provide if `type` is **afterpaytouch**.
           $ref: '#/components/schemas/AfterpayTouchInfo'
         alipayPlus:
-          description: AlipayPlus details.
+          description: Details to provide if `type` is **alipay_plus**.
           $ref: '#/components/schemas/AlipayPlusInfo'
         amex:
-          description: Amex details.
+          description: Details to provide if `type` is **amex**.
           $ref: '#/components/schemas/AmexInfo'
         applePay:
-          description: Apple Pay details.
+          description: Details to provide if `type` is **applepay**.
           $ref: '#/components/schemas/ApplePayInfo'
         bcmc:
-          description: Bancontact details.
+          description: Details to provide if `type` is **bcmc** (Bancontact).
           $ref: '#/components/schemas/BcmcInfo'
         businessLineId:
           description: The unique identifier of the business line. Required if you
             are a [platform model](https://docs.adyen.com/platforms).
           type: string
         cartesBancaires:
-          description: Cartes Bancaires details.
+          description: Details to provide if `type` is **cartesbancaire**.
           $ref: '#/components/schemas/CartesBancairesInfo'
         clearpay:
-          description: Clearpay details.
+          description: Details to provide if `type` is **clearpay**.
           $ref: '#/components/schemas/ClearpayInfo'
         countries:
           description: The list of countries where a payment method is available.
@@ -13443,7 +13461,7 @@ components:
             type: string
           type: array
         cup:
-          description: China Union Pay details.
+          description: Details to provide if `type` is **cup** (China Union Pay).
           $ref: '#/components/schemas/GenericPmWithTdiInfo'
         currencies:
           description: The list of currencies that a payment method supports. By default,
@@ -13458,40 +13476,43 @@ components:
             type: string
           type: array
         diners:
-          description: Diners details. For merchants operating in Japan, Diners payments
-            are processed through the JCB network. This means that you must include
-            [JCB-specific fields](https://docs.adyen.com/api-explorer/Management/latest/post/merchants/(merchantId)/paymentMethodSettings/(paymentMethodId)#request-jcb)
-            in this object.
+          description: 'Details to provide if `type` is **diners**.
+
+            For merchants operating in Japan, Diners payments are processed through
+            the JCB network. This means that you must include [JCB-specific fields](https://docs.adyen.com/api-explorer/Management/latest/post/merchants/(merchantId)/paymentMethodSettings/(paymentMethodId)#request-jcb)
+            in this object.'
           $ref: '#/components/schemas/DinersInfo'
         discover:
-          description: Discover details. For merchants operating in Japan, request
-            [Diners](https://docs.adyen.com/api-explorer/Management/latest/post/merchants/(merchantId)/paymentMethodSettings/(paymentMethodId)#request-diners)
+          description: 'Details to provide if `type` is **discover**.
+
+            For merchants operating in Japan, request [Diners](https://docs.adyen.com/api-explorer/Management/latest/post/merchants/(merchantId)/paymentMethodSettings/(paymentMethodId)#request-diners)
             payment method instead. Discover is automatically requested, together
-            with Diners.
+            with Diners.'
           $ref: '#/components/schemas/GenericPmWithTdiInfo'
         eft_directdebit_CA:
-          description: EFT PAD details.
+          description: Details to provide if `type` is **eft_directdebit_CA** (EFT
+            PAD).
           $ref: '#/components/schemas/GenericPmWithTdiInfo'
         eftpos_australia:
-          description: Eftpos Australia details.
+          description: Details to provide if `type` is **eftpos_australia**.
           $ref: '#/components/schemas/GenericPmWithTdiInfo'
         girocard:
-          description: Girocard details.
+          description: Details to provide if `type` is **girocard**.
           $ref: '#/components/schemas/GenericPmWithTdiInfo'
         givex:
-          description: Givex details.
+          description: Details to provide if `type` is **givex**.
           $ref: '#/components/schemas/GivexInfo'
         googlePay:
-          description: Google Pay details.
+          description: Details to provide if `type` is **googlepay**.
           $ref: '#/components/schemas/GooglePayInfo'
         ideal:
-          description: iDeal details.
+          description: Details to provide if `type` is **ideal**.
           $ref: '#/components/schemas/GenericPmWithTdiInfo'
         interac_card:
-          description: Interac Card details.
+          description: Details to provide if `type` is **interac_card**.
           $ref: '#/components/schemas/GenericPmWithTdiInfo'
         jcb:
-          description: 'JCB details.
+          description: 'Details to provide if `type` is **jcb**.
 
             For merchants operating in Japan, `midNumber`, `reuseMidNumber`, and `serviceLevel`
             fields are required.
@@ -13499,38 +13520,41 @@ components:
             For merchants operating outside of Japan, these fields are not required.'
           $ref: '#/components/schemas/JCBInfo'
         klarna:
-          description: Klarna details.
+          description: Details to provide if `type` is **klarna**.
           $ref: '#/components/schemas/KlarnaInfo'
         maestro:
-          description: 'Maestro details. In the US, `maestro` is not supported; use
-            `maestro_usa` instead. '
+          description: 'Details to provide if `type` is **maestro**.
+
+            In the US, `maestro` is not supported; use `maestro_usa` instead. '
           $ref: '#/components/schemas/GenericPmWithTdiInfo'
         maestro_usa:
-          description: Maestro USA details. Only for Maestro USA, for global use `maestro`.
+          description: 'Details to provide if `type` is **maestro_usa**.
+
+            Only for Maestro USA, otherwise use `maestro`.'
           $ref: '#/components/schemas/GenericPmWithTdiInfo'
         mc:
-          description: MasterCard details.
+          description: Details to provide if `type` is **mc**.
           $ref: '#/components/schemas/GenericPmWithTdiInfo'
         mealVoucher_FR:
-          description: Meal Voucher FR details.
+          description: Details to provide if `type` is **mealVoucher_FR**.
           $ref: '#/components/schemas/MealVoucherFRInfo'
         nyce:
-          description: NYCE details.
+          description: Details to provide if `type` is **nyce**.
           $ref: '#/components/schemas/NyceInfo'
         paybybank_plaid:
-          description: PayByBank Plaid details.
+          description: Details to provide if `type` is **paybybank_plaid**.
           $ref: '#/components/schemas/PayByBankPlaidInfo'
         payme:
-          description: PayMe details.
+          description: Details to provide if `type` is **payme**.
           $ref: '#/components/schemas/PayMeInfo'
         paypal:
-          description: PayPal details.
+          description: Details to provide if `type` is **paypal**.
           $ref: '#/components/schemas/PayPalInfo'
         payto:
-          description: PayTo details.
+          description: Details to provide if `type` is **payto**.
           $ref: '#/components/schemas/PayToInfo'
         pulse:
-          description: PULSE details.
+          description: Details to provide if `type` is **pulse**.
           $ref: '#/components/schemas/PulseInfo'
         reference:
           description: Your reference for the payment method. Supported characters
@@ -13538,7 +13562,7 @@ components:
           maxLength: 150
           type: string
         sepadirectdebit:
-          description: Sepa Direct Debit details.
+          description: Details to provide if `type` is **sepadirectdebit**.
           $ref: '#/components/schemas/SepaDirectDebitInfo'
         shopperInteraction:
           description: 'The sales channel. Required if the merchant account does not
@@ -13554,13 +13578,15 @@ components:
           - contAuth
           type: string
         sodexo:
-          description: Sodexo details.
+          description: Details to provide if `type` is **sodexo**.
           $ref: '#/components/schemas/SodexoInfo'
         sofort:
+          deprecated: true
+          x-deprecatedInVersion: '1'
           description: Sofort details.
           $ref: '#/components/schemas/SofortInfo'
         star:
-          description: STAR details.
+          description: Details to provide if `type` is **star**.
           $ref: '#/components/schemas/StarInfo'
         storeIds:
           x-addedInVersion: '3'
@@ -13570,20 +13596,20 @@ components:
             type: string
           type: array
         svs:
-          description: SVS details.
+          description: Details to provide if `type` is **svs**.
           $ref: '#/components/schemas/SvsInfo'
         swish:
-          description: "Swish details.\n - This field is required only if you have\
-            \ a contract with Swish. Swish handles settlement directly with you (not\
-            \ through Adyen).\n - If not specified then it's assumed that you are\
-            \ using Adyen's contract with Swish.You don't have a direct relationship\
-            \ with Swish.\n"
+          description: "Details to provide if `type` is **swish**.\n - This field\
+            \ is required only if you have a contract with Swish. Swish handles settlement\
+            \ directly with you (not through Adyen).\n - If not specified then it's\
+            \ assumed that you are using Adyen's contract with Swish.You don't have\
+            \ a direct relationship with Swish.\n"
           $ref: '#/components/schemas/SwishInfo'
         ticket:
-          description: Edenred (Brazil) details.
+          description: Details to provide if `type` is **ticket** (Edenred Brazil).
           $ref: '#/components/schemas/TicketInfo'
         twint:
-          description: Twint details.
+          description: Details to provide if `type` is **twint**.
           $ref: '#/components/schemas/TwintInfo'
         type:
           description: Payment method [variant](https://docs.adyen.com/development-resources/paymentmethodvariant#management-api).
@@ -13612,6 +13638,7 @@ components:
           - banese_card_prepaid
           - bcmc
           - blik
+          - blik_pos
           - br_schemes
           - cartebancaire
           - clearpay
@@ -13724,19 +13751,19 @@ components:
           - wechatpay_pos
           type: string
         valuelink:
-          description: Valuelink details.
+          description: Details to provide if `type` is **valuelink**.
           $ref: '#/components/schemas/ValuelinkInfo'
         vipps:
-          description: Vipps details.
+          description: Details to provide if `type` is **vipps**.
           $ref: '#/components/schemas/VippsInfo'
         visa:
-          description: Visa details.
+          description: Details to provide if `type` is **visa**.
           $ref: '#/components/schemas/GenericPmWithTdiInfo'
         wechatpay:
-          description: WeChat Pay details.
+          description: Details to provide if `type` is **wechatpay**.
           $ref: '#/components/schemas/WeChatPayInfo'
         wechatpay_pos:
-          description: WeChat Pay POS details.
+          description: Details to provide if `type` is **wechatpay_pos**.
           $ref: '#/components/schemas/WeChatPayPosInfo'
       required:
       - type
@@ -14156,6 +14183,7 @@ components:
         actionDetails:
           description: Information about the action to take.
           oneOf:
+          - $ref: '#/components/schemas/ForceRebootDetails'
           - $ref: '#/components/schemas/InstallAndroidAppDetails'
           - $ref: '#/components/schemas/InstallAndroidCertificateDetails'
           - $ref: '#/components/schemas/ReleaseUpdateDetails'
@@ -14189,6 +14217,7 @@ components:
         actionDetails:
           description: Information about the action to take.
           oneOf:
+          - $ref: '#/components/schemas/ForceRebootDetails'
           - $ref: '#/components/schemas/InstallAndroidAppDetails'
           - $ref: '#/components/schemas/InstallAndroidCertificateDetails'
           - $ref: '#/components/schemas/ReleaseUpdateDetails'
@@ -16153,13 +16182,13 @@ components:
       additionalProperties: false
       properties:
         accel:
-          description: ACCEL details.
+          description: Details to provide if `type` is **accel**.
           $ref: '#/components/schemas/AccelInfo'
         bcmc:
-          description: Bancontact details.
+          description: Details to provide if `type` is **bcmc** (Bancontact).
           $ref: '#/components/schemas/BcmcInfo'
         cartesBancaires:
-          description: Cartes Bancaires details.
+          description: Details to provide if `type` is **cartesbancaire**.
           $ref: '#/components/schemas/CartesBancairesInfo'
         countries:
           description: The list of countries where a payment method is available.
@@ -16168,7 +16197,7 @@ components:
             type: string
           type: array
         cup:
-          description: China Union Pay details.
+          description: Details to provide if `type` is **cup** (China Union Pay).
           $ref: '#/components/schemas/GenericPmWithTdiInfo'
         currencies:
           description: The list of currencies that a payment method supports. By default,
@@ -16182,57 +16211,74 @@ components:
             type: string
           type: array
         diners:
-          description: Diners details.
+          description: 'Details to provide if `type` is **diners**.
+
+            For merchants operating in Japan, Diners payments are processed through
+            the JCB network. This means that you must include [JCB-specific fields](https://docs.adyen.com/api-explorer/Management/latest/post/merchants/(merchantId)/paymentMethodSettings/(paymentMethodId)#request-jcb)
+            in this object.'
           $ref: '#/components/schemas/GenericPmWithTdiInfo'
         discover:
-          description: Discover details.
+          description: 'Details to provide if `type` is **discover**.
+
+            For merchants operating in Japan, request [Diners](https://docs.adyen.com/api-explorer/Management/latest/post/merchants/(merchantId)/paymentMethodSettings/(paymentMethodId)#request-diners)
+            payment method instead. Discover is automatically requested, together
+            with Diners.'
           $ref: '#/components/schemas/GenericPmWithTdiInfo'
         eft_directdebit_CA:
-          description: EFT PAD details.
+          description: Details to provide if `type` is **eft_directdebit_CA** (EFT
+            PAD).
           $ref: '#/components/schemas/GenericPmWithTdiInfo'
         eftpos_australia:
-          description: Eftpos Australia details.
+          description: Details to provide if `type` is **eftpos_australia**.
           $ref: '#/components/schemas/GenericPmWithTdiInfo'
         enabled:
           description: Indicates whether the payment method is enabled (**true**)
             or disabled (**false**).
           type: boolean
         girocard:
-          description: Girocard details.
+          description: Details to provide if `type` is **girocard**.
           $ref: '#/components/schemas/GenericPmWithTdiInfo'
         ideal:
-          description: iDeal details.
+          description: Details to provide if `type` is **ideal**.
           $ref: '#/components/schemas/GenericPmWithTdiInfo'
         interac_card:
-          description: Interac Card details.
+          description: Details to provide if `type` is **interac_card**.
           $ref: '#/components/schemas/GenericPmWithTdiInfo'
         jcb:
-          description: JCB details.
+          description: 'Details to provide if `type` is **jcb**.
+
+            For merchants operating in Japan, `midNumber`, `reuseMidNumber`, and `serviceLevel`
+            fields are required.
+
+            For merchants operating outside of Japan, these fields are not required.'
           $ref: '#/components/schemas/GenericPmWithTdiInfo'
         maestro:
-          description: Maestro details. In the US, `maestro` is not supported; use
-            `maestro_usa` instead.
+          description: 'Details to provide if `type` is **maestro**.
+
+            In the US, `maestro` is not supported; use `maestro_usa` instead. '
           $ref: '#/components/schemas/GenericPmWithTdiInfo'
         maestro_usa:
-          description: Maestro USA details. Only for Maestro USA, for global use `maestro`.
+          description: 'Details to provide if `type` is **maestro_usa**.
+
+            Only for Maestro USA, otherwise use `maestro`.'
           $ref: '#/components/schemas/GenericPmWithTdiInfo'
         mc:
-          description: MasterCard details.
+          description: Details to provide if `type` is **mc**.
           $ref: '#/components/schemas/GenericPmWithTdiInfo'
         nyce:
-          description: NYCE details.
+          description: Details to provide if `type` is **nyce**.
           $ref: '#/components/schemas/NyceInfo'
         paybybank_plaid:
-          description: PayByBank Plaid details.
+          description: Details to provide if `type` is **paybybank_plaid**.
           $ref: '#/components/schemas/PayByBankPlaidInfo'
         pulse:
-          description: PULSE details.
+          description: Details to provide if `type` is **pulse**.
           $ref: '#/components/schemas/PulseInfo'
         sepadirectdebit:
-          description: Sepa Direct Debit details.
+          description: Details to provide if `type` is **sepadirectdebit**.
           $ref: '#/components/schemas/SepaDirectDebitInfo'
         star:
-          description: STAR details.
+          description: Details to provide if `type` is **star**.
           $ref: '#/components/schemas/StarInfo'
         storeId:
           x-addedInVersion: '3'
@@ -16248,7 +16294,7 @@ components:
             type: string
           type: array
         visa:
-          description: Visa details.
+          description: Details to provide if `type` is **visa**.
           $ref: '#/components/schemas/GenericPmWithTdiInfo'
       type: object
     UpdatePayoutSettingsRequest:
