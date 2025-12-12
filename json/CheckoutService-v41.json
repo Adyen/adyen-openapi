@@ -467,6 +467,59 @@
             }
          }
       },
+      "/forward" : {
+         "post" : {
+            "tags" : [
+               "Recurring"
+            ],
+            "summary" : "Forward stored payment details",
+            "description" : "Forwards the payment details you stored with Adyen to a third-party that you specify and returns the response from the third-party. Supports forwarding stored card details or [network tokens](https://docs.adyen.com/online-payments/network-tokenization). For more information, see [Forward stored payment details](https://docs.adyen.com/online-payments/tokenization/forward-payment-details).",
+            "operationId" : "post-forward",
+            "x-sortIndex" : 1,
+            "x-methodName" : "forward",
+            "security" : [
+               {
+                  "BasicAuth" : [
+                     ]
+               },
+               {
+                  "ApiKeyAuth" : [
+                     ]
+               }
+            ],
+            "requestBody" : {
+               "content" : {
+                  "application/json" : {
+                     "schema" : {
+                        "$ref" : "#/components/schemas/CheckoutForwardRequest"
+                     }
+                  }
+               }
+            },
+            "parameters" : [
+               {
+                  "$ref" : "#/components/parameters/Idempotency-Key"
+               }
+            ],
+            "responses" : {
+               "200" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/CheckoutForwardResponse"
+                        }
+                     }
+                  },
+                  "description" : "OK - the request has succeeded.",
+                  "headers" : {
+                     "Idempotency-Key" : {
+                        "$ref" : "#/components/headers/Idempotency-Key"
+                     }
+                  }
+               }
+            }
+         }
+      },
       "/orders" : {
          "post" : {
             "tags" : [
@@ -4195,13 +4248,13 @@
             "additionalProperties" : false,
             "properties" : {
                "currency" : {
-                  "description" : "The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes#currency-codes).",
+                  "description" : "The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes#currency-codes) of the amount.",
                   "maxLength" : 3,
                   "minLength" : 3,
                   "type" : "string"
                },
                "value" : {
-                  "description" : "The amount of the transaction, in [minor units](https://docs.adyen.com/development-resources/currency-codes#minor-units).",
+                  "description" : "The numeric value of the amount, in [minor units](https://docs.adyen.com/development-resources/currency-codes#minor-units).",
                   "format" : "int64",
                   "type" : "integer"
                }
@@ -4273,7 +4326,8 @@
                   "description" : "The funding source that should be used when multiple sources are available. For Brazilian combo cards, by default the funding source is credit. To use debit, set this value to **debit**.",
                   "enum" : [
                      "credit",
-                     "debit"
+                     "debit",
+                     "prepaid"
                   ],
                   "type" : "string"
                },
@@ -4312,7 +4366,8 @@
                   "description" : "The funding source that should be used when multiple sources are available. For Brazilian combo cards, by default the funding source is credit. To use debit, set this value to **debit**.",
                   "enum" : [
                      "credit",
-                     "debit"
+                     "debit",
+                     "prepaid"
                   ],
                   "type" : "string"
                },
@@ -5161,7 +5216,8 @@
                   "description" : "The funding source that should be used when multiple sources are available. For Brazilian combo cards, by default the funding source is credit. To use debit, set this value to **debit**.",
                   "enum" : [
                      "credit",
-                     "debit"
+                     "debit",
+                     "prepaid"
                   ],
                   "type" : "string"
                },
@@ -5351,7 +5407,8 @@
                   "description" : "The funding source that should be used when multiple sources are available. For Brazilian combo cards, by default the funding source is credit. To use debit, set this value to **debit**.",
                   "enum" : [
                      "credit",
-                     "debit"
+                     "debit",
+                     "prepaid"
                   ],
                   "type" : "string"
                },
@@ -5539,6 +5596,118 @@
             },
             "type" : "object"
          },
+         "CheckoutForwardRequest" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "baseUrl" : {
+                  "description" : "The base URL of the third party API, where Adyen will send the request to forward the payment details.",
+                  "type" : "string"
+               },
+               "merchantAccount" : {
+                  "description" : "Your merchant account.",
+                  "type" : "string"
+               },
+               "options" : {
+                  "description" : "The customizations that can be applied when making a forward request.",
+                  "$ref" : "#/components/schemas/CheckoutForwardRequestOptions"
+               },
+               "request" : {
+                  "description" : "The [details of the request](https://docs.adyen.com/online-payments/tokenization/forward-payment-details#request-to-adyen-card) that you want to forward to the third-party.",
+                  "$ref" : "#/components/schemas/CheckoutOutgoingForwardRequest"
+               },
+               "shopperReference" : {
+                  "description" : "Your reference to uniquely identify this shopper, for example user ID or account ID. The value is case-sensitive and must be at least three characters.\n> Your reference must not include personally identifiable information (PII) such as name or email address.",
+                  "type" : "string"
+               },
+               "storedPaymentMethodId" : {
+                  "description" : "The unique identifier of the token that you want to forward to the third party. This is the `storedPaymentMethodId` you received in the webhook after you created the token.",
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "merchantAccount",
+               "shopperReference",
+               "baseUrl",
+               "storedPaymentMethodId",
+               "request"
+            ],
+            "type" : "object"
+         },
+         "CheckoutForwardRequestOptions" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "accountUpdate" : {
+                  "description" : "Whether to check for a card account update (true) or not (false)",
+                  "type" : "boolean"
+               },
+               "dryRun" : {
+                  "description" : "Set to **true** to receive a copy of the request Adyen is making to the third party in the response. Any sensitive information will be masked in the response you receive. This functionality is only available in the test environment.",
+                  "type" : "boolean"
+               },
+               "networkToken" : {
+                  "description" : "The object that contains the details for forwarding a network token.",
+                  "$ref" : "#/components/schemas/CheckoutNetworkTokenOption"
+               },
+               "tokenize" : {
+                  "description" : "Set to **true**, the payment details are [tokenized](https://docs.adyen.com/online-payments/tokenization).",
+                  "type" : "boolean"
+               }
+            },
+            "type" : "object"
+         },
+         "CheckoutForwardResponse" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "response" : {
+                  "description" : "The details of the response Adyen received from the third party.",
+                  "$ref" : "#/components/schemas/CheckoutForwardResponseFromUrl"
+               },
+               "storedPaymentMethodId" : {
+                  "description" : "The unique identifier of the token.",
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "response"
+            ],
+            "type" : "object"
+         },
+         "CheckoutForwardResponseFromUrl" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "body" : {
+                  "description" : "The body of the response Adyen received from the third party, in string format.",
+                  "type" : "string"
+               },
+               "headers" : {
+                  "additionalProperties" : {
+                     "type" : "string"
+                  },
+                  "description" : "The HTTP headers of the response Adyen received from the third party.",
+                  "type" : "object"
+               },
+               "status" : {
+                  "description" : "The HTTP status of the response Adyen received from the third party.",
+                  "format" : "int32",
+                  "type" : "integer"
+               }
+            },
+            "type" : "object"
+         },
+         "CheckoutNetworkTokenOption" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "includeCryptogram" : {
+                  "description" : "Set to **true** to enable forwarding network token cryptograms.",
+                  "type" : "boolean"
+               },
+               "useNetworkToken" : {
+                  "description" : "Set to **true** to forward the network token for a card.",
+                  "type" : "boolean"
+               }
+            },
+            "type" : "object"
+         },
          "CheckoutOrderResponse" : {
             "additionalProperties" : false,
             "properties" : {
@@ -5569,6 +5738,45 @@
             },
             "required" : [
                "pspReference"
+            ],
+            "type" : "object"
+         },
+         "CheckoutOutgoingForwardRequest" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "body" : {
+                  "description" : "The request body that you want Adyen to forward to the third party on your behalf, in string format.\n\nInclude key value pairs to specify the payment details, and use [placeholders](https://docs.adyen.com/online-payments/tokenization/forward-payment-details#placeholders) for the values. Adyen replaces the placeholders with the payment details when making the request to the third party.\n\nWhen forwarding a network token, include a [condition](https://docs.adyen.com/online-payments/tokenization/forward-payment-details#conditional-placeholders) that checks if the network token exists, and informs Adyen of which fields to send depending on the outcome.",
+                  "maxLength" : 20000,
+                  "type" : "string"
+               },
+               "credentials" : {
+                  "description" : "Your credentials that are needed to authenticate with the third party.",
+                  "type" : "string"
+               },
+               "headers" : {
+                  "additionalProperties" : {
+                     "type" : "string"
+                  },
+                  "description" : "The request headers that will be included in the request Adyen makes to the third party on your behalf. Supports the `{{credentials}}` [placeholder](https://docs.adyen.com/online-payments/tokenization/forward-payment-details#placeholders).",
+                  "type" : "object"
+               },
+               "httpMethod" : {
+                  "description" : "The HTTP method to use for the request Adyen makes on your behalf to the third party.",
+                  "enum" : [
+                     "post",
+                     "put",
+                     "patch"
+                  ],
+                  "type" : "string"
+               },
+               "urlSuffix" : {
+                  "description" : "The suffix that Adyen needs to append to the `baseUrl` to construct the destination URL that belongs to the third party. This is usually the endpoint name for the request, for example, **/payments**.",
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "httpMethod",
+               "body"
             ],
             "type" : "object"
          },
@@ -6535,6 +6743,60 @@
             },
             "type" : "object"
          },
+         "ExternalTokenDetails" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "checkoutAttemptId" : {
+                  "description" : "The checkout attempt identifier.",
+                  "type" : "string"
+               },
+               "expiryMonth" : {
+                  "description" : "The card expiry month. Only collect raw card data if you are [fully PCI compliant](https://docs.adyen.com/development-resources/pci-dss-compliance-guide).",
+                  "type" : "string"
+               },
+               "expiryYear" : {
+                  "description" : "The card expiry year. Only collect raw card data if you are [fully PCI compliant](https://docs.adyen.com/development-resources/pci-dss-compliance-guide).",
+                  "type" : "string"
+               },
+               "holderName" : {
+                  "description" : "The name of the card holder.",
+                  "maxLength" : 15000,
+                  "type" : "string"
+               },
+               "number" : {
+                  "description" : "The card number. Only collect raw card data if you are [fully PCI compliant](https://docs.adyen.com/development-resources/pci-dss-compliance-guide).",
+                  "type" : "string"
+               },
+               "storedPaymentMethodId" : {
+                  "x-addedInVersion" : "49",
+                  "description" : "Identifier used to fetch the token from the external service",
+                  "maxLength" : 64,
+                  "type" : "string"
+               },
+               "subtype" : {
+                  "description" : "The external service from which to fetch the token. Supported only for specific companies. Contact Adyen if you want to use this feature.",
+                  "enum" : [
+                     "hilton"
+                  ],
+                  "type" : "string"
+               },
+               "type" : {
+                  "default" : "externalToken",
+                  "description" : "The type of token. Allowed value: **externalToken**.",
+                  "enum" : [
+                     "externalToken"
+                  ],
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "type",
+               "subtype",
+               "storedPaymentMethodId"
+            ],
+            "title" : "Details of tokens that are not stored with Adyen.",
+            "type" : "object"
+         },
          "FastlaneDetails" : {
             "additionalProperties" : false,
             "properties" : {
@@ -6814,7 +7076,8 @@
                   "description" : "The funding source that should be used when multiple sources are available. For Brazilian combo cards, by default the funding source is credit. To use debit, set this value to **debit**.",
                   "enum" : [
                      "credit",
-                     "debit"
+                     "debit",
+                     "prepaid"
                   ],
                   "type" : "string"
                },
@@ -6862,7 +7125,8 @@
                   "description" : "The funding source that should be used when multiple sources are available. For Brazilian combo cards, by default the funding source is credit. To use debit, set this value to **debit**.",
                   "enum" : [
                      "credit",
-                     "debit"
+                     "debit",
+                     "prepaid"
                   ],
                   "type" : "string"
                },
@@ -7099,12 +7363,12 @@
             "additionalProperties" : false,
             "properties" : {
                "amountExcludingTax" : {
-                  "description" : "Item amount excluding the tax, in minor units.",
+                  "description" : "Item amount excluding the tax, in [minor units](https://docs.adyen.com/development-resources/currency-codes/#minor-units).",
                   "format" : "int64",
                   "type" : "integer"
                },
                "amountIncludingTax" : {
-                  "description" : "Item amount including the tax, in minor units.",
+                  "description" : "Item amount including the tax, in [minor units](https://docs.adyen.com/development-resources/currency-codes/#minor-units).",
                   "format" : "int64",
                   "type" : "integer"
                },
@@ -7135,12 +7399,12 @@
                   "type" : "integer"
                },
                "taxAmount" : {
-                  "description" : "Tax amount, in minor units.",
+                  "description" : "Tax amount, in [minor units](https://docs.adyen.com/development-resources/currency-codes/#minor-units).",
                   "format" : "int64",
                   "type" : "integer"
                },
                "taxPercentage" : {
-                  "description" : "Tax percentage, in minor units.",
+                  "description" : "Tax percentage, represented as a [basis point](https://en.wikipedia.org/wiki/Basis_point) integer. For example:\n - **530** for 5.3% (five point three percent) \n - **2100** for 21% (twenty-one percent)",
                   "format" : "int64",
                   "type" : "integer"
                }
@@ -7224,7 +7488,8 @@
                   "description" : "The funding source that should be used when multiple sources are available. For Brazilian combo cards, by default the funding source is credit. To use debit, set this value to **debit**.",
                   "enum" : [
                      "credit",
-                     "debit"
+                     "debit",
+                     "prepaid"
                   ],
                   "type" : "string"
                },
@@ -7656,7 +7921,8 @@
                   "description" : "The funding source that should be used when multiple sources are available. For Brazilian combo cards, by default the funding source is credit. To use debit, set this value to **debit**.",
                   "enum" : [
                      "credit",
-                     "debit"
+                     "debit",
+                     "prepaid"
                   ],
                   "type" : "string"
                },
@@ -7700,7 +7966,8 @@
                   "description" : "The funding source that should be used when multiple sources are available. For Brazilian combo cards, by default the funding source is credit. To use debit, set this value to **debit**.",
                   "enum" : [
                      "credit",
-                     "debit"
+                     "debit",
+                     "prepaid"
                   ],
                   "type" : "string"
                },
@@ -8131,7 +8398,6 @@
                      "konbini",
                      "directEbanking",
                      "boletobancario",
-                     "neteller",
                      "cashticket",
                      "ikano",
                      "karenmillen",
@@ -8995,7 +9261,7 @@
                   "type" : "string"
                },
                "storeFiltrationMode" : {
-                  "description" : "Specifies how payment methods should be filtered based on the 'store' parameter:\n  - 'exclusive': Only payment methods belonging to the specified 'store' are returned.\n  - 'inclusive': Payment methods from the 'store' and those not associated with any other store are returned.",
+                  "description" : "Specifies how payment methods should be filtered based on the `store` parameter:\n  - **exclusive**: Only payment methods belonging to the specified `store` are returned.\n  - **inclusive**: Payment methods from the `store` and those not associated with any other store are returned.",
                   "enum" : [
                      "exclusive",
                      "inclusive",
@@ -9465,6 +9731,9 @@
                      },
                      {
                         "$ref" : "#/components/schemas/EftDetails"
+                     },
+                     {
+                        "$ref" : "#/components/schemas/ExternalTokenDetails"
                      },
                      {
                         "$ref" : "#/components/schemas/FastlaneDetails"
@@ -10503,15 +10772,16 @@
                   "type" : "string"
                },
                "fraudResultType" : {
-                  "description" : "The fraud result properties of the payment.",
+                  "description" : "The fraud result properties of the payment. Possible values:\n* AMBER\n* GREEN\n* RED\n\n",
                   "enum" : [
+                     "AMBER",
                      "GREEN",
-                     "FRAUD"
+                     "RED"
                   ],
                   "type" : "string"
                },
                "fraudRiskLevel" : {
-                  "description" : "The risk level of the transaction as classified by the [machine learning](https://docs.adyen.com/risk-management/configure-your-risk-profile/machine-learning-rules/) fraud risk rule. The risk level indicates the likelihood that a transaction will result in a fraudulent dispute. The possible return values are:\n* veryLow\n* low\n* medium\n* high\n* veryHigh\n",
+                  "description" : "The risk level of the transaction as classified by the [machine learning](https://docs.adyen.com/risk-management/configure-your-risk-profile/machine-learning-rules/) fraud risk rule. The risk level indicates the likelihood that a transaction will result in a fraudulent dispute. Possible values:\n* veryLow\n* low\n* medium\n* high\n* veryHigh\n\n",
                   "enum" : [
                      "veryLow",
                      "low",
@@ -10928,7 +11198,8 @@
                   "description" : "The funding source that should be used when multiple sources are available. For Brazilian combo cards, by default the funding source is credit. To use debit, set this value to **debit**.",
                   "enum" : [
                      "credit",
-                     "debit"
+                     "debit",
+                     "prepaid"
                   ],
                   "type" : "string"
                },
@@ -11073,7 +11344,7 @@
                   "type" : "string"
                },
                "amount" : {
-                  "description" : "The amount of the split item.\n\n* Required for all split types in the [Classic Platforms integration](https://docs.adyen.com/classic-platforms).\n* Required if `type` is **BalanceAccount**, **Commission**, **Default**, or **VAT** in your [Balance Platform](https://docs.adyen.com/adyen-for-platforms-model) integration.",
+                  "description" : "The amount of the split item.\n\n* Required for all split types in the [Classic Platforms integration](https://docs.adyen.com/classic-platforms).\n* Required if `type` is **BalanceAccount**, **Commission**, **Surcharge**, **Default**, or **VAT** in your [Balance Platform](https://docs.adyen.com/adyen-for-platforms-model) integration.",
                   "$ref" : "#/components/schemas/SplitAmount"
                },
                "description" : {
@@ -11085,7 +11356,7 @@
                   "type" : "string"
                },
                "type" : {
-                  "description" : "The part of the payment you want to book to the specified `account`.\n\nPossible values for the [Balance Platform](https://docs.adyen.com/adyen-for-platforms-model):\n* **BalanceAccount**: books part of the payment (specified in `amount`) to the specified `account`.\n* Transaction fees types that you can book to the specified `account`:\n   * **AcquiringFees**: the aggregated amount of the interchange and scheme fees.\n   * **PaymentFee**: the aggregated amount of all transaction fees.\n   * **AdyenFees**: the aggregated amount of Adyen's commission and markup fees.\n   * **AdyenCommission**: the transaction fees due to Adyen under [blended rates](https://www.adyen.com/knowledge-hub/interchange-fees-explained).\n   * **AdyenMarkup**: the transaction fees due to Adyen under [Interchange ++ pricing](https://www.adyen.com/knowledge-hub/interchange-fees-explained).\n   * **Interchange**: the fees paid to the issuer for each payment made with the card network.\n   * **SchemeFee**: the fees paid to the card scheme for using their network. \n* **Commission**: your platform's commission on the payment (specified in `amount`), booked to your liable balance account.\n* **Remainder**: the amount left over after a currency conversion, booked to the specified `account`.\n* **TopUp**: allows you and your users to top up balance accounts using direct debit, card payments, or other payment methods.\n* **VAT**: the value-added tax charged on the payment, booked to your platforms liable balance account.\n* **Default**: in very specific use cases, allows you to book the specified `amount` to the specified `account`. For more information, contact Adyen support.\n\nPossible values for the [Classic Platforms integration](https://docs.adyen.com/classic-platforms): **Commission**, **Default**, **MarketPlace**, **PaymentFee**, **VAT**.",
+                  "description" : "The part of the payment you want to book to the specified `account`.\n\nPossible values for the [Balance Platform](https://docs.adyen.com/adyen-for-platforms-model):\n* **BalanceAccount**: Books part of the payment (specified in `amount`) to the specified `account`.\n* Transaction fees types that you can book to the specified `account`:\n   * **AcquiringFees**: The aggregated amount of the interchange and scheme fees.\n   * **PaymentFee**: The aggregated amount of all transaction fees.\n   * **AdyenFees**: The aggregated amount of Adyen's commission and markup fees.\n   * **AdyenCommission**: The transaction fees due to Adyen under [blended rates](https://www.adyen.com/knowledge-hub/interchange-fees-explained).\n   * **AdyenMarkup**: The transaction fees due to Adyen under [Interchange ++ pricing](https://www.adyen.com/knowledge-hub/interchange-fees-explained).\n   * **Interchange**: The fees paid to the issuer for each payment made with the card network.\n   * **SchemeFee**: The fees paid to the card scheme for using their network. \n* **Commission**: Your platform's commission on the payment (specified in `amount`), booked to your liable balance account.\n* **Remainder**: The amount left over after a currency conversion, booked to the specified `account`.\n* **Surcharge**: The payment acceptance fee imposed by the card scheme or debit network provider, paid by your user's customer.\n* **TopUp**: Allows you and your users to top up balance accounts using direct debit, card payments, or other payment methods.\n* **VAT**: The value-added tax charged on the payment, booked to your platforms liable balance account.\n* **Default**: In very specific use cases, allows you to book the specified `amount` to the specified `account`. For more information, contact Adyen support.\n\nPossible values for the [Classic Platforms integration](https://docs.adyen.com/classic-platforms): **Commission**, **Default**, **MarketPlace**, **PaymentFee**, **VAT**.",
                   "enum" : [
                      "AcquiringFees",
                      "AdyenCommission",
@@ -11961,7 +12232,8 @@
                   "description" : "The funding source that should be used when multiple sources are available. For Brazilian combo cards, by default the funding source is credit. To use debit, set this value to **debit**.",
                   "enum" : [
                      "credit",
-                     "debit"
+                     "debit",
+                     "prepaid"
                   ],
                   "type" : "string"
                },

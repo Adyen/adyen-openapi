@@ -424,6 +424,38 @@ paths:
       - ApiKeyAuth: []
       x-sortIndex: 2
       x-methodName: donations
+  /forward:
+    post:
+      tags:
+      - Recurring
+      summary: Forward stored payment details
+      description: Forwards the payment details you stored with Adyen to a third-party
+        that you specify and returns the response from the third-party. Supports forwarding
+        stored card details or [network tokens](https://docs.adyen.com/online-payments/network-tokenization).
+        For more information, see [Forward stored payment details](https://docs.adyen.com/online-payments/tokenization/forward-payment-details).
+      operationId: post-forward
+      parameters:
+      - $ref: '#/components/parameters/Idempotency-Key'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckoutForwardRequest'
+      responses:
+        '200':
+          description: OK - the request has succeeded.
+          headers:
+            Idempotency-Key:
+              $ref: '#/components/headers/Idempotency-Key'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckoutForwardResponse'
+      security:
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      x-sortIndex: 1
+      x-methodName: forward
   /orders:
     post:
       tags:
@@ -1162,6 +1194,8 @@ paths:
                 $ref: '#/components/examples/post-payments-split-classic'
               subscription-first-transaction:
                 $ref: '#/components/examples/post-payments-subscription-first-transaction'
+              subscription-payment:
+                $ref: '#/components/examples/post-payments-subscription-payment'
       responses:
         '200':
           description: OK - the request has succeeded.
@@ -4599,13 +4633,14 @@ components:
       properties:
         currency:
           type: string
-          description: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes#currency-codes).
+          description: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes#currency-codes)
+            of the amount.
           maxLength: 3
           minLength: 3
         value:
           type: integer
           format: int64
-          description: The amount of the transaction, in [minor units](https://docs.adyen.com/development-resources/currency-codes#minor-units).
+          description: The numeric value of the amount, in [minor units](https://docs.adyen.com/development-resources/currency-codes#minor-units).
       required:
       - currency
       - value
@@ -4700,6 +4735,7 @@ components:
           enum:
           - credit
           - debit
+          - prepaid
         recurringDetailReference:
           type: string
           deprecated: true
@@ -4748,6 +4784,7 @@ components:
           enum:
           - credit
           - debit
+          - prepaid
         recurringDetailReference:
           type: string
           deprecated: true
@@ -5642,6 +5679,7 @@ components:
           enum:
           - credit
           - debit
+          - prepaid
         holderName:
           type: string
           description: The name of the card holder.
@@ -5832,6 +5870,7 @@ components:
           enum:
           - credit
           - debit
+          - prepaid
         holderName:
           type: string
           description: The name of the card holder.
@@ -6131,6 +6170,101 @@ components:
           description: Specifies the URL to redirect to.
       required:
       - type
+    CheckoutForwardRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        baseUrl:
+          type: string
+          description: The base URL of the third party API, where Adyen will send
+            the request to forward the payment details.
+        merchantAccount:
+          type: string
+          description: Your merchant account.
+        options:
+          $ref: '#/components/schemas/CheckoutForwardRequestOptions'
+          description: The customizations that can be applied when making a forward
+            request.
+        request:
+          $ref: '#/components/schemas/CheckoutOutgoingForwardRequest'
+          description: The [details of the request](https://docs.adyen.com/online-payments/tokenization/forward-payment-details#request-to-adyen-card)
+            that you want to forward to the third-party.
+        shopperReference:
+          type: string
+          description: 'Your reference to uniquely identify this shopper, for example
+            user ID or account ID. The value is case-sensitive and must be at least
+            three characters.
+
+            > Your reference must not include personally identifiable information
+            (PII) such as name or email address.'
+        storedPaymentMethodId:
+          type: string
+          description: The unique identifier of the token that you want to forward
+            to the third party. This is the `storedPaymentMethodId` you received in
+            the webhook after you created the token.
+      required:
+      - baseUrl
+      - merchantAccount
+      - request
+      - shopperReference
+      - storedPaymentMethodId
+    CheckoutForwardRequestOptions:
+      type: object
+      additionalProperties: false
+      properties:
+        accountUpdate:
+          type: boolean
+          description: Whether to check for a card account update (true) or not (false)
+        dryRun:
+          type: boolean
+          description: Set to **true** to receive a copy of the request Adyen is making
+            to the third party in the response. Any sensitive information will be
+            masked in the response you receive. This functionality is only available
+            in the test environment.
+        networkToken:
+          $ref: '#/components/schemas/CheckoutNetworkTokenOption'
+          description: The object that contains the details for forwarding a network
+            token.
+        tokenize:
+          type: boolean
+          description: Set to **true**, the payment details are [tokenized](https://docs.adyen.com/online-payments/tokenization).
+    CheckoutForwardResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        pspReference:
+          type: string
+          description: Adyen's 16-character reference associated with the transaction/request.
+            This value is globally unique. Use this reference when you communicate
+            with us about this request.
+          x-addedInVersion: '71'
+        response:
+          $ref: '#/components/schemas/CheckoutForwardResponseFromUrl'
+          description: The details of the response Adyen received from the third party.
+        storedPaymentMethodId:
+          type: string
+          description: The unique identifier of the token.
+      required:
+      - response
+    CheckoutForwardResponseFromUrl:
+      type: object
+      additionalProperties: false
+      properties:
+        body:
+          type: string
+          description: The body of the response Adyen received from the third party,
+            in string format.
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+          description: The HTTP headers of the response Adyen received from the third
+            party.
+        status:
+          type: integer
+          format: int32
+          description: The HTTP status of the response Adyen received from the third
+            party.
     CheckoutNativeRedirectAction:
       type: object
       additionalProperties: false
@@ -6161,6 +6295,16 @@ components:
           description: Specifies the URL to redirect to.
       required:
       - type
+    CheckoutNetworkTokenOption:
+      type: object
+      additionalProperties: false
+      properties:
+        includeCryptogram:
+          type: boolean
+          description: Set to **true** to enable forwarding network token cryptograms.
+        useNetworkToken:
+          type: boolean
+          description: Set to **true** to forward the network token for a card.
     CheckoutOrderResponse:
       type: object
       additionalProperties: false
@@ -6185,6 +6329,52 @@ components:
           description: The updated remaining amount.
       required:
       - pspReference
+    CheckoutOutgoingForwardRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        body:
+          type: string
+          description: 'The request body that you want Adyen to forward to the third
+            party on your behalf, in string format.
+
+
+            Include key value pairs to specify the payment details, and use [placeholders](https://docs.adyen.com/online-payments/tokenization/forward-payment-details#placeholders)
+            for the values. Adyen replaces the placeholders with the payment details
+            when making the request to the third party.
+
+
+            When forwarding a network token, include a [condition](https://docs.adyen.com/online-payments/tokenization/forward-payment-details#conditional-placeholders)
+            that checks if the network token exists, and informs Adyen of which fields
+            to send depending on the outcome.'
+          maxLength: 20000
+        credentials:
+          type: string
+          description: Your credentials that are needed to authenticate with the third
+            party.
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+          description: The request headers that will be included in the request Adyen
+            makes to the third party on your behalf. Supports the `{{credentials}}`
+            [placeholder](https://docs.adyen.com/online-payments/tokenization/forward-payment-details#placeholders).
+        httpMethod:
+          type: string
+          description: The HTTP method to use for the request Adyen makes on your
+            behalf to the third party.
+          enum:
+          - post
+          - put
+          - patch
+        urlSuffix:
+          type: string
+          description: The suffix that Adyen needs to append to the `baseUrl` to construct
+            the destination URL that belongs to the third party. This is usually the
+            endpoint name for the request, for example, **/payments**.
+      required:
+      - body
+      - httpMethod
     CheckoutQrCodeAction:
       type: object
       additionalProperties: false
@@ -7571,6 +7761,39 @@ components:
           description: The type of the delivery method.
           enum:
           - Shipping
+    Destination:
+      type: object
+      additionalProperties: false
+      properties:
+        countryCode:
+          type: string
+          description: "The two-letter [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)\
+            \ or three-letter [ISO 3166-1 alpha-3 country code](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3)\
+            \ for the destination address. \n * Encoding: ASCII  \n * Min length:\
+            \ 2 characters \n * Max length: 3 characters"
+        postalCode:
+          type: string
+          description: 'The postal code of the destination address.
+
+            * Encoding: ASCII
+
+            * Max length: 10 characters
+
+            * Must not start with a space.
+
+            * For the US, it must be in five or nine digits format. For example, 10001
+            or 10001-0000.
+
+            * For Canada, it must be in 6 digits format. For example, M4B 1G5.'
+        stateOrProvince:
+          type: string
+          description: 'The state or province code of the destination address.
+
+            * Encoding: ASCII
+
+            * Max length: 3 characters
+
+            * Must not start with a space.'
     DetailsRequestAuthenticationData:
       type: object
       additionalProperties: false
@@ -8373,6 +8596,11 @@ components:
           description: '[Airline enhanced scheme data](https://docs.adyen.com/payment-methods/cards/enhanced-scheme-data/airline/)
             that may be required for processing the transaction and/or for interchange
             savings.'
+        levelTwoThree:
+          $ref: '#/components/schemas/LevelTwoThree'
+          description: '[Level 2 and Level 3 enhanced scheme data](https://docs.adyen.com/payment-methods/cards/enhanced-scheme-data/l2-l3/)
+            that may be required for processing the transaction and/or for interchange
+            savings.'
     ExternalPlatform:
       type: object
       additionalProperties: false
@@ -8386,6 +8614,51 @@ components:
         version:
           type: string
           description: Version of the field. For example, Version of External Platform.
+    ExternalTokenDetails:
+      type: object
+      additionalProperties: false
+      properties:
+        checkoutAttemptId:
+          type: string
+          description: The checkout attempt identifier.
+        expiryMonth:
+          type: string
+          description: The card expiry month. Only collect raw card data if you are
+            [fully PCI compliant](https://docs.adyen.com/development-resources/pci-dss-compliance-guide).
+        expiryYear:
+          type: string
+          description: The card expiry year. Only collect raw card data if you are
+            [fully PCI compliant](https://docs.adyen.com/development-resources/pci-dss-compliance-guide).
+        holderName:
+          type: string
+          description: The name of the card holder.
+          maxLength: 15000
+        number:
+          type: string
+          description: The card number. Only collect raw card data if you are [fully
+            PCI compliant](https://docs.adyen.com/development-resources/pci-dss-compliance-guide).
+        storedPaymentMethodId:
+          type: string
+          description: Identifier used to fetch the token from the external service
+          maxLength: 64
+          x-addedInVersion: '49'
+        subtype:
+          type: string
+          description: The external service from which to fetch the token. Supported
+            only for specific companies. Contact Adyen if you want to use this feature.
+          enum:
+          - hilton
+        type:
+          type: string
+          default: externalToken
+          description: 'The type of token. Allowed value: **externalToken**.'
+          enum:
+          - externalToken
+      required:
+      - storedPaymentMethodId
+      - subtype
+      - type
+      title: Details of tokens that are not stored with Adyen.
     FastlaneDetails:
       type: object
       additionalProperties: false
@@ -8641,6 +8914,7 @@ components:
           enum:
           - credit
           - debit
+          - prepaid
         googlePayCardNetwork:
           type: string
           description: 'The selected payment card network. '
@@ -8697,6 +8971,7 @@ components:
           enum:
           - credit
           - debit
+          - prepaid
         googlePayCardNetwork:
           type: string
           description: 'The selected payment card network. '
@@ -8958,6 +9233,96 @@ components:
         name:
           type: string
           description: The display name.
+    ItemDetailLine:
+      type: object
+      additionalProperties: false
+      properties:
+        commodityCode:
+          type: string
+          description: 'The code that identifies the item in a standardized commodity
+            coding scheme. There are different commodity coding schemes:
+
+            * [UNSPSC commodity codes](https://www.ungm.org/public/unspsc)
+
+            * [HS commodity codes](https://www.wcoomd.org/en/topics/nomenclature/overview.aspx)
+
+            * [NAICS commodity codes](https://www.census.gov/naics/)
+
+            * [NAPCS commodity codes](https://www.census.gov/naics/napcs/)
+
+
+
+            * Encoding: ASCII
+
+            * Max length: 12 characters
+
+            * Must not start with a space or be all spaces.
+
+            * Must not be all zeros.'
+        description:
+          type: string
+          description: "A description of the item, that provides details about the\
+            \ purchase.\n\n For Visa transactions with level 3 ESD, the description\
+            \ must not be the same or very similar to your merchant name, or, consist\
+            \ only of common words like \"product\", or \"service\".\n* Encoding:\
+            \ ASCII\n* Max length: 26 characters\n* Must not be a single character.\n\
+            * Must not be blank.\n* Must not be all special characters.\n* Must not\
+            \ start with a space or be all spaces.\n* Must not be all zeros."
+        discountAmount:
+          type: integer
+          format: int64
+          description: 'The discount amount, in [minor units](https://docs.adyen.com/development-resources/currency-codes).
+
+            * For example, 2000 means USD 20.00.
+
+            * Encoding: Numeric
+
+            * Max value: 10000000000'
+        productCode:
+          type: string
+          description: "The product code. Must be a unique product code associated\
+            \ with the item or service. This can be your unique code for the item,\
+            \ or the manufacturer's product code. \n* Encoding: ASCII.\n* Max length:\
+            \ 12 characters"
+        quantity:
+          type: integer
+          format: int64
+          description: 'The number of items. Must be an integer greater than zero.
+
+            * Encoding: Numeric
+
+            * Max value: 9999'
+        totalAmount:
+          type: integer
+          format: int64
+          description: 'The total amount for the line item, in [minor units](https://docs.adyen.com/development-resources/currency-codes).
+
+            * For example, 2000 means USD 20.00.
+
+            * Encoding: Numeric
+
+            * Max value: 10000000000
+
+
+            See [Amount requirements for level 2/3 ESD](https://docs.adyen.com//payment-methods/cards/enhanced-scheme-data/l2-l3#amount-requirements)
+            to learn more about how to calculate the line item total.'
+        unitOfMeasure:
+          type: string
+          description: 'The unit of measurement for an item.
+
+            * Encoding: ASCII
+
+            * Max length: 3 characters'
+        unitPrice:
+          type: integer
+          format: int64
+          description: 'The unit price, in [minor units](https://docs.adyen.com/development-resources/currency-codes).
+
+            * For example, 2000 means USD 20.00.
+
+            * Encoding: Numeric
+
+            * Max value: 10000000000'
     KlarnaDetails:
       type: object
       additionalProperties: false
@@ -9132,6 +9497,80 @@ components:
             * minLength: 1 character
 
             * maxLength: 1 character'
+    LevelTwoThree:
+      type: object
+      additionalProperties: false
+      properties:
+        customerReferenceNumber:
+          type: string
+          description: 'The reference number to identify the customer and their order.
+
+            * Format: ASCII
+
+            * Max length: 25 characters
+
+            * Must not start with a space or be all spaces.
+
+            * Must not be all zeros.'
+        destination:
+          $ref: '#/components/schemas/Destination'
+          description: The destination address information.
+        dutyAmount:
+          type: integer
+          format: int64
+          description: 'The duty tax amount, in [minor units](https://docs.adyen.com/development-resources/currency-codes).
+
+            * For example, 2000 means USD 20.00.
+
+            * Encoding: Numeric
+
+            * Max value: 10000000000'
+        freightAmount:
+          type: integer
+          format: int64
+          description: 'The shipping amount, in [minor units](https://docs.adyen.com/development-resources/currency-codes).
+
+            * For example, 2000 means USD 20.00.
+
+            * Encoding: Numeric
+
+            * Max value: 10000000000'
+        itemDetailLines:
+          type: array
+          description: The list of item detail lines.
+          items:
+            $ref: '#/components/schemas/ItemDetailLine'
+        orderDate:
+          type: string
+          format: date
+          description: 'The date of the order.
+
+            * Min Length: 10 characters
+
+            * Max Length: 10 characters
+
+            * Format [ISO 8601](https://www.w3.org/TR/NOTE-datetime): yyyy-MM-dd'
+        shipFromPostalCode:
+          type: string
+          description: 'The postal code of the address where the item is shipped from.
+
+            * Encoding: ASCII
+
+            * Max length: 10 characters
+
+            * For the US, it must be in five or nine digits format. For example, 10001
+            or 10001-0000.
+
+            * For Canada, it must be in 6 digits format. For example, M4B 1G5.'
+        totalTaxAmount:
+          type: integer
+          format: int64
+          description: "The amount of state or provincial [tax included in the total\
+            \ transaction amount](https://docs.adyen.com/payment-methods/cards/enhanced-scheme-data/l2-l3#requirements-to-send-level-2-3-esd),\
+            \ in [minor units](https://docs.adyen.com/development-resources/currency-codes).\n\
+            * For example, 2000 means USD 20.00.\n* Encoding: Numeric\n* Max value:\
+            \ 10000000000\n* For L2 data: must not be all zeroes. \n* For L3 data:\
+            \ can be zero."
     LineItem:
       type: object
       additionalProperties: false
@@ -9139,11 +9578,11 @@ components:
         amountExcludingTax:
           type: integer
           format: int64
-          description: Item amount excluding the tax, in minor units.
+          description: Item amount excluding the tax, in [minor units](https://docs.adyen.com/development-resources/currency-codes/#minor-units).
         amountIncludingTax:
           type: integer
           format: int64
-          description: Item amount including the tax, in minor units.
+          description: Item amount including the tax, in [minor units](https://docs.adyen.com/development-resources/currency-codes/#minor-units).
         brand:
           type: string
           description: Brand of the item.
@@ -9196,11 +9635,13 @@ components:
         taxAmount:
           type: integer
           format: int64
-          description: Tax amount, in minor units.
+          description: Tax amount, in [minor units](https://docs.adyen.com/development-resources/currency-codes/#minor-units).
         taxPercentage:
           type: integer
           format: int64
-          description: Tax percentage, in minor units.
+          description: "Tax percentage, represented as a [basis point](https://en.wikipedia.org/wiki/Basis_point)\
+            \ integer. For example:\n - **530** for 5.3% (five point three percent)\
+            \ \n - **2100** for 21% (twenty-one percent)"
         upc:
           type: string
           description: Universal Product Code.
@@ -9307,6 +9748,7 @@ components:
           enum:
           - credit
           - debit
+          - prepaid
         masterpassTransactionId:
           type: string
           description: The Masterpass transaction ID.
@@ -9871,6 +10313,7 @@ components:
           enum:
           - credit
           - debit
+          - prepaid
         googlePayToken:
           type: string
           description: The `token` that you obtained from the [Google Pay API](https://developers.google.com/pay/api/web/reference/response-objects#PaymentData)
@@ -9924,6 +10367,7 @@ components:
           enum:
           - credit
           - debit
+          - prepaid
         googlePayToken:
           type: string
           description: The `token` that you obtained from the [Google Pay API](https://developers.google.com/pay/api/web/reference/response-objects#PaymentData)
@@ -10410,7 +10854,6 @@ components:
           - konbini
           - directEbanking
           - boletobancario
-          - neteller
           - cashticket
           - ikano
           - karenmillen
@@ -11318,6 +11761,7 @@ components:
           enum:
           - credit
           - debit
+          - prepaid
           x-addedInVersion: '53'
         group:
           $ref: '#/components/schemas/PaymentMethodGroup'
@@ -11585,9 +12029,9 @@ components:
         storeFiltrationMode:
           type: string
           description: "Specifies how payment methods should be filtered based on\
-            \ the 'store' parameter:\n  - 'exclusive': Only payment methods belonging\
-            \ to the specified 'store' are returned.\n  - 'inclusive': Payment methods\
-            \ from the 'store' and those not associated with any other store are returned."
+            \ the `store` parameter:\n  - **exclusive**: Only payment methods belonging\
+            \ to the specified `store` are returned.\n  - **inclusive**: Payment methods\
+            \ from the `store` and those not associated with any other store are returned."
           enum:
           - exclusive
           - inclusive
@@ -12118,6 +12562,7 @@ components:
           - $ref: '#/components/schemas/EBankingFinlandDetails'
           - $ref: '#/components/schemas/EcontextVoucherDetails'
           - $ref: '#/components/schemas/EftDetails'
+          - $ref: '#/components/schemas/ExternalTokenDetails'
           - $ref: '#/components/schemas/FastlaneDetails'
           - $ref: '#/components/schemas/GenericIssuerPaymentMethodDetails'
           - $ref: '#/components/schemas/GooglePayDetails'
@@ -12228,12 +12673,6 @@ components:
           $ref: '#/components/schemas/RiskData'
           description: Contains risk data, such as client-side data, used to identify
             risk for a transaction.
-        sdkData:
-          type: string
-          description: "Base64-encoded JSON object containing SDK related parameters\
-            \ required by the SDK\n    to function optimally. Clients must not\n \
-            \   add unrelated or sensitive personal information."
-          x-addedInVersion: '69'
         sessionValidity:
           type: string
           description: 'The date and time until when the session remains valid, in
@@ -12611,7 +13050,19 @@ components:
       additionalProperties: false
       properties:
         name:
-          $ref: '#/components/schemas/Name'
+          $ref: '#/components/schemas/PaymentValidationsNameRequest'
+    PaymentValidationsNameRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        status:
+          type: string
+          description: Set to **requested** to request a [name validation](https://docs.adyen.com/payment-methods/cards/name-validation)
+            to verify if the cardholder name provided by the shopper matches the cardholder
+            name on file at the issuing bank.
+      required:
+      - status
+      title: Name
     PaymentValidationsNameResponse:
       type: object
       additionalProperties: false
@@ -13331,16 +13782,26 @@ components:
           description: Indicates if the payment is sent to manual review.
         fraudResultType:
           type: string
-          description: The fraud result properties of the payment.
+          description: 'The fraud result properties of the payment. Possible values:
+
+            * AMBER
+
+            * GREEN
+
+            * RED
+
+
+            '
           enum:
+          - AMBER
           - GREEN
-          - FRAUD
+          - RED
         fraudRiskLevel:
           type: string
           description: 'The risk level of the transaction as classified by the [machine
             learning](https://docs.adyen.com/risk-management/configure-your-risk-profile/machine-learning-rules/)
             fraud risk rule. The risk level indicates the likelihood that a transaction
-            will result in a fraudulent dispute. The possible return values are:
+            will result in a fraudulent dispute. Possible values:
 
             * veryLow
 
@@ -13351,6 +13812,7 @@ components:
             * high
 
             * veryHigh
+
 
             '
           enum:
@@ -13942,6 +14404,7 @@ components:
           enum:
           - credit
           - debit
+          - prepaid
         recurringDetailReference:
           type: string
           deprecated: true
@@ -14172,8 +14635,8 @@ components:
 
             * Required for all split types in the [Classic Platforms integration](https://docs.adyen.com/classic-platforms).
 
-            * Required if `type` is **BalanceAccount**, **Commission**, **Default**,
-            or **VAT** in your [Balance Platform](https://docs.adyen.com/adyen-for-platforms-model)
+            * Required if `type` is **BalanceAccount**, **Commission**, **Surcharge**,
+            **Default**, or **VAT** in your [Balance Platform](https://docs.adyen.com/adyen-for-platforms-model)
             integration.'
         description:
           type: string
@@ -14195,27 +14658,29 @@ components:
           type: string
           description: "The part of the payment you want to book to the specified\
             \ `account`.\n\nPossible values for the [Balance Platform](https://docs.adyen.com/adyen-for-platforms-model):\n\
-            * **BalanceAccount**: books part of the payment (specified in `amount`)\
+            * **BalanceAccount**: Books part of the payment (specified in `amount`)\
             \ to the specified `account`.\n* Transaction fees types that you can book\
-            \ to the specified `account`:\n   * **AcquiringFees**: the aggregated\
-            \ amount of the interchange and scheme fees.\n   * **PaymentFee**: the\
-            \ aggregated amount of all transaction fees.\n   * **AdyenFees**: the\
+            \ to the specified `account`:\n   * **AcquiringFees**: The aggregated\
+            \ amount of the interchange and scheme fees.\n   * **PaymentFee**: The\
+            \ aggregated amount of all transaction fees.\n   * **AdyenFees**: The\
             \ aggregated amount of Adyen's commission and markup fees.\n   * **AdyenCommission**:\
-            \ the transaction fees due to Adyen under [blended rates](https://www.adyen.com/knowledge-hub/interchange-fees-explained).\n\
-            \   * **AdyenMarkup**: the transaction fees due to Adyen under [Interchange\
+            \ The transaction fees due to Adyen under [blended rates](https://www.adyen.com/knowledge-hub/interchange-fees-explained).\n\
+            \   * **AdyenMarkup**: The transaction fees due to Adyen under [Interchange\
             \ ++ pricing](https://www.adyen.com/knowledge-hub/interchange-fees-explained).\n\
-            \   * **Interchange**: the fees paid to the issuer for each payment made\
-            \ with the card network.\n   * **SchemeFee**: the fees paid to the card\
-            \ scheme for using their network. \n* **Commission**: your platform's\
+            \   * **Interchange**: The fees paid to the issuer for each payment made\
+            \ with the card network.\n   * **SchemeFee**: The fees paid to the card\
+            \ scheme for using their network. \n* **Commission**: Your platform's\
             \ commission on the payment (specified in `amount`), booked to your liable\
-            \ balance account.\n* **Remainder**: the amount left over after a currency\
-            \ conversion, booked to the specified `account`.\n* **TopUp**: allows\
-            \ you and your users to top up balance accounts using direct debit, card\
-            \ payments, or other payment methods.\n* **VAT**: the value-added tax\
-            \ charged on the payment, booked to your platforms liable balance account.\n\
-            * **Default**: in very specific use cases, allows you to book the specified\
-            \ `amount` to the specified `account`. For more information, contact Adyen\
-            \ support.\n\nPossible values for the [Classic Platforms integration](https://docs.adyen.com/classic-platforms):\
+            \ balance account.\n* **Remainder**: The amount left over after a currency\
+            \ conversion, booked to the specified `account`.\n* **Surcharge**: The\
+            \ payment acceptance fee imposed by the card scheme or debit network provider,\
+            \ paid by your user's customer.\n* **TopUp**: Allows you and your users\
+            \ to top up balance accounts using direct debit, card payments, or other\
+            \ payment methods.\n* **VAT**: The value-added tax charged on the payment,\
+            \ booked to your platforms liable balance account.\n* **Default**: In\
+            \ very specific use cases, allows you to book the specified `amount` to\
+            \ the specified `account`. For more information, contact Adyen support.\n\
+            \nPossible values for the [Classic Platforms integration](https://docs.adyen.com/classic-platforms):\
             \ **Commission**, **Default**, **MarketPlace**, **PaymentFee**, **VAT**."
           enum:
           - AcquiringFees
@@ -16066,6 +16531,7 @@ components:
           enum:
           - credit
           - debit
+          - prepaid
         sdkData:
           type: string
           description: Base64-encoded JSON object containing SDK related parameters
@@ -18377,6 +18843,21 @@ components:
         pspReference: 993617895199574A
         resultCode: Authorised
         merchantReference: string
+    post-payments-subscription-payment:
+      summary: Make a subscription payment with a token
+      value:
+        amount:
+          currency: USD
+          value: 1000
+        reference: Your order number
+        paymentMethod:
+          type: scheme
+          storedPaymentMethodId: M5N7TQ4TG5PFWR50
+        shopperReference: YOUR_SHOPPER_REFERENCE
+        returnUrl: https://your-company.example.com/...
+        merchantAccount: YOUR_MERCHANT_ACCOUNT
+        shopperInteraction: ContAuth
+        recurringProcessingModel: Subscription
     post-paypal-updateOrder-advanced-with-delivery:
       summary: Update a PayPal order with delivery methods in an Advanced flow integration
       value:
