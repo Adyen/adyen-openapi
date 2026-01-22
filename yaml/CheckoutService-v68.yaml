@@ -6123,7 +6123,9 @@ components:
 
             * **regular**
 
-            * **revolving*** **bonus**
+            * **revolving**
+
+            * **bonus**
 
             * **with_interest**
 
@@ -9584,9 +9586,16 @@ components:
             \ codes](https://docs.adyen.com/online-payments/payment-result-codes).\n\
             \nPossible values:\n\n* **Authorised** \u2013 The payment was successfully\
             \ authorised. This state serves as an indicator to proceed with the delivery\
-            \ of goods and services. This is a final state.\n"
+            \ of goods and services. This is a final state.\n* **Received** \u2013\
+            \ Indicates the payment request was successfully received by Adyen, and\
+            \ will be processed. This is the initial state for all payments.\n* **Pending**\
+            \ \u2013 The payment order was successfully received but the final status\
+            \ of the payment is not available yet. This is common for payment methods\
+            \ with an asynchronous flow."
           enum:
           - Authorised
+          - Received
+          - Pending
     PaymentAmountUpdateRequest:
       type: object
       additionalProperties: false
@@ -10378,11 +10387,12 @@ components:
           description: "Indicates if the details of the payment method will be stored\
             \ for the shopper. Possible values:\n* **disabled** \u2013 No details\
             \ will be stored (default).\n* **askForConsent** \u2013 If the `shopperReference`\
-            \ is provided, the UI lets the shopper choose if they want their payment\
-            \ details to be stored.\n* **enabled** \u2013 If the `shopperReference`\
-            \ is provided, the details will be stored without asking the shopper for\
-            \ consent. \n When set to **askForConsent** or **enabled**, you must also\
-            \ include the `recurringProcessingModel` parameter."
+            \ is provided, the Drop-in/Component shows a checkbox where the shopper\
+            \ can select to store their payment details for card payments.\n* **enabled**\
+            \ \u2013 If the `shopperReference` is provided, the details will be stored\
+            \ without asking the shopper for consent. \n When set to **askForConsent**\
+            \ or **enabled**, you must also include the `recurringProcessingModel`\
+            \ parameter."
           enum:
           - askForConsent
           - disabled
@@ -10668,11 +10678,12 @@ components:
           description: "Indicates if the details of the payment method will be stored\
             \ for the shopper. Possible values:\n* **disabled** \u2013 No details\
             \ will be stored (default).\n* **askForConsent** \u2013 If the `shopperReference`\
-            \ is provided, the UI lets the shopper choose if they want their payment\
-            \ details to be stored.\n* **enabled** \u2013 If the `shopperReference`\
-            \ is provided, the details will be stored without asking the shopper for\
-            \ consent. \n When set to **askForConsent** or **enabled**, you must also\
-            \ include the `recurringProcessingModel` parameter."
+            \ is provided, the Drop-in/Component shows a checkbox where the shopper\
+            \ can select to store their payment details for card payments.\n* **enabled**\
+            \ \u2013 If the `shopperReference` is provided, the details will be stored\
+            \ without asking the shopper for consent. \n When set to **askForConsent**\
+            \ or **enabled**, you must also include the `recurringProcessingModel`\
+            \ parameter."
           enum:
           - askForConsent
           - disabled
@@ -11702,6 +11713,10 @@ components:
             \ truncate the string.\n Allowed characters: **a-z**, **A-Z**, **0-9**,\
             \ spaces, and special characters **. , ' _ - ? + * /**."
           maxLength: 10000
+        shopperTaxInfo:
+          $ref: '#/components/schemas/ShopperTaxInfo'
+          description: The tax info of the shopper
+          x-addedInVersion: '68'
         socialSecurityNumber:
           type: string
           description: The shopper's social security number.
@@ -13385,6 +13400,21 @@ components:
       required:
       - firstName
       - lastName
+    ShopperTaxInfo:
+      type: object
+      additionalProperties: false
+      properties:
+        taxId:
+          type: string
+          description: The tax-id of the shopper doing the transaction.
+          maxLength: 10
+        taxIdCountryCode:
+          type: string
+          description: The country to which the tax-id belongs to.
+          maxLength: 2
+      required:
+      - taxId
+      - taxIdCountryCode
     Split:
       type: object
       additionalProperties: false
