@@ -34,7 +34,7 @@ info:
     name: Adyen Developer Experience team
     url: https://github.com/Adyen/adyen-openapi
   version: '1'
-  x-timestamp: '2025-09-18T14:44:25Z'
+  x-timestamp: '2026-01-26T19:53:17Z'
 tags:
 - name: Grants
   x-groupIndex: 1
@@ -440,19 +440,6 @@ components:
         resolved:
           type: boolean
           description: Indicates whether this action has been successfully completed.
-    Amount:
-      required:
-      - currency
-      - value
-      type: object
-      properties:
-        currency:
-          type: string
-          description: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes#currency-codes).
-        value:
-          type: integer
-          description: The amount of the transaction, in [minor units](https://docs.adyen.com/development-resources/currency-codes#minor-units).
-          format: int64
     Balance:
       required:
       - currency
@@ -478,24 +465,6 @@ components:
           description: The total amount of the grant that the user must repay. It
             is the sum of the fee amount and the principal amount.
           format: int64
-    Counterparty:
-      type: object
-      properties:
-        accountHolderId:
-          type: string
-          description: The unique identifier of the account holder that receives the
-            grant. If no `balanceAccountId` is provided, the grant funds are disbursed
-            to the primary balance account of this account holder.
-        balanceAccountId:
-          type: string
-          description: The unique identifier of the balance account where the funds
-            are disbursed. The balance account must belong to the specified account
-            holder.
-        transferInstrumentId:
-          type: string
-          description: The unique identifier of the transfer instrument where the
-            funds are disbursed. The transfer instrument must belong to the legal
-            entity of the specified account holder.
     Grant:
       required:
       - balances
@@ -505,17 +474,12 @@ components:
       - status
       type: object
       properties:
-        amount:
-          description: Contains information about the amount of the grant. This is
-            the sum of the amounts of all the disbursements related to the grant.
-          $ref: '#/components/schemas/Amount'
         balances:
           description: Contains information about the balances of the grant.
           $ref: '#/components/schemas/Balance'
         counterparty:
           description: Contains the details of the party that receives the grant.
-            Setting either an `accountHolderId`, `balanceAccountId`, or both is required.
-          $ref: '#/components/schemas/Counterparty'
+          $ref: '#/components/schemas/GrantCounterparty'
         grantAccountId:
           type: string
           description: The unique identifier of the grant account that tracks this
@@ -530,6 +494,23 @@ components:
         status:
           description: Contains the status of the grant.
           $ref: '#/components/schemas/Status'
+    GrantCounterparty:
+      type: object
+      properties:
+        accountHolderId:
+          type: string
+          description: The unique identifier of the account holder that receives the
+            grant.
+        balanceAccountId:
+          type: string
+          description: The unique identifier of the balance account where the funds
+            are disbursed. The balance account must belong to the specified account
+            holder.
+        transferInstrumentId:
+          type: string
+          description: The unique identifier of the transfer instrument where the
+            funds are disbursed. The transfer instrument must belong to the legal
+            entity of the specified account holder.
     Status:
       required:
       - code
@@ -558,11 +539,7 @@ components:
 
             - **Requested**
 
-            - **Underwriting**
-
             - **Reviewing**
-
-            - **Assessed**
 
             - **Approved**
 
@@ -577,9 +554,7 @@ components:
           - Failed
           - Revoked
           - Requested
-          - Underwriting
           - Reviewing
-          - Assessed
           - Approved
           - Rejected
           - Cancelled
@@ -589,14 +564,9 @@ components:
       - grantOfferId
       type: object
       properties:
-        amount:
-          description: Contains information about the amount of the grant. This is
-            the sum of the amounts of all the disbursements related to the grant.
-          $ref: '#/components/schemas/Amount'
         counterparty:
           description: Contains the details of the party that receives the grant.
-            Setting either an `accountHolderId`, `balanceAccountId`, or both is required.
-          $ref: '#/components/schemas/Counterparty'
+          $ref: '#/components/schemas/GrantInfoCounterparty'
         grantAccountId:
           type: string
           description: The unique identifier of the grant account that tracks this
@@ -605,6 +575,19 @@ components:
           type: string
           description: The unique identifier of the selected grant offer. Adyen uses
             the details of the selected grant offer to create a grant.
+    GrantInfoCounterparty:
+      type: object
+      properties:
+        balanceAccountId:
+          type: string
+          description: The unique identifier of the balance account where the funds
+            are disbursed. The balance account must belong to the specified account
+            holder.
+        transferInstrumentId:
+          type: string
+          description: The unique identifier of the transfer instrument where the
+            funds are disbursed. The transfer instrument must belong to the legal
+            entity of the specified account holder.
     Grants:
       required:
       - grants
@@ -667,6 +650,20 @@ components:
       - jpZenginCode
       - nzBankBranchCode
       - usRoutingNumber
+    Amount:
+      required:
+      - currency
+      - value
+      type: object
+      properties:
+        currency:
+          type: string
+          description: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes#currency-codes)
+            of the amount.
+        value:
+          type: integer
+          description: The numeric value of the amount, in [minor units](https://docs.adyen.com/development-resources/currency-codes#minor-units).
+          format: int64
     BRLocalAccountIdentification:
       required:
       - accountNumber
