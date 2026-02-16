@@ -2000,8 +2000,8 @@
                   "$ref" : "#/components/schemas/CapitalBalance"
                },
                "counterparty" : {
-                  "description" : "An object containing the details of the receiving party of the grant. Setting either an `accountHolderId`, `balanceAccountId`, or both is required.",
-                  "$ref" : "#/components/schemas/Counterparty"
+                  "description" : "An object containing the details of the receiving party of the grant.",
+                  "$ref" : "#/components/schemas/GrantCounterparty"
                },
                "fee" : {
                   "description" : "An object containing the fee currency and value, in [minor units](https://docs.adyen.com/development-resources/currency-codes).",
@@ -2049,8 +2049,8 @@
             "additionalProperties" : false,
             "properties" : {
                "counterparty" : {
-                  "description" : "An object containing the details of the receiving party of the grant. Setting either an `accountHolderId`, `balanceAccountId`, or both is required.",
-                  "$ref" : "#/components/schemas/Counterparty"
+                  "description" : "An object containing the details of the receiving party of the grant.",
+                  "$ref" : "#/components/schemas/GrantInfoCounterparty"
                },
                "grantAccountId" : {
                   "description" : "The identifier of the grant account used for the grant.",
@@ -2171,24 +2171,6 @@
                "type",
                "status"
             ],
-            "type" : "object"
-         },
-         "Counterparty" : {
-            "additionalProperties" : false,
-            "properties" : {
-               "accountHolderId" : {
-                  "description" : "The identifier of the receiving account holder. The payout will default to the primary balance account of this account holder if no `balanceAccountId` is provided.",
-                  "type" : "string"
-               },
-               "balanceAccountId" : {
-                  "description" : "The identifier of the balance account that belongs to the receiving account holder.",
-                  "type" : "string"
-               },
-               "transferInstrumentId" : {
-                  "description" : "The identifier of the transfer instrument that belongs to the legal entity of the account holder.",
-                  "type" : "string"
-               }
-            },
             "type" : "object"
          },
          "CounterpartyInfoV3" : {
@@ -2406,6 +2388,38 @@
             },
             "type" : "object"
          },
+         "GrantCounterparty" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "accountHolderId" : {
+                  "description" : "The identifier of the receiving account holder.",
+                  "type" : "string"
+               },
+               "balanceAccountId" : {
+                  "description" : "The identifier of the balance account that belongs to the receiving account holder.",
+                  "type" : "string"
+               },
+               "transferInstrumentId" : {
+                  "description" : "The identifier of the transfer instrument that belongs to the legal entity of the account holder.",
+                  "type" : "string"
+               }
+            },
+            "type" : "object"
+         },
+         "GrantInfoCounterparty" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "balanceAccountId" : {
+                  "description" : "The identifier of the balance account that belongs to the receiving account holder.",
+                  "type" : "string"
+               },
+               "transferInstrumentId" : {
+                  "description" : "The identifier of the transfer instrument that belongs to the legal entity of the account holder.",
+                  "type" : "string"
+               }
+            },
+            "type" : "object"
+         },
          "HKLocalAccountIdentification" : {
             "additionalProperties" : false,
             "properties" : {
@@ -2480,6 +2494,31 @@
             "required" : [
                "type",
                "iban"
+            ],
+            "type" : "object"
+         },
+         "InterchangeData" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "interchangeAmount" : {
+                  "description" : "The currency and value of the adjusted interchange fee.",
+                  "$ref" : "#/components/schemas/Amount"
+               },
+               "interchangeRateIndicator" : {
+                  "description" : "A 3-character alphanumeric code assigned by Visa that identifies the specific interchange reimbursement program a transaction qualified for. The code is assigned based on the card type, entry mode, and security data provided.",
+                  "type" : "string"
+               },
+               "type" : {
+                  "default" : "interchangeData",
+                  "description" : "The type of events data. \n\nPossible values: \n\n - **interchangeData**: information about the interchange fee applied to a transaction.",
+                  "enum" : [
+                     "interchangeData"
+                  ],
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "type"
             ],
             "type" : "object"
          },
@@ -2843,6 +2882,7 @@
                      "failed",
                      "fee",
                      "feePending",
+                     "interchangeAdjusted",
                      "internalTransfer",
                      "internalTransferPending",
                      "invoiceDeduction",
@@ -3915,6 +3955,7 @@
                      "failed",
                      "fee",
                      "feePending",
+                     "interchangeAdjusted",
                      "internalTransfer",
                      "internalTransferPending",
                      "invoiceDeduction",
@@ -4289,6 +4330,7 @@
                      "failed",
                      "fee",
                      "feePending",
+                     "interchangeAdjusted",
                      "internalTransfer",
                      "internalTransferPending",
                      "invoiceDeduction",
@@ -4441,6 +4483,9 @@
                   "description" : "A list of event data.",
                   "items" : {
                      "oneOf" : [
+                        {
+                           "$ref" : "#/components/schemas/InterchangeData"
+                        },
                         {
                            "$ref" : "#/components/schemas/IssuingTransactionData"
                         },
@@ -4610,6 +4655,7 @@
                      "failed",
                      "fee",
                      "feePending",
+                     "interchangeAdjusted",
                      "internalTransfer",
                      "internalTransferPending",
                      "invoiceDeduction",
@@ -4670,6 +4716,7 @@
                   "description" : "The type of the transfer event. Possible values: **accounting**, **tracking**.",
                   "enum" : [
                      "accounting",
+                     "tracing",
                      "tracking"
                   ],
                   "type" : "string"
@@ -5590,7 +5637,6 @@
                "grantAccountId" : "CG00000000000000000000001",
                "grantOfferId" : "0000000000000001",
                "counterparty" : {
-                  "accountHolderId" : "AH00000000000000000000001",
                   "balanceAccountId" : "BA00000000000000000000001"
                }
             }
