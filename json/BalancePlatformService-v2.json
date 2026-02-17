@@ -602,7 +602,7 @@
         }, {
           "name" : "formType",
           "in" : "query",
-          "description" : "The type of tax form you want to retrieve. Accepted values are **US1099k** and **US1099nec**",
+          "description" : "The type of tax form you want to retrieve. Accepted values are **US1099k** and **US1099nec**.",
           "required" : true,
           "style" : "form",
           "explode" : true,
@@ -618,7 +618,7 @@
         }, {
           "name" : "year",
           "in" : "query",
-          "description" : "The tax year in YYYY format for the tax form you want to retrieve",
+          "description" : "The tax year in **YYYY** format for the tax form you want to retrieve.",
           "required" : true,
           "style" : "form",
           "explode" : true,
@@ -629,7 +629,7 @@
         }, {
           "name" : "legalEntityId",
           "in" : "query",
-          "description" : "The legal entity reference whose tax form you want to retrieve",
+          "description" : "The legal entity reference whose tax form you want to retrieve.",
           "required" : false,
           "style" : "form",
           "explode" : true,
@@ -693,6 +693,21 @@
                 "examples" : {
                   "generic" : {
                     "$ref" : "#/components/examples/generic-403"
+                  }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The requested tax form was not available.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RestServiceError"
+                },
+                "examples" : {
+                  "generic" : {
+                    "$ref" : "#/components/examples/generic-404"
                   }
                 }
               }
@@ -8683,6 +8698,64 @@
         "x-sortIndex" : 0
       }
     },
+    "/accountHolders/{id}/taxFormSummary" : {
+      "get" : {
+        "tags" : [ "Account holders" ],
+        "summary" : "Get summary of tax forms for an account holder",
+        "description" : "Returns a summary of all tax forms for an account holder.",
+        "operationId" : "get-accountHolders-id-taxFormSummary",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "The unique identifier of the account holder.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "formType",
+          "in" : "query",
+          "description" : "The type of tax form you want a summary for. Accepted values are **US1099k** and **US1099nec**.",
+          "required" : true,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK - the request has succeeded.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TaxFormSummaryResponse"
+                },
+                "examples" : {
+                  "get-tax-form-summary-200" : {
+                    "summary" : "Summary of tax forms for an account holder",
+                    "description" : "Summary of tax forms for an account holder",
+                    "value" : {
+                      "data" : [ {
+                        "legalEntityId" : "LE123",
+                        "taxYears" : [ 2023 ]
+                      }, {
+                        "legalEntityId" : "LE987",
+                        "taxYears" : [ 2024, 2025 ]
+                      } ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-methodName" : "getTaxFormSummary",
+        "x-sortIndex" : 6
+      }
+    },
     "/balanceAccounts/{id}/transferLimits/approve" : {
       "post" : {
         "tags" : [ "Transfer limits - balance account level" ],
@@ -14819,6 +14892,37 @@
           }
         },
         "required" : [ "scaAssociations" ]
+      },
+      "Summary" : {
+        "type" : "object",
+        "properties" : {
+          "legalEntityId" : {
+            "type" : "string",
+            "description" : "The unique identifier of the legal entity."
+          },
+          "taxYears" : {
+            "type" : "array",
+            "description" : "The tax years for which the legal entity has a tax form.",
+            "items" : {
+              "type" : "integer",
+              "format" : "int32"
+            }
+          }
+        },
+        "required" : [ "legalEntityId", "taxYears" ]
+      },
+      "TaxFormSummaryResponse" : {
+        "type" : "object",
+        "properties" : {
+          "data" : {
+            "type" : "array",
+            "description" : "A list of tax form summaries, where each summary consists of the legal entity and the tax years in which the legal entity has a tax form.",
+            "items" : {
+              "$ref" : "#/components/schemas/Summary"
+            }
+          }
+        },
+        "required" : [ "data" ]
       },
       "ApproveTransferLimitRequest" : {
         "type" : "object",
