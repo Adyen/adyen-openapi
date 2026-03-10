@@ -2,9 +2,9 @@ openapi: 3.1.0
 info:
   version: '1'
   x-publicVersion: true
-  title: Grants webhooks
-  description: 'After a user makes a request for business financing, Adyen sends webhooks
-    with information about the grant created for your user.
+  title: Capital webhooks
+  description: 'Adyen sends webhooks to notify your system when financing offers or
+    grants are created or updated.
 
 
     You can use these webhooks to build your implementation. For example, you can
@@ -15,6 +15,7 @@ info:
     name: Adyen Developer Experience team
     url: https://github.com/Adyen/adyen-openapi
 tags:
+- name: Dynamic offers
 - name: Grant offers
 - name: Grants
 webhooks:
@@ -22,13 +23,13 @@ webhooks:
     post:
       tags:
       - Grant offers
-      summary: Capital offer created
-      description: Adyen sends this webhook to provide details about a Capital offer
+      summary: Static offer created
+      description: Adyen sends this webhook to provide details about a static offer
         that has been created for an account holder.
       x-addedInVersion: '1'
       operationId: post-balancePlatform.balanceAccountHolder.capitalOffer.created
-      x-sortIndex: 1
-      x-methodName: capitalOfferCreated
+      x-sortIndex: 2
+      x-methodName: staticOfferCreated
       security:
       - BasicAuth: []
       requestBody:
@@ -36,6 +37,31 @@ webhooks:
           application/json:
             schema:
               $ref: '#/components/schemas/GrantOffer'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BalancePlatformNotificationResponse'
+          description: OK - the request has succeeded.
+  balancePlatform.capital.dynamicOffer.created:
+    post:
+      tags:
+      - Dynamic offers
+      summary: Dynamic offer created
+      description: Adyen sends this webhook to provide details about a dynamic offer
+        that has been created for an account holder.
+      x-addedInVersion: '1'
+      operationId: post-balancePlatform.capital.dynamicOffer.created
+      x-sortIndex: 1
+      x-methodName: dynamicOfferCreated
+      security:
+      - BasicAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DynamicOffer'
       responses:
         '200':
           content:
@@ -55,7 +81,7 @@ webhooks:
         '
       x-addedInVersion: '1'
       operationId: post-balancePlatform.grants.created
-      x-sortIndex: 1
+      x-sortIndex: 3
       x-methodName: grantCreated
       security:
       - BasicAuth: []
@@ -84,7 +110,7 @@ webhooks:
         to your user, or when your user repays the financing amount.'
       x-addedInVersion: '1'
       operationId: post-balancePlatform.grants.updated
-      x-sortIndex: 2
+      x-sortIndex: 3
       x-methodName: grantUpdated
       security:
       - BasicAuth: []
@@ -165,6 +191,79 @@ components:
           description: Respond with any **2xx** HTTP status code to [accept the webhook](https://docs.adyen.com/development-resources/webhooks/#accept-webhooks).
           type: string
       type: object
+    DynamicOffer:
+      additionalProperties: false
+      properties:
+        accountHolderId:
+          description: The unique identifier of the account holder that the dynamic
+            offer is for.
+          type: string
+        contractType:
+          description: 'The contract type of the offer.
+
+
+            Possible values:
+
+            * **loan**
+
+            * **cashAdvance**'
+          enum:
+          - cashAdvance
+          - loan
+          type: string
+        expiresAt:
+          description: The expiration date and time of the offer validity period.
+          format: date-time
+          type: string
+        financingType:
+          description: 'The type of financing that the offer is for.
+
+
+            Possible values: **businessFinancing**.'
+          enum:
+          - businessFinancing
+          - hardwareFinancing
+          type: string
+        id:
+          description: The unique identifier of the dynamic offer.
+          type: string
+        maximumAmount:
+          description: The maximum financing amount available to the account holder
+            under this offer.
+          $ref: '#/components/schemas/Amount'
+        minimumAmount:
+          description: The minimum financing amount available to the account holder
+            under this offer.
+          $ref: '#/components/schemas/Amount'
+        repayment:
+          description: Contains information about the repayment configuration of the
+            grant.
+          $ref: '#/components/schemas/DynamicOfferRepayment'
+        startsAt:
+          description: The starting date and time of the offer validity period.
+          format: date-time
+          type: string
+      required:
+      - id
+      - accountHolderId
+      - startsAt
+      - expiresAt
+      - financingType
+      - maximumAmount
+      - minimumAmount
+      - repayment
+      - contractType
+      type: object
+    DynamicOfferRepayment:
+      additionalProperties: false
+      properties:
+        term:
+          description: Contains information about the time period in which your user
+            must repay the total amount of the grant.
+          $ref: '#/components/schemas/RepaymentTerm'
+      required:
+      - term
+      type: object
     Grant:
       additionalProperties: false
       properties:
@@ -179,8 +278,8 @@ components:
             grant.
           type: string
         grantOfferId:
-          description: The unique identifier of the selected grant offer. Adyen uses
-            the details of the selected grant offer to create a grant.
+          description: The unique identifier of the selected offer. Adyen uses the
+            details of the selected offer to create a grant.
           type: string
         id:
           description: The unique identifier of the grant reference.
@@ -239,14 +338,20 @@ components:
             financing.
           $ref: '#/components/schemas/Amount'
         contractType:
-          description: 'The contract type of the grant offer. Possible values: **cashAdvance**,
-            **loan**.'
+          description: 'The contract type of the offer.
+
+
+            Possible values:
+
+            * **loan**
+
+            * **cashAdvance**'
           enum:
           - cashAdvance
           - loan
           type: string
         expiresAt:
-          description: The date when the grant offer expires.
+          description: The expiration date and time of the offer validity period.
           format: date-time
           type: string
         fee:
@@ -254,14 +359,14 @@ components:
             for the grant.
           $ref: '#/components/schemas/GrantOfferFee'
         id:
-          description: The unique identifier of the grant offer.
+          description: The unique identifier of the offer.
           type: string
         repayment:
           description: Contains information about the repayment configuration of the
             grant.
           $ref: '#/components/schemas/Repayment'
         startsAt:
-          description: The date when the grant offer becomes available.
+          description: The starting date and time of the offer validity period.
           format: date-time
           type: string
       required:
@@ -271,7 +376,7 @@ components:
       additionalProperties: false
       properties:
         amount:
-          description: Contains the amount of the grant offer fee.
+          description: Contains the amount of the offer fee.
           $ref: '#/components/schemas/Amount'
         aprBasisPoints:
           description: Annual Percentage Rate (APR) of the offer. The percentage is
