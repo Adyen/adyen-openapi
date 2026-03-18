@@ -20,10 +20,58 @@ info:
     name: Adyen Developer Experience team
     url: https://github.com/Adyen/adyen-openapi
   version: '1'
-  x-timestamp: '2025-12-02T14:58:18Z'
+  x-timestamp: '2026-02-19T15:43:14Z'
 tags:
 - name: Balances
 webhooks:
+  balanceAccount.balance.updated:
+    post:
+      tags:
+      - Balances
+      summary: Balance updated
+      description: Adyen sends this webhook when the specified balance type reaches
+        or drops below the threshold you configured.
+      operationId: post-balanceAccount.balance.updated
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BalanceAccountBalanceNotificationRequest'
+            examples:
+              balance-updated:
+                summary: Balance changed
+                description: Balance changed
+                value:
+                  data:
+                    settingIds:
+                    - BWHS00000000000000000000000001
+                    - BWHS00000000000000000000000002
+                    creationDate: '2025-01-19T13:37:38+02:00'
+                    balancePlatform: YOUR_BALANCE_PLATFORM
+                    balanceAccountId: BA00000000000000000000000001
+                    currency: USD
+                    balances:
+                      available: 499900
+                      pending: 350000
+                      reserved: 120000
+                      balance: 470000
+                  environment: test
+                  type: balancePlatform.balanceAccount.balance.updated
+      responses:
+        '200':
+          description: OK - the request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BalancePlatformNotificationResponse'
+              examples:
+                balance-updated:
+                  summary: Acknowledge webhook
+                  description: Acknowledge webhook
+                  value:
+                    notificationResponse: '[accepted]'
+      x-methodName: balanceAccountBalanceUpdated
+      x-sortIndex: 0
   balancePlatform.balanceAccount.balance.block.released:
     post:
       tags:
@@ -94,62 +142,22 @@ webhooks:
                     notificationResponse: '[accepted]'
       x-methodName: releasedBlockBalance
       x-sortIndex: 0
-  balanceAccount.balance.updated:
-    post:
-      tags:
-      - Balances
-      summary: Balance updated
-      description: Adyen sends this webhook when the specified balance type reaches
-        or drops below the threshold you configured.
-      operationId: post-balanceAccount.balance.updated
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/BalanceAccountBalanceNotificationRequest'
-            examples:
-              balance-updated:
-                summary: Balance changed
-                description: Balance changed
-                value:
-                  data:
-                    settingIds:
-                    - BWHS00000000000000000000000001
-                    - BWHS00000000000000000000000002
-                    creationDate: '2025-01-19T13:37:38+02:00'
-                    balancePlatform: YOUR_BALANCE_PLATFORM
-                    balanceAccountId: BA00000000000000000000000001
-                    currency: USD
-                    balances:
-                      available: 499900
-                      pending: 350000
-                      reserved: 120000
-                      balance: 470000
-                  environment: test
-                  type: balancePlatform.balanceAccount.balance.updated
-      responses:
-        '200':
-          description: OK - the request has succeeded.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BalancePlatformNotificationResponse'
-              examples:
-                balance-updated:
-                  summary: Acknowledge webhook
-                  description: Acknowledge webhook
-                  value:
-                    notificationResponse: '[accepted]'
-      x-methodName: balanceAccountBalanceUpdated
-      x-sortIndex: 0
 components:
   schemas:
-    BalancePlatformNotificationResponse:
+    Amount:
+      required:
+      - currency
+      - value
       type: object
       properties:
-        notificationResponse:
+        currency:
           type: string
-          description: Respond with any **2xx** HTTP status code to [accept the webhook](https://docs.adyen.com/development-resources/webhooks/#accept-webhooks).
+          description: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes#currency-codes)
+            of the amount.
+        value:
+          type: integer
+          description: The numeric value of the amount, in [minor units](https://docs.adyen.com/development-resources/currency-codes#minor-units).
+          format: int64
     BalanceAccountBalanceNotificationRequest:
       required:
       - data
@@ -209,6 +217,12 @@ components:
           description: The unique identifier of the balance webhook setting.
           items:
             type: string
+    BalancePlatformNotificationResponse:
+      type: object
+      properties:
+        notificationResponse:
+          type: string
+          description: Respond with any **2xx** HTTP status code to [accept the webhook](https://docs.adyen.com/development-resources/webhooks/#accept-webhooks).
     Balances:
       type: object
       properties:
@@ -227,20 +241,6 @@ components:
         reserved:
           type: integer
           description: The balance currently held in reserve.
-          format: int64
-    Amount:
-      required:
-      - currency
-      - value
-      type: object
-      properties:
-        currency:
-          type: string
-          description: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes#currency-codes)
-            of the amount.
-        value:
-          type: integer
-          description: The numeric value of the amount, in [minor units](https://docs.adyen.com/development-resources/currency-codes#minor-units).
           format: int64
     ReleaseBlockedBalanceNotificationData:
       required:

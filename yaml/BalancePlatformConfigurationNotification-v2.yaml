@@ -19,6 +19,7 @@ tags:
 - name: Balance account
 - name: Payment instrument
 - name: Card order
+- name: Direct debit mandates
 - name: Network token
 - name: Score
 webhooks:
@@ -266,6 +267,54 @@ webhooks:
                 $ref: '#/components/examples/post-balancePlatform.cardorder.updated-balancePlatform-cardorder-updated-shipped-pin'
             schema:
               $ref: '#/components/schemas/CardOrderNotificationRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BalancePlatformNotificationResponse'
+          description: OK - the request has succeeded.
+  balancePlatform.mandate.created:
+    post:
+      tags:
+      - Direct debit mandates
+      summary: Mandate created
+      description: Adyen sends this webhook when a [direct debit mandate](https://docs.adyen.com/business-accounts/accept-direct-debits-uk)
+        is created.
+      operationId: post-balancePlatform.mandate.created
+      x-sortIndex: 1
+      x-methodName: mandateCreated
+      security:
+      - BasicAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MandateNotificationRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BalancePlatformNotificationResponse'
+          description: OK - the request has succeeded.
+  balancePlatform.mandate.updated:
+    post:
+      tags:
+      - Direct debit mandates
+      summary: Mandate updated
+      description: Adyen sends this webhook when a [direct debit mandate](https://docs.adyen.com/business-accounts/accept-direct-debits-uk)
+        is updated.
+      operationId: post-balancePlatform.mandate.updated
+      x-sortIndex: 2
+      x-methodName: mandateUpdated
+      security:
+      - BasicAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MandateNotificationRequest'
       responses:
         '200':
           content:
@@ -1597,6 +1646,111 @@ components:
       - type
       - iban
       type: object
+    Instant:
+      additionalProperties: false
+      type: object
+    Mandate:
+      additionalProperties: false
+      properties:
+        balanceAccountId:
+          description: The unique identifier of the balance account linked to the
+            payment instrument.
+          type: string
+        counterparty:
+          description: Contains information to identify the counterparty.
+          $ref: '#/components/schemas/MandateBankAccount'
+        createdAt:
+          description: The date when the mandate was created.
+          $ref: '#/components/schemas/Instant'
+        id:
+          description: The unique identifier of the mandate.
+          type: string
+        paymentInstrumentId:
+          description: The unique identifier of the payment instrument linked to the
+            mandate.
+          type: string
+        status:
+          description: 'The status of the mandate.
+
+
+            Possible values: **pending**, **approved**, **cancelled**.'
+          enum:
+          - approved
+          - cancelled
+          - pending
+          type: string
+        type:
+          description: 'The type of mandate. Possible value: **bacs**.'
+          enum:
+          - bacs
+          type: string
+        updatedAt:
+          description: The date when the mandate was updated.
+          $ref: '#/components/schemas/Instant'
+      type: object
+    MandateBankAccount:
+      additionalProperties: false
+      properties:
+        accountHolder:
+          description: Contains information about the owner of the counterparty bank
+            account.
+          $ref: '#/components/schemas/MandatePartyIdentification'
+        accountIdentification:
+          description: Contains the bank account details of the counterparty. The
+            fields required in this object depend on the country of the bank account
+            and the currency of the transfer.
+          oneOf:
+          - $ref: '#/components/schemas/UKLocalMandateAccountIdentification'
+      required:
+      - accountHolder
+      - accountIdentification
+      type: object
+    MandateNotificationData:
+      additionalProperties: false
+      properties:
+        balancePlatform:
+          description: The unique identifier of the balance platform.
+          type: string
+        mandate:
+          description: Contains information about the mandate that triggered the event.
+          $ref: '#/components/schemas/Mandate'
+      type: object
+    MandateNotificationRequest:
+      additionalProperties: false
+      properties:
+        data:
+          description: Contains event details.
+          $ref: '#/components/schemas/MandateNotificationData'
+        environment:
+          description: 'The environment from which the webhook originated.
+
+
+            Possible values: **test**, **live**.'
+          type: string
+        timestamp:
+          description: When the event was queued.
+          format: date-time
+          type: string
+        type:
+          description: Type of webhook.
+          enum:
+          - balancePlatform.mandate.created
+          - balancePlatform.mandate.updated
+          type: string
+      required:
+      - environment
+      - type
+      - data
+      type: object
+    MandatePartyIdentification:
+      additionalProperties: false
+      properties:
+        fullName:
+          description: "The full name of the entity that owns the bank account.\n\n\
+            Supported characters: [a-z] [A-Z] [0-9] , . ; : - \u2014 / \\ + & ! ?\
+            \ @ ( ) \" ' and space."
+          type: string
+      type: object
     Name:
       additionalProperties: false
       properties:
@@ -2005,7 +2159,9 @@ components:
           type: string
         settlementDelayDays:
           description: 'Specifies after how many business days the funds in a settlement
-            batch are made available in this balance account.
+            batch are made available in this balance account. Requires Custom Sales
+            Day Payout to be enabled for your balance account. Contact your account
+            manager or implementation manager to enable this.
 
 
             Possible values: **1** to **20**, or **null**.
@@ -2397,6 +2553,31 @@ components:
         result:
           description: The result of the authentication process.
           type: string
+      type: object
+    UKLocalMandateAccountIdentification:
+      additionalProperties: false
+      properties:
+        accountNumber:
+          description: The 8-digit bank account number, without separators or whitespace.
+          maxLength: 8
+          minLength: 8
+          type: string
+        sortCode:
+          description: The 6-digit [sort code](https://en.wikipedia.org/wiki/Sort_code),
+            without separators or whitespace.
+          maxLength: 6
+          minLength: 6
+          type: string
+        type:
+          default: ukLocal
+          description: '**ukLocal**'
+          enum:
+          - ukLocal
+          type: string
+      required:
+      - type
+      - accountNumber
+      - sortCode
       type: object
     ValidationFacts:
       additionalProperties: false

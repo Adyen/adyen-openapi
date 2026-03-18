@@ -47,6 +47,8 @@
   }, {
     "name" : "SCA device management"
   }, {
+    "name" : "Direct debit mandates"
+  }, {
     "name" : "Transfer limits - balance account level"
   }, {
     "name" : "Transfer limits - balance platform level"
@@ -6796,15 +6798,540 @@
         "x-methodName" : "validateBankAccountIdentification"
       }
     },
-    "/paymentInstruments/{paymentInstrumentId}/authorisedCardUsers" : {
+    "/accountHolders/{id}/taxFormSummary" : {
       "get" : {
-        "tags" : [ "Authorized card users" ],
-        "summary" : "Get authorized users for a card.",
-        "description" : "Returns the authorized users for a card.",
-        "operationId" : "get-paymentInstruments-paymentInstrumentId-authorisedCardUsers",
+        "tags" : [ "Account holders" ],
+        "summary" : "Get summary of tax forms for an account holder",
+        "description" : "Returns a summary of all tax forms for an account holder.",
+        "operationId" : "get-accountHolders-id-taxFormSummary",
         "parameters" : [ {
-          "name" : "paymentInstrumentId",
+          "name" : "id",
           "in" : "path",
+          "description" : "The unique identifier of the account holder.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "formType",
+          "in" : "query",
+          "description" : "The type of tax form you want a summary for. Accepted values are **US1099k** and **US1099nec**.",
+          "required" : true,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK - the request has succeeded.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TaxFormSummaryResponse"
+                },
+                "examples" : {
+                  "get-tax-form-summary-200" : {
+                    "summary" : "Summary of tax forms for an account holder",
+                    "description" : "Summary of tax forms for an account holder",
+                    "value" : {
+                      "data" : [ {
+                        "legalEntityId" : "LE123",
+                        "taxYears" : [ 2023 ]
+                      }, {
+                        "legalEntityId" : "LE987",
+                        "taxYears" : [ 2024, 2025 ]
+                      } ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-methodName" : "getTaxFormSummary",
+        "x-sortIndex" : 6
+      }
+    },
+    "/balanceAccounts/{id}/transferLimits" : {
+      "get" : {
+        "tags" : [ "Transfer limits - balance account level" ],
+        "summary" : "Filter and view the transfer limits",
+        "description" : "Filter and view the transfer limits configured for a balance account using the balance account's unique `id` and the available query parameters.\n",
+        "operationId" : "get-balanceAccounts-id-transferLimits",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "The unique identifier of the balance account.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "scope",
+          "in" : "query",
+          "description" : "The scope to which the transfer limit applies. Possible values:\n* **perTransaction**: you set a maximum amount for each transfer made from the balance account or balance platform.\n* **perDay**: you set a maximum total amount for all transfers made from the balance account or balance platform in a day.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/Scope"
+          }
+        }, {
+          "name" : "transferType",
+          "in" : "query",
+          "description" : "The type of transfer to which the limit applies. Possible values:\n* **instant**: the limit applies to transfers with an **instant** priority.\n* **all**: the limit applies to all transfers, regardless of priority.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/TransferType"
+          }
+        }, {
+          "name" : "status",
+          "in" : "query",
+          "description" : "The status of the transfer limit. Possible values:   \n* **active**: the limit is currently active.\n* **inactive**: the limit is currently inactive.\n* **pendingSCA**: the limit is pending until your user performs SCA.\n* **scheduled**: the limit is scheduled to become active at a future date.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/LimitStatus"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK - The request has succeeded.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TransferLimitListResponse"
+                },
+                "examples" : {
+                  "Response code 200: list of transfer limits" : {
+                    "summary" : "Response code 200: list of transfer limits",
+                    "description" : "Response code 200: list of transfer limits",
+                    "value" : {
+                      "transferLimits" : [ {
+                        "amount" : {
+                          "currency" : "EUR",
+                          "value" : 10000
+                        },
+                        "endsAt" : "2026-08-13T23:00:00+01:00",
+                        "id" : "TRLI00000000000000000000000001",
+                        "limitStatus" : "active",
+                        "reference" : "Your reference for the transfer limit",
+                        "scaInformation" : {
+                          "exemption" : "initialLimit",
+                          "status" : "notPerformed"
+                        },
+                        "scope" : "perTransaction",
+                        "startsAt" : "2025-08-13T23:00:00+01:00",
+                        "transferType" : "instant"
+                      }, {
+                        "amount" : {
+                          "currency" : "EUR",
+                          "value" : 20000
+                        },
+                        "endsAt" : "2026-08-13T23:00:00+01:00",
+                        "id" : "TRLI00000000000000000000000002",
+                        "limitStatus" : "active",
+                        "reference" : "Your reference for the transfer limit",
+                        "scaInformation" : {
+                          "exemption" : "initialLimit",
+                          "status" : "notPerformed"
+                        },
+                        "scope" : "perTransaction",
+                        "startsAt" : "2025-08-13T23:00:00+01:00",
+                        "transferType" : "all"
+                      } ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Not found - One of the transfer limits could not be found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "Unprocessable Content - A request validation error.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                }
+              }
+            }
+          }
+        },
+        "x-group-parameters" : "false",
+        "x-methodName" : "getTransferLimits",
+        "x-sortIndex" : 4
+      },
+      "post" : {
+        "tags" : [ "Transfer limits - balance account level" ],
+        "summary" : "Create a transfer limit",
+        "description" : "Create a transfer limit for your balance account using the unique `id` of your balance account.\n",
+        "operationId" : "post-balanceAccounts-id-transferLimits",
+        "parameters" : [ {
+          "name" : "WWW-Authenticate",
+          "in" : "header",
+          "description" : "Header for authenticating through SCA",
+          "required" : false,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          },
+          "example" : "SCA realm=\"TransferLimit\" auth-param1=\"eyJjaGFsbGVuZ2UiOiJiVlV6ZW5wek0waFNl...\""
+        }, {
+          "name" : "id",
+          "in" : "path",
+          "description" : "The unique identifier of the balance account.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CreateTransferLimitRequest"
+              },
+              "examples" : {
+                "Create a transfer limit request" : {
+                  "summary" : "Create a transfer limit request",
+                  "description" : "Create a transfer limit request",
+                  "value" : {
+                    "amount" : {
+                      "currency" : "EUR",
+                      "value" : 10000
+                    },
+                    "reference" : "Your reference for the transfer limit",
+                    "scaInformation" : {
+                      "scaOnApproval" : true
+                    },
+                    "scope" : "perTransaction",
+                    "startsAt" : "2025-08-15T06:36:20+01:00",
+                    "endsAt" : "2026-08-14T00:00:00+01:00",
+                    "transferType" : "all"
+                  }
+                }
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK - The request has succeeded.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TransferLimit"
+                },
+                "examples" : {
+                  "Create a transfer limit response" : {
+                    "summary" : "Create a transfer limit response",
+                    "description" : "Create a transfer limit response",
+                    "value" : {
+                      "amount" : {
+                        "currency" : "EUR",
+                        "value" : 10000
+                      },
+                      "endsAt" : "2026-08-13T23:00:00+01:00",
+                      "id" : "TRLI00000000000000000000000001",
+                      "limitStatus" : "pendingSCA",
+                      "reference" : "Your reference for the transfer limit",
+                      "scaInformation" : {
+                        "status" : "pending"
+                      },
+                      "scope" : "perTransaction",
+                      "startsAt" : "2025-08-15T06:36:20+01:00",
+                      "transferType" : "all"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Bad Request - The input is invalid, or no registered device for SCA was found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized - Authentication required via Strong Customer Authentication (SCA). The client must resolve the provided challenge.",
+            "headers" : {
+              "WWW-Authenticate" : {
+                "description" : "SCA challenge header containing the details necessary for completing authentication. The client should solve the challenge contained.",
+                "required" : true,
+                "style" : "simple",
+                "explode" : false,
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "Unprocessable Content - A request validation error.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                }
+              }
+            }
+          }
+        },
+        "x-methodName" : "createTransferLimit",
+        "x-sortIndex" : 1
+      }
+    },
+    "/balanceAccounts/{id}/transferLimits/approve" : {
+      "post" : {
+        "tags" : [ "Transfer limits - balance account level" ],
+        "summary" : "Approve pending transfer limits",
+        "description" : "Approve transfer limits that are pending SCA authentication.\n",
+        "operationId" : "post-balanceAccounts-id-transferLimits-approve",
+        "parameters" : [ {
+          "name" : "WWW-Authenticate",
+          "in" : "header",
+          "description" : "Header for authenticating using SCA.",
+          "required" : false,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          },
+          "example" : "SCA realm=\"TransferLimit\" auth-param1=\"eyJjaGFsbGVuZ2UiOiJiVlV6ZW5wek0waFNl...\""
+        }, {
+          "name" : "id",
+          "in" : "path",
+          "description" : "The unique identifier of the balance account.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ApproveTransferLimitRequest"
+              },
+              "examples" : {
+                "Approve pending transfer limits requests" : {
+                  "summary" : "Approve pending transfer limits requests",
+                  "description" : "Approve pending transfer limits requests",
+                  "value" : {
+                    "transferLimitIds" : [ "TRLI00000000000000000000000001", "TRLI00000000000000000000000002" ]
+                  }
+                }
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "204" : {
+            "description" : "No Content - The request has succeeded."
+          },
+          "401" : {
+            "description" : "Unauthorized - Authentication required via Strong Customer Authentication (SCA). The client must resolve the provided challenge.",
+            "headers" : {
+              "WWW-Authenticate" : {
+                "description" : "SCA challenge header containing the details necessary for completing authentication. The client should solve the challenge contained.",
+                "required" : true,
+                "style" : "simple",
+                "explode" : false,
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Not found - One of the transfer limits could not be found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "Unprocessable Content - A request validation error.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                }
+              }
+            }
+          }
+        },
+        "x-methodName" : "approvePendingTransferLimits",
+        "x-sortIndex" : 2
+      }
+    },
+    "/balanceAccounts/{id}/transferLimits/current" : {
+      "get" : {
+        "tags" : [ "Transfer limits - balance account level" ],
+        "summary" : "Get all current transfer limits",
+        "description" : "Get all transfer limits that currently apply to a balance account using the unique `id` of the balance account.\n",
+        "operationId" : "get-balanceAccounts-id-transferLimits-current",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "The unique identifier of the balance account.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "scope",
+          "in" : "query",
+          "description" : "The scope to which the transfer limit applies. Possible values:\n* **perTransaction**: you set a maximum amount for each transfer made from the balance account or balance platform.\n* **perDay**: you set a maximum total amount for all transfers made from the balance account or balance platform in a day.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/Scope"
+          }
+        }, {
+          "name" : "transferType",
+          "in" : "query",
+          "description" : "The type of transfer to which the limit applies. Possible values:\n* **instant**: the limit applies to transfers with an **instant** priority.\n* **all**: the limit applies to all transfers, regardless of priority.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/TransferType"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK - The request has succeeded.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TransferLimitListResponse"
+                },
+                "examples" : {
+                  "Response code 200: list of current transfer limits" : {
+                    "summary" : "Response code 200: list of current transfer limits",
+                    "description" : "Response code 200: list of current transfer limits",
+                    "value" : {
+                      "transferLimits" : [ {
+                        "amount" : {
+                          "currency" : "EUR",
+                          "value" : 10000
+                        },
+                        "endsAt" : "2026-08-13T23:00:00+01:00",
+                        "id" : "TRLI00000000000000000000000001",
+                        "limitStatus" : "active",
+                        "reference" : "Your reference for the transfer limit",
+                        "scaInformation" : {
+                          "exemption" : "initialLimit",
+                          "status" : "notPerformed"
+                        },
+                        "scope" : "perDay",
+                        "startsAt" : "2025-08-13T23:00:00+01:00",
+                        "transferType" : "instant"
+                      } ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Not found - One of the transfer limits could not be found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "Unprocessable Content - A request validation error.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                }
+              }
+            }
+          }
+        },
+        "x-group-parameters" : "false",
+        "x-methodName" : "getCurrentTransferLimits",
+        "x-sortIndex" : 3
+      }
+    },
+    "/balanceAccounts/{id}/transferLimits/{transferLimitId}" : {
+      "get" : {
+        "tags" : [ "Transfer limits - balance account level" ],
+        "summary" : "Get the details of a transfer limit",
+        "description" : "Get the details of a transfer limit using its unique `transferLimitId`.\n",
+        "operationId" : "get-balanceAccounts-id-transferLimits-transferLimitId",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "The unique identifier of the balance account.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "transferLimitId",
+          "in" : "path",
+          "description" : "The unique identifier of the transfer limit.",
           "required" : true,
           "style" : "simple",
           "explode" : false,
@@ -6814,64 +7341,32 @@
         } ],
         "responses" : {
           "200" : {
-            "description" : "Successful operation",
+            "description" : "OK - The request has succeeded.",
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/AuthorisedCardUsers"
+                  "$ref" : "#/components/schemas/TransferLimit"
                 },
                 "examples" : {
-                  "authorisedCardUsers" : {
-                    "summary" : "List of authorised users of the payment instrument.",
-                    "description" : "The response returned the list of authorised users of the payment instrument.",
+                  "Response code 200: transfer limit details" : {
+                    "summary" : "Response code 200: transfer limit details",
+                    "description" : "Response code 200: transfer limit details",
                     "value" : {
-                      "legalEntityIds" : [ "LE328V522322685LV3KTNF35M", "LE328SW223226B5LWVWNQ8THN" ]
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Unauthorized",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
-                },
-                "examples" : {
-                  "authorisedCardUsers-401" : {
-                    "summary" : "Unauthorized",
-                    "description" : "Authentication failed.",
-                    "value" : {
-                      "type" : "https://docs.adyen.com/errors/unauthorized",
-                      "title" : "Unauthorized",
-                      "status" : 401,
-                      "errorCode" : "00_401"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "403" : {
-            "description" : "Forbidden",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
-                },
-                "examples" : {
-                  "authorisedCardUsers-403" : {
-                    "summary" : "Forbidden",
-                    "description" : "Most commonly happens when user does not have sufficient roles or doesn't own requested resource.",
-                    "value" : {
-                      "type" : "https://docs.adyen.com/errors/forbidden",
-                      "errorCode" : "00_403",
-                      "title" : "Forbidden",
-                      "detail" : "Not allowed for card partner yet.",
-                      "requestId" : "d42c493b5176df89e51516c6060cc34c",
-                      "status" : 403
+                      "amount" : {
+                        "currency" : "EUR",
+                        "value" : 10000
+                      },
+                      "endsAt" : "2026-08-13T23:00:00+01:00",
+                      "id" : "TRLI00000000000000000000000001",
+                      "limitStatus" : "active",
+                      "reference" : "Your reference for the transfer limit",
+                      "scaInformation" : {
+                        "exemption" : "initialLimit",
+                        "status" : "notPerformed"
+                      },
+                      "scope" : "perTransaction",
+                      "startsAt" : "2025-08-13T23:00:00+01:00",
+                      "transferType" : "all"
                     }
                   }
                 }
@@ -6879,201 +7374,48 @@
             }
           },
           "404" : {
-            "description" : "Not Found",
+            "description" : "Not found - One of the transfer limits could not be found.",
             "content" : {
               "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
-                },
-                "examples" : {
-                  "authorisedCardUsers-404" : {
-                    "summary" : "Entity not found",
-                    "description" : "Given payment instrument or legal entities not found.",
-                    "value" : {
-                      "type" : "https://docs.adyen.com/errors/not-found",
-                      "errorCode" : "999_404_001",
-                      "title" : "Entity not found",
-                      "detail" : "Given payment instrument does not exist in our system. PI: PI3222722322935MDMZ9J83KH",
-                      "requestId" : "2fd2bd9cd4739575c5c562f0ff1e7396",
-                      "status" : 404
-                    }
-                  }
                 }
               }
             }
           },
           "422" : {
-            "description" : "Unprocessable Entity - a request validation error.",
+            "description" : "Unprocessable Content - A request validation error.",
             "content" : {
               "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
-                },
-                "examples" : {
-                  "authorisedCardUsers-422" : {
-                    "summary" : "Business constraint violation",
-                    "description" : "Response returned when request fields were invalid.",
-                    "value" : {
-                      "type" : "https://docs.adyen.com/errors/unprocessable-entity",
-                      "errorCode" : "999_422_002",
-                      "title" : "Business constraint violation",
-                      "detail" : "There is not any legal entity tied to this payment instrument.",
-                      "requestId" : "4949a74bb7be732e559808a8ac3a86fc",
-                      "status" : 422
-                    }
-                  }
                 }
               }
             }
           }
         },
-        "x-methodName" : "getAllAuthorisedCardUsers",
-        "x-sortIndex" : 2
-      },
-      "post" : {
-        "tags" : [ "Authorized card users" ],
-        "summary" : "Create authorized users for a card.",
-        "description" : "Assigns authorized users to a card. Users must have the **authorisedPaymentInstrumentUser** capability to be able to use the card.",
-        "operationId" : "post-paymentInstruments-paymentInstrumentId-authorisedCardUsers",
-        "parameters" : [ {
-          "name" : "paymentInstrumentId",
-          "in" : "path",
-          "required" : true,
-          "style" : "simple",
-          "explode" : false,
-          "schema" : {
-            "type" : "string"
-          }
-        } ],
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/AuthorisedCardUsers"
-              },
-              "examples" : {
-                "authorisedCardUsers" : {
-                  "summary" : "Assigns authorised users to the payment instrument.",
-                  "description" : "The request to assign given authorised users to the payment instrument.",
-                  "value" : {
-                    "legalEntityIds" : [ "LE328V522322685LV3KTNF35M", "LE328SW223226B5LWVWNQ8THN" ]
-                  }
-                }
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "204" : {
-            "description" : "Successful operation"
-          },
-          "400" : {
-            "description" : "Bad request",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
-                },
-                "examples" : {
-                  "authorisedCardUsers-post-400" : {
-                    "summary" : "Bad request",
-                    "description" : "Response returned when request parsing has failed or some request fields were invalid.",
-                    "value" : {
-                      "type" : "https://docs.adyen.com/errors/bad-request",
-                      "errorCode" : "999_400_000",
-                      "title" : "Bad request",
-                      "detail" : "Payment instrument already linked with legal entities. Please use patch method.",
-                      "requestId" : "24433d4ef9de1fa82be15274638f5d49",
-                      "status" : 400
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Unauthorized",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
-                },
-                "examples" : {
-                  "authorisedCardUsers-401" : {
-                    "summary" : "Unauthorized",
-                    "description" : "Authentication failed.",
-                    "value" : {
-                      "type" : "https://docs.adyen.com/errors/unauthorized",
-                      "title" : "Unauthorized",
-                      "status" : 401,
-                      "errorCode" : "00_401"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "403" : {
-            "description" : "Forbidden",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
-                },
-                "examples" : {
-                  "authorisedCardUsers-403" : {
-                    "summary" : "Forbidden",
-                    "description" : "Most commonly happens when user does not have sufficient roles or doesn't own requested resource.",
-                    "value" : {
-                      "type" : "https://docs.adyen.com/errors/forbidden",
-                      "errorCode" : "00_403",
-                      "title" : "Forbidden",
-                      "detail" : "Not allowed for card partner yet.",
-                      "requestId" : "d42c493b5176df89e51516c6060cc34c",
-                      "status" : 403
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "422" : {
-            "description" : "Unprocessable Entity - a request validation error.",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
-                },
-                "examples" : {
-                  "authorisedCardUsers-post-422" : {
-                    "summary" : "Business constraint violation",
-                    "description" : "Response returned when request fields were invalid.",
-                    "value" : {
-                      "type" : "https://docs.adyen.com/errors/unprocessable-entity",
-                      "errorCode" : "999_422_002",
-                      "title" : "Business constraint violation",
-                      "detail" : "Given payment instrument is not a multi use payment instrument.",
-                      "requestId" : "4a7beaa203f673074e029916d4325602",
-                      "status" : 422
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "x-methodName" : "createAuthorisedCardUsers",
-        "x-sortIndex" : 1
+        "x-methodName" : "getSpecificTransferLimit",
+        "x-sortIndex" : 5
       },
       "delete" : {
-        "tags" : [ "Authorized card users" ],
-        "summary" : "Delete the authorized users for a card.",
-        "description" : "Deletes the list of authorized users assigned to a card.",
-        "operationId" : "delete-paymentInstruments-paymentInstrumentId-authorisedCardUsers",
+        "tags" : [ "Transfer limits - balance account level" ],
+        "summary" : "Delete a scheduled or pending transfer limit",
+        "description" : "Delete a scheduled or pending transfer limit using its unique `transferLimitId`. You cannot delete an active limit.\n",
+        "operationId" : "delete-balanceAccounts-id-transferLimits-transferLimitId",
         "parameters" : [ {
-          "name" : "paymentInstrumentId",
+          "name" : "id",
           "in" : "path",
+          "description" : "The unique identifier of the balance account.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "transferLimitId",
+          "in" : "path",
+          "description" : "The unique identifier of the transfer limit.",
           "required" : true,
           "style" : "simple",
           "explode" : false,
@@ -7083,193 +7425,31 @@
         } ],
         "responses" : {
           "204" : {
-            "description" : "Successful operation"
+            "description" : "No Content - The request has succeeded."
           },
-          "401" : {
-            "description" : "Unauthorized",
+          "404" : {
+            "description" : "Not found - One of the transfer limits could not be found.",
             "content" : {
               "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
-                },
-                "examples" : {
-                  "authorisedCardUsers-401" : {
-                    "summary" : "Unauthorized",
-                    "description" : "Authentication failed.",
-                    "value" : {
-                      "type" : "https://docs.adyen.com/errors/unauthorized",
-                      "title" : "Unauthorized",
-                      "status" : 401,
-                      "errorCode" : "00_401"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "403" : {
-            "description" : "Forbidden",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
-                },
-                "examples" : {
-                  "authorisedCardUsers-403" : {
-                    "summary" : "Forbidden",
-                    "description" : "Most commonly happens when user does not have sufficient roles or doesn't own requested resource.",
-                    "value" : {
-                      "type" : "https://docs.adyen.com/errors/forbidden",
-                      "errorCode" : "00_403",
-                      "title" : "Forbidden",
-                      "detail" : "Not allowed for card partner yet.",
-                      "requestId" : "d42c493b5176df89e51516c6060cc34c",
-                      "status" : 403
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "x-methodName" : "deleteAuthorisedCardUsers",
-        "x-sortIndex" : 4
-      },
-      "patch" : {
-        "tags" : [ "Authorized card users" ],
-        "summary" : "Update the authorized users for a card.",
-        "description" : "Updates the list of authorized users for a card.\n\n>This request replaces all existing authorized users for the card.",
-        "operationId" : "patch-paymentInstruments-paymentInstrumentId-authorisedCardUsers",
-        "parameters" : [ {
-          "name" : "paymentInstrumentId",
-          "in" : "path",
-          "required" : true,
-          "style" : "simple",
-          "explode" : false,
-          "schema" : {
-            "type" : "string"
-          }
-        } ],
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/AuthorisedCardUsers"
-              },
-              "examples" : {
-                "authorisedCardUsers" : {
-                  "summary" : "Updates authorised users of the payment instrument.",
-                  "description" : "The request replaces existing authorised users of the payment instrument with the ones in the request.",
-                  "value" : {
-                    "legalEntityIds" : [ "LE328V522322685LV3KTNF35M", "LE328SW223226B5LWVWNQ8THN" ]
-                  }
-                }
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "204" : {
-            "description" : "Successful operation"
-          },
-          "400" : {
-            "description" : "Bad request",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
-                },
-                "examples" : {
-                  "authorisedCardUsers-patch-400" : {
-                    "summary" : "Bad request",
-                    "description" : "Response returned when request parsing has failed or some request fields were invalid.",
-                    "value" : {
-                      "type" : "https://docs.adyen.com/errors/bad-request",
-                      "errorCode" : "999_400_000",
-                      "title" : "Bad request",
-                      "detail" : "Payment instrument hasn't linked with any legal entity reference Please use post method.",
-                      "requestId" : "a852d1b1c0fcbb7177b3bd16a0a2f6d7",
-                      "status" : 400
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Unauthorized",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
-                },
-                "examples" : {
-                  "authorisedCardUsers-401" : {
-                    "summary" : "Unauthorized",
-                    "description" : "Authentication failed.",
-                    "value" : {
-                      "type" : "https://docs.adyen.com/errors/unauthorized",
-                      "title" : "Unauthorized",
-                      "status" : 401,
-                      "errorCode" : "00_401"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "403" : {
-            "description" : "Forbidden",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
-                },
-                "examples" : {
-                  "authorisedCardUsers-403" : {
-                    "summary" : "Forbidden",
-                    "description" : "Most commonly happens when user does not have sufficient roles or doesn't own requested resource.",
-                    "value" : {
-                      "type" : "https://docs.adyen.com/errors/forbidden",
-                      "errorCode" : "00_403",
-                      "title" : "Forbidden",
-                      "detail" : "Not allowed for card partner yet.",
-                      "requestId" : "d42c493b5176df89e51516c6060cc34c",
-                      "status" : 403
-                    }
-                  }
                 }
               }
             }
           },
           "422" : {
-            "description" : "Unprocessable Entity - a request validation error.",
+            "description" : "Unprocessable Content - A request validation error.",
             "content" : {
               "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
-                },
-                "examples" : {
-                  "authorisedCardUsers-patch-422" : {
-                    "summary" : "Business constraint violation",
-                    "description" : "Response returned when request fields were invalid.",
-                    "value" : {
-                      "type" : "https://docs.adyen.com/errors/unprocessable-entity",
-                      "errorCode" : "999_422_002",
-                      "title" : "Business constraint violation",
-                      "detail" : "Request must have maximum 10 legal entity reference.",
-                      "requestId" : "aeadb5646efe065f5e027d2fb6b137ec",
-                      "status" : 422
-                    }
-                  }
                 }
               }
             }
           }
         },
-        "x-methodName" : "updateAuthorisedCardUsers",
-        "x-sortIndex" : 3
+        "x-methodName" : "deletePendingTransferLimit",
+        "x-sortIndex" : 6
       }
     },
     "/balancePlatforms/{balancePlatformId}/webhooks/{webhookId}/settings" : {
@@ -7847,6 +8027,14 @@
                 "$ref" : "#/components/schemas/BalanceWebhookSettingInfoUpdate"
               },
               "examples" : {
+                "deactivate-webhook-setting" : {
+                  "summary" : "Deactivate a webhook setting",
+                  "description" : "Deactivate a webhook setting",
+                  "value" : {
+                    "type" : "balance",
+                    "status" : "inactive"
+                  }
+                },
                 "update-webhook-setting" : {
                   "summary" : "Update a webhook setting",
                   "description" : "Update a webhook setting",
@@ -7868,14 +8056,6 @@
                       "value" : 1000000
                     } ]
                   }
-                },
-                "deactivate-webhook-setting" : {
-                  "summary" : "Deactivate a webhook setting",
-                  "description" : "Deactivate a webhook setting",
-                  "value" : {
-                    "type" : "balance",
-                    "status" : "inactive"
-                  }
                 }
               }
             }
@@ -7891,29 +8071,6 @@
                   "$ref" : "#/components/schemas/WebhookSetting"
                 },
                 "examples" : {
-                  "update-webhook-setting" : {
-                    "summary" : "Successfully updated a webhook setting",
-                    "description" : "Successfully updated a webhook setting",
-                    "value" : {
-                      "type" : "balance",
-                      "id" : "BWHS00000000000000000000000001",
-                      "target" : {
-                        "type" : "balanceAccount",
-                        "id" : "BA00000000000000000LIABLE"
-                      },
-                      "currency" : "USD",
-                      "status" : "active",
-                      "conditions" : [ {
-                        "balanceType" : "available",
-                        "conditionType" : "lessThan",
-                        "value" : 500000
-                      }, {
-                        "balanceType" : "balance",
-                        "conditionType" : "greaterThan",
-                        "value" : 1000000
-                      } ]
-                    }
-                  },
                   "deactivate-webhook-setting" : {
                     "summary" : "Successfully deactivated a webhook setting",
                     "description" : "Successfully deactivated a webhook setting",
@@ -7926,6 +8083,29 @@
                       },
                       "currency" : "USD",
                       "status" : "inactive",
+                      "conditions" : [ {
+                        "balanceType" : "available",
+                        "conditionType" : "lessThan",
+                        "value" : 500000
+                      }, {
+                        "balanceType" : "balance",
+                        "conditionType" : "greaterThan",
+                        "value" : 1000000
+                      } ]
+                    }
+                  },
+                  "update-webhook-setting" : {
+                    "summary" : "Successfully updated a webhook setting",
+                    "description" : "Successfully updated a webhook setting",
+                    "value" : {
+                      "type" : "balance",
+                      "id" : "BWHS00000000000000000000000001",
+                      "target" : {
+                        "type" : "balanceAccount",
+                        "id" : "BA00000000000000000LIABLE"
+                      },
+                      "currency" : "USD",
+                      "status" : "active",
                       "conditions" : [ {
                         "balanceType" : "available",
                         "conditionType" : "lessThan",
@@ -8004,6 +8184,1186 @@
         },
         "x-methodName" : "updateWebhookSetting",
         "x-sortIndex" : 2
+      }
+    },
+    "/balancePlatforms/{id}/transferLimits" : {
+      "get" : {
+        "tags" : [ "Transfer limits - balance platform level" ],
+        "summary" : "Filter and view the transfer limits",
+        "description" : "Filter and view the transfer limits configured for your balance platform using the balance platform's unique `id` and the available query parameters.\n",
+        "operationId" : "get-balancePlatforms-id-transferLimits",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "The unique identifier of the balance platform.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "scope",
+          "in" : "query",
+          "description" : "The scope to which the transfer limit applies. Possible values:\n* **perTransaction**: you set a maximum amount for each transfer made from the balance account or balance platform.\n* **perDay**: you set a maximum total amount for all transfers made from the balance account or balance platform in a day.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/Scope"
+          }
+        }, {
+          "name" : "transferType",
+          "in" : "query",
+          "description" : "The type of transfer to which the limit applies. Possible values:\n* **instant**: the limit applies to transfers with an **instant** priority.\n* **all**: the limit applies to all transfers, regardless of priority.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/TransferType"
+          }
+        }, {
+          "name" : "status",
+          "in" : "query",
+          "description" : "The status of the transfer limit. Possible values:   \n* **active**: the limit is currently active.\n* **inactive**: the limit is currently inactive.\n* **pendingSCA**: the limit is pending until your user performs SCA.\n* **scheduled**: the limit is scheduled to become active at a future date.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/LimitStatus"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK - The request has succeeded.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TransferLimitListResponse"
+                },
+                "examples" : {
+                  "Response code 200: list of transfer limits" : {
+                    "summary" : "Response code 200: list of transfer limits",
+                    "description" : "Response code 200: list of transfer limits",
+                    "value" : {
+                      "transferLimits" : [ {
+                        "amount" : {
+                          "currency" : "EUR",
+                          "value" : 10000
+                        },
+                        "endsAt" : "2026-08-13T23:00:00+01:00",
+                        "id" : "TRLI00000000000000000000000001",
+                        "limitStatus" : "active",
+                        "reference" : "Your reference for the transfer limit",
+                        "scaInformation" : {
+                          "exemption" : "initialLimit",
+                          "status" : "notPerformed"
+                        },
+                        "scope" : "perTransaction",
+                        "startsAt" : "2025-08-13T23:00:00+01:00",
+                        "transferType" : "instant"
+                      }, {
+                        "amount" : {
+                          "currency" : "EUR",
+                          "value" : 20000
+                        },
+                        "endsAt" : "2026-08-13T23:00:00+01:00",
+                        "id" : "TRLI00000000000000000000000002",
+                        "limitStatus" : "active",
+                        "reference" : "Your reference for the transfer limit",
+                        "scaInformation" : {
+                          "exemption" : "initialLimit",
+                          "status" : "notPerformed"
+                        },
+                        "scope" : "perTransaction",
+                        "startsAt" : "2025-08-13T23:00:00+01:00",
+                        "transferType" : "all"
+                      } ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Not found - One of the transfer limits could not be found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "Unprocessable Content - A request validation error.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                }
+              }
+            }
+          }
+        },
+        "x-group-parameters" : "false",
+        "x-methodName" : "getTransferLimits",
+        "x-sortIndex" : 2
+      },
+      "post" : {
+        "tags" : [ "Transfer limits - balance platform level" ],
+        "summary" : "Create a transfer limit",
+        "description" : "Create a transfer limit for your balance platform using the unique `id` of your balance platform.\n",
+        "operationId" : "post-balancePlatforms-id-transferLimits",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "The unique identifier of the balance platform.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CreateTransferLimitRequest"
+              },
+              "examples" : {
+                "Create a transfer limit request" : {
+                  "summary" : "Create a transfer limit request",
+                  "description" : "Create a transfer limit request",
+                  "value" : {
+                    "amount" : {
+                      "currency" : "EUR",
+                      "value" : 10000
+                    },
+                    "reference" : "Your reference for the transfer limit",
+                    "scaInformation" : {
+                      "scaOnApproval" : true
+                    },
+                    "scope" : "perTransaction",
+                    "startsAt" : "2025-08-15T06:36:20+01:00",
+                    "endsAt" : "2026-08-14T00:00:00+01:00",
+                    "transferType" : "all"
+                  }
+                }
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK - The request has succeeded.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TransferLimit"
+                },
+                "examples" : {
+                  "Create a transfer limit response" : {
+                    "summary" : "Create a transfer limit response",
+                    "description" : "Create a transfer limit response",
+                    "value" : {
+                      "amount" : {
+                        "currency" : "EUR",
+                        "value" : 10000
+                      },
+                      "endsAt" : "2026-08-13T23:00:00+01:00",
+                      "id" : "TRLI00000000000000000000000001",
+                      "limitStatus" : "pendingSCA",
+                      "reference" : "Your reference for the transfer limit",
+                      "scaInformation" : {
+                        "status" : "pending"
+                      },
+                      "scope" : "perTransaction",
+                      "startsAt" : "2025-08-15T06:36:20+01:00",
+                      "transferType" : "all"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Not found - One of the transfer limits could not be found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "Unprocessable Content - A request validation error.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                }
+              }
+            }
+          }
+        },
+        "x-methodName" : "createTransferLimit",
+        "x-sortIndex" : 1
+      }
+    },
+    "/balancePlatforms/{id}/transferLimits/{transferLimitId}" : {
+      "get" : {
+        "tags" : [ "Transfer limits - balance platform level" ],
+        "summary" : "Get the details of a transfer limit",
+        "description" : "Get the details of a transfer limit using its unique `transferLimitId`.\n",
+        "operationId" : "get-balancePlatforms-id-transferLimits-transferLimitId",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "The unique identifier of the balance platform.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "transferLimitId",
+          "in" : "path",
+          "description" : "The unique identifier of the transfer limit.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK - The request has succeeded.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TransferLimit"
+                },
+                "examples" : {
+                  "Response code 200: transfer limit details" : {
+                    "summary" : "Response code 200: transfer limit details",
+                    "description" : "Response code 200: transfer limit details",
+                    "value" : {
+                      "amount" : {
+                        "currency" : "EUR",
+                        "value" : 10000
+                      },
+                      "endsAt" : "2026-08-13T23:00:00+01:00",
+                      "id" : "TRLI00000000000000000000000001",
+                      "limitStatus" : "active",
+                      "reference" : "Your reference for the transfer limit",
+                      "scaInformation" : {
+                        "exemption" : "initialLimit",
+                        "status" : "notPerformed"
+                      },
+                      "scope" : "perTransaction",
+                      "startsAt" : "2025-08-13T23:00:00+01:00",
+                      "transferType" : "all"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Not found - One of the transfer limits could not be found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "Unprocessable Content - A request validation error.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                }
+              }
+            }
+          }
+        },
+        "x-methodName" : "getSpecificTransferLimit",
+        "x-sortIndex" : 3
+      },
+      "delete" : {
+        "tags" : [ "Transfer limits - balance platform level" ],
+        "summary" : "Delete a scheduled or pending transfer limit",
+        "description" : "Delete a scheduled or pending transfer limit using its unique `transferLimitId`. You cannot delete an active limit.\n",
+        "operationId" : "delete-balancePlatforms-id-transferLimits-transferLimitId",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "The unique identifier of the balance platform.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "transferLimitId",
+          "in" : "path",
+          "description" : "The unique identifier of the transfer limit.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No Content - The request has succeeded."
+          },
+          "404" : {
+            "description" : "Not found - One of the transfer limits could not be found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "Unprocessable Content - A request validation error.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                }
+              }
+            }
+          }
+        },
+        "x-methodName" : "deletePendingTransferLimit",
+        "x-sortIndex" : 4
+      }
+    },
+    "/mandates" : {
+      "get" : {
+        "tags" : [ "Direct debit mandates" ],
+        "summary" : "Get a list of mandates",
+        "description" : "Returns a list of all [direct debit mandates](https://docs.adyen.com/business-accounts/accept-direct-debits-uk) created for a business account.",
+        "operationId" : "get-mandates",
+        "parameters" : [ {
+          "name" : "balanceAccountId",
+          "in" : "query",
+          "description" : "The unique identifier of the balance account linked to the payment instrument.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "paymentInstrumentId",
+          "in" : "query",
+          "description" : "The unique identifier of the payment instrument linked to the mandate.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "cursor",
+          "in" : "query",
+          "description" : "The pagination cursor returned in a previous GET `/mandates` request.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK - The request has succeeded",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ListMandatesResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized - authentication required.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Forbidden - insufficient permissions to process the request.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "Unprocessable Entity - a request validation error.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Internal Server Error - the server could not process the request.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                }
+              }
+            }
+          }
+        },
+        "x-methodName" : "getListOfMandates",
+        "x-sortIndex" : 1
+      }
+    },
+    "/mandates/{mandateId}" : {
+      "get" : {
+        "tags" : [ "Direct debit mandates" ],
+        "summary" : "Get a specific mandate",
+        "description" : "Returns the details of the specified [direct debit mandate](https://docs.adyen.com/business-accounts/accept-direct-debits-uk).",
+        "operationId" : "get-mandates-mandateId",
+        "parameters" : [ {
+          "name" : "mandateId",
+          "in" : "path",
+          "description" : "The unique identifier of the mandate.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK - The request has succeeded",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Mandate"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized - authentication required.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Forbidden - insufficient permissions to process the request.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The mandate was not found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "Unprocessable Entity - a request validation error.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Internal Server Error - the server could not process the request.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                }
+              }
+            }
+          }
+        },
+        "x-methodName" : "getMandateById",
+        "x-sortIndex" : 2
+      },
+      "patch" : {
+        "tags" : [ "Direct debit mandates" ],
+        "summary" : "Amend a mandate",
+        "description" : "Amend the specified [direct debit mandate](https://docs.adyen.com/business-accounts/accept-direct-debits-uk).",
+        "operationId" : "patch-mandates-mandateId",
+        "parameters" : [ {
+          "name" : "mandateId",
+          "in" : "path",
+          "description" : "The unique identifier of the mandate.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PatchableMandate"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "202" : {
+            "description" : "Accepted - The request has been accepted"
+          },
+          "401" : {
+            "description" : "Unauthorized - authentication required.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Forbidden - insufficient permissions to process the request.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The mandate was not found",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "Unprocessable Entity - a request validation error.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Internal Server Error - the server could not process the request.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                }
+              }
+            }
+          }
+        },
+        "x-methodName" : "updateMandate",
+        "x-sortIndex" : 3
+      }
+    },
+    "/mandates/{mandateId}/cancel" : {
+      "post" : {
+        "tags" : [ "Direct debit mandates" ],
+        "summary" : "Cancel a mandate",
+        "description" : "Cancel a specified [direct debit mandate](https://docs.adyen.com/business-accounts/accept-direct-debits-uk).",
+        "operationId" : "post-mandates-mandateId-cancel",
+        "parameters" : [ {
+          "name" : "mandateId",
+          "in" : "path",
+          "description" : "The unique identifier of the mandate.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "202" : {
+            "description" : "Accepted - The request has been accepted"
+          },
+          "401" : {
+            "description" : "Unauthorized - authentication required.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Forbidden - insufficient permissions to process the request.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The mandate was not found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "Unprocessable Entity - a request validation error.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Internal Server Error - the server could not process the request.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                }
+              }
+            }
+          }
+        },
+        "x-methodName" : "cancelMandate",
+        "x-sortIndex" : 4
+      }
+    },
+    "/paymentInstruments/{paymentInstrumentId}/authorisedCardUsers" : {
+      "get" : {
+        "tags" : [ "Authorized card users" ],
+        "summary" : "Get authorized users for a card.",
+        "description" : "Returns the authorized users for a card.",
+        "operationId" : "get-paymentInstruments-paymentInstrumentId-authorisedCardUsers",
+        "parameters" : [ {
+          "name" : "paymentInstrumentId",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AuthorisedCardUsers"
+                },
+                "examples" : {
+                  "authorisedCardUsers" : {
+                    "summary" : "List of authorised users of the payment instrument.",
+                    "description" : "The response returned the list of authorised users of the payment instrument.",
+                    "value" : {
+                      "legalEntityIds" : [ "LE328V522322685LV3KTNF35M", "LE328SW223226B5LWVWNQ8THN" ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                },
+                "examples" : {
+                  "authorisedCardUsers-401" : {
+                    "summary" : "Unauthorized",
+                    "description" : "Authentication failed.",
+                    "value" : {
+                      "type" : "https://docs.adyen.com/errors/unauthorized",
+                      "title" : "Unauthorized",
+                      "status" : 401,
+                      "errorCode" : "00_401"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Forbidden",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                },
+                "examples" : {
+                  "authorisedCardUsers-403" : {
+                    "summary" : "Forbidden",
+                    "description" : "Most commonly happens when user does not have sufficient roles or doesn't own requested resource.",
+                    "value" : {
+                      "type" : "https://docs.adyen.com/errors/forbidden",
+                      "errorCode" : "00_403",
+                      "title" : "Forbidden",
+                      "detail" : "Not allowed for card partner yet.",
+                      "requestId" : "d42c493b5176df89e51516c6060cc34c",
+                      "status" : 403
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Not Found",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                },
+                "examples" : {
+                  "authorisedCardUsers-404" : {
+                    "summary" : "Entity not found",
+                    "description" : "Given payment instrument or legal entities not found.",
+                    "value" : {
+                      "type" : "https://docs.adyen.com/errors/not-found",
+                      "errorCode" : "999_404_001",
+                      "title" : "Entity not found",
+                      "detail" : "Given payment instrument does not exist in our system. PI: PI3222722322935MDMZ9J83KH",
+                      "requestId" : "2fd2bd9cd4739575c5c562f0ff1e7396",
+                      "status" : 404
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "Unprocessable Entity - a request validation error.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                },
+                "examples" : {
+                  "authorisedCardUsers-422" : {
+                    "summary" : "Business constraint violation",
+                    "description" : "Response returned when request fields were invalid.",
+                    "value" : {
+                      "type" : "https://docs.adyen.com/errors/unprocessable-entity",
+                      "errorCode" : "999_422_002",
+                      "title" : "Business constraint violation",
+                      "detail" : "There is not any legal entity tied to this payment instrument.",
+                      "requestId" : "4949a74bb7be732e559808a8ac3a86fc",
+                      "status" : 422
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-methodName" : "getAllAuthorisedCardUsers",
+        "x-sortIndex" : 2
+      },
+      "post" : {
+        "tags" : [ "Authorized card users" ],
+        "summary" : "Create authorized users for a card.",
+        "description" : "Assigns authorized users to a card. Users must have the **authorisedPaymentInstrumentUser** capability to be able to use the card.",
+        "operationId" : "post-paymentInstruments-paymentInstrumentId-authorisedCardUsers",
+        "parameters" : [ {
+          "name" : "paymentInstrumentId",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AuthorisedCardUsers"
+              },
+              "examples" : {
+                "authorisedCardUsers" : {
+                  "summary" : "Assigns authorised users to the payment instrument.",
+                  "description" : "The request to assign given authorised users to the payment instrument.",
+                  "value" : {
+                    "legalEntityIds" : [ "LE328V522322685LV3KTNF35M", "LE328SW223226B5LWVWNQ8THN" ]
+                  }
+                }
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "204" : {
+            "description" : "Successful operation"
+          },
+          "400" : {
+            "description" : "Bad request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                },
+                "examples" : {
+                  "authorisedCardUsers-post-400" : {
+                    "summary" : "Bad request",
+                    "description" : "Response returned when request parsing has failed or some request fields were invalid.",
+                    "value" : {
+                      "type" : "https://docs.adyen.com/errors/bad-request",
+                      "errorCode" : "999_400_000",
+                      "title" : "Bad request",
+                      "detail" : "Payment instrument already linked with legal entities. Please use patch method.",
+                      "requestId" : "24433d4ef9de1fa82be15274638f5d49",
+                      "status" : 400
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                },
+                "examples" : {
+                  "authorisedCardUsers-401" : {
+                    "summary" : "Unauthorized",
+                    "description" : "Authentication failed.",
+                    "value" : {
+                      "type" : "https://docs.adyen.com/errors/unauthorized",
+                      "title" : "Unauthorized",
+                      "status" : 401,
+                      "errorCode" : "00_401"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Forbidden",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                },
+                "examples" : {
+                  "authorisedCardUsers-403" : {
+                    "summary" : "Forbidden",
+                    "description" : "Most commonly happens when user does not have sufficient roles or doesn't own requested resource.",
+                    "value" : {
+                      "type" : "https://docs.adyen.com/errors/forbidden",
+                      "errorCode" : "00_403",
+                      "title" : "Forbidden",
+                      "detail" : "Not allowed for card partner yet.",
+                      "requestId" : "d42c493b5176df89e51516c6060cc34c",
+                      "status" : 403
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "Unprocessable Entity - a request validation error.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                },
+                "examples" : {
+                  "authorisedCardUsers-post-422" : {
+                    "summary" : "Business constraint violation",
+                    "description" : "Response returned when request fields were invalid.",
+                    "value" : {
+                      "type" : "https://docs.adyen.com/errors/unprocessable-entity",
+                      "errorCode" : "999_422_002",
+                      "title" : "Business constraint violation",
+                      "detail" : "Given payment instrument is not a multi use payment instrument.",
+                      "requestId" : "4a7beaa203f673074e029916d4325602",
+                      "status" : 422
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-methodName" : "createAuthorisedCardUsers",
+        "x-sortIndex" : 1
+      },
+      "delete" : {
+        "tags" : [ "Authorized card users" ],
+        "summary" : "Delete the authorized users for a card.",
+        "description" : "Deletes the list of authorized users assigned to a card.",
+        "operationId" : "delete-paymentInstruments-paymentInstrumentId-authorisedCardUsers",
+        "parameters" : [ {
+          "name" : "paymentInstrumentId",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "Successful operation"
+          },
+          "401" : {
+            "description" : "Unauthorized",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                },
+                "examples" : {
+                  "authorisedCardUsers-401" : {
+                    "summary" : "Unauthorized",
+                    "description" : "Authentication failed.",
+                    "value" : {
+                      "type" : "https://docs.adyen.com/errors/unauthorized",
+                      "title" : "Unauthorized",
+                      "status" : 401,
+                      "errorCode" : "00_401"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Forbidden",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                },
+                "examples" : {
+                  "authorisedCardUsers-403" : {
+                    "summary" : "Forbidden",
+                    "description" : "Most commonly happens when user does not have sufficient roles or doesn't own requested resource.",
+                    "value" : {
+                      "type" : "https://docs.adyen.com/errors/forbidden",
+                      "errorCode" : "00_403",
+                      "title" : "Forbidden",
+                      "detail" : "Not allowed for card partner yet.",
+                      "requestId" : "d42c493b5176df89e51516c6060cc34c",
+                      "status" : 403
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-methodName" : "deleteAuthorisedCardUsers",
+        "x-sortIndex" : 4
+      },
+      "patch" : {
+        "tags" : [ "Authorized card users" ],
+        "summary" : "Update the authorized users for a card.",
+        "description" : "Updates the list of authorized users for a card.\n\n>This request replaces all existing authorized users for the card.",
+        "operationId" : "patch-paymentInstruments-paymentInstrumentId-authorisedCardUsers",
+        "parameters" : [ {
+          "name" : "paymentInstrumentId",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AuthorisedCardUsers"
+              },
+              "examples" : {
+                "authorisedCardUsers" : {
+                  "summary" : "Updates authorised users of the payment instrument.",
+                  "description" : "The request replaces existing authorised users of the payment instrument with the ones in the request.",
+                  "value" : {
+                    "legalEntityIds" : [ "LE328V522322685LV3KTNF35M", "LE328SW223226B5LWVWNQ8THN" ]
+                  }
+                }
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "204" : {
+            "description" : "Successful operation"
+          },
+          "400" : {
+            "description" : "Bad request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                },
+                "examples" : {
+                  "authorisedCardUsers-patch-400" : {
+                    "summary" : "Bad request",
+                    "description" : "Response returned when request parsing has failed or some request fields were invalid.",
+                    "value" : {
+                      "type" : "https://docs.adyen.com/errors/bad-request",
+                      "errorCode" : "999_400_000",
+                      "title" : "Bad request",
+                      "detail" : "Payment instrument hasn't linked with any legal entity reference Please use post method.",
+                      "requestId" : "a852d1b1c0fcbb7177b3bd16a0a2f6d7",
+                      "status" : 400
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                },
+                "examples" : {
+                  "authorisedCardUsers-401" : {
+                    "summary" : "Unauthorized",
+                    "description" : "Authentication failed.",
+                    "value" : {
+                      "type" : "https://docs.adyen.com/errors/unauthorized",
+                      "title" : "Unauthorized",
+                      "status" : 401,
+                      "errorCode" : "00_401"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Forbidden",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                },
+                "examples" : {
+                  "authorisedCardUsers-403" : {
+                    "summary" : "Forbidden",
+                    "description" : "Most commonly happens when user does not have sufficient roles or doesn't own requested resource.",
+                    "value" : {
+                      "type" : "https://docs.adyen.com/errors/forbidden",
+                      "errorCode" : "00_403",
+                      "title" : "Forbidden",
+                      "detail" : "Not allowed for card partner yet.",
+                      "requestId" : "d42c493b5176df89e51516c6060cc34c",
+                      "status" : 403
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "Unprocessable Entity - a request validation error.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                },
+                "examples" : {
+                  "authorisedCardUsers-patch-422" : {
+                    "summary" : "Business constraint violation",
+                    "description" : "Response returned when request fields were invalid.",
+                    "value" : {
+                      "type" : "https://docs.adyen.com/errors/unprocessable-entity",
+                      "errorCode" : "999_422_002",
+                      "title" : "Business constraint violation",
+                      "detail" : "Request must have maximum 10 legal entity reference.",
+                      "requestId" : "aeadb5646efe065f5e027d2fb6b137ec",
+                      "status" : 422
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-methodName" : "updateAuthorisedCardUsers",
+        "x-sortIndex" : 3
       }
     },
     "/scaAssociations" : {
@@ -8696,1028 +10056,6 @@
         },
         "x-methodName" : "submitScaAssociation",
         "x-sortIndex" : 0
-      }
-    },
-    "/accountHolders/{id}/taxFormSummary" : {
-      "get" : {
-        "tags" : [ "Account holders" ],
-        "summary" : "Get summary of tax forms for an account holder",
-        "description" : "Returns a summary of all tax forms for an account holder.",
-        "operationId" : "get-accountHolders-id-taxFormSummary",
-        "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
-          "description" : "The unique identifier of the account holder.",
-          "required" : true,
-          "style" : "simple",
-          "explode" : false,
-          "schema" : {
-            "type" : "string"
-          }
-        }, {
-          "name" : "formType",
-          "in" : "query",
-          "description" : "The type of tax form you want a summary for. Accepted values are **US1099k** and **US1099nec**.",
-          "required" : true,
-          "style" : "form",
-          "explode" : true,
-          "schema" : {
-            "type" : "string"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "OK - the request has succeeded.",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/TaxFormSummaryResponse"
-                },
-                "examples" : {
-                  "get-tax-form-summary-200" : {
-                    "summary" : "Summary of tax forms for an account holder",
-                    "description" : "Summary of tax forms for an account holder",
-                    "value" : {
-                      "data" : [ {
-                        "legalEntityId" : "LE123",
-                        "taxYears" : [ 2023 ]
-                      }, {
-                        "legalEntityId" : "LE987",
-                        "taxYears" : [ 2024, 2025 ]
-                      } ]
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "x-methodName" : "getTaxFormSummary",
-        "x-sortIndex" : 6
-      }
-    },
-    "/balanceAccounts/{id}/transferLimits/approve" : {
-      "post" : {
-        "tags" : [ "Transfer limits - balance account level" ],
-        "summary" : "Approve pending transfer limits",
-        "description" : "Approve transfer limits that are pending SCA authentication.\n",
-        "operationId" : "post-balanceAccounts-id-transferLimits-approve",
-        "parameters" : [ {
-          "name" : "WWW-Authenticate",
-          "in" : "header",
-          "description" : "Header for authenticating using SCA.",
-          "required" : false,
-          "style" : "simple",
-          "explode" : false,
-          "schema" : {
-            "type" : "string"
-          },
-          "example" : "SCA realm=\"TransferLimit\" auth-param1=\"eyJjaGFsbGVuZ2UiOiJiVlV6ZW5wek0waFNl...\""
-        }, {
-          "name" : "id",
-          "in" : "path",
-          "description" : "The unique identifier of the balance account.",
-          "required" : true,
-          "style" : "simple",
-          "explode" : false,
-          "schema" : {
-            "type" : "string"
-          }
-        } ],
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/ApproveTransferLimitRequest"
-              },
-              "examples" : {
-                "Approve pending transfer limits requests" : {
-                  "summary" : "Approve pending transfer limits requests",
-                  "description" : "Approve pending transfer limits requests",
-                  "value" : {
-                    "transferLimitIds" : [ "TRLI00000000000000000000000001", "TRLI00000000000000000000000002" ]
-                  }
-                }
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "204" : {
-            "description" : "No Content - The request has succeeded."
-          },
-          "401" : {
-            "description" : "Unauthorized - Authentication required via Strong Customer Authentication (SCA). The client must resolve the provided challenge.",
-            "headers" : {
-              "WWW-Authenticate" : {
-                "description" : "SCA challenge header containing the details necessary for completing authentication. The client should solve the challenge contained.",
-                "required" : true,
-                "style" : "simple",
-                "explode" : false,
-                "schema" : {
-                  "type" : "string"
-                }
-              }
-            },
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
-                }
-              }
-            }
-          },
-          "404" : {
-            "description" : "Not found - One of the transfer limits could not be found.",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
-                }
-              }
-            }
-          },
-          "422" : {
-            "description" : "Unprocessable Content - A request validation error.",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
-                }
-              }
-            }
-          }
-        },
-        "x-methodName" : "approvePendingTransferLimits",
-        "x-sortIndex" : 2
-      }
-    },
-    "/balanceAccounts/{id}/transferLimits" : {
-      "get" : {
-        "tags" : [ "Transfer limits - balance account level" ],
-        "summary" : "Filter and view the transfer limits",
-        "description" : "Filter and view the transfer limits configured for a balance account using the balance account's unique `id` and the available query parameters.\n",
-        "operationId" : "get-balanceAccounts-id-transferLimits",
-        "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
-          "description" : "The unique identifier of the balance account.",
-          "required" : true,
-          "style" : "simple",
-          "explode" : false,
-          "schema" : {
-            "type" : "string"
-          }
-        }, {
-          "name" : "scope",
-          "in" : "query",
-          "description" : "The scope to which the transfer limit applies. Possible values:\n* **perTransaction**: you set a maximum amount for each transfer made from the balance account or balance platform.\n* **perDay**: you set a maximum total amount for all transfers made from the balance account or balance platform in a day.",
-          "required" : false,
-          "style" : "form",
-          "explode" : true,
-          "schema" : {
-            "$ref" : "#/components/schemas/Scope"
-          }
-        }, {
-          "name" : "transferType",
-          "in" : "query",
-          "description" : "The type of transfer to which the limit applies. Possible values:\n* **instant**: the limit applies to transfers with an **instant** priority.\n* **all**: the limit applies to all transfers, regardless of priority.",
-          "required" : false,
-          "style" : "form",
-          "explode" : true,
-          "schema" : {
-            "$ref" : "#/components/schemas/TransferType"
-          }
-        }, {
-          "name" : "status",
-          "in" : "query",
-          "description" : "The status of the transfer limit. Possible values:   \n* **active**: the limit is currently active.\n* **inactive**: the limit is currently inactive.\n* **pendingSCA**: the limit is pending until your user performs SCA.\n* **scheduled**: the limit is scheduled to become active at a future date.",
-          "required" : false,
-          "style" : "form",
-          "explode" : true,
-          "schema" : {
-            "$ref" : "#/components/schemas/LimitStatus"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "OK - The request has succeeded.",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/TransferLimitListResponse"
-                },
-                "examples" : {
-                  "Response code 200: list of transfer limits" : {
-                    "summary" : "Response code 200: list of transfer limits",
-                    "description" : "Response code 200: list of transfer limits",
-                    "value" : {
-                      "transferLimits" : [ {
-                        "amount" : {
-                          "value" : 10000,
-                          "currency" : "EUR"
-                        },
-                        "id" : "TRLI00000000000000000000000001",
-                        "endsAt" : "2026-08-13T23:00:00+01:00",
-                        "scope" : "perTransaction",
-                        "reference" : "Your reference for the transfer limit",
-                        "scaInformation" : {
-                          "exemption" : "initialLimit",
-                          "status" : "notPerformed"
-                        },
-                        "startsAt" : "2025-08-13T23:00:00+01:00",
-                        "limitStatus" : "active",
-                        "transferType" : "instant"
-                      }, {
-                        "amount" : {
-                          "value" : 20000,
-                          "currency" : "EUR"
-                        },
-                        "id" : "TRLI00000000000000000000000002",
-                        "endsAt" : "2026-08-13T23:00:00+01:00",
-                        "scope" : "perTransaction",
-                        "reference" : "Your reference for the transfer limit",
-                        "scaInformation" : {
-                          "exemption" : "initialLimit",
-                          "status" : "notPerformed"
-                        },
-                        "startsAt" : "2025-08-13T23:00:00+01:00",
-                        "limitStatus" : "active",
-                        "transferType" : "all"
-                      } ]
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404" : {
-            "description" : "Not found - One of the transfer limits could not be found.",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
-                }
-              }
-            }
-          },
-          "422" : {
-            "description" : "Unprocessable Content - A request validation error.",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
-                }
-              }
-            }
-          }
-        },
-        "x-group-parameters" : "false",
-        "x-methodName" : "getTransferLimits",
-        "x-sortIndex" : 4
-      },
-      "post" : {
-        "tags" : [ "Transfer limits - balance account level" ],
-        "summary" : "Create a transfer limit",
-        "description" : "Create a transfer limit for your balance account using the unique `id` of your balance account.\n",
-        "operationId" : "post-balanceAccounts-id-transferLimits",
-        "parameters" : [ {
-          "name" : "WWW-Authenticate",
-          "in" : "header",
-          "description" : "Header for authenticating through SCA",
-          "required" : false,
-          "style" : "simple",
-          "explode" : false,
-          "schema" : {
-            "type" : "string"
-          },
-          "example" : "SCA realm=\"TransferLimit\" auth-param1=\"eyJjaGFsbGVuZ2UiOiJiVlV6ZW5wek0waFNl...\""
-        }, {
-          "name" : "id",
-          "in" : "path",
-          "description" : "The unique identifier of the balance account.",
-          "required" : true,
-          "style" : "simple",
-          "explode" : false,
-          "schema" : {
-            "type" : "string"
-          }
-        } ],
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/CreateTransferLimitRequest"
-              },
-              "examples" : {
-                "Create a transfer limit request" : {
-                  "summary" : "Create a transfer limit request",
-                  "description" : "Create a transfer limit request",
-                  "value" : {
-                    "amount" : {
-                      "currency" : "EUR",
-                      "value" : 10000
-                    },
-                    "reference" : "Your reference for the transfer limit",
-                    "scaInformation" : {
-                      "scaOnApproval" : true
-                    },
-                    "scope" : "perTransaction",
-                    "startsAt" : "2025-08-15T06:36:20+01:00",
-                    "endsAt" : "2026-08-14T00:00:00+01:00",
-                    "transferType" : "all"
-                  }
-                }
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "200" : {
-            "description" : "OK - The request has succeeded.",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/TransferLimit"
-                },
-                "examples" : {
-                  "Create a transfer limit response" : {
-                    "summary" : "Create a transfer limit response",
-                    "description" : "Create a transfer limit response",
-                    "value" : {
-                      "amount" : {
-                        "value" : 10000,
-                        "currency" : "EUR"
-                      },
-                      "id" : "TRLI00000000000000000000000001",
-                      "scope" : "perTransaction",
-                      "reference" : "Your reference for the transfer limit",
-                      "scaInformation" : {
-                        "status" : "pending"
-                      },
-                      "startsAt" : "2025-08-15T06:36:20+01:00",
-                      "endsAt" : "2026-08-13T23:00:00+01:00",
-                      "limitStatus" : "pendingSCA",
-                      "transferType" : "all"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400" : {
-            "description" : "Bad Request - The input is invalid, or no registered device for SCA was found.",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Unauthorized - Authentication required via Strong Customer Authentication (SCA). The client must resolve the provided challenge.",
-            "headers" : {
-              "WWW-Authenticate" : {
-                "description" : "SCA challenge header containing the details necessary for completing authentication. The client should solve the challenge contained.",
-                "required" : true,
-                "style" : "simple",
-                "explode" : false,
-                "schema" : {
-                  "type" : "string"
-                }
-              }
-            },
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
-                }
-              }
-            }
-          },
-          "422" : {
-            "description" : "Unprocessable Content - A request validation error.",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
-                }
-              }
-            }
-          }
-        },
-        "x-methodName" : "createTransferLimit",
-        "x-sortIndex" : 1
-      }
-    },
-    "/balanceAccounts/{id}/transferLimits/current" : {
-      "get" : {
-        "tags" : [ "Transfer limits - balance account level" ],
-        "summary" : "Get all current transfer limits",
-        "description" : "Get all transfer limits that currently apply to a balance account using the unique `id` of the balance account.\n",
-        "operationId" : "get-balanceAccounts-id-transferLimits-current",
-        "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
-          "description" : "The unique identifier of the balance account.",
-          "required" : true,
-          "style" : "simple",
-          "explode" : false,
-          "schema" : {
-            "type" : "string"
-          }
-        }, {
-          "name" : "scope",
-          "in" : "query",
-          "description" : "The scope to which the transfer limit applies. Possible values:\n* **perTransaction**: you set a maximum amount for each transfer made from the balance account or balance platform.\n* **perDay**: you set a maximum total amount for all transfers made from the balance account or balance platform in a day.",
-          "required" : false,
-          "style" : "form",
-          "explode" : true,
-          "schema" : {
-            "$ref" : "#/components/schemas/Scope"
-          }
-        }, {
-          "name" : "transferType",
-          "in" : "query",
-          "description" : "The type of transfer to which the limit applies. Possible values:\n* **instant**: the limit applies to transfers with an **instant** priority.\n* **all**: the limit applies to all transfers, regardless of priority.",
-          "required" : false,
-          "style" : "form",
-          "explode" : true,
-          "schema" : {
-            "$ref" : "#/components/schemas/TransferType"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "OK - The request has succeeded.",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/TransferLimitListResponse"
-                },
-                "examples" : {
-                  "Response code 200: list of current transfer limits" : {
-                    "summary" : "Response code 200: list of current transfer limits",
-                    "description" : "Response code 200: list of current transfer limits",
-                    "value" : {
-                      "transferLimits" : [ {
-                        "amount" : {
-                          "value" : 10000,
-                          "currency" : "EUR"
-                        },
-                        "id" : "TRLI00000000000000000000000001",
-                        "endsAt" : "2026-08-13T23:00:00+01:00",
-                        "scope" : "perDay",
-                        "reference" : "Your reference for the transfer limit",
-                        "scaInformation" : {
-                          "exemption" : "initialLimit",
-                          "status" : "notPerformed"
-                        },
-                        "startsAt" : "2025-08-13T23:00:00+01:00",
-                        "limitStatus" : "active",
-                        "transferType" : "instant"
-                      } ]
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404" : {
-            "description" : "Not found - One of the transfer limits could not be found.",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
-                }
-              }
-            }
-          },
-          "422" : {
-            "description" : "Unprocessable Content - A request validation error.",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
-                }
-              }
-            }
-          }
-        },
-        "x-group-parameters" : "false",
-        "x-methodName" : "getCurrentTransferLimits",
-        "x-sortIndex" : 3
-      }
-    },
-    "/balanceAccounts/{id}/transferLimits/{transferLimitId}" : {
-      "get" : {
-        "tags" : [ "Transfer limits - balance account level" ],
-        "summary" : "Get the details of a transfer limit",
-        "description" : "Get the details of a transfer limit using its unique `transferLimitId`.\n",
-        "operationId" : "get-balanceAccounts-id-transferLimits-transferLimitId",
-        "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
-          "description" : "The unique identifier of the balance account.",
-          "required" : true,
-          "style" : "simple",
-          "explode" : false,
-          "schema" : {
-            "type" : "string"
-          }
-        }, {
-          "name" : "transferLimitId",
-          "in" : "path",
-          "description" : "The unique identifier of the transfer limit.",
-          "required" : true,
-          "style" : "simple",
-          "explode" : false,
-          "schema" : {
-            "type" : "string"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "OK - The request has succeeded.",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/TransferLimit"
-                },
-                "examples" : {
-                  "Response code 200: transfer limit details" : {
-                    "summary" : "Response code 200: transfer limit details",
-                    "description" : "Response code 200: transfer limit details",
-                    "value" : {
-                      "amount" : {
-                        "value" : 10000,
-                        "currency" : "EUR"
-                      },
-                      "id" : "TRLI00000000000000000000000001",
-                      "endsAt" : "2026-08-13T23:00:00+01:00",
-                      "scope" : "perTransaction",
-                      "reference" : "Your reference for the transfer limit",
-                      "scaInformation" : {
-                        "exemption" : "initialLimit",
-                        "status" : "notPerformed"
-                      },
-                      "startsAt" : "2025-08-13T23:00:00+01:00",
-                      "limitStatus" : "active",
-                      "transferType" : "all"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404" : {
-            "description" : "Not found - One of the transfer limits could not be found.",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
-                }
-              }
-            }
-          },
-          "422" : {
-            "description" : "Unprocessable Content - A request validation error.",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
-                }
-              }
-            }
-          }
-        },
-        "x-methodName" : "getSpecificTransferLimit",
-        "x-sortIndex" : 5
-      },
-      "delete" : {
-        "tags" : [ "Transfer limits - balance account level" ],
-        "summary" : "Delete a scheduled or pending transfer limit",
-        "description" : "Delete a scheduled or pending transfer limit using its unique `transferLimitId`. You cannot delete an active limit.\n",
-        "operationId" : "delete-balanceAccounts-id-transferLimits-transferLimitId",
-        "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
-          "description" : "The unique identifier of the balance account.",
-          "required" : true,
-          "style" : "simple",
-          "explode" : false,
-          "schema" : {
-            "type" : "string"
-          }
-        }, {
-          "name" : "transferLimitId",
-          "in" : "path",
-          "description" : "The unique identifier of the transfer limit.",
-          "required" : true,
-          "style" : "simple",
-          "explode" : false,
-          "schema" : {
-            "type" : "string"
-          }
-        } ],
-        "responses" : {
-          "204" : {
-            "description" : "No Content - The request has succeeded."
-          },
-          "404" : {
-            "description" : "Not found - One of the transfer limits could not be found.",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
-                }
-              }
-            }
-          },
-          "422" : {
-            "description" : "Unprocessable Content - A request validation error.",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
-                }
-              }
-            }
-          }
-        },
-        "x-methodName" : "deletePendingTransferLimit",
-        "x-sortIndex" : 6
-      }
-    },
-    "/balancePlatforms/{id}/transferLimits" : {
-      "get" : {
-        "tags" : [ "Transfer limits - balance platform level" ],
-        "summary" : "Filter and view the transfer limits",
-        "description" : "Filter and view the transfer limits configured for your balance platform using the balance platform's unique `id` and the available query parameters.\n",
-        "operationId" : "get-balancePlatforms-id-transferLimits",
-        "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
-          "description" : "The unique identifier of the balance platform.",
-          "required" : true,
-          "style" : "simple",
-          "explode" : false,
-          "schema" : {
-            "type" : "string"
-          }
-        }, {
-          "name" : "scope",
-          "in" : "query",
-          "description" : "The scope to which the transfer limit applies. Possible values:\n* **perTransaction**: you set a maximum amount for each transfer made from the balance account or balance platform.\n* **perDay**: you set a maximum total amount for all transfers made from the balance account or balance platform in a day.",
-          "required" : false,
-          "style" : "form",
-          "explode" : true,
-          "schema" : {
-            "$ref" : "#/components/schemas/Scope"
-          }
-        }, {
-          "name" : "transferType",
-          "in" : "query",
-          "description" : "The type of transfer to which the limit applies. Possible values:\n* **instant**: the limit applies to transfers with an **instant** priority.\n* **all**: the limit applies to all transfers, regardless of priority.",
-          "required" : false,
-          "style" : "form",
-          "explode" : true,
-          "schema" : {
-            "$ref" : "#/components/schemas/TransferType"
-          }
-        }, {
-          "name" : "status",
-          "in" : "query",
-          "description" : "The status of the transfer limit. Possible values:   \n* **active**: the limit is currently active.\n* **inactive**: the limit is currently inactive.\n* **pendingSCA**: the limit is pending until your user performs SCA.\n* **scheduled**: the limit is scheduled to become active at a future date.",
-          "required" : false,
-          "style" : "form",
-          "explode" : true,
-          "schema" : {
-            "$ref" : "#/components/schemas/LimitStatus"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "OK - The request has succeeded.",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/TransferLimitListResponse"
-                },
-                "examples" : {
-                  "Response code 200: list of transfer limits" : {
-                    "summary" : "Response code 200: list of transfer limits",
-                    "description" : "Response code 200: list of transfer limits",
-                    "value" : {
-                      "transferLimits" : [ {
-                        "amount" : {
-                          "value" : 10000,
-                          "currency" : "EUR"
-                        },
-                        "id" : "TRLI00000000000000000000000001",
-                        "endsAt" : "2026-08-13T23:00:00+01:00",
-                        "scope" : "perTransaction",
-                        "reference" : "Your reference for the transfer limit",
-                        "scaInformation" : {
-                          "exemption" : "initialLimit",
-                          "status" : "notPerformed"
-                        },
-                        "startsAt" : "2025-08-13T23:00:00+01:00",
-                        "limitStatus" : "active",
-                        "transferType" : "instant"
-                      }, {
-                        "amount" : {
-                          "value" : 20000,
-                          "currency" : "EUR"
-                        },
-                        "id" : "TRLI00000000000000000000000002",
-                        "endsAt" : "2026-08-13T23:00:00+01:00",
-                        "scope" : "perTransaction",
-                        "reference" : "Your reference for the transfer limit",
-                        "scaInformation" : {
-                          "exemption" : "initialLimit",
-                          "status" : "notPerformed"
-                        },
-                        "startsAt" : "2025-08-13T23:00:00+01:00",
-                        "limitStatus" : "active",
-                        "transferType" : "all"
-                      } ]
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404" : {
-            "description" : "Not found - One of the transfer limits could not be found.",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
-                }
-              }
-            }
-          },
-          "422" : {
-            "description" : "Unprocessable Content - A request validation error.",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
-                }
-              }
-            }
-          }
-        },
-        "x-group-parameters" : "false",
-        "x-methodName" : "getTransferLimits",
-        "x-sortIndex" : 2
-      },
-      "post" : {
-        "tags" : [ "Transfer limits - balance platform level" ],
-        "summary" : "Create a transfer limit",
-        "description" : "Create a transfer limit for your balance platform using the unique `id` of your balance platform.\n",
-        "operationId" : "post-balancePlatforms-id-transferLimits",
-        "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
-          "description" : "The unique identifier of the balance platform.",
-          "required" : true,
-          "style" : "simple",
-          "explode" : false,
-          "schema" : {
-            "type" : "string"
-          }
-        } ],
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/CreateTransferLimitRequest"
-              },
-              "examples" : {
-                "Create a transfer limit request" : {
-                  "summary" : "Create a transfer limit request",
-                  "description" : "Create a transfer limit request",
-                  "value" : {
-                    "amount" : {
-                      "currency" : "EUR",
-                      "value" : 10000
-                    },
-                    "reference" : "Your reference for the transfer limit",
-                    "scaInformation" : {
-                      "scaOnApproval" : true
-                    },
-                    "scope" : "perTransaction",
-                    "startsAt" : "2025-08-15T06:36:20+01:00",
-                    "endsAt" : "2026-08-14T00:00:00+01:00",
-                    "transferType" : "all"
-                  }
-                }
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "200" : {
-            "description" : "OK - The request has succeeded.",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/TransferLimit"
-                },
-                "examples" : {
-                  "Create a transfer limit response" : {
-                    "summary" : "Create a transfer limit response",
-                    "description" : "Create a transfer limit response",
-                    "value" : {
-                      "amount" : {
-                        "value" : 10000,
-                        "currency" : "EUR"
-                      },
-                      "id" : "TRLI00000000000000000000000001",
-                      "scope" : "perTransaction",
-                      "reference" : "Your reference for the transfer limit",
-                      "scaInformation" : {
-                        "status" : "pending"
-                      },
-                      "startsAt" : "2025-08-15T06:36:20+01:00",
-                      "endsAt" : "2026-08-13T23:00:00+01:00",
-                      "limitStatus" : "pendingSCA",
-                      "transferType" : "all"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404" : {
-            "description" : "Not found - One of the transfer limits could not be found.",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
-                }
-              }
-            }
-          },
-          "422" : {
-            "description" : "Unprocessable Content - A request validation error.",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
-                }
-              }
-            }
-          }
-        },
-        "x-methodName" : "createTransferLimit",
-        "x-sortIndex" : 1
-      }
-    },
-    "/balancePlatforms/{id}/transferLimits/{transferLimitId}" : {
-      "get" : {
-        "tags" : [ "Transfer limits - balance platform level" ],
-        "summary" : "Get the details of a transfer limit",
-        "description" : "Get the details of a transfer limit using its unique `transferLimitId`.\n",
-        "operationId" : "get-balancePlatforms-id-transferLimits-transferLimitId",
-        "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
-          "description" : "The unique identifier of the balance platform.",
-          "required" : true,
-          "style" : "simple",
-          "explode" : false,
-          "schema" : {
-            "type" : "string"
-          }
-        }, {
-          "name" : "transferLimitId",
-          "in" : "path",
-          "description" : "The unique identifier of the transfer limit.",
-          "required" : true,
-          "style" : "simple",
-          "explode" : false,
-          "schema" : {
-            "type" : "string"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "OK - The request has succeeded.",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/TransferLimit"
-                },
-                "examples" : {
-                  "Response code 200: transfer limit details" : {
-                    "summary" : "Response code 200: transfer limit details",
-                    "description" : "Response code 200: transfer limit details",
-                    "value" : {
-                      "amount" : {
-                        "value" : 10000,
-                        "currency" : "EUR"
-                      },
-                      "id" : "TRLI00000000000000000000000001",
-                      "endsAt" : "2026-08-13T23:00:00+01:00",
-                      "scope" : "perTransaction",
-                      "reference" : "Your reference for the transfer limit",
-                      "scaInformation" : {
-                        "exemption" : "initialLimit",
-                        "status" : "notPerformed"
-                      },
-                      "startsAt" : "2025-08-13T23:00:00+01:00",
-                      "limitStatus" : "active",
-                      "transferType" : "all"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404" : {
-            "description" : "Not found - One of the transfer limits could not be found.",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
-                }
-              }
-            }
-          },
-          "422" : {
-            "description" : "Unprocessable Content - A request validation error.",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
-                }
-              }
-            }
-          }
-        },
-        "x-methodName" : "getSpecificTransferLimit",
-        "x-sortIndex" : 3
-      },
-      "delete" : {
-        "tags" : [ "Transfer limits - balance platform level" ],
-        "summary" : "Delete a scheduled or pending transfer limit",
-        "description" : "Delete a scheduled or pending transfer limit using its unique `transferLimitId`. You cannot delete an active limit.\n",
-        "operationId" : "delete-balancePlatforms-id-transferLimits-transferLimitId",
-        "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
-          "description" : "The unique identifier of the balance platform.",
-          "required" : true,
-          "style" : "simple",
-          "explode" : false,
-          "schema" : {
-            "type" : "string"
-          }
-        }, {
-          "name" : "transferLimitId",
-          "in" : "path",
-          "description" : "The unique identifier of the transfer limit.",
-          "required" : true,
-          "style" : "simple",
-          "explode" : false,
-          "schema" : {
-            "type" : "string"
-          }
-        } ],
-        "responses" : {
-          "204" : {
-            "description" : "No Content - The request has succeeded."
-          },
-          "404" : {
-            "description" : "Not found - One of the transfer limits could not be found.",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
-                }
-              }
-            }
-          },
-          "422" : {
-            "description" : "Unprocessable Content - A request validation error.",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
-                }
-              }
-            }
-          }
-        },
-        "x-methodName" : "deletePendingTransferLimit",
-        "x-sortIndex" : 4
       }
     }
   },
@@ -12019,6 +12357,10 @@
       "InvalidField" : {
         "type" : "object",
         "properties" : {
+          "message" : {
+            "type" : "string",
+            "description" : "Description of the validation error."
+          },
           "name" : {
             "type" : "string",
             "description" : "The field that has an invalid value."
@@ -12026,10 +12368,6 @@
           "value" : {
             "type" : "string",
             "description" : "The invalid value."
-          },
-          "message" : {
-            "type" : "string",
-            "description" : "Description of the validation error."
           }
         },
         "required" : [ "message", "name", "value" ]
@@ -12885,7 +13223,7 @@
           "settlementDelayDays" : {
             "type" : "integer",
             "format" : "int32",
-            "description" : "Specifies after how many business days the funds in a settlement batch are made available in this balance account.\n\nPossible values: **1** to **20**, or **null**.\n\nDefault value: **null**."
+            "description" : "Specifies after how many business days the funds in a settlement batch are made available in this balance account. Requires Custom Sales Day Payout to be enabled for your balance account. Contact your account manager or implementation manager to enable this.\n\nPossible values: **1** to **20**, or **null**.\n\nDefault value: **null**."
           }
         }
       },
@@ -13501,6 +13839,12 @@
             "enum" : [ "enforceSCA", "hardBlock", "scoreBased", "timedBlock" ],
             "x-addedInVersion" : "2"
           },
+          "purpose" : {
+            "type" : "string",
+            "description" : "Specifies the reason for creating the rule.\n\nPossible values:\n* **fraud**: the rule is created to regulate fraudulent activity.\n* **policy**: the rule is created to ensure that the transaction adheres to your business' policies. For example, if your business has policies about the Merchant Category Codes (MCCs) allowed on a transaction, you can create a rule to block transactions that have specific MCCs.",
+            "enum" : [ "compliance", "fraud", "internalPolicy", "policy", "system" ],
+            "x-addedInVersion" : "2"
+          },
           "reference" : {
             "type" : "string",
             "description" : "Your reference for the transaction rule.",
@@ -13585,6 +13929,12 @@
             "type" : "string",
             "description" : "The [outcome](https://docs.adyen.com/issuing/transaction-rules#outcome) that will be applied when a transaction meets the conditions of the rule.\n\nPossible values:\n* **hardBlock** (default): the transaction is declined.\n* **scoreBased**: the transaction is assigned the `score` you specified. Adyen calculates the total score and if it exceeds 100, the transaction is declined. This value is not allowed when `requestType` is **bankTransfer**.\n\n* **enforceSCA**: your user is prompted to verify their identity using [3D Secure authentication](https://docs.adyen.com/issuing/3d-secure/). If the authentication fails or times out, the transaction is declined. This value is only allowed when `requestType` is **authentication**.",
             "enum" : [ "enforceSCA", "hardBlock", "scoreBased", "timedBlock" ],
+            "x-addedInVersion" : "2"
+          },
+          "purpose" : {
+            "type" : "string",
+            "description" : "Specifies the reason for creating the rule.\n\nPossible values:\n* **fraud**: the rule is created to regulate fraudulent activity.\n* **policy**: the rule is created to ensure that the transaction adheres to your business' policies. For example, if your business has policies about the Merchant Category Codes (MCCs) allowed on a transaction, you can create a rule to block transactions that have specific MCCs.",
+            "enum" : [ "compliance", "fraud", "internalPolicy", "policy", "system" ],
             "x-addedInVersion" : "2"
           },
           "reference" : {
@@ -14337,253 +14687,6 @@
         },
         "required" : [ "operation" ]
       },
-      "AuthorisedCardUsers" : {
-        "type" : "object",
-        "properties" : {
-          "legalEntityIds" : {
-            "type" : "array",
-            "description" : "The legal entity IDs of the authorized card users linked to the specified payment instrument.",
-            "items" : {
-              "type" : "string"
-            }
-          }
-        }
-      },
-      "DefaultErrorResponseEntity" : {
-        "type" : "object",
-        "description" : "Standardized error response following RFC-7807 format",
-        "externalDocs" : {
-          "url" : "https://www.rfc-editor.org/rfc/rfc7807"
-        },
-        "properties" : {
-          "detail" : {
-            "type" : "string",
-            "description" : "A human-readable explanation specific to this occurrence of the problem."
-          },
-          "errorCode" : {
-            "type" : "string",
-            "description" : "Unique business error code."
-          },
-          "instance" : {
-            "type" : "string",
-            "description" : "A URI that identifies the specific occurrence of the problem if applicable."
-          },
-          "invalidFields" : {
-            "type" : "array",
-            "description" : "Array of fields with validation errors when applicable.",
-            "items" : {
-              "$ref" : "#/components/schemas/InvalidField"
-            }
-          },
-          "requestId" : {
-            "type" : "string",
-            "description" : "The unique reference for the request."
-          },
-          "status" : {
-            "type" : "integer",
-            "format" : "int32",
-            "description" : "The HTTP status code."
-          },
-          "title" : {
-            "type" : "string",
-            "description" : "A short, human-readable summary of the problem type."
-          },
-          "type" : {
-            "type" : "string",
-            "description" : "A URI that identifies the validation error type. It points to human-readable documentation for the problem type."
-          }
-        }
-      },
-      "BalanceWebhookSettingInfo" : {
-        "type" : "object",
-        "properties" : {
-          "conditions" : {
-            "type" : "array",
-            "description" : "The array of conditions a balance change must meet for Adyen to send the webhook.",
-            "items" : {
-              "$ref" : "#/components/schemas/Condition"
-            },
-            "maxItems" : 20,
-            "minItems" : 0
-          },
-          "currency" : {
-            "type" : "string",
-            "description" : "The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes) of the balance.",
-            "minLength" : 1
-          },
-          "status" : {
-            "type" : "string",
-            "description" : "The status of the webhook setting. Possible values:\n\n* **active**: You receive a balance webhook if any of the conditions in this setting are met.\n* **inactive**: You do not receive a balance webhook even if the conditions in this settings are met.",
-            "enum" : [ "active", "inactive" ]
-          },
-          "target" : {
-            "$ref" : "#/components/schemas/Target",
-            "description" : "The type and ID of the resource about whose balance changes you want to be notified."
-          },
-          "type" : {
-            "type" : "string",
-            "description" : "The type of the webhook you are configuring. Set to **balance**.",
-            "enum" : [ "balance" ]
-          }
-        },
-        "required" : [ "currency", "status", "target", "type" ]
-      },
-      "Condition" : {
-        "type" : "object",
-        "properties" : {
-          "balanceType" : {
-            "type" : "string",
-            "description" : "Define the type of balance about which you want to get notified. Possible values:\n\n* **available**: the balance available for use.\n\n* **balance**: the sum of transactions that have already been settled.\n\n* **pending**: the sum of transactions that will be settled in the future.\n\n* **reserved**: the balance currently held in reserve.",
-            "enum" : [ "balance", "available", "pending", "reserved" ]
-          },
-          "conditionType" : {
-            "type" : "string",
-            "description" : "Define when you want to get notified about a balance change. Possible values:\n\n* **greaterThan**: the balance in the account(s) exceeds the specified `value`.\n\n* **greaterThanOrEqual**: the balance in the account(s) reaches or exceeds the specified `value`.\n\n* **lessThan**: the balance in the account(s) drops below the specified `value`.\n\n* **lessThanOrEqual**: the balance in the account(s) reaches to drops below the specified `value`.",
-            "enum" : [ "greaterThan", "greaterThanOrEqual", "lessThan", "lessThanOrEqual" ]
-          },
-          "value" : {
-            "type" : "integer",
-            "format" : "int64",
-            "description" : "The value limit in the specified balance type and currency, in minor units."
-          }
-        },
-        "required" : [ "balanceType", "conditionType", "value" ]
-      },
-      "SettingStatus" : {
-        "type" : "string",
-        "x-extensible-enum" : [ "active", "inactive" ]
-      },
-      "Target" : {
-        "type" : "object",
-        "properties" : {
-          "id" : {
-            "type" : "string",
-            "description" : "The unique identifier of the `target.type`. This can be the ID of your:\n\n* balance platform\n* account holder\n* account holder's balance account",
-            "minLength" : 1
-          },
-          "type" : {
-            "type" : "string",
-            "description" : "The resource for which you want to receive notifications. Possible values:\n\n* **balancePlatform**: receive notifications about balance changes in your entire balance platform.\n\n* **accountHolder**: receive notifications about balance changes of a specific user.\n\n* **balanceAccount**: receive notifications about balance changes in a specific balance account.",
-            "enum" : [ "balanceAccount", "accountHolder", "balancePlatform" ]
-          }
-        },
-        "required" : [ "id", "type" ]
-      },
-      "BalanceWebhookSetting" : {
-        "type" : "object",
-        "allOf" : [ {
-          "$ref" : "#/components/schemas/WebhookSetting"
-        }, {
-          "type" : "object",
-          "properties" : {
-            "conditions" : {
-              "type" : "array",
-              "description" : "The list of settings and criteria for triggering the [balance webhook](https://docs.adyen.com/api-explorer/balance-webhooks/latest/post/balanceAccount.balance.updated).",
-              "items" : {
-                "$ref" : "#/components/schemas/Condition"
-              }
-            }
-          }
-        } ],
-        "required" : [ "currency", "id", "status", "target", "type" ]
-      },
-      "SettingType" : {
-        "type" : "string",
-        "enum" : [ "balance" ]
-      },
-      "WebhookSetting" : {
-        "type" : "object",
-        "discriminator" : {
-          "propertyName" : "type",
-          "mapping" : {
-            "balance" : "#/components/schemas/BalanceWebhookSetting"
-          }
-        },
-        "properties" : {
-          "currency" : {
-            "type" : "string",
-            "description" : "The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes) of the balance.",
-            "minLength" : 1
-          },
-          "id" : {
-            "type" : "string",
-            "description" : "The unique identifier of the webhook setting."
-          },
-          "status" : {
-            "$ref" : "#/components/schemas/SettingStatus",
-            "description" : "The status of the webhook setting. Possible values:\n\n* **active**: You receive a balance webhook if any of the conditions in this setting are met.\n* **inactive**: You do not receive a balance webhook even if the conditions in this settings are met."
-          },
-          "target" : {
-            "$ref" : "#/components/schemas/Target",
-            "description" : "The resource about whose balance change you want to get notified."
-          },
-          "type" : {
-            "$ref" : "#/components/schemas/SettingType",
-            "description" : "The type of the webhook setting."
-          }
-        },
-        "required" : [ "currency", "id", "status", "target", "type" ]
-      },
-      "WebhookSettings" : {
-        "type" : "object",
-        "properties" : {
-          "webhookSettings" : {
-            "type" : "array",
-            "description" : "The list of webhook settings.",
-            "items" : {
-              "$ref" : "#/components/schemas/WebhookSetting"
-            }
-          }
-        }
-      },
-      "BalanceWebhookSettingInfoUpdate" : {
-        "type" : "object",
-        "properties" : {
-          "conditions" : {
-            "type" : [ "array", "null" ],
-            "description" : "The array of conditions a balance change must meet for Adyen to send the webhook.",
-            "items" : {
-              "$ref" : "#/components/schemas/Condition"
-            },
-            "maxItems" : 20,
-            "minItems" : 0
-          },
-          "currency" : {
-            "type" : "string",
-            "description" : "The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes) of the balance.",
-            "minLength" : 1
-          },
-          "status" : {
-            "type" : "string",
-            "description" : "The status of the webhook setting. Possible values:\n\n* **active**: You receive a balance webhook if any of the conditions in this setting are met.\n* **inactive**: You do not receive a balance webhook even if the conditions in this settings are met.",
-            "enum" : [ "active", "inactive" ]
-          },
-          "target" : {
-            "$ref" : "#/components/schemas/TargetUpdate",
-            "description" : "The type and ID of the resource about whose balance changes you want to be notified."
-          },
-          "type" : {
-            "type" : "string",
-            "description" : "The type of the webhook you are configuring. Set to **balance**.",
-            "enum" : [ "balance" ]
-          }
-        }
-      },
-      "TargetUpdate" : {
-        "type" : "object",
-        "properties" : {
-          "id" : {
-            "type" : "string",
-            "description" : "The unique identifier of the `target.type`. This can be the ID of your:\n\n* balance platform\n* account holder\n* account holder's balance account",
-            "minLength" : 1
-          },
-          "type" : {
-            "type" : "string",
-            "description" : "The resource for which you want to receive notifications. Possible values:\n\n* **balancePlatform**: receive notifications about balance changes in your entire balance platform.\n\n* **accountHolder**: receive notifications about balance changes of a specific user.\n\n* **balanceAccount**: receive notifications about balance changes in a specific balance account.",
-            "enum" : [ "balanceAccount", "accountHolder", "balancePlatform" ]
-          }
-        }
-      },
       "ApproveAssociationRequest" : {
         "type" : "object",
         "properties" : {
@@ -14617,14 +14720,6 @@
         },
         "required" : [ "entityId", "entityType", "scaDeviceIds", "status" ]
       },
-      "AssociationStatus" : {
-        "type" : "string",
-        "enum" : [ "pendingApproval", "active" ]
-      },
-      "ScaEntityType" : {
-        "type" : "string",
-        "enum" : [ "accountHolder", "paymentInstrument" ]
-      },
       "ApproveAssociationResponse" : {
         "type" : "object",
         "properties" : {
@@ -14638,6 +14733,21 @@
           }
         },
         "required" : [ "scaAssociations" ]
+      },
+      "ApproveTransferLimitRequest" : {
+        "type" : "object",
+        "properties" : {
+          "transferLimitIds" : {
+            "type" : "array",
+            "description" : "A list that includes the `transferLimitId` of all the pending transfer limits you want to approve.",
+            "items" : {
+              "type" : "string"
+            },
+            "maxItems" : 2147483647,
+            "minItems" : 1
+          }
+        },
+        "required" : [ "transferLimitIds" ]
       },
       "Association" : {
         "type" : "object",
@@ -14713,66 +14823,106 @@
         },
         "required" : [ "createdAt", "entityId", "entityType", "scaDeviceId", "scaDeviceType", "status" ]
       },
-      "ListAssociationsResponse" : {
-        "type" : "object",
-        "properties" : {
-          "_links" : {
-            "$ref" : "#/components/schemas/Link",
-            "description" : "A list of hyperlinks to resources related to this response."
-          },
-          "data" : {
-            "type" : "array",
-            "description" : "Contains a list of associations and their corresponding details.",
-            "items" : {
-              "$ref" : "#/components/schemas/AssociationListing"
-            }
-          },
-          "itemsTotal" : {
-            "type" : "integer",
-            "format" : "int32",
-            "description" : "The total number of items available.",
-            "example" : 1
-          },
-          "pagesTotal" : {
-            "type" : "integer",
-            "format" : "int32",
-            "description" : "The total number of pages available.",
-            "example" : 1
-          }
-        },
-        "required" : [ "_links", "data", "itemsTotal", "pagesTotal" ]
-      },
-      "ScaDeviceType" : {
+      "AssociationStatus" : {
         "type" : "string",
-        "enum" : [ "browser", "ios", "android" ]
+        "enum" : [ "pendingApproval", "active" ]
       },
-      "RemoveAssociationRequest" : {
+      "AuthorisedCardUsers" : {
         "type" : "object",
         "properties" : {
-          "entityId" : {
+          "legalEntityIds" : {
+            "type" : "array",
+            "description" : "The legal entity IDs of the authorized card users linked to the specified payment instrument.",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }
+      },
+      "BalanceWebhookSetting" : {
+        "type" : "object",
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/WebhookSetting"
+        }, {
+          "type" : "object",
+          "properties" : {
+            "conditions" : {
+              "type" : "array",
+              "description" : "The list of settings and criteria for triggering the [balance webhook](https://docs.adyen.com/api-explorer/balance-webhooks/latest/post/balanceAccount.balance.updated).",
+              "items" : {
+                "$ref" : "#/components/schemas/Condition"
+              }
+            }
+          }
+        } ],
+        "required" : [ "currency", "id", "status", "target", "type" ]
+      },
+      "BalanceWebhookSettingInfo" : {
+        "type" : "object",
+        "properties" : {
+          "conditions" : {
+            "type" : "array",
+            "description" : "The array of conditions a balance change must meet for Adyen to send the webhook.",
+            "items" : {
+              "$ref" : "#/components/schemas/Condition"
+            },
+            "maxItems" : 20,
+            "minItems" : 0
+          },
+          "currency" : {
             "type" : "string",
-            "description" : "The unique identifier of the entity.",
-            "maxLength" : 100,
+            "description" : "The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes) of the balance.",
             "minLength" : 1
           },
-          "entityType" : {
-            "$ref" : "#/components/schemas/ScaEntityType",
-            "description" : "The type of the entity.  \n\nPossible values: **accountHolder** or **paymentInstrument**.",
-            "example" : "accountHolder"
+          "status" : {
+            "type" : "string",
+            "description" : "The status of the webhook setting. Possible values:\n\n* **active**: You receive a balance webhook if any of the conditions in this setting are met.\n* **inactive**: You do not receive a balance webhook even if the conditions in this settings are met.",
+            "enum" : [ "active", "inactive" ]
           },
-          "scaDeviceIds" : {
-            "type" : "array",
-            "description" : "A list of device ids associated with the entity that should be removed.",
-            "items" : {
-              "type" : "string",
-              "maxLength" : 30,
-              "minLength" : 30
-            },
-            "maxItems" : 5,
-            "minItems" : 0
+          "target" : {
+            "$ref" : "#/components/schemas/Target",
+            "description" : "The type and ID of the resource about whose balance changes you want to be notified."
+          },
+          "type" : {
+            "type" : "string",
+            "description" : "The type of the webhook you are configuring. Set to **balance**.",
+            "enum" : [ "balance" ]
           }
         },
-        "required" : [ "entityId", "entityType", "scaDeviceIds" ]
+        "required" : [ "currency", "status", "target", "type" ]
+      },
+      "BalanceWebhookSettingInfoUpdate" : {
+        "type" : "object",
+        "properties" : {
+          "conditions" : {
+            "type" : [ "array", "null" ],
+            "description" : "The array of conditions a balance change must meet for Adyen to send the webhook.",
+            "items" : {
+              "$ref" : "#/components/schemas/Condition"
+            },
+            "maxItems" : 20,
+            "minItems" : 0
+          },
+          "currency" : {
+            "type" : "string",
+            "description" : "The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes) of the balance.",
+            "minLength" : 1
+          },
+          "status" : {
+            "type" : "string",
+            "description" : "The status of the webhook setting. Possible values:\n\n* **active**: You receive a balance webhook if any of the conditions in this setting are met.\n* **inactive**: You do not receive a balance webhook even if the conditions in this settings are met.",
+            "enum" : [ "active", "inactive" ]
+          },
+          "target" : {
+            "$ref" : "#/components/schemas/TargetUpdate",
+            "description" : "The type and ID of the resource about whose balance changes you want to be notified."
+          },
+          "type" : {
+            "type" : "string",
+            "description" : "The type of the webhook you are configuring. Set to **balance**.",
+            "enum" : [ "balance" ]
+          }
+        }
       },
       "BeginScaDeviceRegistrationRequest" : {
         "type" : "object",
@@ -14805,139 +14955,26 @@
           }
         }
       },
-      "ScaDevice" : {
+      "Condition" : {
         "type" : "object",
-        "description" : "A resource that contains information about a device, including its unique ID, name, and type.",
         "properties" : {
-          "id" : {
+          "balanceType" : {
             "type" : "string",
-            "description" : "The unique identifier of the SCA device you are registering."
+            "description" : "Define the type of balance about which you want to get notified. Possible values:\n\n* **available**: the balance available for use.\n\n* **balance**: the sum of transactions that have already been settled.\n\n* **pending**: the sum of transactions that will be settled in the future.\n\n* **reserved**: the balance currently held in reserve.",
+            "enum" : [ "balance", "available", "pending", "reserved" ]
           },
-          "name" : {
+          "conditionType" : {
             "type" : "string",
-            "description" : "The name of the SCA device that you are registering. You can use it to help your users identify the device.",
-            "maxLength" : 64,
-            "minLength" : 0
+            "description" : "Define when you want to get notified about a balance change. Possible values:\n\n* **greaterThan**: the balance in the account(s) exceeds the specified `value`.\n\n* **greaterThanOrEqual**: the balance in the account(s) reaches or exceeds the specified `value`.\n\n* **lessThan**: the balance in the account(s) drops below the specified `value`.\n\n* **lessThanOrEqual**: the balance in the account(s) reaches to drops below the specified `value`.",
+            "enum" : [ "greaterThan", "greaterThanOrEqual", "lessThan", "lessThanOrEqual" ]
           },
-          "type" : {
-            "$ref" : "#/components/schemas/ScaDeviceType",
-            "description" : "Type of device registered. \n\nPossible values: **ios**, **android**, **browser**. "
+          "value" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "The value limit in the specified balance type and currency, in minor units."
           }
         },
-        "required" : [ "id", "name", "type" ]
-      },
-      "FinishScaDeviceRegistrationRequest" : {
-        "type" : "object",
-        "properties" : {
-          "sdkOutput" : {
-            "type" : "string",
-            "description" : "A base64-encoded block with the data required to register the SCA device. You obtain this information by using Adyen's authentication SDK.",
-            "maxLength" : 20000,
-            "minLength" : 0
-          }
-        },
-        "required" : [ "sdkOutput" ]
-      },
-      "FinishScaDeviceRegistrationResponse" : {
-        "type" : "object",
-        "properties" : {
-          "scaDevice" : {
-            "$ref" : "#/components/schemas/ScaDevice"
-          }
-        }
-      },
-      "ScaEntity" : {
-        "type" : "object",
-        "properties" : {
-          "id" : {
-            "type" : "string",
-            "description" : "The unique identifier of the entity.",
-            "example" : "AH9999Z99Z999999ZZZZ9999Z",
-            "maxLength" : 100,
-            "minLength" : 0
-          },
-          "type" : {
-            "$ref" : "#/components/schemas/ScaEntityType",
-            "description" : "The type of the entity that you are associating with the SCA device. \n\nPossible values: **accountHolder** or **paymentInstrument**.",
-            "example" : "accountHolder"
-          }
-        },
-        "required" : [ "id", "type" ]
-      },
-      "SubmitScaAssociationRequest" : {
-        "type" : "object",
-        "properties" : {
-          "entities" : {
-            "type" : "array",
-            "description" : "The list of entities to be associated.",
-            "items" : {
-              "$ref" : "#/components/schemas/ScaEntity"
-            },
-            "maxItems" : 5,
-            "minItems" : 0
-          }
-        },
-        "required" : [ "entities" ]
-      },
-      "SubmitScaAssociationResponse" : {
-        "type" : "object",
-        "properties" : {
-          "scaAssociations" : {
-            "type" : "array",
-            "description" : "List of associations created to the entities and their statuses.",
-            "items" : {
-              "$ref" : "#/components/schemas/Association"
-            },
-            "minItems" : 1
-          }
-        },
-        "required" : [ "scaAssociations" ]
-      },
-      "Summary" : {
-        "type" : "object",
-        "properties" : {
-          "legalEntityId" : {
-            "type" : "string",
-            "description" : "The unique identifier of the legal entity."
-          },
-          "taxYears" : {
-            "type" : "array",
-            "description" : "The tax years for which the legal entity has a tax form.",
-            "items" : {
-              "type" : "integer",
-              "format" : "int32"
-            }
-          }
-        },
-        "required" : [ "legalEntityId", "taxYears" ]
-      },
-      "TaxFormSummaryResponse" : {
-        "type" : "object",
-        "properties" : {
-          "data" : {
-            "type" : "array",
-            "description" : "A list of tax form summaries, where each summary consists of the legal entity and the tax years in which the legal entity has a tax form.",
-            "items" : {
-              "$ref" : "#/components/schemas/Summary"
-            }
-          }
-        },
-        "required" : [ "data" ]
-      },
-      "ApproveTransferLimitRequest" : {
-        "type" : "object",
-        "properties" : {
-          "transferLimitIds" : {
-            "type" : "array",
-            "description" : "A list that includes the `transferLimitId` of all the pending transfer limits you want to approve.",
-            "items" : {
-              "type" : "string"
-            },
-            "maxItems" : 2147483647,
-            "minItems" : 1
-          }
-        },
-        "required" : [ "transferLimitIds" ]
+        "required" : [ "balanceType", "conditionType", "value" ]
       },
       "CreateScaInformation" : {
         "type" : "object",
@@ -14988,25 +15025,295 @@
         },
         "required" : [ "amount", "scope", "transferType" ]
       },
-      "ScaExemption" : {
-        "type" : "string",
-        "description" : "The type of exemption for Strong Customer Authentication (SCA). Possible values:\n* **lowerLimit**: the newly created limit is lower than the existing limit.\n* **notRegulated**: the limit is created in a country, region, or industry where it is not mandated by law to use SCA.\n* **setByPlatform**: you set a limit for one of your user's balance accounts, or for your balance platform.\n* **initialLimit**: there are no existing transfer limits set on the balance account or balance platform.\n* **alreadyPerformed**: you are confident about your user's identity and do not need to verify this using SCA.",
-        "enum" : [ "setByPlatform", "initialLimit", "lowerLimit", "notRegulated", "alreadyPerformed" ]
+      "DefaultErrorResponseEntity" : {
+        "type" : "object",
+        "description" : "Standardized error response following RFC-7807 format",
+        "externalDocs" : {
+          "url" : "https://www.rfc-editor.org/rfc/rfc7807"
+        },
+        "properties" : {
+          "detail" : {
+            "type" : "string",
+            "description" : "A human-readable explanation specific to this occurrence of the problem."
+          },
+          "errorCode" : {
+            "type" : "string",
+            "description" : "Unique business error code."
+          },
+          "instance" : {
+            "type" : "string",
+            "description" : "A URI that identifies the specific occurrence of the problem if applicable."
+          },
+          "invalidFields" : {
+            "type" : "array",
+            "description" : "Array of fields with validation errors when applicable.",
+            "items" : {
+              "$ref" : "#/components/schemas/InvalidField"
+            }
+          },
+          "requestId" : {
+            "type" : "string",
+            "description" : "The unique reference for the request."
+          },
+          "status" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "The HTTP status code."
+          },
+          "title" : {
+            "type" : "string",
+            "description" : "A short, human-readable summary of the problem type."
+          },
+          "type" : {
+            "type" : "string",
+            "description" : "A URI that identifies the validation error type. It points to human-readable documentation for the problem type."
+          }
+        }
       },
-      "Scope" : {
-        "type" : "string",
-        "description" : "The scope to which the transfer limit applies. Possible values:\n* **perTransaction**: you set a maximum amount for each transfer made from the balance account or balance platform.\n* **perDay**: you set a maximum total amount for all transfers made from the balance account or balance platform in a day.",
-        "enum" : [ "perDay", "perTransaction" ]
+      "FinishScaDeviceRegistrationRequest" : {
+        "type" : "object",
+        "properties" : {
+          "sdkOutput" : {
+            "type" : "string",
+            "description" : "A base64-encoded block with the data required to register the SCA device. You obtain this information by using Adyen's authentication SDK.",
+            "maxLength" : 20000,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "sdkOutput" ]
       },
-      "TransferType" : {
-        "type" : "string",
-        "description" : "The type of transfer to which the limit applies. Possible values:\n* **instant**: the limit applies to transfers with an **instant** priority.\n* **all**: the limit applies to all transfers, regardless of priority.",
-        "enum" : [ "instant", "all" ]
+      "FinishScaDeviceRegistrationResponse" : {
+        "type" : "object",
+        "properties" : {
+          "scaDevice" : {
+            "$ref" : "#/components/schemas/ScaDevice"
+          }
+        }
       },
       "LimitStatus" : {
         "type" : "string",
         "description" : "The status of the transfer limit. Possible values:   \n* **active**: the limit is currently active.\n* **inactive**: the limit is currently inactive.\n* **pendingSCA**: the limit is pending until your user performs SCA.\n* **scheduled**: the limit is scheduled to become active at a future date.",
         "enum" : [ "active", "inactive", "pendingSCA", "scheduled" ]
+      },
+      "ListAssociationsResponse" : {
+        "type" : "object",
+        "properties" : {
+          "_links" : {
+            "$ref" : "#/components/schemas/Link",
+            "description" : "A list of hyperlinks to resources related to this response."
+          },
+          "data" : {
+            "type" : "array",
+            "description" : "Contains a list of associations and their corresponding details.",
+            "items" : {
+              "$ref" : "#/components/schemas/AssociationListing"
+            }
+          },
+          "itemsTotal" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "The total number of items available.",
+            "example" : 1
+          },
+          "pagesTotal" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "The total number of pages available.",
+            "example" : 1
+          }
+        },
+        "required" : [ "_links", "data", "itemsTotal", "pagesTotal" ]
+      },
+      "ListMandatesResponse" : {
+        "type" : "object",
+        "properties" : {
+          "link" : {
+            "$ref" : "#/components/schemas/Link",
+            "description" : "Contains links to the next and previous page whenever applicable."
+          },
+          "mandates" : {
+            "type" : "array",
+            "description" : "Contains a list of the mandates.",
+            "items" : {
+              "$ref" : "#/components/schemas/Mandate"
+            }
+          }
+        },
+        "required" : [ "link", "mandates" ]
+      },
+      "Mandate" : {
+        "type" : "object",
+        "properties" : {
+          "balanceAccountId" : {
+            "type" : "string",
+            "description" : "The unique identifier of the balance account linked to the payment instrument."
+          },
+          "counterparty" : {
+            "$ref" : "#/components/schemas/MandateBankAccount",
+            "description" : "Contains information to identify the counterparty."
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time",
+            "description" : "The date when the mandate was created."
+          },
+          "id" : {
+            "type" : "string",
+            "description" : "The unique identifier of the mandate."
+          },
+          "paymentInstrumentId" : {
+            "type" : "string",
+            "description" : "The unique identifier of the payment instrument linked to the mandate."
+          },
+          "status" : {
+            "$ref" : "#/components/schemas/MandateStatus",
+            "description" : "The status of the mandate.\n\nPossible values: **pending**, **approved**, **cancelled**."
+          },
+          "type" : {
+            "$ref" : "#/components/schemas/MandateType",
+            "description" : "The type of mandate. Possible value: **bacs**."
+          },
+          "updatedAt" : {
+            "type" : "string",
+            "format" : "date-time",
+            "description" : "The date when the mandate was updated."
+          }
+        }
+      },
+      "MandateAccountIdentification" : {
+        "type" : "object",
+        "discriminator" : {
+          "propertyName" : "type",
+          "mapping" : {
+            "ukLocal" : "#/components/schemas/UKLocalMandateAccountIdentification"
+          }
+        },
+        "properties" : {
+          "type" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "type" ]
+      },
+      "MandateBankAccount" : {
+        "type" : "object",
+        "properties" : {
+          "accountHolder" : {
+            "$ref" : "#/components/schemas/MandatePartyIdentification",
+            "description" : "Contains information about the owner of the counterparty bank account."
+          },
+          "accountIdentification" : {
+            "$ref" : "#/components/schemas/MandateAccountIdentification",
+            "description" : "Contains the bank account details of the counterparty. The fields required in this object depend on the country of the bank account and the currency of the transfer."
+          }
+        },
+        "required" : [ "accountHolder", "accountIdentification" ]
+      },
+      "MandatePartyIdentification" : {
+        "type" : "object",
+        "properties" : {
+          "fullName" : {
+            "type" : "string",
+            "description" : "The full name of the entity that owns the bank account.\n\nSupported characters: [a-z] [A-Z] [0-9] , . ; : - — / \\ + & ! ? @ ( ) \" ' and space."
+          }
+        }
+      },
+      "MandateStatus" : {
+        "type" : "string",
+        "enum" : [ "pending", "approved", "cancelled" ]
+      },
+      "MandateType" : {
+        "type" : "string",
+        "enum" : [ "bacs" ]
+      },
+      "PatchableMandate" : {
+        "type" : "object",
+        "properties" : {
+          "paymentInstrumentId" : {
+            "type" : [ "string", "null" ],
+            "description" : "The unique identifier of the payment instrument linked to the mandate."
+          }
+        }
+      },
+      "RemoveAssociationRequest" : {
+        "type" : "object",
+        "properties" : {
+          "entityId" : {
+            "type" : "string",
+            "description" : "The unique identifier of the entity.",
+            "maxLength" : 100,
+            "minLength" : 1
+          },
+          "entityType" : {
+            "$ref" : "#/components/schemas/ScaEntityType",
+            "description" : "The type of the entity.  \n\nPossible values: **accountHolder** or **paymentInstrument**.",
+            "example" : "accountHolder"
+          },
+          "scaDeviceIds" : {
+            "type" : "array",
+            "description" : "A list of device ids associated with the entity that should be removed.",
+            "items" : {
+              "type" : "string",
+              "maxLength" : 30,
+              "minLength" : 30
+            },
+            "maxItems" : 5,
+            "minItems" : 0
+          }
+        },
+        "required" : [ "entityId", "entityType", "scaDeviceIds" ]
+      },
+      "ScaDevice" : {
+        "type" : "object",
+        "description" : "A resource that contains information about a device, including its unique ID, name, and type.",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "description" : "The unique identifier of the SCA device you are registering."
+          },
+          "name" : {
+            "type" : "string",
+            "description" : "The name of the SCA device that you are registering. You can use it to help your users identify the device.",
+            "maxLength" : 64,
+            "minLength" : 0
+          },
+          "type" : {
+            "$ref" : "#/components/schemas/ScaDeviceType",
+            "description" : "Type of device registered. \n\nPossible values: **ios**, **android**, **browser**. "
+          }
+        },
+        "required" : [ "id", "name", "type" ]
+      },
+      "ScaDeviceType" : {
+        "type" : "string",
+        "enum" : [ "browser", "ios", "android" ]
+      },
+      "ScaEntity" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "description" : "The unique identifier of the entity.",
+            "example" : "AH9999Z99Z999999ZZZZ9999Z",
+            "maxLength" : 100,
+            "minLength" : 0
+          },
+          "type" : {
+            "$ref" : "#/components/schemas/ScaEntityType",
+            "description" : "The type of the entity that you are associating with the SCA device. \n\nPossible values: **accountHolder** or **paymentInstrument**.",
+            "example" : "accountHolder"
+          }
+        },
+        "required" : [ "id", "type" ]
+      },
+      "ScaEntityType" : {
+        "type" : "string",
+        "enum" : [ "accountHolder", "paymentInstrument" ]
+      },
+      "ScaExemption" : {
+        "type" : "string",
+        "description" : "The type of exemption for Strong Customer Authentication (SCA). Possible values:\n* **lowerLimit**: the newly created limit is lower than the existing limit.\n* **notRegulated**: the limit is created in a country, region, or industry where it is not mandated by law to use SCA.\n* **setByPlatform**: you set a limit for one of your user's balance accounts, or for your balance platform.\n* **initialLimit**: there are no existing transfer limits set on the balance account or balance platform.\n* **alreadyPerformed**: you are confident about your user's identity and do not need to verify this using SCA.",
+        "enum" : [ "setByPlatform", "initialLimit", "lowerLimit", "notRegulated", "alreadyPerformed" ]
       },
       "ScaInformation" : {
         "type" : "object",
@@ -15026,6 +15333,110 @@
         "type" : "string",
         "description" : "The status of Strong Customer Authentication (SCA). Possible values:\n* **notPerformed**: the requester was unable to successfully authenticate the request using SCA, or has an SCA exemption.\n* **pending**: the request is pending SCA authentication.\n* **performed**: the request is successfully authenticated using SCA.",
         "enum" : [ "notPerformed", "pending", "performed" ]
+      },
+      "Scope" : {
+        "type" : "string",
+        "description" : "The scope to which the transfer limit applies. Possible values:\n* **perTransaction**: you set a maximum amount for each transfer made from the balance account or balance platform.\n* **perDay**: you set a maximum total amount for all transfers made from the balance account or balance platform in a day.",
+        "enum" : [ "perDay", "perTransaction" ]
+      },
+      "SettingStatus" : {
+        "type" : "string",
+        "x-extensible-enum" : [ "active", "inactive" ]
+      },
+      "SettingType" : {
+        "type" : "string",
+        "enum" : [ "balance" ]
+      },
+      "SubmitScaAssociationRequest" : {
+        "type" : "object",
+        "properties" : {
+          "entities" : {
+            "type" : "array",
+            "description" : "The list of entities to be associated.",
+            "items" : {
+              "$ref" : "#/components/schemas/ScaEntity"
+            },
+            "maxItems" : 5,
+            "minItems" : 0
+          }
+        },
+        "required" : [ "entities" ]
+      },
+      "SubmitScaAssociationResponse" : {
+        "type" : "object",
+        "properties" : {
+          "scaAssociations" : {
+            "type" : "array",
+            "description" : "List of associations created to the entities and their statuses.",
+            "items" : {
+              "$ref" : "#/components/schemas/Association"
+            },
+            "minItems" : 1
+          }
+        },
+        "required" : [ "scaAssociations" ]
+      },
+      "Summary" : {
+        "type" : "object",
+        "properties" : {
+          "legalEntityId" : {
+            "type" : "string",
+            "description" : "The unique identifier of the legal entity."
+          },
+          "taxYears" : {
+            "type" : "array",
+            "description" : "The tax years for which the legal entity has a tax form.",
+            "items" : {
+              "type" : "integer",
+              "format" : "int32"
+            }
+          }
+        },
+        "required" : [ "legalEntityId", "taxYears" ]
+      },
+      "Target" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "description" : "The unique identifier of the `target.type`. This can be the ID of your:\n\n* balance platform\n* account holder\n* account holder's balance account",
+            "minLength" : 1
+          },
+          "type" : {
+            "type" : "string",
+            "description" : "The resource for which you want to receive notifications. Possible values:\n\n* **balancePlatform**: receive notifications about balance changes in your entire balance platform.\n\n* **accountHolder**: receive notifications about balance changes of a specific user.\n\n* **balanceAccount**: receive notifications about balance changes in a specific balance account.",
+            "enum" : [ "balanceAccount", "accountHolder", "balancePlatform" ]
+          }
+        },
+        "required" : [ "id", "type" ]
+      },
+      "TargetUpdate" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "description" : "The unique identifier of the `target.type`. This can be the ID of your:\n\n* balance platform\n* account holder\n* account holder's balance account",
+            "minLength" : 1
+          },
+          "type" : {
+            "type" : "string",
+            "description" : "The resource for which you want to receive notifications. Possible values:\n\n* **balancePlatform**: receive notifications about balance changes in your entire balance platform.\n\n* **accountHolder**: receive notifications about balance changes of a specific user.\n\n* **balanceAccount**: receive notifications about balance changes in a specific balance account.",
+            "enum" : [ "balanceAccount", "accountHolder", "balancePlatform" ]
+          }
+        }
+      },
+      "TaxFormSummaryResponse" : {
+        "type" : "object",
+        "properties" : {
+          "data" : {
+            "type" : "array",
+            "description" : "A list of tax form summaries, where each summary consists of the legal entity and the tax years in which the legal entity has a tax form.",
+            "items" : {
+              "$ref" : "#/components/schemas/Summary"
+            }
+          }
+        },
+        "required" : [ "data" ]
       },
       "TransferLimit" : {
         "type" : "object",
@@ -15084,6 +15495,84 @@
           }
         },
         "required" : [ "transferLimits" ]
+      },
+      "TransferType" : {
+        "type" : "string",
+        "description" : "The type of transfer to which the limit applies. Possible values:\n* **instant**: the limit applies to transfers with an **instant** priority.\n* **all**: the limit applies to all transfers, regardless of priority.",
+        "enum" : [ "instant", "all" ]
+      },
+      "UKLocalMandateAccountIdentification" : {
+        "type" : "object",
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/MandateAccountIdentification"
+        }, {
+          "type" : "object",
+          "properties" : {
+            "accountNumber" : {
+              "type" : "string",
+              "description" : "The 8-digit bank account number, without separators or whitespace.",
+              "maxLength" : 8,
+              "minLength" : 8
+            },
+            "sortCode" : {
+              "type" : "string",
+              "description" : "The 6-digit [sort code](https://en.wikipedia.org/wiki/Sort_code), without separators or whitespace.",
+              "maxLength" : 6,
+              "minLength" : 6
+            },
+            "type" : {
+              "type" : "string",
+              "default" : "ukLocal",
+              "description" : "**ukLocal**"
+            }
+          }
+        } ],
+        "required" : [ "accountNumber", "sortCode", "type" ]
+      },
+      "WebhookSetting" : {
+        "type" : "object",
+        "discriminator" : {
+          "propertyName" : "type",
+          "mapping" : {
+            "balance" : "#/components/schemas/BalanceWebhookSetting"
+          }
+        },
+        "properties" : {
+          "currency" : {
+            "type" : "string",
+            "description" : "The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes) of the balance.",
+            "minLength" : 1
+          },
+          "id" : {
+            "type" : "string",
+            "description" : "The unique identifier of the webhook setting."
+          },
+          "status" : {
+            "$ref" : "#/components/schemas/SettingStatus",
+            "description" : "The status of the webhook setting. Possible values:\n\n* **active**: You receive a balance webhook if any of the conditions in this setting are met.\n* **inactive**: You do not receive a balance webhook even if the conditions in this settings are met."
+          },
+          "target" : {
+            "$ref" : "#/components/schemas/Target",
+            "description" : "The resource about whose balance change you want to get notified."
+          },
+          "type" : {
+            "$ref" : "#/components/schemas/SettingType",
+            "description" : "The type of the webhook setting."
+          }
+        },
+        "required" : [ "currency", "id", "status", "target", "type" ]
+      },
+      "WebhookSettings" : {
+        "type" : "object",
+        "properties" : {
+          "webhookSettings" : {
+            "type" : "array",
+            "description" : "The list of webhook settings.",
+            "items" : {
+              "$ref" : "#/components/schemas/WebhookSetting"
+            }
+          }
+        }
       }
     },
     "examples" : {
