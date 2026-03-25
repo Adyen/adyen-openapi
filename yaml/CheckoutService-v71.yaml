@@ -4603,6 +4603,31 @@ components:
           $ref: '#/components/schemas/TravelAgency'
       required:
       - passengerName
+    AlmaDetails:
+      type: object
+      additionalProperties: false
+      properties:
+        checkoutAttemptId:
+          type: string
+          description: The checkout attempt identifier.
+        feeType:
+          type: string
+          description: '**Alma payment request fee type**'
+          enum:
+          - merchantPays
+          - shopperPays
+        sdkData:
+          type: string
+          description: Base64-encoded JSON object containing SDK related parameters
+            required by the SDK
+          maxLength: 50000
+          x-addedInVersion: '69'
+        type:
+          type: string
+          description: The payment method type.
+          enum:
+          - alma
+      title: Alma
     AmazonPayDetails:
       type: object
       additionalProperties: false
@@ -5764,7 +5789,7 @@ components:
             \ field."
         countryCode:
           type: string
-          description: 'The shopper country.
+          description: 'The shopper country code.
 
 
             Format: [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)
@@ -6180,6 +6205,9 @@ components:
       type: object
       additionalProperties: false
       properties:
+        amount:
+          $ref: '#/components/schemas/Amount'
+          description: The amount of the forwarded payment.
         baseUrl:
           type: string
           description: The base URL of the third party API, where Adyen will send
@@ -7920,6 +7948,46 @@ components:
             - outOfBand
             - singleSelect
             - text
+    DirectDebitAuDetails:
+      type: object
+      additionalProperties: false
+      properties:
+        bankAccountNumber:
+          type: string
+          description: The shopper's banking account number used to complete payment.
+        bankBranchCode:
+          type: string
+          description: The shopper's BSB (their bank's branch code) number used to
+            complete payment.
+        checkoutAttemptId:
+          type: string
+          description: The checkout attempt identifier.
+        recurringDetailReference:
+          type: string
+          deprecated: true
+          description: This is the `recurringDetailReference` returned in the response
+            when you created the token.
+          x-deprecatedInVersion: '49'
+          x-deprecatedMessage: Use `storedPaymentMethodId` instead.
+        sdkData:
+          type: string
+          description: Base64-encoded JSON object containing SDK related parameters
+            required by the SDK
+          maxLength: 50000
+          x-addedInVersion: '69'
+        storedPaymentMethodId:
+          type: string
+          description: This is the `recurringDetailReference` returned in the response
+            when you created the token.
+          maxLength: 64
+          x-addedInVersion: '49'
+        type:
+          type: string
+          default: directdebit_AU
+          description: '**directdebit_AU**'
+          enum:
+          - directdebit_AU
+      title: DirectDebitAu
     DokuDetails:
       type: object
       additionalProperties: false
@@ -8062,6 +8130,13 @@ components:
         merchantAccount:
           type: string
           description: Your merchant account identifier.
+        store:
+          type: string
+          description: Required for Adyen for Platforms integrations if you are a
+            platform model. This is your [reference](https://docs.adyen.com/api-explorer/Management/3/post/merchants/(merchantId)/stores#request-reference)
+            (on [balance platform](https://docs.adyen.com/platforms)) or the [storeReference](https://docs.adyen.com/api-explorer/Account/latest/post/updateAccountHolder#request-accountHolderDetails-storeDetails-storeReference)
+            (in the [classic integration](https://docs.adyen.com/classic-platforms/processing-payments/route-payment-to-store/#route-a-payment-to-a-store))
+            for the ecommerce or point-of-sale store that is processing the payment.
       required:
       - currency
       - merchantAccount
@@ -8176,7 +8251,7 @@ components:
           x-deprecatedMessage: Use `checkoutAttemptId` instead
         countryCode:
           type: string
-          description: 'The shopper country.
+          description: 'The shopper country code.
 
 
             Format: [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)
@@ -8416,6 +8491,15 @@ components:
         socialSecurityNumber:
           type: string
           description: The shopper's social security number.
+        store:
+          type: string
+          description: Required for Adyen for Platforms integrations if you are a
+            platform model. This is your [reference](https://docs.adyen.com/api-explorer/Management/3/post/merchants/(merchantId)/stores#request-reference)
+            (on [balance platform](https://docs.adyen.com/platforms)) or the [storeReference](https://docs.adyen.com/api-explorer/Account/latest/post/updateAccountHolder#request-accountHolderDetails-storeDetails-storeReference)
+            (in the [classic integration](https://docs.adyen.com/classic-platforms/processing-payments/route-payment-to-store/#route-a-payment-to-a-store))
+            for the ecommerce or point-of-sale store that is processing the payment.
+          maxLength: 16
+          minLength: 1
         telephoneNumber:
           type: string
           description: "The shopper's telephone number.\n The phone number must include\
@@ -9448,6 +9532,33 @@ components:
       required:
       - type
       title: Klarna
+    KlarnaNetworkDetails:
+      type: object
+      additionalProperties: false
+      properties:
+        checkoutAttemptId:
+          type: string
+          description: The checkout attempt identifier.
+        klarnaNetworkData:
+          type: string
+          description: A string containing a structured JSON object. This is a passthrough
+            field used to enable custom features or data exchange with Klarna.
+          maxLength: 10240
+        sdkData:
+          type: string
+          description: Base64-encoded JSON object containing SDK related parameters
+            required by the SDK
+          maxLength: 50000
+          x-addedInVersion: '69'
+        type:
+          type: string
+          default: klarna_network
+          description: '**klarna_network**'
+          enum:
+          - klarna_network
+      required:
+      - type
+      title: KlarnaNetwork
     Leg:
       type: object
       additionalProperties: false
@@ -10894,6 +11005,7 @@ components:
           - paynow
           - affirm_pos
           - iris
+          - wero
           - trustly
           - trustlyvector
           - oney
@@ -10922,7 +11034,6 @@ components:
           - bizum
           - walley
           - walley_b2b
-          - alma
           - paypo
           - scalapay
           - scalapay_3x
@@ -12384,8 +12495,11 @@ components:
         captureDelayHours:
           type: integer
           format: int32
-          description: The delay between the authorisation and scheduled auto-capture,
-            specified in hours.
+          description: 'The [delay between the authorization and automatic capture](https://docs.adyen.com/online-payments/capture?tab=delayed-individual_2#delayed-automatic-capture)
+            of the payment, specified in hours.
+
+
+            Maximum value: **672** (28 days).'
         channel:
           type: string
           description: 'The platform where a payment transaction takes place. This
@@ -12424,7 +12538,7 @@ components:
           x-deprecatedMessage: Use `checkoutAttemptId` instead
         countryCode:
           type: string
-          description: 'The shopper country.
+          description: 'The shopper country code.
 
 
             Format: [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)
@@ -12567,18 +12681,17 @@ components:
             the transaction.
         merchantOrderReference:
           type: string
-          description: 'This reference allows linking multiple transactions to each
-            other for reporting purposes (i.e. order auth-rate). The reference should
-            be unique per billing cycle.
-
-            The same merchant order reference should never be reused after the first
-            authorised attempt. If used, this field should be supplied for all incoming
-            authorisations.
-
-            > We strongly recommend you send the `merchantOrderReference` value to
-            benefit from linking payment requests when authorisation retries take
-            place. In addition, we recommend you provide `retry.orderAttemptNumber`,
-            `retry.chainAttemptNumber`, and `retry.skipRetry` values in `PaymentRequest.additionalData`.'
+          description: "You can use this reference to link multiple transactions to\
+            \ one another (for example, to track order authorization rate).For each\
+            \ billing cycle, this reference should be unique. After the first authorized\
+            \ payment attempt, do not reuse the reference. If you use this parameter,\
+            \ include it in all of the payment requests that you make. \n We strongly\
+            \ recommend that you:\n* Always include this parameter, so that you can\
+            \ benefit from linking payment requests to one another, in case of authorization\
+            \ retries. \n* Additionally include the following parameters in the `additionalData`\
+            \ object: [`retry.orderAttemptNumber`](https://docs.adyen.com/api-explorer/Checkout/latest/post/sessions#request-additionalData-AdditionalDataRetry-retry-orderAttemptNumber),\
+            \ [`retry.chainAttemptNumber`](https://docs.adyen.com/api-explorer/Checkout/latest/post/sessions#request-additionalData-AdditionalDataRetry-retry-chainAttemptNumber),\
+            \ and [`retry.skipRetry`](https://docs.adyen.com/api-explorer/Checkout/latest/post/sessions#request-additionalData-AdditionalDataRetry-retry-skipRetry)"
           maxLength: 1000
         merchantRiskIndicator:
           $ref: '#/components/schemas/MerchantRiskIndicator'
@@ -12628,6 +12741,7 @@ components:
           - $ref: '#/components/schemas/AchDetails'
           - $ref: '#/components/schemas/AffirmDetails'
           - $ref: '#/components/schemas/AfterpayDetails'
+          - $ref: '#/components/schemas/AlmaDetails'
           - $ref: '#/components/schemas/AmazonPayDetails'
           - $ref: '#/components/schemas/AncvDetails'
           - $ref: '#/components/schemas/AndroidPayDetails'
@@ -12638,6 +12752,7 @@ components:
           - $ref: '#/components/schemas/CardDetails'
           - $ref: '#/components/schemas/CashAppDetails'
           - $ref: '#/components/schemas/CellulantDetails'
+          - $ref: '#/components/schemas/DirectDebitAuDetails'
           - $ref: '#/components/schemas/DokuDetails'
           - $ref: '#/components/schemas/DragonpayDetails'
           - $ref: '#/components/schemas/EBankingFinlandDetails'
@@ -12649,6 +12764,7 @@ components:
           - $ref: '#/components/schemas/GooglePayDetails'
           - $ref: '#/components/schemas/IdealDetails'
           - $ref: '#/components/schemas/KlarnaDetails'
+          - $ref: '#/components/schemas/KlarnaNetworkDetails'
           - $ref: '#/components/schemas/MasterpassDetails'
           - $ref: '#/components/schemas/MbwayDetails'
           - $ref: '#/components/schemas/MobilePayDetails'
@@ -12727,11 +12843,10 @@ components:
         reference:
           type: string
           description: 'The reference to uniquely identify a payment. This reference
-            is used in all communication with you about the payment status. We recommend
-            using a unique value per payment; however, it is not a requirement.
-
-            If you need to provide multiple references for a transaction, separate
-            them with hyphens ("-").
+            is used in all communication with you about the payment status. To provide
+            multiple references for one transaction, separate the reference values
+            with the hyphen (`-`) character.We strongly recommend that you use a unique
+            value for each transaction.
 
             Maximum length: 80 characters.'
         returnUrl:
@@ -13397,9 +13512,9 @@ components:
             Possible values: **deductFromLiableAccount**, **deductFromOneBalanceAccount**,
             **deductAccordingToSplitRatio**.'
           enum:
+          - deductFromOneBalanceAccount
           - deductAccordingToSplitRatio
           - deductFromLiableAccount
-          - deductFromOneBalanceAccount
         costAllocationAccount:
           type: string
           description: The unique identifier of the balance account to which the chargeback
@@ -13631,6 +13746,12 @@ components:
       type: object
       additionalProperties: false
       properties:
+        cardAltID:
+          type: string
+          description: 'This is an ALT ID (alternate ID) mapped to the Card PAN.
+
+
+            > Returned only in case of Ecommerce Card Payment in India'
         cardBin:
           type: string
           description: 'The first six digits of the card number.
@@ -14019,6 +14140,13 @@ components:
         merchantReference:
           type: string
           description: The reference provided for the transaction.
+        networkProcessingMode:
+          type: string
+          description: "Indicates the processing flow.\n\nPossible values:\n* **sale**:\
+            \ You do not need to separately capture the funds, because capture happens\
+            \ automatically as part of the transaction. \n* **auth**: If you have\
+            \ not [configured automatic capture for the transaction](https://docs.adyen.com/online-payments/capture#types-of-capture),\
+            \ you must manually capture the funds."
         networkTxReference:
           type: string
           description: 'Returned in the response if you are not tokenizing with Adyen
@@ -14700,17 +14828,20 @@ components:
       type: object
       additionalProperties: false
       properties:
-        taxId:
+        taxCountryCode:
           type: string
-          description: The tax-id of the shopper doing the transaction.
-          maxLength: 10
-        taxIdCountryCode:
-          type: string
-          description: The country to which the tax-id belongs to.
+          description: 'The two-character [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)
+            country code associated with the provided tax identification number.
+
+            Currently used only for Indian PA-CB tax verification, when applicable.'
           maxLength: 2
+        taxIdentificationNumber:
+          type: string
+          description: "The shopper\u2019s tax identification number."
+          maxLength: 20
       required:
-      - taxId
-      - taxIdCountryCode
+      - taxCountryCode
+      - taxIdentificationNumber
     Split:
       type: object
       additionalProperties: false
@@ -15055,6 +15186,18 @@ components:
       type: object
       additionalProperties: false
       properties:
+        alias:
+          type: string
+          description: 'The alias of the credit card number.
+
+
+            Applies only to recurring contracts storing credit card details'
+        aliasType:
+          type: string
+          description: 'The alias type of the credit card number.
+
+
+            Applies only to recurring contracts storing credit card details.'
         brand:
           type: string
           description: The brand of the card.
@@ -15649,7 +15792,11 @@ components:
           description: If set to true, you will only perform the [3D Secure 2 authentication](https://docs.adyen.com/online-payments/3d-secure/other-3ds-flows/authentication-only),
             and not the payment authorisation.
           x-deprecatedInVersion: '50'
-          x-deprecatedMessage: Use `threeDSAuthenticationOnly` instead.
+          x-deprecatedMessage: '- If your version is between 50 and 69, use `threeDSAuthenticationOnly`
+            instead.
+
+            - If your version is 70 or later, use `authenticationData.authenticationOnly`
+            instead.'
         challengeIndicator:
           type: string
           deprecated: true
@@ -16326,12 +16473,37 @@ components:
         maskedAccountId:
           type: string
           description: The masked account number associated with the mandate.
+        minAmount:
+          type: string
+          description: For a billing plan where the payment amounts are variable,
+            the minimum amount to charge the shopper for each recurring payment. When
+            a shopper approves the billing plan, they can also specify a maximum amount
+            in their banking app.
         providerId:
           type: string
           description: The provider-specific identifier for this mandate.
+        recurringAmount:
+          type: string
+          description: For a billing plan where the payment amount is fixed, the amount
+            the shopper will be charged for each recurring payment.
+        recurringStatement:
+          type: string
+          description: 'The text that will be shown on the shopper''s bank statement
+            for the recurring payments. We recommend to add a descriptive text about
+            the subscription to let your shoppers recognize your recurring payments.
+
+            Maximum length: 35 characters.'
+          maxLength: 35
         remarks:
           type: string
           description: Additional remarks or notes about the mandate.
+        retryPolicy:
+          type: string
+          description: When set to true, you can retry for failed recurring payments.
+            The default value is true.
+          enum:
+          - 'true'
+          - 'false'
         startsAt:
           type: string
           description: Start date of the billing plan, in YYYY-MM-DD format. By default,
@@ -16763,21 +16935,6 @@ components:
           - zip
           - zip_pos
       title: Zip
-    Result:
-      type: string
-      enum:
-      - VALID
-      - INVALID
-      - UNKNOWN
-    ValidateShopperIdResponse:
-      type: object
-      properties:
-        reason:
-          type: string
-          description: Reason for the result.
-        result:
-          $ref: '#/components/schemas/Result'
-          description: 'Result of the validation. Ex: valid, invalid, unknown'
     DefaultErrorResponseEntity:
       type: object
       description: Standardized error response following RFC-7807 format
@@ -16817,15 +16974,15 @@ components:
     InvalidField:
       type: object
       properties:
+        message:
+          type: string
+          description: Description of the validation error.
         name:
           type: string
           description: The field that has an invalid value.
         value:
           type: string
           description: The invalid value.
-        message:
-          type: string
-          description: Description of the validation error.
       required:
       - message
       - name
@@ -16842,6 +16999,13 @@ components:
             minLength: 0
       required:
       - type
+    Result:
+      type: string
+      enum:
+      - VALID
+      - INVALID
+      - UNKNOWN
+      - NOT_REQUIRED
     ShopperIdPaymentMethod:
       type: object
       discriminator:
@@ -16896,6 +17060,15 @@ components:
       required:
       - merchantAccount
       - paymentMethod
+    ValidateShopperIdResponse:
+      type: object
+      properties:
+        reason:
+          type: string
+          description: Reason for the result.
+        result:
+          $ref: '#/components/schemas/Result'
+          description: 'Result of the validation. Ex: valid, invalid, unknown'
   parameters:
     Idempotency-Key:
       name: Idempotency-Key
