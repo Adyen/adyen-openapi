@@ -31,7 +31,7 @@ info:
     name: Adyen Developer Experience team
     url: https://github.com/Adyen/adyen-openapi
   version: '1'
-  x-timestamp: '2025-08-14T10:36:36Z'
+  x-timestamp: '2026-02-19T15:42:36Z'
 tags:
 - name: Session authentication
 paths:
@@ -62,20 +62,6 @@ paths:
             schema:
               $ref: '#/components/schemas/AuthenticationSessionRequest'
             examples:
-              create-session-platform:
-                summary: Create a session token for platform components
-                description: The request describes a subset of resources and permissions
-                  expected from the requested session
-                value:
-                  allowOrigin: https://www.your-website.com
-                  product: platform
-                  policy:
-                    resources:
-                    - type: accountHolder
-                      accountHolderId: AH00000000000000000000001
-                    roles:
-                    - 'Transactions Overview Component: View'
-                    - 'Payouts Overview Component: View'
               create-session-onboarding:
                 summary: Create a session token for onboarding components
                 description: The request describes a subset of resources and permissions
@@ -90,6 +76,20 @@ paths:
                     roles:
                     - createTransferInstrumentComponent
                     - manageTransferInstrumentComponent
+              create-session-platform:
+                summary: Create a session token for platform components
+                description: The request describes a subset of resources and permissions
+                  expected from the requested session
+                value:
+                  allowOrigin: https://www.your-website.com
+                  product: platform
+                  policy:
+                    resources:
+                    - type: accountHolder
+                      accountHolderId: AH00000000000000000000001
+                    roles:
+                    - 'Transactions Overview Component: View'
+                    - 'Payouts Overview Component: View'
         required: true
       responses:
         '200':
@@ -99,13 +99,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/AuthenticationSessionResponse'
               examples:
-                create-session-platform:
+                create-session-onboarding:
                   summary: Session token created
                   description: Response to be proxied to embedded components
                   value:
                     id: 11a1e60a-18b0-4dda-9258-e0ae29e1e2a3
                     token: eyJraWQiOiJwbGF0Zm9ybWNvbGRlciI...
-                create-session-onboarding:
+                create-session-platform:
                   summary: Session token created
                   description: Response to be proxied to embedded components
                   value:
@@ -178,6 +178,7 @@ components:
       - type: object
         properties:
           accountHolderId:
+            minLength: 1
             type: string
             description: The unique identifier of the resource connected to the component.
               For [Platform Experience components](https://docs.adyen.com/platforms/build-user-dashboards),
@@ -210,113 +211,6 @@ components:
             For [Platform Experience components](https://docs.adyen.com/platforms/build-user-dashboards),
             set this to **platform**.'
           $ref: '#/components/schemas/ProductType'
-    BalanceAccountResource:
-      required:
-      - balanceAccountId
-      type: object
-      allOf:
-      - $ref: '#/components/schemas/Resource'
-      - type: object
-        properties:
-          balanceAccountId:
-            type: string
-    LegalEntityResource:
-      required:
-      - legalEntityId
-      type: object
-      allOf:
-      - $ref: '#/components/schemas/Resource'
-      - type: object
-        properties:
-          legalEntityId:
-            type: string
-            description: 'The unique identifier of the resource connected to the component.
-
-              For [Onboarding components](https://docs.adyen.com/platforms/onboard-users/components),
-              this is the legal entity that has a contractual relationship with your
-              platform and owns the [transfer instrument](https://docs.adyen.com/api-explorer/legalentity/latest/post/transferInstruments).
-              For sole proprietorships, this is the legal entity of the individual
-              owner.'
-    MerchantAccountResource:
-      type: object
-      allOf:
-      - $ref: '#/components/schemas/Resource'
-      - type: object
-        properties:
-          merchantAccountCode:
-            type: string
-    PaymentInstrumentResource:
-      required:
-      - paymentInstrumentId
-      type: object
-      allOf:
-      - $ref: '#/components/schemas/Resource'
-      - type: object
-        properties:
-          paymentInstrumentId:
-            type: string
-    Policy:
-      type: object
-      properties:
-        resources:
-          uniqueItems: true
-          type: array
-          description: 'An object containing the type and the unique identifier of
-            the user of the component.
-
-
-            For [Onboarding components](https://docs.adyen.com/platforms/onboard-users/components),
-            this is the ID of the legal entity that has a contractual relationship
-            with your platform. For sole proprietorships, use the ID of the legal
-            entity of the individual owner.
-
-
-            For [Platform Experience components](https://docs.adyen.com/platforms/build-user-dashboards),
-            this is the ID of the account holder that is associated with the balance
-            account shown in the component.'
-          items:
-            $ref: '#/components/schemas/Resource'
-        roles:
-          uniqueItems: true
-          type: array
-          description: The name of the role required to use the component.
-          items:
-            type: string
-    ProductType:
-      type: string
-      enum:
-      - onboarding
-      - platform
-      - bank
-    Resource:
-      type: object
-      properties:
-        type:
-          description: 'The resource type.
-
-
-            Possible values: **accountHolder**, **legalEntity**.
-
-
-            You must also include the corresponding unique identifier of the resource.
-            For example, the account holder ID.'
-          $ref: '#/components/schemas/ResourceType'
-      discriminator:
-        propertyName: type
-        mapping:
-          legalEntity: '#/components/schemas/LegalEntityResource'
-          balanceAccount: '#/components/schemas/BalanceAccountResource'
-          accountHolder: '#/components/schemas/AccountHolderResource'
-          merchantAccount: '#/components/schemas/MerchantAccountResource'
-          paymentInstrument: '#/components/schemas/PaymentInstrumentResource'
-    ResourceType:
-      type: string
-      enum:
-      - legalEntity
-      - balanceAccount
-      - accountHolder
-      - merchantAccount
-      - paymentInstrument
     AuthenticationSessionResponse:
       type: object
       properties:
@@ -369,15 +263,102 @@ components:
       - value
       type: object
       properties:
+        message:
+          type: string
+          description: Description of the validation error.
         name:
           type: string
           description: The field that has an invalid value.
         value:
           type: string
           description: The invalid value.
-        message:
-          type: string
-          description: Description of the validation error.
+    LegalEntityResource:
+      required:
+      - legalEntityId
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/Resource'
+      - type: object
+        properties:
+          legalEntityId:
+            minLength: 1
+            type: string
+            description: 'The unique identifier of the resource connected to the component.
+
+              For [Onboarding components](https://docs.adyen.com/platforms/onboard-users/components),
+              this is the legal entity that has a contractual relationship with your
+              platform and owns the [transfer instrument](https://docs.adyen.com/api-explorer/legalentity/latest/post/transferInstruments).
+              For sole proprietorships, this is the legal entity of the individual
+              owner.'
+    PaymentInstrumentResource:
+      required:
+      - paymentInstrumentId
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/Resource'
+      - type: object
+        properties:
+          paymentInstrumentId:
+            minLength: 1
+            type: string
+    Policy:
+      type: object
+      properties:
+        resources:
+          uniqueItems: true
+          type: array
+          description: 'An object containing the type and the unique identifier of
+            the user of the component.
+
+
+            For [Onboarding components](https://docs.adyen.com/platforms/onboard-users/components),
+            this is the ID of the legal entity that has a contractual relationship
+            with your platform. For sole proprietorships, use the ID of the legal
+            entity of the individual owner.
+
+
+            For [Platform Experience components](https://docs.adyen.com/platforms/build-user-dashboards),
+            this is the ID of the account holder that is associated with the balance
+            account shown in the component.'
+          items:
+            $ref: '#/components/schemas/Resource'
+        roles:
+          uniqueItems: true
+          type: array
+          description: The name of the role required to use the component.
+          items:
+            type: string
+    ProductType:
+      type: string
+      enum:
+      - onboarding
+      - platform
+      - bank
+    Resource:
+      type: object
+      properties:
+        type:
+          description: 'The resource type.
+
+
+            Possible values: **accountHolder**, **legalEntity**.
+
+
+            You must also include the corresponding unique identifier of the resource.
+            For example, the account holder ID.'
+          $ref: '#/components/schemas/ResourceType'
+      discriminator:
+        propertyName: type
+        mapping:
+          accountHolder: '#/components/schemas/AccountHolderResource'
+          legalEntity: '#/components/schemas/LegalEntityResource'
+          paymentInstrument: '#/components/schemas/PaymentInstrumentResource'
+    ResourceType:
+      type: string
+      enum:
+      - legalEntity
+      - accountHolder
+      - paymentInstrument
   securitySchemes:
     ApiKeyAuth:
       type: apiKey

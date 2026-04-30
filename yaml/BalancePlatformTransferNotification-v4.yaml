@@ -36,6 +36,10 @@ webhooks:
             examples:
               balancePlatform-transfer-created-incoming-internal:
                 $ref: '#/components/examples/post-balancePlatform.transfer.created-balancePlatform-transfer-created-incoming-internal'
+              balancePlatform-transfer-created-initiated-on-demand-top-up:
+                $ref: '#/components/examples/post-balancePlatform.transfer.created-balancePlatform-transfer-created-initiated-on-demand-top-up'
+              balancePlatform-transfer-created-initiated-scheduled-top-up:
+                $ref: '#/components/examples/post-balancePlatform.transfer.created-balancePlatform-transfer-created-initiated-scheduled-top-up'
               balancePlatform-transfer-created-outgoing-external:
                 $ref: '#/components/examples/post-balancePlatform.transfer.created-balancePlatform-transfer-created-outgoing-external'
             schema:
@@ -84,6 +88,14 @@ webhooks:
                 $ref: '#/components/examples/post-balancePlatform.transfer.updated-08.internalDirectDebit-incoming-booked'
               09.internalDirectDebit-outgoing-booked:
                 $ref: '#/components/examples/post-balancePlatform.transfer.updated-09.internalDirectDebit-outgoing-booked'
+              balancePlatform-transfer-updated-authorized-on-demand-top-up:
+                $ref: '#/components/examples/post-balancePlatform.transfer.updated-balancePlatform-transfer-updated-authorized-on-demand-top-up'
+              balancePlatform-transfer-updated-authorized-scheduled-top-up:
+                $ref: '#/components/examples/post-balancePlatform.transfer.updated-balancePlatform-transfer-updated-authorized-scheduled-top-up'
+              balancePlatform-transfer-updated-captured-on-demand-top-up:
+                $ref: '#/components/examples/post-balancePlatform.transfer.updated-balancePlatform-transfer-updated-captured-on-demand-top-up'
+              balancePlatform-transfer-updated-captured-scheduled-top-up:
+                $ref: '#/components/examples/post-balancePlatform.transfer.updated-balancePlatform-transfer-updated-captured-scheduled-top-up'
             schema:
               $ref: '#/components/schemas/TransferNotificationRequest'
       responses:
@@ -692,6 +704,35 @@ components:
           description: The namespace for the reason code.
           type: string
       type: object
+    FundingInstrument:
+      additionalProperties: false
+      properties:
+        cardIdentification:
+          description: "Card details used for the transfer, such as the Primary Account\
+            \ Number (PAN) or stored payment method ID. Required if `sourceOfFunds`\
+            \ is **DEBIT**. Provide either:\n - `storedPaymentMethodId` or \n - `expiryMonth`,\
+            \ `expiryYear`, and `number`."
+          $ref: '#/components/schemas/CardIdentification'
+        networkPaymentReference:
+          description: The unique reference assigned by the card network for the pay-in
+            transaction.
+          type: string
+        reference:
+          description: Your internal reference that identifies this funding instrument.
+            Required if `sourceOfFunds` is **DEPOSIT_ACCOUNT**.
+          type: string
+        sourceOfFunds:
+          description: 'Indicates where the funds used for the transfer originated.
+            Possible values are:
+
+            - **DEBIT** for card-to-card transfers.
+
+            - **DEPOSIT_ACCOUNT** for wallet-to-card transfers.'
+          enum:
+          - DEBIT
+          - DEPOSIT_ACCOUNT
+          type: string
+      type: object
     HKLocalAccountIdentification:
       additionalProperties: false
       properties:
@@ -738,6 +779,9 @@ components:
     IbanAccountIdentification:
       additionalProperties: false
       properties:
+        bic:
+          description: The bank's 8- or 11-character BIC or SWIFT code.
+          type: string
         iban:
           description: The international bank account number as defined in the [ISO-13616](https://www.iso.org/standard/81090.html)
             standard.
@@ -851,8 +895,11 @@ components:
           type: string
         processingType:
           x-addedInVersion: '4'
-          description: Contains information about how the payment was processed. For
-            example, **ecommerce** for online or **pos** for in-person payments.
+          description: 'Contains information about how the payment was processed.
+
+
+            Possible values: **atmWithdraw**, **balanceInquiry**, **ecommerce**, **moto**,
+            **pos**, **purchaseWithCashback**, **recurring**, **token**.'
           enum:
           - atmWithdraw
           - balanceInquiry
@@ -1063,6 +1110,7 @@ components:
           - miscCostPending
           - paymentCost
           - paymentCostPending
+          - pending
           - pendingApproval
           - pendingExecution
           - received
@@ -1076,6 +1124,7 @@ components:
           - reserveAdjustment
           - reserveAdjustmentPending
           - returned
+          - reversed
           - secondChargeback
           - secondChargebackPending
           - undefined
@@ -1881,6 +1930,7 @@ components:
           - miscCostPending
           - paymentCost
           - paymentCostPending
+          - pending
           - pendingApproval
           - pendingExecution
           - received
@@ -1894,6 +1944,7 @@ components:
           - reserveAdjustment
           - reserveAdjustmentPending
           - returned
+          - reversed
           - secondChargeback
           - secondChargebackPending
           - undefined
@@ -1953,6 +2004,11 @@ components:
           - balanceRollover
           - balanceMigration
           type: string
+        ultimateParty:
+          x-addedInVersion: '3'
+          description: The ultimate sender of the funds of the transfer (ultimate
+            debtor).
+          $ref: '#/components/schemas/UltimatePartyIdentification'
         updatedAt:
           x-addedInVersion: '3'
           description: The date and time when the event was triggered, in ISO 8601
@@ -2174,6 +2230,7 @@ components:
           - miscCostPending
           - paymentCost
           - paymentCostPending
+          - pending
           - pendingApproval
           - pendingExecution
           - received
@@ -2187,6 +2244,7 @@ components:
           - reserveAdjustment
           - reserveAdjustmentPending
           - returned
+          - reversed
           - secondChargeback
           - secondChargebackPending
           - undefined
@@ -2255,6 +2313,11 @@ components:
           type: string
         country:
           description: The country where the merchant is located.
+          type: string
+        countryCode:
+          description: The two-character country code of the merchant's location,
+            in [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)
+            format.
           type: string
         mcc:
           description: The merchant category code.
@@ -2385,6 +2448,72 @@ components:
       - accountNumber
       - routingNumber
       type: object
+    UltimatePartyIdentification:
+      additionalProperties: false
+      properties:
+        address:
+          description: The address of the bank account or card owner.
+          $ref: '#/components/schemas/Address'
+        dateOfBirth:
+          description: 'The date of birth of the individual in [ISO-8601](https://www.w3.org/TR/NOTE-datetime)
+            format. For example, **YYYY-MM-DD**.
+
+
+            Allowed only when `type` is **individual**.'
+          format: date
+          type: string
+        email:
+          description: 'The email address of the organization or individual. Maximum
+            length: 254 characters.'
+          maxLength: 254
+          type: string
+        firstName:
+          description: "The first name of the individual.\n\nSupported characters:\
+            \ [a-z] [A-Z] - . / \u2014 and space.\n\nThis parameter is:\n- Allowed\
+            \ only when `type` is **individual**.\n- Required when `category` is **card**."
+          type: string
+        fullName:
+          description: "The full name of the entity that owns the bank account or\
+            \ card.\n\nSupported characters: [a-z] [A-Z] [0-9] , . ; : - \u2014 /\
+            \ \\ + & ! ? @ ( ) \" ' and space.\n\nRequired when `category` is **bank**."
+          type: string
+        fundingInstrument:
+          description: Details of the card or token used to fund the pay-in transaction.
+          $ref: '#/components/schemas/FundingInstrument'
+        lastName:
+          description: "The last name of the individual.\n\nSupported characters:\
+            \ [a-z] [A-Z] - . / \u2014 and space.\n\nThis parameter is:\n- Allowed\
+            \ only when `type` is **individual**.\n- Required when `category` is **card**."
+          type: string
+        reference:
+          description: 'A unique reference to identify the party or counterparty involved
+            in the transfer. For example, your client''s unique wallet or payee ID.
+
+
+            Required when you include `cardIdentification.storedPaymentMethodId`.'
+          maxLength: 150
+          type: string
+        type:
+          default: unknown
+          description: 'The type of entity that owns the bank account or card.
+
+
+            Possible values: **individual**, **organization**, or **unknown**.
+
+
+            Required when `category` is **card**. In this case, the value must be
+            **individual**.'
+          enum:
+          - individual
+          - organization
+          - unknown
+          type: string
+        url:
+          description: 'The URL of the organization or individual. Maximum length:
+            255 characters.'
+          maxLength: 255
+          type: string
+      type: object
   securitySchemes:
     BasicAuth:
       scheme: basic
@@ -2431,6 +2560,95 @@ components:
           status: received
         environment: test
         timestamp: '2023-02-28T13:27:05+02:00'
+        type: balancePlatform.transfer.created
+    post-balancePlatform.transfer.created-balancePlatform-transfer-created-initiated-on-demand-top-up:
+      summary: Initiated on-demand top-up to a balance account
+      description: Example webhook for an initiated on-demand top-up
+      value:
+        data:
+          accountHolder:
+            description: Your description for the account holder
+            id: AH00000000000000000000001
+            reference: Your reference for the account holder
+          amount:
+            currency: EUR
+            value: 100000
+          balanceAccount:
+            description: Your description for the balance account
+            id: BA00000000000000000000001
+            reference: Your reference for the balance account
+          balancePlatform: YOUR_BALANCE_PLATFORM
+          balances:
+          - currency: EUR
+            received: 100000
+          category: topUp
+          categoryData:
+            modificationMerchantReference: Your reference for the capture.
+            modificationPspReference: WNS7WQ756L2GWR82
+            paymentMerchantReference: YOUR_ORDER_NUMBER
+            platformPaymentType: TopUp
+            pspPaymentReference: M5N7TQ4TG5PFWR50
+            type: platformPayment
+          creationDate: '2023-02-28T13:30:05+02:00'
+          description: Your description for the top-up
+          direction: incoming
+          events:
+          - bookingDate: '2023-02-28T13:30:18+02:00'
+            id: SKRL00000000000000000000000001
+            mutations:
+            - currency: EUR
+              received: 100000
+            status: received
+            type: accounting
+          id: JN4227222422265
+          reason: approved
+          reference: Your reference for the top-up
+          sequenceNumber: 1
+          status: received
+          type: capture
+        environment: test
+        timestamp: '2024-12-20T13:51:24.928Z'
+        type: balancePlatform.transfer.created
+    post-balancePlatform.transfer.created-balancePlatform-transfer-created-initiated-scheduled-top-up:
+      summary: Initiated scheduled top-up to a balance account
+      description: Example webhook for an initiated scheduled top-up
+      value:
+        data:
+          accountHolder:
+            id: AH00000000000000000000001
+          amount:
+            currency: EUR
+            value: 100000
+          balanceAccount:
+            id: BA00000000000000000000001
+          balancePlatform: YOUR_BALANCE_PLATFORM
+          balances:
+          - currency: EUR
+            received: 100000
+          category: platformPayment
+          categoryData:
+            pspPaymentReference: CWBC43ZX2VTFWR82
+            type: platformPayment
+          counterparty:
+            transferInstrumentId: SE00000000000000000000001
+          creationDate: '2023-02-28T13:30:05+02:00'
+          direction: incoming
+          events:
+          - bookingDate: '2023-02-28T13:30:18+02:00'
+            id: EVJN00000000000000000000000001
+            mutations:
+            - currency: EUR
+              received: 100000
+            status: received
+            type: accounting
+          id: JN4227222422265
+          reason: approved
+          sequenceNumber: 1
+          transactionRulesResult:
+            allHardBlockRulesPassed: true
+          status: received
+          type: capture
+        environment: test
         type: balancePlatform.transfer.created
     post-balancePlatform.transfer.created-balancePlatform-transfer-created-outgoing-external:
       summary: Initiated payout to a transfer instrument
@@ -3065,4 +3283,245 @@ components:
           type: internalDirectDebit
         environment: test
         timestamp: '2024-08-28T13:27:05+02:00'
+        type: balancePlatform.transfer.updated
+    post-balancePlatform.transfer.updated-balancePlatform-transfer-updated-authorized-on-demand-top-up:
+      summary: Authorized on-demand top-up to a balance account
+      description: Example webhook for an authorized on-demand top-up
+      value:
+        data:
+          accountHolder:
+            description: Your description for the account holder
+            id: AH00000000000000000000001
+            reference: Your reference for the account holder
+          amount:
+            currency: EUR
+            value: 100000
+          balanceAccount:
+            description: Your description for the balance account
+            id: BA00000000000000000000001
+            reference: Your reference for the balance account
+          balancePlatform: YOUR_BALANCE_PLATFORM
+          balances:
+          - currency: EUR
+            received: 0
+            reserved: 100000
+          category: topUp
+          categoryData:
+            modificationMerchantReference: Your reference for the top-up.
+            modificationPspReference: WNS7WQ756L2GWR82
+            paymentMerchantReference: YOUR_ORDER_NUMBER
+            platformPaymentType: TopUp
+            pspPaymentReference: M5N7TQ4TG5PFWR50
+            type: platformPayment
+          creationDate: '2023-02-28T13:30:05+02:00'
+          description: Your description for the top-up
+          direction: incoming
+          events:
+          - bookingDate: '2023-02-28T13:30:18+02:00'
+            id: SKRL00000000000000000000000001
+            mutations:
+            - currency: EUR
+              received: 100000
+            status: received
+            type: accounting
+          - bookingDate: '2023-02-28T13:30:18+02:00'
+            id: SKRL00000000000000000000000002
+            mutations:
+            - currency: EUR
+              received: -100000
+              reserved: 100000
+            status: authorised
+            type: accounting
+          id: JN4227222422265
+          reason: approved
+          reference: Your reference for the top-up.
+          sequenceNumber: 2
+          status: authorised
+          type: capture
+        environment: test
+        timestamp: '2024-12-20T13:51:24.928Z'
+        type: balancePlatform.transfer.updated
+    post-balancePlatform.transfer.updated-balancePlatform-transfer-updated-authorized-scheduled-top-up:
+      summary: Authorized scheduled top-up to a balance account
+      description: Example webhook for an authorized scheduled top-up
+      value:
+        data:
+          accountHolder:
+            id: AH00000000000000000000001
+          amount:
+            currency: EUR
+            value: 100000
+          balanceAccount:
+            id: BA00000000000000000000001
+          balancePlatform: YOUR_BALANCE_PLATFORM
+          balances:
+          - currency: EUR
+            received: 0
+            reserved: 100000
+          category: platformPayment
+          categoryData:
+            pspPaymentReference: CWBC43ZX2VTFWR82
+            type: platformPayment
+          counterparty:
+            transferInstrumentId: SE00000000000000000000001
+          creationDate: '2023-02-28T13:30:05+02:00'
+          direction: incoming
+          events:
+          - bookingDate: '2023-02-28T13:30:18+02:00'
+            id: EVJN00000000000000000000000001
+            mutations:
+            - currency: EUR
+              received: 100000
+            status: received
+            type: accounting
+          - bookingDate: '2023-02-28T13:30:18+02:00'
+            id: EVJN00000000000000000000000002
+            mutations:
+            - currency: EUR
+              received: -100000
+              reserved: 100000
+            status: authorised
+            type: accounting
+          id: JN4227222422265
+          reason: approved
+          reference: Your reference for the top-up.
+          sequenceNumber: 2
+          transactionRulesResult:
+            allHardBlockRulesPassed: true
+          status: authorised
+          type: capture
+        environment: test
+        timestamp: '2024-12-20T13:51:24.928Z'
+        type: balancePlatform.transfer.updated
+    post-balancePlatform.transfer.updated-balancePlatform-transfer-updated-captured-on-demand-top-up:
+      summary: Captured on-demand top-up to a balance account
+      description: Example webhook for a captured on-demand top-up
+      value:
+        data:
+          accountHolder:
+            description: Your description for the account holder
+            id: AH00000000000000000000001
+            reference: Your reference for the account holder
+          amount:
+            currency: EUR
+            value: 100000
+          balanceAccount:
+            description: Your description for the balance account
+            id: BA00000000000000000000001
+            reference: Your reference for the balance account
+          balancePlatform: YOUR_BALANCE_PLATFORM
+          balances:
+          - balance: 100000
+            currency: EUR
+            received: 0
+            reserved: 0
+          category: topUp
+          categoryData:
+            modificationMerchantReference: Your reference for the top-up.
+            modificationPspReference: WNS7WQ756L2GWR82
+            paymentMerchantReference: YOUR_ORDER_NUMBER
+            platformPaymentType: TopUp
+            pspPaymentReference: M5N7TQ4TG5PFWR50
+            type: platformPayment
+          creationDate: '2023-02-28T13:30:05+02:00'
+          description: Your description for the transfer
+          direction: incoming
+          events:
+          - bookingDate: '2023-02-28T13:30:18+02:00'
+            id: SKRL00000000000000000000000001
+            mutations:
+            - currency: EUR
+              received: 100000
+            status: received
+            type: accounting
+          - bookingDate: '2023-02-28T13:30:18+02:00'
+            id: SKRL00000000000000000000000002
+            mutations:
+            - currency: EUR
+              received: -100000
+              reserved: 100000
+            status: authorised
+            type: accounting
+          - bookingDate: '2023-02-28T13:30:20+02:00'
+            id: SKRL00000000000000000000000003
+            mutations:
+            - balance: 100000
+              currency: EUR
+              received: 0
+              reserved: -100000
+            status: captured
+            transactionId: EVJN42272224222B5JB8BRC84N686ZEUR
+            type: accounting
+            valueDate: '2023-03-01T00:00:00+02:00'
+          id: JN4227222422265
+          reason: approved
+          reference: Your reference for the top-up
+          sequenceNumber: 3
+          status: captured
+          type: capture
+        environment: test
+        timestamp: '2024-12-20T13:51:24.928Z'
+        type: balancePlatform.transfer.updated
+    post-balancePlatform.transfer.updated-balancePlatform-transfer-updated-captured-scheduled-top-up:
+      summary: Captured scheduled top-up to a balance account
+      description: Example webhook for a captured scheduled top-up
+      value:
+        data:
+          accountHolder:
+            id: AH00000000000000000000001
+          amount:
+            currency: EUR
+            value: 100000
+          balanceAccount:
+            id: BA00000000000000000000001
+          balancePlatform: YOUR_BALANCE_PLATFORM
+          balances:
+          - balance: 100000
+            currency: EUR
+            received: 0
+            reserved: 0
+          category: platformPayment
+          categoryData:
+            pspPaymentReference: CWBC43ZX2VTFWR82
+            type: platformPayment
+          counterparty:
+            transferInstrumentId: SE00000000000000000000001
+          creationDate: '2023-02-28T13:30:05+02:00'
+          direction: incoming
+          events:
+          - bookingDate: '2023-02-28T13:30:18+02:00'
+            id: EVJN00000000000000000000000001
+            mutations:
+            - currency: EUR
+              received: 100000
+            status: received
+            type: accounting
+          - bookingDate: '2023-02-28T13:30:18+02:00'
+            id: EVJN00000000000000000000000002
+            mutations:
+            - currency: EUR
+              received: -100000
+              reserved: 100000
+            status: authorised
+            type: accounting
+          - bookingDate: '2023-02-28T13:30:20+02:00'
+            id: EVJN00000000000000000000000003
+            mutations:
+            - balance: 100000
+              currency: EUR
+              received: 0
+              reserved: -100000
+            status: captured
+            transactionId: EVJN42272224222B5JB8BRC84N686ZEUR
+            type: accounting
+            valueDate: '2023-03-01T00:00:00+02:00'
+          id: JN4227222422265
+          reason: approved
+          reference: Your reference for the top-up.
+          sequenceNumber: 3
+          transactionRulesResult:
+            allHardBlockRulesPassed: true
+          status: captured
+          type: capture
+        environment: test
         type: balancePlatform.transfer.updated

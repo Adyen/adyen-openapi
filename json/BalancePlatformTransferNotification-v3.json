@@ -694,6 +694,32 @@
             },
             "type" : "object"
          },
+         "FundingInstrument" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "cardIdentification" : {
+                  "description" : "Card details used for the transfer, such as the Primary Account Number (PAN) or stored payment method ID. Required if `sourceOfFunds` is **DEBIT**. Provide either:\n - `storedPaymentMethodId` or \n - `expiryMonth`, `expiryYear`, and `number`.",
+                  "$ref" : "#/components/schemas/CardIdentification"
+               },
+               "networkPaymentReference" : {
+                  "description" : "The unique reference assigned by the card network for the pay-in transaction.",
+                  "type" : "string"
+               },
+               "reference" : {
+                  "description" : "Your internal reference that identifies this funding instrument. Required if `sourceOfFunds` is **DEPOSIT_ACCOUNT**.",
+                  "type" : "string"
+               },
+               "sourceOfFunds" : {
+                  "description" : "Indicates where the funds used for the transfer originated. Possible values are:\n- **DEBIT** for card-to-card transfers.\n- **DEPOSIT_ACCOUNT** for wallet-to-card transfers.",
+                  "enum" : [
+                     "DEBIT",
+                     "DEPOSIT_ACCOUNT"
+                  ],
+                  "type" : "string"
+               }
+            },
+            "type" : "object"
+         },
          "HKLocalAccountIdentification" : {
             "additionalProperties" : false,
             "properties" : {
@@ -752,6 +778,10 @@
          "IbanAccountIdentification" : {
             "additionalProperties" : false,
             "properties" : {
+               "bic" : {
+                  "description" : "The bank's 8- or 11-character BIC or SWIFT code.",
+                  "type" : "string"
+               },
                "iban" : {
                   "description" : "The international bank account number as defined in the [ISO-13616](https://www.iso.org/standard/81090.html) standard.",
                   "type" : "string"
@@ -904,6 +934,7 @@
                      "miscCostPending",
                      "paymentCost",
                      "paymentCostPending",
+                     "pending",
                      "pendingApproval",
                      "pendingExecution",
                      "received",
@@ -917,6 +948,7 @@
                      "reserveAdjustment",
                      "reserveAdjustmentPending",
                      "returned",
+                     "reversed",
                      "secondChargeback",
                      "secondChargebackPending",
                      "undefined"
@@ -1746,6 +1778,7 @@
                      "miscCostPending",
                      "paymentCost",
                      "paymentCostPending",
+                     "pending",
                      "pendingApproval",
                      "pendingExecution",
                      "received",
@@ -1759,6 +1792,7 @@
                      "reserveAdjustment",
                      "reserveAdjustmentPending",
                      "returned",
+                     "reversed",
                      "secondChargeback",
                      "secondChargebackPending",
                      "undefined"
@@ -1837,6 +1871,11 @@
                      "balanceMigration"
                   ],
                   "type" : "string"
+               },
+               "ultimateParty" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "The ultimate sender of the funds of the transfer (ultimate debtor).",
+                  "$ref" : "#/components/schemas/UltimatePartyIdentification"
                },
                "updatedAt" : {
                   "x-addedInVersion" : "3",
@@ -2077,6 +2116,7 @@
                      "miscCostPending",
                      "paymentCost",
                      "paymentCostPending",
+                     "pending",
                      "pendingApproval",
                      "pendingExecution",
                      "received",
@@ -2090,6 +2130,7 @@
                      "reserveAdjustment",
                      "reserveAdjustmentPending",
                      "returned",
+                     "reversed",
                      "secondChargeback",
                      "secondChargebackPending",
                      "undefined"
@@ -2180,6 +2221,10 @@
                },
                "country" : {
                   "description" : "The country where the merchant is located.",
+                  "type" : "string"
+               },
+               "countryCode" : {
+                  "description" : "The two-character country code of the merchant's location, in [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) format.",
                   "type" : "string"
                },
                "mcc" : {
@@ -2335,6 +2380,62 @@
                "accountNumber",
                "routingNumber"
             ],
+            "type" : "object"
+         },
+         "UltimatePartyIdentification" : {
+            "additionalProperties" : false,
+            "properties" : {
+               "address" : {
+                  "description" : "The address of the bank account or card owner.",
+                  "$ref" : "#/components/schemas/Address"
+               },
+               "dateOfBirth" : {
+                  "description" : "The date of birth of the individual in [ISO-8601](https://www.w3.org/TR/NOTE-datetime) format. For example, **YYYY-MM-DD**.\n\nAllowed only when `type` is **individual**.",
+                  "format" : "date",
+                  "type" : "string"
+               },
+               "email" : {
+                  "description" : "The email address of the organization or individual. Maximum length: 254 characters.",
+                  "maxLength" : 254,
+                  "type" : "string"
+               },
+               "firstName" : {
+                  "description" : "The first name of the individual.\n\nSupported characters: [a-z] [A-Z] - . / — and space.\n\nThis parameter is:\n- Allowed only when `type` is **individual**.\n- Required when `category` is **card**.",
+                  "type" : "string"
+               },
+               "fullName" : {
+                  "description" : "The full name of the entity that owns the bank account or card.\n\nSupported characters: [a-z] [A-Z] [0-9] , . ; : - — / \\ + & ! ? @ ( ) \" ' and space.\n\nRequired when `category` is **bank**.",
+                  "type" : "string"
+               },
+               "fundingInstrument" : {
+                  "description" : "Details of the card or token used to fund the pay-in transaction.",
+                  "$ref" : "#/components/schemas/FundingInstrument"
+               },
+               "lastName" : {
+                  "description" : "The last name of the individual.\n\nSupported characters: [a-z] [A-Z] - . / — and space.\n\nThis parameter is:\n- Allowed only when `type` is **individual**.\n- Required when `category` is **card**.",
+                  "type" : "string"
+               },
+               "reference" : {
+                  "description" : "A unique reference to identify the party or counterparty involved in the transfer. For example, your client's unique wallet or payee ID.\n\nRequired when you include `cardIdentification.storedPaymentMethodId`.",
+                  "maxLength" : 150,
+                  "type" : "string"
+               },
+               "type" : {
+                  "default" : "unknown",
+                  "description" : "The type of entity that owns the bank account or card.\n\nPossible values: **individual**, **organization**, or **unknown**.\n\nRequired when `category` is **card**. In this case, the value must be **individual**.",
+                  "enum" : [
+                     "individual",
+                     "organization",
+                     "unknown"
+                  ],
+                  "type" : "string"
+               },
+               "url" : {
+                  "description" : "The URL of the organization or individual. Maximum length: 255 characters.",
+                  "maxLength" : 255,
+                  "type" : "string"
+               }
+            },
             "type" : "object"
          }
       },

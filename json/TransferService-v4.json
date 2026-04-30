@@ -737,7 +737,7 @@
                   }
                },
                {
-                  "description" : "The type of transfer.\n\nPossible values:\n\n - **bank**: Transfer to a [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments__resParam_id) or a bank account.\n\n- **internal**: Transfer to another [balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__resParam_id) within your platform.\n\n- **issuedCard**: Transfer initiated by a Adyen-issued card.\n\n- **platformPayment**: Fund movements related to payments that are acquired for your users.",
+                  "description" : "The category of the transfer.\n\nPossible values:\n\n - **bank**: A transfer involving a [transfer instrument](https://docs.adyen.com/api-explorer/legalentity/latest/post/transferInstruments#responses-200-id) or a bank account.\n\n- **card**: A transfer involving a third-party card.\n\n- **internal**: A transfer between [balance accounts](https://docs.adyen.com/api-explorer/balanceplatform/latest/post/balanceAccounts#responses-200-id) within your platform.\n\n- **issuedCard**: A transfer initiated by an Adyen-issued card.\n\n- **platformPayment**: Funds movements related to payments that are acquired for your users.\n\n- **topUp**: An incoming transfer initiated by your user to top up their balance account.",
                   "name" : "category",
                   "in" : "query",
                   "required" : false,
@@ -982,6 +982,21 @@
                }
             ],
             "responses" : {
+               "200" : {
+                  "content" : {
+                     "application/json" : {
+                        "schema" : {
+                           "$ref" : "#/components/schemas/Transfer"
+                        }
+                     }
+                  },
+                  "description" : "OK - the request has succeeded.",
+                  "headers" : {
+                     "Idempotency-Key" : {
+                        "$ref" : "#/components/headers/Idempotency-Key"
+                     }
+                  }
+               },
                "202" : {
                   "content" : {
                      "application/json" : {
@@ -2478,6 +2493,10 @@
          "IbanAccountIdentification" : {
             "additionalProperties" : false,
             "properties" : {
+               "bic" : {
+                  "description" : "The bank's 8- or 11-character BIC or SWIFT code.",
+                  "type" : "string"
+               },
                "iban" : {
                   "description" : "The international bank account number as defined in the [ISO-13616](https://www.iso.org/standard/81090.html) standard.",
                   "type" : "string"
@@ -2626,7 +2645,7 @@
                },
                "processingType" : {
                   "x-addedInVersion" : "4",
-                  "description" : "Contains information about how the payment was processed. For example, **ecommerce** for online or **pos** for in-person payments.",
+                  "description" : "Contains information about how the payment was processed.\n\nPossible values: **atmWithdraw**, **balanceInquiry**, **ecommerce**, **moto**, **pos**, **purchaseWithCashback**, **recurring**, **token**.",
                   "enum" : [
                      "atmWithdraw",
                      "balanceInquiry",
@@ -2899,6 +2918,7 @@
                      "miscCostPending",
                      "paymentCost",
                      "paymentCostPending",
+                     "pending",
                      "pendingApproval",
                      "pendingExecution",
                      "received",
@@ -2912,6 +2932,7 @@
                      "reserveAdjustment",
                      "reserveAdjustmentPending",
                      "returned",
+                     "reversed",
                      "secondChargeback",
                      "secondChargebackPending",
                      "undefined"
@@ -3972,6 +3993,7 @@
                      "miscCostPending",
                      "paymentCost",
                      "paymentCostPending",
+                     "pending",
                      "pendingApproval",
                      "pendingExecution",
                      "received",
@@ -3985,6 +4007,7 @@
                      "reserveAdjustment",
                      "reserveAdjustmentPending",
                      "returned",
+                     "reversed",
                      "secondChargeback",
                      "secondChargebackPending",
                      "undefined"
@@ -4035,6 +4058,11 @@
                      "balanceMigration"
                   ],
                   "type" : "string"
+               },
+               "ultimateParty" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "The ultimate sender of the funds of the transfer (ultimate debtor).",
+                  "$ref" : "#/components/schemas/UltimatePartyIdentification"
                }
             },
             "required" : [
@@ -4347,6 +4375,7 @@
                      "miscCostPending",
                      "paymentCost",
                      "paymentCostPending",
+                     "pending",
                      "pendingApproval",
                      "pendingExecution",
                      "received",
@@ -4360,6 +4389,7 @@
                      "reserveAdjustment",
                      "reserveAdjustmentPending",
                      "returned",
+                     "reversed",
                      "secondChargeback",
                      "secondChargebackPending",
                      "undefined"
@@ -4430,6 +4460,11 @@
                      "balanceMigration"
                   ],
                   "type" : "string"
+               },
+               "ultimateParty" : {
+                  "x-addedInVersion" : "3",
+                  "description" : "The ultimate sender of the funds of the transfer (ultimate debtor).",
+                  "$ref" : "#/components/schemas/UltimatePartyIdentification"
                },
                "updatedAt" : {
                   "x-addedInVersion" : "3",
@@ -4672,6 +4707,7 @@
                      "miscCostPending",
                      "paymentCost",
                      "paymentCostPending",
+                     "pending",
                      "pendingApproval",
                      "pendingExecution",
                      "received",
@@ -4685,6 +4721,7 @@
                      "reserveAdjustment",
                      "reserveAdjustmentPending",
                      "returned",
+                     "reversed",
                      "secondChargeback",
                      "secondChargebackPending",
                      "undefined"
@@ -4888,6 +4925,10 @@
                },
                "country" : {
                   "description" : "The country where the merchant is located.",
+                  "type" : "string"
+               },
+               "countryCode" : {
+                  "description" : "The two-character country code of the merchant's location, in [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) format.",
                   "type" : "string"
                },
                "mcc" : {

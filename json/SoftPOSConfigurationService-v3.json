@@ -1,0 +1,369 @@
+{
+  "openapi" : "3.1.0",
+  "servers" : [ {
+    "url" : "https://softposconfig-test.adyen.com/softposconfig/v3",
+    "description" : "Test environment"
+  }, {
+    "url" : "https://softposconfig-live-au.adyen.com/softposconfig/v3",
+    "description" : "Live environment for Australia"
+  }, {
+    "url" : "https://softposconfig-live-apse.adyen.com/softposconfig/v3",
+    "description" : "Live environment for Asia Pacific South East"
+  }, {
+    "url" : "https://softposconfig-live.adyen.com/softposconfig/v3",
+    "description" : "Live environment for Europe"
+  }, {
+    "url" : "https://softposconfig-live-nea.adyen.com/softposconfig/v3",
+    "description" : "Live environment for North East Asia"
+  }, {
+    "url" : "https://softposconfig-live-us.adyen.com/softposconfig/v3",
+    "description" : "Live environment for United States of America"
+  } ],
+  "info" : {
+    "title" : "SoftPOS configuration API",
+    "description" : "The SoftPOS configuration API is used in the mutual authentication flow between an Adyen Android or iOS [Mobile SDK](https://docs.adyen.com/point-of-sale/ipp-mobile/) and the Adyen payments platform.\nThe Mobile SDK for Android or iOS devices enables businesses to accept in-person payments using a commercial off-the-shelf (COTS) device like a phone. \nFor example, Tap to Pay transactions, or transactions on a mobile device in combination with a card reader.\n\n## Authentication\nEach request to the POS Mobile API must be signed with an API key. [Generate your API key](https://docs.adyen.com/development-resources/api-credentials#generate-api-key) in the Customer Area and then set this key to the `X-API-Key` header value.\nYou also need to have a [client key](https://docs.adyen.com/development-resources/client-side-authentication/). The client key is part of the setup but you will not need to use it in your integration later. Therefore, when you set up the client key, you do not need to specify allowed origins, and you do not need to store the key in your system. \nTo access the live endpoints, you need to generate a new API key and client key in your live Customer Area.\n## Versioning\n\nThe POS Mobile API handles versioning as part of the endpoint URL.\n\nFor example:\n```\nhttps://softposconfig-test.adyen.com/softposconfig/v{version}/auth/certificate\n```\n\n## Going live\nTo access the live endpoints, you need an API key and client key from your live Customer Area, and switch to the live endpoint that is geographically closest to your location.\n### Australia:\nhttps://softposconfig-live-au.adyen.com/softposconfig/v{version}/auth/certificate\n### Asia Pacific South East:\nhttps://softposconfig-live-apse.adyen.com/softposconfig/v{version}/auth/certificate\n### Europe:\nhttps://softposconfig-live.adyen.com/softposconfig/v{version}/auth/certificate\n### North East Asia:\nhttps://softposconfig-live-nea.adyen.com/softposconfig/v{version}/auth/certificate\n### United States:\nhttps://softposconfig-live-us.adyen.com/softposconfig/v3/auth/certificate\n## Methods",
+    "termsOfService" : "https://www.adyen.com/legal/terms-and-conditions",
+    "contact" : {
+      "name" : "Adyen Developer Experience team",
+      "url" : "https://github.com/Adyen/adyen-openapi"
+    },
+    "version" : "3",
+    "x-timestamp" : "2026-04-23T15:45:57Z"
+  },
+  "tags" : [ {
+    "name" : "Session authentication"
+  } ],
+  "paths" : {
+    "/auth/certificate" : {
+      "post" : {
+        "tags" : [ "Session authentication" ],
+        "summary" : "Create a communication session",
+        "description" : "Establishes a secure communication session between the Mobile SDK and the Adyen payments platform, through mutual authentication. The request sends a setup token that identifies the SDK and the device. The response returns a session token that the SDK can use to authenticate responses received from the Adyen payments platform.",
+        "operationId" : "post-auth-certificate",
+        "parameters" : [ {
+          "name" : "X-API-Key",
+          "in" : "header",
+          "description" : "The API key to authenticate API requests.",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CertificateLoadingRequest"
+              },
+              "examples" : {
+                "authentication-session-request" : {
+                  "summary" : "Create a communication session request",
+                  "description" : "Example request payload for creating a communication session.",
+                  "value" : {
+                    "merchantAccount" : "YOUR_MERCHANT_ACCOUNT",
+                    "store" : "YOUR_STORE_REFERENCE",
+                    "setupToken" : "SETUP_TOKEN"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "201" : {
+            "description" : "OK - the request has succeeded.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CertificateLoadingResponse"
+                },
+                "examples" : {
+                  "authentication-session-status-201" : {
+                    "summary" : "Create a communication session",
+                    "description" : "The response returned when creating a communication session",
+                    "value" : {
+                      "id" : "APP_SESSION_ID",
+                      "installationId" : "INSTALLATION_ID",
+                      "merchantAccount" : "YOUR_MERCHANT_ACCOUNT",
+                      "store" : "YOUR_STORE_REFERENCE",
+                      "sdkData" : "SDK_DATA_BLOB"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Bad request - validation failed.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                },
+                "examples" : {
+                  "authentication-session-status-400" : {
+                    "summary" : "Bad request",
+                    "description" : "Merchant or request data failed validation.",
+                    "value" : {
+                      "type" : "https://docs.adyen.com/errors/bad-request",
+                      "title" : "Bad request",
+                      "status" : 400,
+                      "errorCode" : "00_400"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized - authentication required.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                },
+                "examples" : {
+                  "authentication-session-status-401" : {
+                    "summary" : "Unauthorized",
+                    "description" : "Authentication failed.",
+                    "value" : {
+                      "type" : "https://docs.adyen.com/errors/unauthorized",
+                      "title" : "Unauthorized",
+                      "status" : 401,
+                      "errorCode" : "00_401"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "Unprocessable entity - session request could not be processed.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                },
+                "examples" : {
+                  "authentication-session-status-422" : {
+                    "summary" : "Unprocessable entity",
+                    "description" : "Session token or request fields are semantically invalid.",
+                    "value" : {
+                      "type" : "https://docs.adyen.com/errors/unprocessable-entity",
+                      "title" : "Unprocessable entity",
+                      "status" : 422,
+                      "errorCode" : "00_422"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Internal server error.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                },
+                "examples" : {
+                  "authentication-session-status-500" : {
+                    "summary" : "Internal server error",
+                    "description" : "An internal error occurred while creating a communication session.",
+                    "value" : {
+                      "type" : "https://docs.adyen.com/errors/internal",
+                      "title" : "Internal error",
+                      "status" : 500,
+                      "errorCode" : "00_500"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-methodName" : "issueCertificates",
+        "x-sortIndex" : 0
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "CertificateLoadingRequest" : {
+        "required" : [ "merchantAccount", "setupToken" ],
+        "type" : "object",
+        "properties" : {
+          "merchantAccount" : {
+            "type" : "string",
+            "description" : "The unique identifier of your merchant account."
+          },
+          "setupToken" : {
+            "type" : "string",
+            "description" : "The setup token provided by the SDK in a Mobile solution for in-person payments. \n- When using the Android SDK, obtain the token through the `MerchantAuthenticationService.authenticate(setupToken)` callback of `AuthenticationService`. \n- When using the iOS SDK, obtain the token through the `PaymentServiceDelegate.register(with:)` callback of `PaymentServiceDelegate`."
+          },
+          "store" : {
+            "type" : "string",
+            "description" : "The reference of the store that you want to process transactions for. Do not include this parameter if your account structure uses merchant accounts as stores, or if you are a registered payment facilitator."
+          },
+          "subMerchantData" : {
+            "description" : "The details of the sub-merchant that you want to process transactions for.Required if you are a registered payment facilitator. Do not include this parameter if you are not a payment facilitator.",
+            "$ref" : "#/components/schemas/SubMerchantData"
+          }
+        }
+      },
+      "CertificateLoadingResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "description" : "The unique identifier of the communication session."
+          },
+          "installationId" : {
+            "type" : "string",
+            "description" : "The unique identifier of the SDK installation. If you create the [Terminal API](https://docs.adyen.com/point-of-sale/design-your-integration/terminal-api/) transaction request on your backend, use this as the `POIID` in the `MessageHeader` of the request."
+          },
+          "merchantAccount" : {
+            "type" : "string",
+            "description" : "The unique identifier of your merchant account."
+          },
+          "sdkData" : {
+            "type" : "string",
+            "description" : "The data that the SDK uses to authenticate responses from the Adyen payments platform. Pass this value to your POS app."
+          },
+          "store" : {
+            "type" : "string",
+            "description" : "The reference of the store that the transactions are processed for."
+          }
+        }
+      },
+      "DefaultErrorResponseEntity" : {
+        "type" : "object",
+        "properties" : {
+          "detail" : {
+            "type" : "string",
+            "description" : "A human-readable explanation specific to this occurrence of the problem."
+          },
+          "errorCode" : {
+            "type" : "string",
+            "description" : "Unique business error code."
+          },
+          "instance" : {
+            "type" : "string",
+            "description" : "A URI that identifies the specific occurrence of the problem if applicable."
+          },
+          "invalidFields" : {
+            "type" : "array",
+            "description" : "Array of fields with validation errors when applicable.",
+            "items" : {
+              "$ref" : "#/components/schemas/InvalidField"
+            }
+          },
+          "requestId" : {
+            "type" : "string",
+            "description" : "The unique reference for the request."
+          },
+          "status" : {
+            "type" : "integer",
+            "description" : "The HTTP status code.",
+            "format" : "int32"
+          },
+          "title" : {
+            "type" : "string",
+            "description" : "A short, human-readable summary of the problem type."
+          },
+          "type" : {
+            "type" : "string",
+            "description" : "A URI that identifies the validation error type. It points to human-readable documentation for the problem type."
+          }
+        },
+        "description" : "Standardized error response following RFC-7807 format",
+        "externalDocs" : {
+          "url" : "https://www.rfc-editor.org/rfc/rfc7807"
+        }
+      },
+      "InvalidField" : {
+        "required" : [ "message", "name", "value" ],
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string",
+            "description" : "Description of the validation error."
+          },
+          "name" : {
+            "type" : "string",
+            "description" : "The field that has an invalid value."
+          },
+          "value" : {
+            "type" : "string",
+            "description" : "The invalid value."
+          }
+        }
+      },
+      "SubMerchantData" : {
+        "required" : [ "displayName", "id", "mcc", "name" ],
+        "type" : "object",
+        "properties" : {
+          "city" : {
+            "type" : "string",
+            "description" : "The city of the sub-merchant's address."
+          },
+          "country" : {
+            "type" : "string",
+            "description" : "The country/region of the sub-merchant's address, specified as the three-letter country code in [ISO 3166-1 alpha-3](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3) format."
+          },
+          "displayName" : {
+            "type" : "string",
+            "description" : "The name of the sub-merchant as it should appear on the display of the mobile device during transactions."
+          },
+          "email" : {
+            "type" : "string",
+            "description" : "The email address of the sub-merchant. Required for American Express."
+          },
+          "id" : {
+            "type" : "string",
+            "description" : "Your unique identifier of the sub-merchant."
+          },
+          "mcc" : {
+            "type" : "string",
+            "description" : "The sub-merchant's four-digit Merchant Category Code (MCC). This parameter is used to correctly route the transaction."
+          },
+          "name" : {
+            "type" : "string",
+            "description" : "The name of the sub-merchant."
+          },
+          "phoneNumber" : {
+            "type" : "string",
+            "description" : "The phone number of the sub-merchant. Required for American Express."
+          },
+          "postalCode" : {
+            "type" : "string",
+            "description" : "The postal code of the sub-merchant's address, without dashes."
+          },
+          "state" : {
+            "type" : "string",
+            "description" : "The state code of the sub-merchant's address, if applicable for the country or region."
+          },
+          "street" : {
+            "type" : "string",
+            "description" : "The street name and house number of the sub-merchant's address."
+          },
+          "taxId" : {
+            "type" : "string",
+            "description" : "The tax ID of the sub-merchant. Required only in Brazil and for Cartes Bancaires in France.\nFor Brazil, this is the 11-digit CPF or 14-digit CNPJ.\nFor France, this is the SIRET, with a maximum of 14 digits."
+          }
+        }
+      }
+    },
+    "securitySchemes" : {
+      "ApiKeyAuth" : {
+        "type" : "apiKey",
+        "name" : "X-API-Key",
+        "in" : "header"
+      },
+      "BasicAuth" : {
+        "type" : "http",
+        "scheme" : "basic"
+      }
+    }
+  },
+  "jsonSchemaDialect" : "https://spec.openapis.org/oas/3.1/dialect/base"
+}
