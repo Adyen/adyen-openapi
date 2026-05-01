@@ -5396,7 +5396,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApplePayInfo'
+                $ref: '#/components/schemas/ApplePayResponseInfo'
           description: OK - the request has succeeded.
         '204':
           description: No Content - the request has been successfully processed, but
@@ -10210,6 +10210,37 @@ components:
       required:
       - processingType
       type: object
+    AccelResponseInfo:
+      additionalProperties: false
+      properties:
+        processingType:
+          description: "The type of transactions processed over this payment method.\n\
+            \ Allowed values:\n- **pos** for in-person payments. \n- **billpay** for\
+            \ subscription payments, both the initial payment and the later recurring\
+            \ payments. These transactions have `recurringProcessingModel` **Subscription**.\
+            \ \n- **ecom** for all other card not present transactions. This includes\
+            \ non-recurring transactions and transactions with `recurringProcessingModel`\
+            \ **CardOnFile** or **UnscheduledCardOnFile**.\n"
+          enum:
+          - billpay
+          - ecom
+          - pos
+          type: string
+        transactionDescription:
+          description: Information regarding the transaction description.
+          $ref: '#/components/schemas/TransactionDescriptionResponseInfo'
+      required:
+      - processingType
+      type: object
+    AccelUpdateInfo:
+      additionalProperties: false
+      properties:
+        transactionDescription:
+          description: 'Information regarding the transaction description.
+
+            > You cannot configure the transaction description in the test environment.'
+          $ref: '#/components/schemas/TransactionDescriptionInfo'
+      type: object
     AdditionalCommission:
       additionalProperties: false
       properties:
@@ -10307,17 +10338,29 @@ components:
       additionalProperties: false
       properties:
         pricePlan:
-          description: Merchant price plan
-          enum:
-          - BRONZE
-          - SILVER
-          - GOLD
+          description: Selected Affirm financing package. Choose from **core**, **standard**,
+            or **signature**. Defaults to **core** if no selection made.
           type: string
         supportEmail:
-          description: Merchant support email
+          description: Merchant support email used to manage disputes.
           type: string
       required:
       - supportEmail
+      type: object
+    AffirmResponseInfo:
+      additionalProperties: false
+      properties:
+        publicApiKey:
+          description: Affirm public API key
+          type: string
+      type: object
+    AffirmUpdateInfo:
+      additionalProperties: false
+      properties:
+        pricePlan:
+          description: Selected Affirm financing package. Choose from **core**, **standard**,
+            or **signature**. Defaults to **core** if no selection made.
+          type: string
       type: object
     AfterpayTouchInfo:
       additionalProperties: false
@@ -10331,11 +10374,28 @@ components:
       required:
       - supportUrl
       type: object
+    AfterpayTouchResponseInfo:
+      additionalProperties: false
+      properties:
+        supportEmail:
+          description: Support Email
+          type: string
+        supportUrl:
+          description: Support Url
+          type: string
+      type: object
     AlipayPlusInfo:
       additionalProperties: false
       properties:
         settlementCurrencyCode:
           description: The currency used for settlement. Defaults to USD.
+          type: string
+      type: object
+    AlipayPlusResponseInfo:
+      additionalProperties: false
+      properties:
+        settlementCurrencyCode:
+          description: The currency used for settlement.
           type: string
       type: object
     AllowedOrigin:
@@ -10397,6 +10457,29 @@ components:
           type: string
       required:
       - serviceLevel
+      type: object
+    AmexResponseInfo:
+      additionalProperties: false
+      properties:
+        midNumber:
+          description: Merchant ID (MID) number.
+          type: string
+        reuseMidNumber:
+          description: Indicates whether the Amex Merchant ID is reused from a previously
+            setup Amex payment method.
+          type: boolean
+        serviceLevel:
+          description: ' The service level (settlement type) of this payment method.
+            Possible values:
+
+            * **noContract**: Adyen holds the contract with American Express.
+
+            * **gatewayContract**: American Express receives the settlement and handles
+            disputes, then pays out to you or your sub-merchant directly.
+
+            * **paymentDesignatorContract**: Adyen receives the settlement, and handles
+            disputes and payouts.'
+          type: string
       type: object
     Amount:
       additionalProperties: false
@@ -10576,6 +10659,9 @@ components:
           items:
             type: string
           type: array
+        subjectDN:
+          description: The subject DN of the certificate issued by Adyen.
+          type: string
         username:
           description: The name of the [API credential](https://docs.adyen.com/development-resources/api-credentials),
             for example **ws@Company.TestCompany**.
@@ -10631,6 +10717,20 @@ components:
       required:
       - domains
       type: object
+    ApplePayResponseInfo:
+      additionalProperties: false
+      properties:
+        domains:
+          description: 'The list of merchant domains.
+
+
+            For more information, see [Apple Pay documentation](https://docs.adyen.com/payment-methods/apple-pay/web-drop-in?tab=adyen-certificate-live_1#going-live).'
+          items:
+            type: string
+          type: array
+      required:
+      - domains
+      type: object
     BcmcInfo:
       additionalProperties: false
       properties:
@@ -10638,6 +10738,26 @@ components:
           description: Indicates if [Bancontact mobile](https://docs.adyen.com/payment-methods/bancontact/bancontact-mobile)
             is enabled.
           type: boolean
+      type: object
+    BcmcResponseInfo:
+      additionalProperties: false
+      properties:
+        enableBcmcMobile:
+          description: Indicates if [Bancontact mobile](https://docs.adyen.com/payment-methods/bancontact/bancontact-mobile)
+            is enabled.
+          type: boolean
+        transactionDescription:
+          description: Information regarding the transaction description.
+          $ref: '#/components/schemas/TransactionDescriptionResponseInfo'
+      type: object
+    BcmcUpdateInfo:
+      additionalProperties: false
+      properties:
+        transactionDescription:
+          description: 'Information regarding the transaction description.
+
+            > You cannot configure the transaction description in the test environment.'
+          $ref: '#/components/schemas/TransactionDescriptionInfo'
       type: object
     BillingEntitiesResponse:
       additionalProperties: false
@@ -10680,6 +10800,13 @@ components:
             > **Receipts** in the **Receipt lines** block.
           type: string
       type: object
+    CarnetResponseInfo:
+      additionalProperties: false
+      properties:
+        transactionDescription:
+          description: Information regarding the transaction description.
+          $ref: '#/components/schemas/TransactionDescriptionResponseInfo'
+      type: object
     CartesBancairesInfo:
       additionalProperties: false
       properties:
@@ -10694,6 +10821,25 @@ components:
       required:
       - siret
       type: object
+    CartesBancairesResponseInfo:
+      additionalProperties: false
+      properties:
+        siret:
+          description: 'Cartes Bancaires SIRET. Format: 14 digits.'
+          type: string
+        transactionDescription:
+          description: Information regarding the transaction description.
+          $ref: '#/components/schemas/TransactionDescriptionResponseInfo'
+      type: object
+    CartesBancairesUpdateInfo:
+      additionalProperties: false
+      properties:
+        transactionDescription:
+          description: 'Information regarding the transaction description.
+
+            > You cannot configure the transaction description in the test environment.'
+          $ref: '#/components/schemas/TransactionDescriptionInfo'
+      type: object
     ClearpayInfo:
       additionalProperties: false
       properties:
@@ -10702,6 +10848,13 @@ components:
           type: string
       required:
       - supportUrl
+      type: object
+    ClearpayResponseInfo:
+      additionalProperties: false
+      properties:
+        supportUrl:
+          description: Support Url
+          type: string
       type: object
     Commission:
       additionalProperties: false
@@ -10811,6 +10964,9 @@ components:
           items:
             type: string
           type: array
+        subjectDN:
+          description: The subject DN of the certificate issued by Adyen.
+          type: string
         username:
           description: The name of the [API credential](https://docs.adyen.com/development-resources/api-credentials),
             for example **ws@Company.TestCompany**.
@@ -11041,6 +11197,9 @@ components:
           items:
             type: string
           type: array
+        subjectDN:
+          description: The subject DN of the certificate issued by Adyen.
+          type: string
         username:
           description: The name of the [API credential](https://docs.adyen.com/development-resources/api-credentials),
             for example **ws@Company.TestCompany**.
@@ -11137,6 +11296,9 @@ components:
           items:
             type: string
           type: array
+        subjectDN:
+          description: The subject DN of the certificate issued by Adyen.
+          type: string
         username:
           description: The name of the [API credential](https://docs.adyen.com/development-resources/api-credentials),
             for example **ws@Company.TestCompany**.
@@ -11175,7 +11337,7 @@ components:
             already have SSO configured with Adyen before creating the user.
 
 
-            Possible values: **Username & account**, **Email**, or **SSO** '
+            Possible values: **Email** or **SSO** '
           type: string
         name:
           description: "The user's full name.\n\nAllowed length: 1\u201480 characters."
@@ -11534,7 +11696,7 @@ components:
             already have SSO configured with Adyen before creating the user.
 
 
-            Possible values: **Username & account**, **Email**, or **SSO** '
+            Possible values: **Email** or **SSO** '
           type: string
         name:
           description: "The user's full name.\n\nAllowed length: 1\u201480 characters."
@@ -11748,6 +11910,13 @@ components:
       - username
       - roles
       type: object
+    CupResponseInfo:
+      additionalProperties: false
+      properties:
+        transactionDescription:
+          description: Information regarding the transaction description.
+          $ref: '#/components/schemas/TransactionDescriptionResponseInfo'
+      type: object
     Currency:
       additionalProperties: false
       properties:
@@ -11849,6 +12018,13 @@ components:
             \ \n* **AU**\n* **EU**\n* **US**"
           type: string
       type: object
+    Dcc:
+      additionalProperties: false
+      properties:
+        enableDcc:
+          description: Enable Dynamic Currency Conversion (DCC).
+          type: boolean
+      type: object
     DinersInfo:
       additionalProperties: false
       properties:
@@ -11886,6 +12062,47 @@ components:
           $ref: '#/components/schemas/TransactionDescriptionInfo'
       required:
       - reuseMidNumber
+      type: object
+    DinersResponseInfo:
+      additionalProperties: false
+      properties:
+        midNumber:
+          description: MID (Merchant ID) number.
+          type: string
+        reuseMidNumber:
+          description: Indicates whether the JCB Merchant ID is reused from a previously
+            configured JCB payment method.
+          type: boolean
+        serviceLevel:
+          description: "The service level (settlement type) of this payment method.\
+            \ Possible values:\n * **noContract**: Adyen holds the contract with JCB.\n\
+            \ * **gatewayContract**: JCB receives the settlement and handles disputes,\
+            \ then pays out to you or your sub-merchant directly."
+          type: string
+        transactionDescription:
+          description: Information regarding the transaction description.
+          $ref: '#/components/schemas/TransactionDescriptionResponseInfo'
+      type: object
+    DiscoverResponseInfo:
+      additionalProperties: false
+      properties:
+        transactionDescription:
+          description: Information regarding the transaction description.
+          $ref: '#/components/schemas/TransactionDescriptionResponseInfo'
+      type: object
+    EFTDirectDebitCAResponseInfo:
+      additionalProperties: false
+      properties:
+        transactionDescription:
+          description: Information regarding the transaction description.
+          $ref: '#/components/schemas/TransactionDescriptionResponseInfo'
+      type: object
+    EftPosAustraliaResponseInfo:
+      additionalProperties: false
+      properties:
+        transactionDescription:
+          description: Information regarding the transaction description.
+          $ref: '#/components/schemas/TransactionDescriptionResponseInfo'
       type: object
     EventUrl:
       additionalProperties: false
@@ -11995,6 +12212,22 @@ components:
             > You cannot configure the transaction description in the test environment.'
           $ref: '#/components/schemas/TransactionDescriptionInfo'
       type: object
+    GenericPmWithTdiUpdateInfo:
+      additionalProperties: false
+      properties:
+        transactionDescription:
+          description: 'Information regarding the transaction description.
+
+            > You cannot configure the transaction description in the test environment.'
+          $ref: '#/components/schemas/TransactionDescriptionInfo'
+      type: object
+    GirocardResponseInfo:
+      additionalProperties: false
+      properties:
+        transactionDescription:
+          description: Information regarding the transaction description.
+          $ref: '#/components/schemas/TransactionDescriptionResponseInfo'
+      type: object
     GivexInfo:
       additionalProperties: false
       properties:
@@ -12019,6 +12252,22 @@ components:
       - currencyCode
       - paymentFlow
       type: object
+    GivexResponseInfo:
+      additionalProperties: false
+      properties:
+        currencyCode:
+          description: The three-character ISO currency code
+          type: string
+        password:
+          description: The password provided by the acquirer.
+          type: string
+        paymentFlow:
+          description: The sales channel used for the payment.
+          type: string
+        username:
+          description: The username provided by the acquirer.
+          type: string
+      type: object
     GooglePayInfo:
       additionalProperties: false
       properties:
@@ -12035,6 +12284,17 @@ components:
           type: boolean
       required:
       - merchantId
+      type: object
+    GooglePayResponseInfo:
+      additionalProperties: false
+      properties:
+        merchantId:
+          description: Google Pay [Merchant ID]
+          type: string
+        reuseMerchantId:
+          description: Indicates whether the Google Pay Merchant ID is used for several
+            merchant accounts.
+          type: boolean
       type: object
     Gratuity:
       additionalProperties: false
@@ -12112,6 +12372,13 @@ components:
           description: The name of the terminal model.
           type: string
       type: object
+    IdealResponseInfo:
+      additionalProperties: false
+      properties:
+        transactionDescription:
+          description: Information regarding the transaction description.
+          $ref: '#/components/schemas/TransactionDescriptionResponseInfo'
+      type: object
     InstallAndroidAppDetails:
       additionalProperties: false
       properties:
@@ -12151,6 +12418,13 @@ components:
         versionName:
           description: The version name of the app.
           type: string
+      type: object
+    InteracCardResponseInfo:
+      additionalProperties: false
+      properties:
+        transactionDescription:
+          description: Information regarding the transaction description.
+          $ref: '#/components/schemas/TransactionDescriptionResponseInfo'
       type: object
     InvalidField:
       additionalProperties: false
@@ -12212,6 +12486,24 @@ components:
 
             > You cannot configure the transaction description in the test environment.'
           $ref: '#/components/schemas/TransactionDescriptionInfo'
+      type: object
+    JCBResponseInfo:
+      additionalProperties: false
+      properties:
+        midNumber:
+          description: MID (Merchant ID) number.
+          type: string
+        reuseMidNumber:
+          description: Indicates whether the JCB Merchant ID is reused from a previously
+            setup JCB payment method.
+          type: boolean
+        serviceLevel:
+          description: Specifies the service level (settlement type) of this payment
+            method.
+          type: string
+        transactionDescription:
+          description: Information regarding the transaction description.
+          $ref: '#/components/schemas/TransactionDescriptionResponseInfo'
       type: object
     JSONObject:
       type: object
@@ -12276,6 +12568,27 @@ components:
       - region
       - supportEmail
       - disputeEmail
+      type: object
+    KlarnaResponseInfo:
+      additionalProperties: false
+      properties:
+        autoCapture:
+          description: Indicates the status of [Automatic capture](https://docs.adyen.com/online-payments/capture#automatic-capture).
+          type: boolean
+        disputeEmail:
+          description: The email address for disputes.
+          type: string
+        region:
+          description: The region of operation.
+          enum:
+          - AU
+          - CH
+          - EU
+          - NA
+          type: string
+        supportEmail:
+          description: The email address of merchant support.
+          type: string
       type: object
     Links:
       additionalProperties: false
@@ -12565,6 +12878,27 @@ components:
           maxLength: 350000
           type: string
       type: object
+    MCResponseInfo:
+      additionalProperties: false
+      properties:
+        transactionDescription:
+          description: Information regarding the transaction description.
+          $ref: '#/components/schemas/TransactionDescriptionResponseInfo'
+      type: object
+    MaestroResponseInfo:
+      additionalProperties: false
+      properties:
+        transactionDescription:
+          description: Information regarding the transaction description.
+          $ref: '#/components/schemas/TransactionDescriptionResponseInfo'
+      type: object
+    MaestroUSAResponseInfo:
+      additionalProperties: false
+      properties:
+        transactionDescription:
+          description: Information regarding the transaction description.
+          $ref: '#/components/schemas/TransactionDescriptionResponseInfo'
+      type: object
     MeApiCredential:
       additionalProperties: false
       properties:
@@ -12612,6 +12946,9 @@ components:
           items:
             type: string
           type: array
+        subjectDN:
+          description: The subject DN of the certificate issued by Adyen.
+          type: string
         username:
           description: The name of the [API credential](https://docs.adyen.com/development-resources/api-credentials),
             for example **ws@Company.TestCompany**.
@@ -12645,6 +12982,21 @@ components:
       - siret
       - conecsId
       - subTypes
+      type: object
+    MealVoucherFRResponseInfo:
+      additionalProperties: false
+      properties:
+        conecsId:
+          description: Meal Voucher conecsId.
+          type: string
+        siret:
+          description: Meal Voucher siret.
+          type: string
+        subTypes:
+          description: The list of additional payment methods.
+          items:
+            type: string
+          type: array
       type: object
     Merchant:
       additionalProperties: false
@@ -12903,6 +13255,37 @@ components:
       required:
       - processingType
       type: object
+    NyceResponseInfo:
+      additionalProperties: false
+      properties:
+        processingType:
+          description: "The type of transactions processed over this payment method.\n\
+            \ Allowed values:\n- **pos** for in-person payments. \n- **billpay** for\
+            \ subscription payments, both the initial payment and the later recurring\
+            \ payments. These transactions have `recurringProcessingModel` **Subscription**.\
+            \ \n- **ecom** for all other card not present transactions. This includes\
+            \ non-recurring transactions and transactions with `recurringProcessingModel`\
+            \ **CardOnFile** or **UnscheduledCardOnFile**.\n"
+          enum:
+          - billpay
+          - ecom
+          - pos
+          type: string
+        transactionDescription:
+          description: Information regarding the transaction description.
+          $ref: '#/components/schemas/TransactionDescriptionResponseInfo'
+      required:
+      - processingType
+      type: object
+    NyceUpdateInfo:
+      additionalProperties: false
+      properties:
+        transactionDescription:
+          description: 'Information regarding the transaction description.
+
+            > You cannot configure the transaction description in the test environment.'
+          $ref: '#/components/schemas/TransactionDescriptionInfo'
+      type: object
     OfflineProcessing:
       additionalProperties: false
       properties:
@@ -12913,7 +13296,7 @@ components:
           type: integer
         offlineSwipeLimits:
           description: The maximum offline transaction amount for swiped cards, in
-            the specified currency.
+            the specified currency. Updating this field is forbidden.
           items:
             $ref: '#/components/schemas/MinorUnitsMonetaryValue'
           type: array
@@ -13020,6 +13403,7 @@ components:
       additionalProperties: false
       properties:
         logo:
+          deprecated: true
           description: 'Merchant logo (max. size 150kB). Format: Base64-encoded string.'
           type: string
         transactionDescription:
@@ -13028,7 +13412,44 @@ components:
             > You cannot configure the transaction description in the test environment.'
           $ref: '#/components/schemas/TransactionDescriptionInfo'
       type: object
+    PayByBankPlaidResponseInfo:
+      additionalProperties: false
+      properties:
+        logo:
+          deprecated: true
+          description: Merchant logo
+          type: string
+        transactionDescription:
+          description: Information regarding the transaction description.
+          $ref: '#/components/schemas/TransactionDescriptionResponseInfo'
+      type: object
+    PayByBankPlaidUpdateInfo:
+      additionalProperties: false
+      properties:
+        transactionDescription:
+          description: 'Information regarding the transaction description.
+
+            > You cannot configure the transaction description in the test environment.'
+          $ref: '#/components/schemas/TransactionDescriptionInfo'
+      type: object
     PayMeInfo:
+      additionalProperties: false
+      properties:
+        displayName:
+          description: Merchant display name
+          type: string
+        logo:
+          description: 'Merchant logo. Format: Base64-encoded string.'
+          type: string
+        supportEmail:
+          description: The email address of merchant support.
+          type: string
+      required:
+      - displayName
+      - supportEmail
+      - logo
+      type: object
+    PayMeResponseInfo:
       additionalProperties: false
       properties:
         displayName:
@@ -13066,7 +13487,45 @@ components:
       - subject
       - payerId
       type: object
+    PayPalResponseInfo:
+      additionalProperties: false
+      properties:
+        directCapture:
+          description: 'Indicates if direct (immediate) capture for PayPal is enabled.
+            If set to **true**, this setting overrides the [capture](https://docs.adyen.com/online-payments/capture)
+            settings of your merchant account. Default value: **true**.'
+          type: boolean
+        payerId:
+          description: 'PayPal Merchant ID. Character length and limitations: 13 single-byte
+            alphanumeric characters.'
+          maxLength: 13
+          minLength: 13
+          type: string
+        subject:
+          description: Your business email address.
+          type: string
+      required:
+      - subject
+      - payerId
+      type: object
     PayToInfo:
+      additionalProperties: false
+      properties:
+        merchantName:
+          description: Merchant name displayed to the shopper in the Agreements
+          type: string
+        payToPurpose:
+          description: 'Represents the purpose of the Agreements created, it relates
+            to the business type
+
+            **Allowed values**: mortgage, utility, loan, gambling, retail, salary,
+            personal, government, pension, tax, other'
+          type: string
+      required:
+      - merchantName
+      - payToPurpose
+      type: object
+    PayToResponseInfo:
       additionalProperties: false
       properties:
         merchantName:
@@ -13108,40 +13567,43 @@ components:
       additionalProperties: false
       properties:
         accel:
-          description: Details to provide if `type` is **accel**.
-          $ref: '#/components/schemas/AccelInfo'
+          description: '**accel** details'
+          $ref: '#/components/schemas/AccelResponseInfo'
         affirm:
-          description: Details to provide if `type` is **affirm**.
-          $ref: '#/components/schemas/AffirmInfo'
+          description: '*affirm** details'
+          $ref: '#/components/schemas/AffirmResponseInfo'
         afterpayTouch:
-          description: Details to provide if `type` is **afterpaytouch**.
-          $ref: '#/components/schemas/AfterpayTouchInfo'
+          description: '**afterpaytouch** details'
+          $ref: '#/components/schemas/AfterpayTouchResponseInfo'
         alipayPlus:
-          description: Details to provide if `type` is **alipay_plus**.
-          $ref: '#/components/schemas/AlipayPlusInfo'
+          description: '**alipay_plus** details'
+          $ref: '#/components/schemas/AlipayPlusResponseInfo'
         allowed:
           description: Indicates whether receiving payments is allowed. This value
             is set to **true** by Adyen after screening your merchant account.
           type: boolean
         amex:
-          description: Details to provide if `type` is **amex**.
-          $ref: '#/components/schemas/AmexInfo'
+          description: '**amex** details'
+          $ref: '#/components/schemas/AmexResponseInfo'
         applePay:
-          description: Details to provide if `type` is **applepay**.
-          $ref: '#/components/schemas/ApplePayInfo'
+          description: '**applepay** details'
+          $ref: '#/components/schemas/ApplePayResponseInfo'
         bcmc:
-          description: Details to provide if `type` is **bcmc** (Bancontact).
-          $ref: '#/components/schemas/BcmcInfo'
+          description: '**bcmc** (Bancontact) details'
+          $ref: '#/components/schemas/BcmcResponseInfo'
         businessLineId:
           description: The unique identifier of the business line. Required if you
             are a [platform model](https://docs.adyen.com/platforms).
           type: string
+        carnet:
+          description: '**carnet** details'
+          $ref: '#/components/schemas/CarnetResponseInfo'
         cartesBancaires:
-          description: Details to provide if `type` is **cartebancaire**.
-          $ref: '#/components/schemas/CartesBancairesInfo'
+          description: '**cartesbancaire** details'
+          $ref: '#/components/schemas/CartesBancairesResponseInfo'
         clearpay:
-          description: Details to provide if `type` is **clearpay**.
-          $ref: '#/components/schemas/ClearpayInfo'
+          description: '**clearpay** details'
+          $ref: '#/components/schemas/ClearpayResponseInfo'
         countries:
           description: The list of countries where a payment method is available.
             By default, all countries supported by the payment method.
@@ -13149,8 +13611,8 @@ components:
             type: string
           type: array
         cup:
-          description: Details to provide if `type` is **cup** (China Union Pay).
-          $ref: '#/components/schemas/GenericPmWithTdiInfo'
+          description: '**cup** (China Union Pay) details'
+          $ref: '#/components/schemas/CupResponseInfo'
         currencies:
           description: The list of currencies that a payment method supports. By default,
             all currencies supported by the payment method.
@@ -13164,128 +13626,97 @@ components:
             type: string
           type: array
         diners:
-          description: 'Details to provide if `type` is **diners**.
-
-            For merchants operating in Japan, Diners payments are processed through
-            the JCB network. This means that you must include [JCB-specific fields](https://docs.adyen.com/api-explorer/Management/latest/post/merchants/(merchantId)/paymentMethodSettings/(paymentMethodId)#request-jcb)
-            in this object.'
-          $ref: '#/components/schemas/DinersInfo'
+          description: '**diners** details'
+          $ref: '#/components/schemas/DinersResponseInfo'
         discover:
-          description: 'Details to provide if `type` is **discover**.
-
-            For merchants operating in Japan, request [Diners](https://docs.adyen.com/api-explorer/Management/latest/post/merchants/(merchantId)/paymentMethodSettings/(paymentMethodId)#request-diners)
-            payment method instead. Discover is automatically requested, together
-            with Diners.'
-          $ref: '#/components/schemas/GenericPmWithTdiInfo'
+          description: '**discover**. details'
+          $ref: '#/components/schemas/DiscoverResponseInfo'
         eft_directdebit_CA:
-          description: Details to provide if `type` is **eft_directdebit_CA** (EFT
-            PAD).
-          $ref: '#/components/schemas/GenericPmWithTdiInfo'
+          description: '**eft_directdebit_CA** (EFT PAD) details'
+          $ref: '#/components/schemas/EFTDirectDebitCAResponseInfo'
         eftpos_australia:
-          description: Details to provide if `type` is **eftpos_australia**.
-          $ref: '#/components/schemas/GenericPmWithTdiInfo'
+          description: '**eftpos_australia** details'
+          $ref: '#/components/schemas/EftPosAustraliaResponseInfo'
         enabled:
           description: Indicates whether the payment method is enabled (**true**)
             or disabled (**false**).
           type: boolean
         girocard:
-          description: Details to provide if `type` is **girocard**.
-          $ref: '#/components/schemas/GenericPmWithTdiInfo'
+          description: '**girocard** details'
+          $ref: '#/components/schemas/GirocardResponseInfo'
         givex:
-          description: Details to provide if `type` is **givex**.
-          $ref: '#/components/schemas/GivexInfo'
+          description: '**givex** details'
+          $ref: '#/components/schemas/GivexResponseInfo'
         googlePay:
-          description: Details to provide if `type` is **googlepay**.
-          $ref: '#/components/schemas/GooglePayInfo'
+          description: '**googlepay** details'
+          $ref: '#/components/schemas/GooglePayResponseInfo'
         id:
           description: The identifier of the resource.
           type: string
         ideal:
-          description: Details to provide if `type` is **ideal**.
-          $ref: '#/components/schemas/GenericPmWithTdiInfo'
+          description: '**ideal** details'
+          $ref: '#/components/schemas/IdealResponseInfo'
         interac_card:
-          description: Details to provide if `type` is **interac_card**.
-          $ref: '#/components/schemas/GenericPmWithTdiInfo'
+          description: '**interac_card** details'
+          $ref: '#/components/schemas/InteracCardResponseInfo'
         jcb:
-          description: 'Details to provide if `type` is **jcb**.
-
-            For merchants operating in Japan, `midNumber`, `reuseMidNumber`, and `serviceLevel`
-            fields are required.
-
-            For merchants operating outside of Japan, these fields are not required.'
-          $ref: '#/components/schemas/JCBInfo'
+          description: '**jcb** details'
+          $ref: '#/components/schemas/JCBResponseInfo'
         klarna:
-          description: 'Details to provide if `type` is **klarna** or its variant.
-
-
-            You can use the following payment method `type` values for Klarna:
-
-            * **klarna**: Klarna Pay Later
-
-            * **klarna_account**: Klarna Pay over time
-
-            * **klarna_paynow**: Klarna Pay now
-
-            * **klarna_b2b**: [Billie via Klarna](https://docs.adyen.com/payment-methods/klarna/billie)
-
-            '
-          $ref: '#/components/schemas/KlarnaInfo'
+          description: '**klarna** or its variant details'
+          $ref: '#/components/schemas/KlarnaResponseInfo'
         maestro:
-          description: 'Details to provide if `type` is **maestro**.
-
-            In the US, `maestro` is not supported; use `maestro_usa` instead. '
-          $ref: '#/components/schemas/GenericPmWithTdiInfo'
+          description: '**maestro** details'
+          $ref: '#/components/schemas/MaestroResponseInfo'
         maestro_usa:
-          description: 'Details to provide if `type` is **maestro_usa**.
-
-            Only for Maestro USA, otherwise use `maestro`.'
-          $ref: '#/components/schemas/GenericPmWithTdiInfo'
+          description: Details to provide if `type` is **maestro_usa** details
+          $ref: '#/components/schemas/MaestroUSAResponseInfo'
         mc:
-          description: Details to provide if `type` is **mc**.
-          $ref: '#/components/schemas/GenericPmWithTdiInfo'
+          description: '**mc** details'
+          $ref: '#/components/schemas/MCResponseInfo'
         mealVoucher_FR:
-          description: Details to provide if `type` is **mealVoucher_FR**.
-          $ref: '#/components/schemas/MealVoucherFRInfo'
+          description: '**mealVoucher_FR** details'
+          $ref: '#/components/schemas/MealVoucherFRResponseInfo'
         nyce:
-          description: Details to provide if `type` is **nyce**.
-          $ref: '#/components/schemas/NyceInfo'
+          description: '**nyce** details'
+          $ref: '#/components/schemas/NyceResponseInfo'
         paybybank_plaid:
-          description: Details to provide if `type` is **paybybank_plaid**.
-          $ref: '#/components/schemas/PayByBankPlaidInfo'
+          description: '**paybybank_plaid** details'
+          $ref: '#/components/schemas/PayByBankPlaidResponseInfo'
         payme:
-          description: Details to provide if `type` is **payme**.
-          $ref: '#/components/schemas/PayMeInfo'
+          description: '**payme** details'
+          $ref: '#/components/schemas/PayMeResponseInfo'
         paypal:
-          description: Details to provide if `type` is **paypal**.
-          $ref: '#/components/schemas/PayPalInfo'
+          description: '**paypal** details'
+          $ref: '#/components/schemas/PayPalResponseInfo'
         payto:
-          description: Details to provide if `type` is **payto**.
-          $ref: '#/components/schemas/PayToInfo'
+          description: '**payto** details'
+          $ref: '#/components/schemas/PayToResponseInfo'
         pulse:
-          description: Details to provide if `type` is **pulse**.
-          $ref: '#/components/schemas/PulseInfo'
+          description: '**pulse** details'
+          $ref: '#/components/schemas/PulseResponseInfo'
         reference:
           description: Your reference for the payment method. Supported characters
             a-z, A-Z, 0-9.
           maxLength: 150
           type: string
         sepadirectdebit:
-          description: Details to provide if `type` is **sepadirectdebit**.
-          $ref: '#/components/schemas/SepaDirectDebitInfo'
+          description: '**sepadirectdebit** details'
+          $ref: '#/components/schemas/SepaDirectDebitResponseInfo'
         shopperInteraction:
           description: The sales channel.
           type: string
         sodexo:
-          description: Details to provide if `type` is **sodexo**.
-          $ref: '#/components/schemas/SodexoInfo'
+          description: '**sodexo** details'
+          $ref: '#/components/schemas/SodexoResponseInfo'
         sofort:
           deprecated: true
           x-deprecatedInVersion: '1'
           description: Sofort details.
-          $ref: '#/components/schemas/SofortInfo'
+          $ref: '#/components/schemas/SofortResponseInfo'
         star:
-          description: Details to provide if `type` is **star**.
-          $ref: '#/components/schemas/StarInfo'
+          description: '**star** details'
+          $ref: '#/components/schemas/StarResponseInfo'
         storeIds:
           x-addedInVersion: '3'
           description: The unique identifier of the store for which to configure the
@@ -13294,27 +13725,23 @@ components:
             type: string
           type: array
         svs:
-          description: Details to provide if `type` is **svs**.
-          $ref: '#/components/schemas/SvsInfo'
+          description: '**svs** details'
+          $ref: '#/components/schemas/SvsResponseInfo'
         swish:
-          description: "Details to provide if `type` is **swish**.\n - This field\
-            \ is required only if you have a contract with Swish. Swish handles settlement\
-            \ directly with you (not through Adyen).\n - If not specified then it's\
-            \ assumed that you are using Adyen's contract with Swish.You don't have\
-            \ a direct relationship with Swish.\n"
-          $ref: '#/components/schemas/SwishInfo'
+          description: '**swish** or its variant details'
+          $ref: '#/components/schemas/SwishResponseInfo'
         ticket:
-          description: Details to provide if `type` is **ticket** (Edenred Brazil).
-          $ref: '#/components/schemas/TicketInfo'
+          description: '**ticket** (Edenred Brazil) details'
+          $ref: '#/components/schemas/TicketResponseInfo'
         twint:
-          description: Details to provide if `type` is **twint**.
-          $ref: '#/components/schemas/TwintInfo'
+          description: '**twint** details'
+          $ref: '#/components/schemas/TwintResponseInfo'
         type:
           description: Payment method [variant](https://docs.adyen.com/development-resources/paymentmethodvariant#management-api).
           type: string
         valuelink:
-          description: Details to provide if `type` is **valuelink**.
-          $ref: '#/components/schemas/ValuelinkInfo'
+          description: '**valuelink** details'
+          $ref: '#/components/schemas/ValuelinkResponseInfo'
         verificationStatus:
           description: 'Payment method status. Possible values:
 
@@ -13332,17 +13759,17 @@ components:
           - rejected
           type: string
         vipps:
-          description: Details to provide if `type` is **vipps**.
-          $ref: '#/components/schemas/VippsInfo'
+          description: '**vipps** details'
+          $ref: '#/components/schemas/VippsResponseInfo'
         visa:
-          description: Details to provide if `type` is **visa**.
-          $ref: '#/components/schemas/GenericPmWithTdiInfo'
+          description: '**visa** details'
+          $ref: '#/components/schemas/VisaResponseInfo'
         wechatpay:
-          description: Details to provide if `type` is **wechatpay**.
-          $ref: '#/components/schemas/WeChatPayInfo'
+          description: '**wechatpay** details'
+          $ref: '#/components/schemas/WeChatPayResponseInfo'
         wechatpay_pos:
-          description: Details to provide if `type` is **wechatpay_pos**.
-          $ref: '#/components/schemas/WeChatPayPosInfo'
+          description: '**wechatpay_pos** details'
+          $ref: '#/components/schemas/WeChatPayPosResponseInfo'
       required:
       - id
       type: object
@@ -13382,6 +13809,17 @@ components:
             - alipay
             - alipay_hk
             - alipay_plus
+            - alipay_plus_alipay_cn
+            - alipay_plus_alipay_hk
+            - alipay_plus_dana
+            - alipay_plus_gcash
+            - alipay_plus_kakaopay
+            - alipay_plus_kplus
+            - alipay_plus_naverpay
+            - alipay_plus_rabbitlinepay
+            - alipay_plus_tosspay
+            - alipay_plus_touchngo
+            - alipay_plus_truemoney
             - alipay_wap
             - amex
             - applepay
@@ -13396,6 +13834,7 @@ components:
             - blik
             - blik_pos
             - br_schemes
+            - carnet
             - cartebancaire
             - clearpay
             - clicktopay
@@ -13527,7 +13966,10 @@ components:
           description: Details to provide if `type` is **alipay_plus**.
           $ref: '#/components/schemas/AlipayPlusInfo'
         amex:
-          description: Details to provide if `type` is **amex**.
+          description: 'Details to provide if `type` is **amex**.
+
+            For merchants operating in Australia, New Zealand & Canada, JCB and American
+            Express are automatically requested together.'
           $ref: '#/components/schemas/AmexInfo'
         applePay:
           description: Details to provide if `type` is **applepay**.
@@ -13539,6 +13981,9 @@ components:
           description: The unique identifier of the business line. Required if you
             are a [platform model](https://docs.adyen.com/platforms).
           type: string
+        carnet:
+          description: Details to provide if `type` is **carnet**.
+          $ref: '#/components/schemas/GenericPmWithTdiInfo'
         cartesBancaires:
           description: Details to provide if `type` is **cartebancaire**.
           $ref: '#/components/schemas/CartesBancairesInfo'
@@ -13608,7 +14053,10 @@ components:
             For merchants operating in Japan, `midNumber`, `reuseMidNumber`, and `serviceLevel`
             fields are required.
 
-            For merchants operating outside of Japan, these fields are not required.'
+            For merchants operating outside of Japan, these fields are not required.
+
+            For merchants operating in Australia, New Zealand & Canada, JCB and American
+            Express are automatically requested together.'
           $ref: '#/components/schemas/JCBInfo'
         klarna:
           description: 'Details to provide if `type` is **klarna** or its variant.
@@ -13669,9 +14117,15 @@ components:
           description: Details to provide if `type` is **sepadirectdebit**.
           $ref: '#/components/schemas/SepaDirectDebitInfo'
         shopperInteraction:
-          description: 'The sales channel. Required if the merchant account does not
-            have a sales channel. When you provide this field, it overrides the default
-            sales channel set on the merchant account.
+          description: 'The sales channel. Required if:
+
+            - The merchant account does not have a sales channel.
+
+            - `type` is **alipay**.
+
+
+            When you provide this field, it overrides the default sales channel set
+            on the merchant account.
 
 
             Possible values: **eCommerce**, **pos**, **contAuth**, and **moto**. '
@@ -13730,6 +14184,17 @@ components:
           - alipay
           - alipay_hk
           - alipay_plus
+          - alipay_plus_alipay_cn
+          - alipay_plus_alipay_hk
+          - alipay_plus_dana
+          - alipay_plus_gcash
+          - alipay_plus_kakaopay
+          - alipay_plus_kplus
+          - alipay_plus_naverpay
+          - alipay_plus_rabbitlinepay
+          - alipay_plus_tosspay
+          - alipay_plus_touchngo
+          - alipay_plus_truemoney
           - alipay_wap
           - amex
           - applepay
@@ -13744,6 +14209,7 @@ components:
           - blik
           - blik_pos
           - br_schemes
+          - carnet
           - cartebancaire
           - clearpay
           - clicktopay
@@ -14115,9 +14581,48 @@ components:
       required:
       - processingType
       type: object
+    PulseResponseInfo:
+      additionalProperties: false
+      properties:
+        processingType:
+          description: "The type of transactions processed over this payment method.\n\
+            \ Allowed values:\n- **pos** for in-person payments. \n- **billpay** for\
+            \ subscription payments, both the initial payment and the later recurring\
+            \ payments. These transactions have `recurringProcessingModel` **Subscription**.\
+            \ \n- **ecom** for all other card not present transactions. This includes\
+            \ non-recurring transactions and transactions with `recurringProcessingModel`\
+            \ **CardOnFile** or **UnscheduledCardOnFile**.\n"
+          enum:
+          - billpay
+          - ecom
+          - pos
+          type: string
+        transactionDescription:
+          description: Information regarding the transaction description.
+          $ref: '#/components/schemas/TransactionDescriptionResponseInfo'
+      required:
+      - processingType
+      type: object
+    PulseUpdateInfo:
+      additionalProperties: false
+      properties:
+        transactionDescription:
+          description: 'Information regarding the transaction description.
+
+            > You cannot configure the transaction description in the test environment.'
+          $ref: '#/components/schemas/TransactionDescriptionInfo'
+      type: object
     ReceiptOptions:
       additionalProperties: false
       properties:
+        headerLine1:
+          description: The text of the first header line to be shown on the receipt.
+          maxLength: 100
+          type: string
+        headerLine2:
+          description: The text of the second header line to be shown on the receipt.
+          maxLength: 100
+          type: string
         logo:
           description: The receipt logo converted to a Base64-encoded string. The
             image must be a .bmp file of < 256 KB, dimensions 240 (H) x 384 (W) px.
@@ -14378,6 +14883,25 @@ components:
             > You cannot configure the transaction description in the test environment.'
           $ref: '#/components/schemas/TransactionDescriptionInfo'
       type: object
+    SepaDirectDebitResponseInfo:
+      additionalProperties: false
+      properties:
+        creditorId:
+          description: Creditor id
+          type: string
+        transactionDescription:
+          description: Information regarding the transaction description.
+          $ref: '#/components/schemas/TransactionDescriptionResponseInfo'
+      type: object
+    SepaDirectDebitUpdateInfo:
+      additionalProperties: false
+      properties:
+        transactionDescription:
+          description: 'Information regarding the transaction description.
+
+            > You cannot configure the transaction description in the test environment.'
+          $ref: '#/components/schemas/TransactionDescriptionInfo'
+      type: object
     Settings:
       additionalProperties: false
       properties:
@@ -14449,7 +14973,29 @@ components:
       required:
       - merchantContactPhone
       type: object
+    SodexoResponseInfo:
+      additionalProperties: false
+      properties:
+        merchantContactPhone:
+          description: Sodexo merchantContactPhone
+          type: string
+      required:
+      - merchantContactPhone
+      type: object
     SofortInfo:
+      additionalProperties: false
+      properties:
+        currencyCode:
+          description: Sofort currency code. For example, **EUR**.
+          type: string
+        logo:
+          description: 'Sofort logo. Format: Base64-encoded string.'
+          type: string
+      required:
+      - logo
+      - currencyCode
+      type: object
+    SofortResponseInfo:
       additionalProperties: false
       properties:
         currencyCode:
@@ -14710,10 +15256,15 @@ components:
             * **intraRegional**: The card issuer and the store where the transaction
             is processed are registered in different countries, but in the same region.
 
+            * **intraEEA**: The card issuer and the store where the transaction is
+            processed are registered in different countries, but in the European Economic
+            Area (EEA).
+
             * **ANY**: Applies to all transactions, regardless of the processing and
             issuing country/region.'
           enum:
           - international
+          - intraEEA
           - intraRegional
           - interRegional
           - domestic
@@ -14843,6 +15394,37 @@ components:
           $ref: '#/components/schemas/TransactionDescriptionInfo'
       required:
       - processingType
+      type: object
+    StarResponseInfo:
+      additionalProperties: false
+      properties:
+        processingType:
+          description: "The type of transactions processed over this payment method.\n\
+            \ Allowed values:\n- **pos** for in-person payments. \n- **billpay** for\
+            \ subscription payments, both the initial payment and the later recurring\
+            \ payments. These transactions have `recurringProcessingModel` **Subscription**.\
+            \ \n- **ecom** for all other card not present transactions. This includes\
+            \ non-recurring transactions and transactions with `recurringProcessingModel`\
+            \ **CardOnFile** or **UnscheduledCardOnFile**.\n"
+          enum:
+          - billpay
+          - ecom
+          - pos
+          type: string
+        transactionDescription:
+          description: Information regarding the transaction description.
+          $ref: '#/components/schemas/TransactionDescriptionResponseInfo'
+      required:
+      - processingType
+      type: object
+    StarUpdateInfo:
+      additionalProperties: false
+      properties:
+        transactionDescription:
+          description: 'Information regarding the transaction description.
+
+            > You cannot configure the transaction description in the test environment.'
+          $ref: '#/components/schemas/TransactionDescriptionInfo'
       type: object
     Store:
       additionalProperties: false
@@ -15227,7 +15809,32 @@ components:
       - authorisationMid
       - currencyCode
       type: object
+    SvsResponseInfo:
+      additionalProperties: false
+      properties:
+        authorisationMid:
+          description: The merchant ID (MID) that the acquirer recognizes you by.
+          type: string
+        currencyCode:
+          description: The three-character ISO currency code, example **USD**
+          type: string
+      required:
+      - authorisationMid
+      - currencyCode
+      type: object
     SwishInfo:
+      additionalProperties: false
+      properties:
+        swishNumber:
+          description: 'Swish number. Format: 10 digits without spaces. For example,
+            **1231111111**.'
+          maxLength: 10
+          minLength: 10
+          type: string
+      required:
+      - swishNumber
+      type: object
+    SwishResponseInfo:
       additionalProperties: false
       properties:
         swishNumber:
@@ -15255,11 +15862,19 @@ components:
             the [assignment status](https://docs.adyen.com/point-of-sale/automating-terminal-management/assign-terminals-api),
             and where the terminals is in the process of being reassigned to.
           $ref: '#/components/schemas/TerminalAssignment'
+        cloudDeviceApiEndpoint:
+          x-addedInVersion: '3'
+          description: The [regional base URL](https://docs.adyen.com/api-explorer/terminal-api/1/overview#endpoints-for-cloud-communications)
+            to use for sending Terminal API requests when using cloud communications.
+          type: string
         connectivity:
           x-addedInVersion: '2'
           description: Information about bluetooth, cellular, ethernet and wifi connectivity
             for the terminal.
           $ref: '#/components/schemas/TerminalConnectivity'
+        countryCode:
+          description: The country code of the country where the terminal is located.
+          type: string
         firmwareVersion:
           description: The software release currently in use on the terminal.
           type: string
@@ -15609,6 +16224,10 @@ components:
           description: Settings for terminal connectivity features.
           nullable: true
           $ref: '#/components/schemas/Connectivity'
+        dcc:
+          description: Settings for Dynamic Currency Conversion (DCC).
+          nullable: true
+          $ref: '#/components/schemas/Dcc'
         gratuities:
           description: Settings for tipping with or without predefined options to
             choose from. The maximum number of predefined options is four, or three
@@ -15842,6 +16461,13 @@ components:
           description: Ticket requestorId
           type: string
       type: object
+    TicketResponseInfo:
+      additionalProperties: false
+      properties:
+        requestorId:
+          description: Ticket requestorId
+          type: string
+      type: object
     Timeouts:
       additionalProperties: false
       properties:
@@ -15883,7 +16509,48 @@ components:
           - fixed
           type: string
       type: object
+    TransactionDescriptionResponseInfo:
+      additionalProperties: false
+      properties:
+        doingBusinessAsName:
+          description: "The text to be shown on the shopper's bank statement.\n We\
+            \ recommend sending a maximum of 22 characters, otherwise banks might\
+            \ truncate the string.\n Allowed characters: **a-z**, **A-Z**, **0-9**,\
+            \ spaces, and special characters **. , ' _ - ? + * /**."
+          maxLength: 22
+          type: string
+        type:
+          default: dynamic
+          description: 'The type of transaction description you want to use:
+
+            - **fixed**: The transaction description set in this request is used for
+            all payments with this payment method.
+
+            - **append**: The transaction description set in this request is used
+            as a base for all payments with this payment method. The [transaction
+            description set in the request to process the payment](https://docs.adyen.com/api-explorer/Checkout/70/post/sessions#request-shopperStatement)
+            is appended to this base description. Note that if the combined length
+            exceeds 22 characters, banks may truncate the string.
+
+            - **dynamic**: Only the [transaction description set in the request to
+            process the payment](https://docs.adyen.com/api-explorer/Checkout/70/post/sessions#request-shopperStatement)
+            is used for payments with this payment method.'
+          enum:
+          - append
+          - dynamic
+          - fixed
+          type: string
+      type: object
     TwintInfo:
+      additionalProperties: false
+      properties:
+        logo:
+          description: 'Twint logo. Format: Base64-encoded string.'
+          type: string
+      required:
+      - logo
+      type: object
+    TwintResponseInfo:
       additionalProperties: false
       properties:
         logo:
@@ -15978,6 +16645,9 @@ components:
           items:
             type: string
           type: array
+        subjectDN:
+          description: The subject DN of the certificate issued by Adyen.
+          type: string
       type: object
     UpdateCompanyUserRequest:
       additionalProperties: false
@@ -16005,7 +16675,7 @@ components:
             already have SSO configured with Adyen before creating the user.
 
 
-            Possible values: **Username & account**, **Email**, or **SSO** '
+            Possible values: **Email** or **SSO** '
           type: string
         name:
           description: The user's full name.
@@ -16172,6 +16842,9 @@ components:
           items:
             type: string
           type: array
+        subjectDN:
+          description: The subject DN of the certificate issued by Adyen.
+          type: string
       type: object
     UpdateMerchantUserRequest:
       additionalProperties: false
@@ -16194,7 +16867,7 @@ components:
             already have SSO configured with Adyen before creating the user.
 
 
-            Possible values: **Username & account**, **Email**, or **SSO** '
+            Possible values: **Email** or **SSO** '
           type: string
         name:
           description: The user's full name.
@@ -16310,13 +16983,19 @@ components:
       properties:
         accel:
           description: Details to provide if `type` is **accel**.
-          $ref: '#/components/schemas/AccelInfo'
+          $ref: '#/components/schemas/AccelUpdateInfo'
+        affirm:
+          description: Details to provide if `type` is **affirm**.
+          $ref: '#/components/schemas/AffirmUpdateInfo'
         bcmc:
           description: Details to provide if `type` is **bcmc** (Bancontact).
-          $ref: '#/components/schemas/BcmcInfo'
+          $ref: '#/components/schemas/BcmcUpdateInfo'
+        carnet:
+          description: Details to provide if `type` is **carnet**.
+          $ref: '#/components/schemas/GenericPmWithTdiUpdateInfo'
         cartesBancaires:
           description: Details to provide if `type` is **cartebancaire**.
-          $ref: '#/components/schemas/CartesBancairesInfo'
+          $ref: '#/components/schemas/CartesBancairesUpdateInfo'
         countries:
           description: The list of countries where a payment method is available.
             By default, all countries supported by the payment method.
@@ -16325,7 +17004,7 @@ components:
           type: array
         cup:
           description: Details to provide if `type` is **cup** (China Union Pay).
-          $ref: '#/components/schemas/GenericPmWithTdiInfo'
+          $ref: '#/components/schemas/GenericPmWithTdiUpdateInfo'
         currencies:
           description: The list of currencies that a payment method supports. By default,
             all currencies supported by the payment method.
@@ -16343,34 +17022,34 @@ components:
             For merchants operating in Japan, Diners payments are processed through
             the JCB network. This means that you must include [JCB-specific fields](https://docs.adyen.com/api-explorer/Management/latest/post/merchants/(merchantId)/paymentMethodSettings/(paymentMethodId)#request-jcb)
             in this object.'
-          $ref: '#/components/schemas/GenericPmWithTdiInfo'
+          $ref: '#/components/schemas/GenericPmWithTdiUpdateInfo'
         discover:
           description: 'Details to provide if `type` is **discover**.
 
             For merchants operating in Japan, request [Diners](https://docs.adyen.com/api-explorer/Management/latest/post/merchants/(merchantId)/paymentMethodSettings/(paymentMethodId)#request-diners)
             payment method instead. Discover is automatically requested, together
             with Diners.'
-          $ref: '#/components/schemas/GenericPmWithTdiInfo'
+          $ref: '#/components/schemas/GenericPmWithTdiUpdateInfo'
         eft_directdebit_CA:
           description: Details to provide if `type` is **eft_directdebit_CA** (EFT
             PAD).
-          $ref: '#/components/schemas/GenericPmWithTdiInfo'
+          $ref: '#/components/schemas/GenericPmWithTdiUpdateInfo'
         eftpos_australia:
           description: Details to provide if `type` is **eftpos_australia**.
-          $ref: '#/components/schemas/GenericPmWithTdiInfo'
+          $ref: '#/components/schemas/GenericPmWithTdiUpdateInfo'
         enabled:
           description: Indicates whether the payment method is enabled (**true**)
             or disabled (**false**).
           type: boolean
         girocard:
           description: Details to provide if `type` is **girocard**.
-          $ref: '#/components/schemas/GenericPmWithTdiInfo'
+          $ref: '#/components/schemas/GenericPmWithTdiUpdateInfo'
         ideal:
           description: Details to provide if `type` is **ideal**.
-          $ref: '#/components/schemas/GenericPmWithTdiInfo'
+          $ref: '#/components/schemas/GenericPmWithTdiUpdateInfo'
         interac_card:
           description: Details to provide if `type` is **interac_card**.
-          $ref: '#/components/schemas/GenericPmWithTdiInfo'
+          $ref: '#/components/schemas/GenericPmWithTdiUpdateInfo'
         jcb:
           description: 'Details to provide if `type` is **jcb**.
 
@@ -16378,35 +17057,35 @@ components:
             fields are required.
 
             For merchants operating outside of Japan, these fields are not required.'
-          $ref: '#/components/schemas/GenericPmWithTdiInfo'
+          $ref: '#/components/schemas/GenericPmWithTdiUpdateInfo'
         maestro:
           description: 'Details to provide if `type` is **maestro**.
 
             In the US, `maestro` is not supported; use `maestro_usa` instead. '
-          $ref: '#/components/schemas/GenericPmWithTdiInfo'
+          $ref: '#/components/schemas/GenericPmWithTdiUpdateInfo'
         maestro_usa:
           description: 'Details to provide if `type` is **maestro_usa**.
 
             Only for Maestro USA, otherwise use `maestro`.'
-          $ref: '#/components/schemas/GenericPmWithTdiInfo'
+          $ref: '#/components/schemas/GenericPmWithTdiUpdateInfo'
         mc:
           description: Details to provide if `type` is **mc**.
-          $ref: '#/components/schemas/GenericPmWithTdiInfo'
+          $ref: '#/components/schemas/GenericPmWithTdiUpdateInfo'
         nyce:
           description: Details to provide if `type` is **nyce**.
-          $ref: '#/components/schemas/NyceInfo'
+          $ref: '#/components/schemas/NyceUpdateInfo'
         paybybank_plaid:
           description: Details to provide if `type` is **paybybank_plaid**.
-          $ref: '#/components/schemas/PayByBankPlaidInfo'
+          $ref: '#/components/schemas/PayByBankPlaidUpdateInfo'
         pulse:
           description: Details to provide if `type` is **pulse**.
-          $ref: '#/components/schemas/PulseInfo'
+          $ref: '#/components/schemas/PulseUpdateInfo'
         sepadirectdebit:
           description: Details to provide if `type` is **sepadirectdebit**.
-          $ref: '#/components/schemas/SepaDirectDebitInfo'
+          $ref: '#/components/schemas/SepaDirectDebitUpdateInfo'
         star:
           description: Details to provide if `type` is **star**.
-          $ref: '#/components/schemas/StarInfo'
+          $ref: '#/components/schemas/StarUpdateInfo'
         storeId:
           x-addedInVersion: '3'
           description: The store for this payment method
@@ -16422,7 +17101,7 @@ components:
           type: array
         visa:
           description: Details to provide if `type` is **visa**.
-          $ref: '#/components/schemas/GenericPmWithTdiInfo'
+          $ref: '#/components/schemas/GenericPmWithTdiUpdateInfo'
       type: object
     UpdatePayoutSettingsRequest:
       additionalProperties: false
@@ -16868,6 +17547,28 @@ components:
       - authorisationMid
       - pinSupport
       type: object
+    ValuelinkResponseInfo:
+      additionalProperties: false
+      properties:
+        authorisationMid:
+          description: Authorisation Mid
+          type: string
+        pinSupport:
+          description: PIN Support. For ecommerce, PIN is required.
+          enum:
+          - PIN
+          - NO PIN
+          type: string
+        submitterId:
+          description: Submitter ID
+          type: string
+        terminalId:
+          description: Terminal ID
+          type: string
+      required:
+      - authorisationMid
+      - pinSupport
+      type: object
     VippsInfo:
       additionalProperties: false
       properties:
@@ -16880,6 +17581,26 @@ components:
           type: string
       required:
       - logo
+      type: object
+    VippsResponseInfo:
+      additionalProperties: false
+      properties:
+        logo:
+          description: 'Vipps logo. Format: Base64-encoded string.'
+          type: string
+        subscriptionCancelUrl:
+          description: Vipps subscription cancel url (required in case of [recurring
+            payments](https://docs.adyen.com/online-payments/tokenization))
+          type: string
+      required:
+      - logo
+      type: object
+    VisaResponseInfo:
+      additionalProperties: false
+      properties:
+        transactionDescription:
+          description: Information regarding the transaction description.
+          $ref: '#/components/schemas/TransactionDescriptionResponseInfo'
       type: object
     WeChatPayInfo:
       additionalProperties: false
@@ -16895,6 +17616,32 @@ components:
       - contactPersonName
       type: object
     WeChatPayPosInfo:
+      additionalProperties: false
+      properties:
+        contactPersonName:
+          description: The name of the contact person from merchant support.
+          type: string
+        email:
+          description: The email address of merchant support.
+          type: string
+      required:
+      - email
+      - contactPersonName
+      type: object
+    WeChatPayPosResponseInfo:
+      additionalProperties: false
+      properties:
+        contactPersonName:
+          description: The name of the contact person from merchant support.
+          type: string
+        email:
+          description: The email address of merchant support.
+          type: string
+      required:
+      - email
+      - contactPersonName
+      type: object
+    WeChatPayResponseInfo:
       additionalProperties: false
       properties:
         contactPersonName:
