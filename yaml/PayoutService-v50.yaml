@@ -27,7 +27,7 @@ info:
     \nThe following example shows how to authenticate your request with basic authentication\
     \ when submitting a payout:\n\n```\ncurl\n-U \"storePayout@Company.YOUR_COMPANY_ACCOUNT\"\
     :\"YOUR_BASIC_AUTHENTICATION_PASSWORD\" \\\n-H \"Content-Type: application/json\"\
-    \ \\\n...\n```\n\n## Versioning\nPayments API supports [versioning](https://docs.adyen.com/development-resources/versioning)\
+    \ \\\n...\n```\n\n## Versioning\nPayout API supports [versioning](https://docs.adyen.com/development-resources/versioning)\
     \ using a version suffix in the endpoint URL. This suffix has the following format:\
     \ \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://pal-test.adyen.com/pal/servlet/Payout/v50/payout\n\
     ```\n\n## Going live\n\nTo authenticate to the live endpoints, you need [API credentials](https://docs.adyen.com/development-resources/api-credentials)\
@@ -364,9 +364,6 @@ paths:
       requestBody:
         content:
           application/json:
-            examples:
-              storeDetail:
-                $ref: '#/components/examples/post-storeDetail-storeDetail'
             schema:
               $ref: '#/components/schemas/StoreDetailRequest'
       responses:
@@ -458,17 +455,6 @@ paths:
       requestBody:
         content:
           application/json:
-            examples:
-              storeDetailAndSubmitThirdParty:
-                $ref: '#/components/examples/post-storeDetailAndSubmitThirdParty-storeDetailAndSubmitThirdParty'
-              storeDetailAndSubmitThirdParty-Neteller:
-                $ref: '#/components/examples/post-storeDetailAndSubmitThirdParty-storeDetailAndSubmitThirdParty-Neteller'
-              storeDetailAndSubmitThirdParty-PayPal:
-                $ref: '#/components/examples/post-storeDetailAndSubmitThirdParty-storeDetailAndSubmitThirdParty-PayPal'
-              storeDetailAndSubmitThirdParty-Paysafecard:
-                $ref: '#/components/examples/post-storeDetailAndSubmitThirdParty-storeDetailAndSubmitThirdParty-Paysafecard'
-              storeDetailAndSubmitThirdParty-Skrill:
-                $ref: '#/components/examples/post-storeDetailAndSubmitThirdParty-storeDetailAndSubmitThirdParty-Skrill'
             schema:
               $ref: '#/components/schemas/StoreDetailAndSubmitRequest'
       responses:
@@ -558,9 +544,6 @@ paths:
       requestBody:
         content:
           application/json:
-            examples:
-              submitThirdParty:
-                $ref: '#/components/examples/post-submitThirdParty-submitThirdParty'
             schema:
               $ref: '#/components/schemas/SubmitRequest'
       responses:
@@ -1255,6 +1238,12 @@ components:
     ResponseAdditionalDataCard:
       additionalProperties: false
       properties:
+        cardAltID:
+          description: 'This is an ALT ID (alternate ID) mapped to the Card PAN.
+
+
+            > Returned only in case of Ecommerce Card Payment in India'
+          type: string
         cardBin:
           description: 'The first six digits of the card number.
 
@@ -1296,7 +1285,7 @@ components:
             service level payments.
 
 
-            Possible values Visa:
+            Example values Visa:
 
             * **A** - Visa Traditional
 
@@ -1309,7 +1298,7 @@ components:
             * **F** - Visa Classic
 
 
-            Possible values Mastercard:
+            Example values Mastercard:
 
             * **MCC** - Mastercard Card
 
@@ -1324,18 +1313,6 @@ components:
             * **MCI** - Mastercard Select Debit
 
             '
-          enum:
-          - A
-          - B
-          - C
-          - D
-          - F
-          - MCC
-          - MCE
-          - MCF
-          - MCG
-          - MCH
-          - MCI
           type: string
         cardSummary:
           description: 'The last four digits of a card number.
@@ -1642,6 +1619,13 @@ components:
           type: string
         merchantReference:
           description: The reference provided for the transaction.
+          type: string
+        networkProcessingMode:
+          description: "Indicates the processing flow.\n\nPossible values:\n* **sale**:\
+            \ You do not need to separately capture the funds, because capture happens\
+            \ automatically as part of the transaction. \n* **auth**: If you have\
+            \ not [configured automatic capture for the transaction](https://docs.adyen.com/online-payments/capture#types-of-capture),\
+            \ you must manually capture the funds."
           type: string
         networkTxReference:
           description: 'Returned in the response if you are not tokenizing with Adyen
@@ -2533,179 +2517,9 @@ components:
         shopperName:
           firstName: John
           lastName: Smith
-    post-storeDetail-storeDetail:
-      summary: Store payout details
-      description: Store payment details under the PAYOUT recurring contract
-      value:
-        merchantAccount: YOUR_MERCHANT_ACCOUNT
-        recurring:
-          contract: PAYOUT
-        bank:
-          bankName: AbnAmro
-          bic: ABNANL2A
-          countryCode: NL
-          iban: NL32ABNA0515071439
-          ownerName: Adyen
-          bankCity: Amsterdam
-          taxId: bankTaxId
-        shopperEmail: shopper@email.com
-        shopperReference: YOUR_UNIQUE_SHOPPER_ID
-        shopperName:
-          firstName: Adyen
-          lastName: Test
-        dateOfBirth: '1990-01-01'
-        entityType: Company
-        nationality: NL
-        billingAddress:
-          houseNumberOrName: '17'
-          street: Teststreet 1
-          city: Amsterdam
-          stateOrProvince: NY
-          country: US
-          postalCode: '12345'
     post-storeDetail-storeDetail-200:
       summary: Example response for request 'storeDetail'
       value:
         pspReference: 991617894326362D
         recurringDetailReference: '9916178936754752'
         resultCode: Success
-    post-storeDetailAndSubmitThirdParty-storeDetailAndSubmitThirdParty:
-      summary: Submit a payout and stores details
-      description: Submit a payout and stores its details for subsequent payouts
-      value:
-        merchantAccount: YOUR_MERCHANT_ACCOUNT
-        recurring:
-          contract: PAYOUT
-        amount:
-          value: 2000
-          currency: EUR
-        bank:
-          bankName: Commerzbank
-          iban: DE87123456781234567890
-          countryCode: DE
-          ownerName: Simon Hopper
-        reference: Your Reference
-        shopperEmail: s.hopper@test.com
-        shopperReference: YOUR_SHOPPER_REFERENCE
-        shopperName:
-          firstName: Adyen
-          lastName: Test
-        dateOfBirth: '1990-01-01'
-        entityType: Company
-        nationality: NL
-    post-storeDetailAndSubmitThirdParty-storeDetailAndSubmitThirdParty-Neteller:
-      summary: Submit a payout to Neteller
-      description: Submit a payout to Neteller and stores its details for subsequent
-        payouts
-      value:
-        amount:
-          currency: EUR
-          value: 100
-        selectedBrand: neteller
-        additionalData:
-          tokenDataType: Neteller
-          account: myNetellerAccount
-        shopperName:
-          firstName: Test
-          lastName: Test2
-        dateOfBirth: '1982-07-17'
-        entityType: NaturalPerson
-        nationality: NL
-        merchantAccount: YOUR_MERCHANT_ACCOUNT
-        recurring:
-          contract: PAYOUT
-        reference: Test Payout
-        shopperEmail: test@company.com
-        shopperReference: YOUR_SHOPPER_REFERENCE
-    post-storeDetailAndSubmitThirdParty-storeDetailAndSubmitThirdParty-PayPal:
-      summary: Submit a payout to PayPal
-      description: Submit a payout to PayPal and stores its details for subsequent
-        payouts
-      value:
-        amount:
-          currency: EUR
-          value: 1750
-        selectedBrand: paypal
-        additionalData:
-          tokenDataType: PayPal
-          emailId: EmailUsedForPayPalAccount@example.com
-          paypal.payerId: AK5HCWWRUV2KL
-        shopperName:
-          firstName: Test
-          lastName: Test2
-        dateOfBirth: '1982-07-17'
-        entityType: NaturalPerson
-        nationality: NL
-        merchantAccount: YOUR_MERCHANT_ACCOUNT
-        recurring:
-          contract: PAYOUT
-        reference: Test Payout
-        shopperEmail: test@company.com
-        shopperReference: YOUR_UNIQUE_SHOPPER_ID
-    post-storeDetailAndSubmitThirdParty-storeDetailAndSubmitThirdParty-Paysafecard:
-      summary: Submit a payout to Paysafecard
-      description: Submit a payout to Paysafecard and stores its details for subsequent
-        payouts
-      value:
-        amount:
-          currency: EUR
-          value: 1000
-        selectedBrand: paysafecard
-        additionalData:
-          emailId: EmailUsedForPaysafecardAccount@example.com
-        shopperName:
-          firstName: Test
-          lastName: Test2
-        dateOfBirth: '1982-07-17'
-        entityType: NaturalPerson
-        nationality: NL
-        merchantAccount: YOUR_MERCHANT_ACCOUNT
-        recurring:
-          contract: PAYOUT
-        reference: Test Payout
-        shopperEmail: test@company.com
-        shopperReference: YOUR_UNIQUE_SHOPPER_ID
-    post-storeDetailAndSubmitThirdParty-storeDetailAndSubmitThirdParty-Skrill:
-      summary: Submit a payout to Skrill
-      description: Submit a payout to Skrill and stores its details for subsequent
-        payouts
-      value:
-        amount:
-          currency: EUR
-          value: 100
-        selectedBrand: moneybookers
-        additionalData:
-          tokenDataType: MoneyBookers
-          email: name@adyen.com
-        shopperName:
-          firstName: Test
-          lastName: Test2
-        dateOfBirth: '1982-07-17'
-        entityType: NaturalPerson
-        nationality: NL
-        merchantAccount: YOUR_MERCHANT_ACCOUNT
-        recurring:
-          contract: PAYOUT
-        reference: Test Payout
-        shopperEmail: test@company.com
-        shopperReference: YOUR_UNIQUE_SHOPPER_ID
-    post-submitThirdParty-submitThirdParty:
-      summary: Submit a payout
-      description: Submit a payout using the previously stored payment details
-      value:
-        amount:
-          currency: EUR
-          value: 1000
-        merchantAccount: YOUR_MERCHANT_ACCOUNT
-        recurring:
-          contract: PAYOUT
-        reference: PayoutPayment-0001
-        shopperEmail: shopper@email.com
-        shopperReference: YOUR_UNIQUE_SHOPPER_ID
-        shopperName:
-          firstName: Adyen
-          lastName: Test
-        dateOfBirth: '1990-01-01'
-        entityType: Company
-        nationality: NL
-        selectedRecurringDetailReference: LATEST
