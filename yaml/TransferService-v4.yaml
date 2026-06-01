@@ -1,9 +1,5 @@
 openapi: 3.1.0
-servers:
-- url: https://balanceplatform-api-test.adyen.com/btl/v4
 info:
-  version: '4'
-  x-publicVersion: true
   title: Transfers API
   description: ">Versions 1 and 2 of the Transfers API are deprecated. If you are\
     \ just starting your implementation, use the latest version.\n\nThe Transfers\
@@ -38,227 +34,236 @@ info:
   contact:
     name: Adyen Developer Experience team
     url: https://github.com/Adyen/adyen-openapi
+  version: '4'
+  x-publicVersion: true
+servers:
+- url: https://balanceplatform-api-test.adyen.com/btl/v4
 tags:
 - name: Transfers
 - name: Transactions
-- name: Capital
+- name: Capital (deprecated)
+- name: CashOut
 paths:
   /grants:
     get:
       tags:
-      - Capital
+      - Capital (deprecated)
       summary: Get a capital account
       description: Returns a list of grants with status and outstanding balances.
-      deprecated: true
-      x-deprecatedInVersion: '4'
-      x-deprecatedMessage: Use the `/grants` endpoint from the [Capital API](https://docs.adyen.com/api-explorer/capital/latest/get/grants)
-        instead.
-      x-addedInVersion: '3'
       operationId: get-grants
-      x-sortIndex: 2
-      x-methodName: getCapitalAccount
-      security:
-      - clientKey: []
-      - BasicAuth: []
-      - ApiKeyAuth: []
       parameters:
-      - description: The counterparty account holder id.
-        name: counterpartyAccountHolderId
+      - name: counterpartyAccountHolderId
         in: query
+        description: The counterparty account holder id.
         required: false
+        style: form
+        explode: true
         schema:
           type: string
       responses:
         '200':
+          description: OK - the request has succeeded.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/CapitalGrants'
-          description: OK - the request has succeeded.
         '400':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
           description: Bad Request - a problem reading or understanding the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
         '401':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
           description: Unauthorized - authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
         '403':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
           description: Forbidden - insufficient permissions to process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
         '404':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
           description: Not Found - the payment was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
         '422':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
           description: Unprocessable Entity - a request validation error.
-        '500':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/RestServiceError'
+        '500':
           description: Internal Server Error - the server could not process the request.
-    post:
-      tags:
-      - Capital
-      summary: Request a grant payout
-      description: Requests the payout of the selected grant offer.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
       deprecated: true
-      x-deprecatedInVersion: '4'
-      x-deprecatedMessage: Use the `/grants` endpoint from the [Capital API](https://docs.adyen.com/api-explorer/capital/latest/post/grants)
-        instead.
-      x-addedInVersion: '3'
-      operationId: post-grants
-      x-sortIndex: 1
-      x-methodName: requestGrantPayout
       security:
       - clientKey: []
       - BasicAuth: []
       - ApiKeyAuth: []
+      x-deprecatedInVersion: '4'
+      x-deprecatedMessage: Use the `/grants` endpoint from the [Capital API](https://docs.adyen.com/api-explorer/capital/latest/get/grants)
+        instead.
+      x-addedInVersion: '3'
+      x-sortIndex: 2
+      x-methodName: getCapitalAccount
+    post:
+      tags:
+      - Capital (deprecated)
+      summary: Request a grant payout
+      description: Requests the payout of the selected grant offer.
+      operationId: post-grants
+      parameters:
+      - $ref: '#/components/parameters/Idempotency-Key'
       requestBody:
         content:
           application/json:
+            schema:
+              $ref: '#/components/schemas/CapitalGrantInfo'
             examples:
               requestGrant:
                 $ref: '#/components/examples/post-grants-requestGrant'
-            schema:
-              $ref: '#/components/schemas/CapitalGrantInfo'
-      parameters:
-      - $ref: '#/components/parameters/Idempotency-Key'
       responses:
         '200':
-          content:
-            application/json:
-              examples:
-                requestGrant:
-                  $ref: '#/components/examples/post-grants-requestGrant-200'
-              schema:
-                $ref: '#/components/schemas/CapitalGrant'
           description: OK - the request has succeeded.
           headers:
             Idempotency-Key:
               $ref: '#/components/headers/Idempotency-Key'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CapitalGrant'
+              examples:
+                requestGrant:
+                  $ref: '#/components/examples/post-grants-requestGrant-200'
         '400':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
           description: Bad Request - a problem reading or understanding the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
         '401':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
           description: Unauthorized - authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
         '403':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
           description: Forbidden - insufficient permissions to process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
         '404':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
           description: Not Found - the payment was not found
-        '422':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/RestServiceError'
+        '422':
           description: Unprocessable Entity - a request validation error.
           headers:
             Idempotency-Key:
               $ref: '#/components/headers/Idempotency-Key'
-        '500':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/RestServiceError'
+        '500':
           description: Internal Server Error - the server could not process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+      deprecated: true
+      security:
+      - clientKey: []
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      x-deprecatedInVersion: '4'
+      x-deprecatedMessage: Use the `/grants` endpoint from the [Capital API](https://docs.adyen.com/api-explorer/capital/latest/post/grants)
+        instead.
+      x-addedInVersion: '3'
+      x-sortIndex: 1
+      x-methodName: requestGrantPayout
   /grants/{id}:
     get:
       tags:
-      - Capital
+      - Capital (deprecated)
       summary: Get grant reference details
       description: Returns the details of a capital account specified in the path.
+      operationId: get-grants-id
+      parameters:
+      - name: id
+        in: path
+        description: The unique identifier of the grant.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK - the request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CapitalGrant'
+        '400':
+          description: Bad Request - a problem reading or understanding the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+        '401':
+          description: Unauthorized - authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+        '403':
+          description: Forbidden - insufficient permissions to process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+        '404':
+          description: Not Found - the payment was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+        '422':
+          description: Unprocessable Entity - a request validation error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+        '500':
+          description: Internal Server Error - the server could not process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
       deprecated: true
+      security:
+      - clientKey: []
+      - BasicAuth: []
+      - ApiKeyAuth: []
       x-deprecatedInVersion: '4'
       x-deprecatedMessage: Use the `/grants/{grantId}` endpoint from the [Capital
         API](https://docs.adyen.com/api-explorer/capital/latest/get/grants/(grantId))
         instead.
       x-addedInVersion: '3'
-      operationId: get-grants-id
       x-sortIndex: 3
       x-methodName: getGrantReferenceDetails
-      security:
-      - clientKey: []
-      - BasicAuth: []
-      - ApiKeyAuth: []
-      parameters:
-      - description: The unique identifier of the grant.
-        name: id
-        in: path
-        required: true
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CapitalGrant'
-          description: OK - the request has succeeded.
-        '400':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Bad Request - a problem reading or understanding the request.
-        '401':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Unauthorized - authentication required.
-        '403':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Forbidden - insufficient permissions to process the request.
-        '404':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Not Found - the payment was not found
-        '422':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Unprocessable Entity - a request validation error.
-        '500':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
-          description: Internal Server Error - the server could not process the request.
   /transactions:
     get:
       tags:
@@ -287,25 +292,22 @@ paths:
 
 
         '
-      x-addedInVersion: '1'
       operationId: get-transactions
-      x-sortIndex: 1
-      x-methodName: getAllTransactions
-      security:
-      - clientKey: []
-      - BasicAuth: []
-      - ApiKeyAuth: []
       parameters:
-      - description: 'The unique identifier of the [balance platform](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/get/balancePlatforms/{id}__queryParam_id).
+      - name: balancePlatform
+        in: query
+        description: 'The unique identifier of the [balance platform](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/get/balancePlatforms/{id}__queryParam_id).
 
 
           Required if you don''t provide a `balanceAccountId` or `accountHolderId`.'
-        name: balancePlatform
-        in: query
         required: false
+        style: form
+        explode: true
         schema:
           type: string
-      - description: 'The unique identifier of the [payment instrument](https://docs.adyen.com/api-explorer/balanceplatform/latest/get/paymentInstruments/_id_).
+      - name: paymentInstrumentId
+        in: query
+        description: 'The unique identifier of the [payment instrument](https://docs.adyen.com/api-explorer/balanceplatform/latest/get/paymentInstruments/_id_).
 
 
           To use this parameter, you must also provide a `balanceAccountId`, `accountHolderId`,
@@ -314,12 +316,14 @@ paths:
 
           The `paymentInstrumentId` must be related to the `balanceAccountId` or `accountHolderId`
           that you provide.'
-        name: paymentInstrumentId
-        in: query
         required: false
+        style: form
+        explode: true
         schema:
           type: string
-      - description: 'The unique identifier of the [account holder](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/get/accountHolders/{id}__queryParam_id).
+      - name: accountHolderId
+        in: query
+        description: 'The unique identifier of the [account holder](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/get/accountHolders/{id}__queryParam_id).
 
 
           Required if you don''t provide a `balanceAccountId` or `balancePlatform`.
@@ -327,12 +331,14 @@ paths:
 
           If you provide a `balanceAccountId`, the `accountHolderId` must be related
           to the `balanceAccountId`.'
-        name: accountHolderId
-        in: query
         required: false
+        style: form
+        explode: true
         schema:
           type: string
-      - description: 'The unique identifier of the [balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/get/balanceAccounts/{id}__queryParam_id).
+      - name: balanceAccountId
+        in: query
+        description: 'The unique identifier of the [balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/get/balanceAccounts/{id}__queryParam_id).
 
 
           Required if you don''t provide an `accountHolderId` or `balancePlatform`.
@@ -340,91 +346,108 @@ paths:
 
           If you provide an `accountHolderId`, the `balanceAccountId` must be related
           to the `accountHolderId`.'
-        name: balanceAccountId
-        in: query
         required: false
+        style: form
+        explode: true
         schema:
           type: string
-      - description: The `cursor` returned in the links of the previous response.
-        name: cursor
+      - name: cursor
         in: query
+        description: The `cursor` returned in the links of the previous response.
         required: false
+        style: form
+        explode: true
         schema:
           type: string
-      - description: Only include transactions that have been created on or after
-          this point in time. The value must be in ISO 8601 format. For example, **2021-05-30T15:07:40Z**.
-        name: createdSince
+      - name: createdSince
         in: query
-        required: true
-        schema:
-          format: date-time
-          type: string
-      - description: Only include transactions that have been created on or before
+        description: Only include transactions that have been created on or after
           this point in time. The value must be in ISO 8601 format. For example, **2021-05-30T15:07:40Z**.
-        name: createdUntil
-        in: query
         required: true
+        style: form
+        explode: true
         schema:
-          format: date-time
           type: string
-      - description: "Determines the sort order of the returned transactions. The\
+          format: date-time
+      - name: createdUntil
+        in: query
+        description: Only include transactions that have been created on or before
+          this point in time. The value must be in ISO 8601 format. For example, **2021-05-30T15:07:40Z**.
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date-time
+      - name: sortOrder
+        in: query
+        description: "Determines the sort order of the returned transactions. The\
           \ sort order is based on the creation date of the transaction.\n\nPossible\
           \ values:\n\n - **asc**: Ascending order, from oldest to most recent.\n\n\
           - **desc**: Descending order, from most recent to oldest.\n\nDefault value:\
           \ **asc**."
-        name: sortOrder
-        in: query
         required: false
+        style: form
+        explode: true
         schema:
-          x-enum:
-          - value: asc
-          - value: desc
+          type: string
           enum:
           - asc
           - desc
-          type: string
-      - description: The number of items returned per page, maximum of 100 items.
-          By default, the response returns 10 items per page.
-        name: limit
+          x-enum:
+          - value: asc
+          - value: desc
+      - name: limit
         in: query
+        description: The number of items returned per page, maximum of 100 items.
+          By default, the response returns 10 items per page.
         required: false
+        style: form
+        explode: true
         schema:
-          format: int32
           type: integer
+          format: int32
       responses:
         '200':
+          description: OK - the request has succeeded.
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionSearchResponse'
               examples:
                 success:
                   $ref: '#/components/examples/get-transactions-success-200'
-              schema:
-                $ref: '#/components/schemas/TransactionSearchResponse'
-          description: OK - the request has succeeded.
         '401':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
           description: Unauthorized - authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
         '403':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
           description: Forbidden - insufficient permissions to process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
         '422':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
           description: Unprocessable Entity - a request validation error.
-        '500':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/RestServiceError'
+        '500':
           description: Internal Server Error - the server could not process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+      security:
+      - clientKey: []
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      x-addedInVersion: '1'
+      x-sortIndex: 1
+      x-methodName: getAllTransactions
   /transactions/{id}:
     get:
       tags:
@@ -435,55 +458,57 @@ paths:
 
 
         Returns a transaction.'
-      x-addedInVersion: '1'
       operationId: get-transactions-id
-      x-sortIndex: 2
-      x-methodName: getTransaction
-      security:
-      - clientKey: []
-      - BasicAuth: []
-      - ApiKeyAuth: []
       parameters:
-      - description: The unique identifier of the transaction.
-        name: id
+      - name: id
         in: path
+        description: The unique identifier of the transaction.
         required: true
+        style: simple
+        explode: false
         schema:
           type: string
       responses:
         '200':
+          description: OK - the request has succeeded.
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
               examples:
                 success:
                   $ref: '#/components/examples/get-transactions-id-success-200'
-              schema:
-                $ref: '#/components/schemas/Transaction'
-          description: OK - the request has succeeded.
         '401':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
           description: Unauthorized - authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
         '403':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
           description: Forbidden - insufficient permissions to process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
         '422':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestServiceError'
           description: Unprocessable Entity - a request validation error.
-        '500':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/RestServiceError'
+        '500':
           description: Internal Server Error - the server could not process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+      security:
+      - clientKey: []
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      x-addedInVersion: '1'
+      x-sortIndex: 2
+      x-methodName: getTransaction
   /transfers:
     get:
       tags:
@@ -508,25 +533,22 @@ paths:
 
 
         '
-      x-addedInVersion: '4'
       operationId: get-transfers
-      x-sortIndex: 5
-      x-methodName: getAllTransfers
-      security:
-      - clientKey: []
-      - BasicAuth: []
-      - ApiKeyAuth: []
       parameters:
-      - description: 'The unique identifier of the [balance platform](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/get/balancePlatforms/{id}__queryParam_id).
+      - name: balancePlatform
+        in: query
+        description: 'The unique identifier of the [balance platform](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/get/balancePlatforms/{id}__queryParam_id).
 
 
           Required if you don''t provide a `balanceAccountId` or `accountHolderId`.'
-        name: balancePlatform
-        in: query
         required: false
+        style: form
+        explode: true
         schema:
           type: string
-      - description: 'The unique identifier of the [account holder](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/get/accountHolders/{id}__queryParam_id).
+      - name: accountHolderId
+        in: query
+        description: 'The unique identifier of the [account holder](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/get/accountHolders/{id}__queryParam_id).
 
 
           Required if you don''t provide a `balanceAccountId` or `balancePlatform`.
@@ -534,12 +556,14 @@ paths:
 
           If you provide a `balanceAccountId`, the `accountHolderId` must be related
           to the `balanceAccountId`.'
-        name: accountHolderId
-        in: query
         required: false
+        style: form
+        explode: true
         schema:
           type: string
-      - description: 'The unique identifier of the [balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/get/balanceAccounts/{id}__queryParam_id).
+      - name: balanceAccountId
+        in: query
+        description: 'The unique identifier of the [balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/get/balanceAccounts/{id}__queryParam_id).
 
 
           Required if you don''t provide an `accountHolderId` or `balancePlatform`.
@@ -547,12 +571,14 @@ paths:
 
           If you provide an `accountHolderId`, the `balanceAccountId` must be related
           to the `accountHolderId`.'
-        name: balanceAccountId
-        in: query
         required: false
+        style: form
+        explode: true
         schema:
           type: string
-      - description: 'The unique identifier of the [payment instrument](https://docs.adyen.com/api-explorer/balanceplatform/latest/get/paymentInstruments/_id_).
+      - name: paymentInstrumentId
+        in: query
+        description: 'The unique identifier of the [payment instrument](https://docs.adyen.com/api-explorer/balanceplatform/latest/get/paymentInstruments/_id_).
 
 
           To use this parameter, you must also provide a `balanceAccountId`, `accountHolderId`,
@@ -561,19 +587,23 @@ paths:
 
           The `paymentInstrumentId` must be related to the `balanceAccountId` or `accountHolderId`
           that you provide.'
-        name: paymentInstrumentId
-        in: query
         required: false
+        style: form
+        explode: true
         schema:
           type: string
-      - description: The reference you provided in the POST [/transfers](https://docs.adyen.com/api-explorer/transfers/latest/post/transfers)
+      - name: reference
+        in: query
+        description: The reference you provided in the POST [/transfers](https://docs.adyen.com/api-explorer/transfers/latest/post/transfers)
           request
-        name: reference
-        in: query
         required: false
+        style: form
+        explode: true
         schema:
           type: string
-      - description: "The category of the transfer.\n\nPossible values:\n\n - **bank**:\
+      - name: category
+        in: query
+        description: "The category of the transfer.\n\nPossible values:\n\n - **bank**:\
           \ A transfer involving a [transfer instrument](https://docs.adyen.com/api-explorer/legalentity/latest/post/transferInstruments#responses-200-id)\
           \ or a bank account.\n\n- **card**: A transfer involving a third-party card.\n\
           \n- **internal**: A transfer between [balance accounts](https://docs.adyen.com/api-explorer/balanceplatform/latest/post/balanceAccounts#responses-200-id)\
@@ -581,21 +611,11 @@ paths:
           \ Adyen-issued card.\n\n- **platformPayment**: Funds movements related to\
           \ payments that are acquired for your users.\n\n- **topUp**: An incoming\
           \ transfer initiated by your user to top up their balance account."
-        name: category
-        in: query
         required: false
+        style: form
+        explode: true
         schema:
-          x-enum:
-          - value: topUp
-          - value: platformPayment
-          - value: internal
-          - value: bank
-          - value: issuedCard
-          - value: grants
-          - value: migration
-          - value: card
-          - value: upgrade
-          - value: interest
+          type: string
           enum:
           - bank
           - card
@@ -607,88 +627,115 @@ paths:
           - platformPayment
           - topUp
           - upgrade
-          type: string
-      - description: Only include transfers that have been created on or after this
+          x-enum:
+          - value: topUp
+          - value: platformPayment
+          - value: internal
+          - value: bank
+          - value: issuedCard
+          - value: grants
+          - value: migration
+          - value: card
+          - value: upgrade
+          - value: interest
+      - name: createdSince
+        in: query
+        description: Only include transfers that have been created on or after this
           point in time. The value must be in ISO 8601 format and not earlier than
           6 months before the `createdUntil` date. For example, **2021-05-30T15:07:40Z**.
-        name: createdSince
-        in: query
         required: true
+        style: form
+        explode: true
         schema:
-          format: date-time
           type: string
-      - description: Only include transfers that have been created on or before this
+          format: date-time
+      - name: createdUntil
+        in: query
+        description: Only include transfers that have been created on or before this
           point in time. The value must be in ISO 8601 format and not later than 6
           months after the `createdSince` date. For example, **2021-05-30T15:07:40Z**.
-        name: createdUntil
-        in: query
         required: true
+        style: form
+        explode: true
         schema:
-          format: date-time
           type: string
-      - description: "Determines the sort order of the returned transfers. The sort\
+          format: date-time
+      - name: sortOrder
+        in: query
+        description: "Determines the sort order of the returned transfers. The sort\
           \ order is based on the creation date of the transfers.\n\nPossible values:\n\
           \n - **asc**: Ascending order, from oldest to most recent.\n\n- **desc**:\
           \ Descending order, from most recent to oldest.\n\nDefault value: **asc**."
-        name: sortOrder
-        in: query
         required: false
+        style: form
+        explode: true
         schema:
-          x-enum:
-          - value: asc
-          - value: desc
+          type: string
           enum:
           - asc
           - desc
-          type: string
-      - description: The `cursor` returned in the links of the previous response.
-        name: cursor
+          x-enum:
+          - value: asc
+          - value: desc
+      - name: cursor
         in: query
+        description: The `cursor` returned in the links of the previous response.
         required: false
+        style: form
+        explode: true
         schema:
           type: string
-      - description: The number of items returned per page, maximum of 100 items.
+      - name: limit
+        in: query
+        description: The number of items returned per page, maximum of 100 items.
           By default, the response returns 10 items per page.
-        name: limit
-        in: query
         required: false
+        style: form
+        explode: true
         schema:
-          format: int32
           type: integer
+          format: int32
       responses:
         '200':
+          description: OK - the request has succeeded.
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/FindTransfersResponse'
               examples:
                 success:
                   $ref: '#/components/examples/get-transfers-success-200'
-              schema:
-                $ref: '#/components/schemas/FindTransfersResponse'
-          description: OK - the request has succeeded.
         '401':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TransferServiceRestServiceError'
           description: Unauthorized - authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferServiceRestServiceError'
         '403':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TransferServiceRestServiceError'
           description: Forbidden - insufficient permissions to process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferServiceRestServiceError'
         '422':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TransferServiceRestServiceError'
           description: Unprocessable Entity - a request validation error.
-        '500':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/TransferServiceRestServiceError'
+        '500':
           description: Internal Server Error - the server could not process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferServiceRestServiceError'
+      security:
+      - clientKey: []
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      x-addedInVersion: '4'
+      x-sortIndex: 5
+      x-methodName: getAllTransfers
     post:
       tags:
       - Transfers
@@ -699,9 +746,9 @@ paths:
 
         Starts a request to transfer funds to:
 
-        - [Balance accounts](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts)
+        - [Balance accounts](https://docs.adyen.com/api-explorer/balanceplatform/latest/post/balanceAccounts)
 
-        - [Transfer instruments](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments)
+        - [Transfer instruments](https://docs.adyen.com/api-explorer/legalentity/latest/post/transferInstruments)
 
         - [Third-party bank accounts](https://docs.adyen.com/payouts/payout-service/pay-out-to-bank-accounts)
 
@@ -720,17 +767,23 @@ paths:
 
 
         Reach out to your Adyen contact to set up these permissions.'
-      x-addedInVersion: '2'
       operationId: post-transfers
-      x-sortIndex: 1
-      x-methodName: transferFunds
-      security:
-      - clientKey: []
-      - BasicAuth: []
-      - ApiKeyAuth: []
+      parameters:
+      - $ref: '#/components/parameters/Idempotency-Key'
+      - name: WWW-Authenticate
+        in: header
+        description: Header for authenticating through SCA
+        required: false
+        style: simple
+        explode: false
+        schema:
+          type: string
+        example: SCA realm="Transfer" auth-param1="eyJjaGFsbGVuZ2UiOiJiVlV6ZW5wek0waFNl..."
       requestBody:
         content:
           application/json:
+            schema:
+              $ref: '#/components/schemas/TransferInfo'
             examples:
               payout-cross-border:
                 $ref: '#/components/examples/post-transfers-payout-cross-border'
@@ -748,29 +801,27 @@ paths:
                 $ref: '#/components/examples/post-transfers-payout-to-card-tokenized'
               payout-to-transfer-instrument:
                 $ref: '#/components/examples/post-transfers-payout-to-transfer-instrument'
-            schema:
-              $ref: '#/components/schemas/TransferInfo'
-      parameters:
-      - $ref: '#/components/parameters/Idempotency-Key'
-      - description: Header for authenticating through SCA
-        example: SCA realm="Transfer" auth-param1="eyJjaGFsbGVuZ2UiOiJiVlV6ZW5wek0waFNl..."
-        name: WWW-Authenticate
-        in: header
-        schema:
-          type: string
       responses:
         '200':
+          description: OK - The request has been accepted for processing, but has
+            not been completed.
+          headers:
+            Idempotency-Key:
+              $ref: '#/components/headers/Idempotency-Key'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Transfer'
-          description: OK - the request has succeeded.
+        '202':
+          description: Accepted - The request has been accepted for processing, but
+            has not been completed.
           headers:
             Idempotency-Key:
               $ref: '#/components/headers/Idempotency-Key'
-        '202':
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/Transfer'
               examples:
                 payout-cross-border:
                   $ref: '#/components/examples/post-transfers-payout-cross-border-202'
@@ -788,43 +839,43 @@ paths:
                   $ref: '#/components/examples/post-transfers-payout-to-card-tokenized-202'
                 payout-to-transfer-instrument:
                   $ref: '#/components/examples/post-transfers-payout-to-transfer-instrument-202'
-              schema:
-                $ref: '#/components/schemas/Transfer'
-          description: Accepted - the request has been accepted for processing, but
-            the processing has not been completed.
-          headers:
-            Idempotency-Key:
-              $ref: '#/components/headers/Idempotency-Key'
         '401':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ServiceError'
           description: Unauthorized - authentication required.
           headers:
             auth-param1:
               $ref: '#/components/headers/auth-param1'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
         '403':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TransferServiceRestServiceError'
           description: Forbidden - insufficient permissions to process the request.
-        '422':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/TransferServiceRestServiceError'
+        '422':
           description: Unprocessable Entity - a request validation error.
           headers:
             Idempotency-Key:
               $ref: '#/components/headers/Idempotency-Key'
-        '500':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/TransferServiceRestServiceError'
+        '500':
           description: Internal Server Error - the server could not process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferServiceRestServiceError'
+      security:
+      - clientKey: []
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      x-addedInVersion: '2'
+      x-sortIndex: 1
+      x-methodName: transferFunds
   /transfers/approve:
     post:
       tags:
@@ -843,72 +894,75 @@ paths:
 
 
         Reach out to your Adyen contact to set up these permissions.'
-      x-addedInVersion: '3'
       operationId: post-transfers-approve
-      x-sortIndex: 2
-      x-methodName: approveInitiatedTransfers
-      security:
-      - clientKey: []
-      - BasicAuth: []
-      - ApiKeyAuth: []
+      parameters:
+      - $ref: '#/components/parameters/Idempotency-Key'
+      - name: WWW-Authenticate
+        in: header
+        description: Header for authenticating through SCA
+        required: false
+        style: simple
+        explode: false
+        schema:
+          type: string
+        example: SCA realm="ApproveTransfers" auth-param1="eyJjaGFsbGVuZ2UiOiJiVlV6ZW5wek0waFNl..."
       requestBody:
         content:
           application/json:
+            schema:
+              $ref: '#/components/schemas/ApproveTransfersRequest'
             examples:
               transfers-approve:
                 $ref: '#/components/examples/post-transfers-approve-transfers-approve'
-            schema:
-              $ref: '#/components/schemas/ApproveTransfersRequest'
-      parameters:
-      - $ref: '#/components/parameters/Idempotency-Key'
-      - description: Header for authenticating through SCA
-        example: SCA realm="ApproveTransfers" auth-param1="eyJjaGFsbGVuZ2UiOiJiVlV6ZW5wek0waFNl..."
-        name: WWW-Authenticate
-        in: header
-        schema:
-          type: string
       responses:
         '200':
-          content:
-            application/json:
-              examples:
-                transfers-approve:
-                  $ref: '#/components/examples/post-transfers-approve-transfers-approve-200'
           description: 'No Content - look at the actual response code for the status
             of the request. '
           headers:
             Idempotency-Key:
               $ref: '#/components/headers/Idempotency-Key'
-        '401':
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/ServiceError'
+              examples:
+                transfers-approve:
+                  $ref: '#/components/examples/post-transfers-approve-transfers-approve-200'
+        '401':
           description: Unauthorized - authentication required.
           headers:
             auth-param1:
               $ref: '#/components/headers/auth-param1'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
         '403':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TransferServiceRestServiceError'
           description: Forbidden - insufficient permissions to process the request.
-        '422':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/TransferServiceRestServiceError'
+        '422':
           description: Unprocessable Entity - a request validation error.
           headers:
             Idempotency-Key:
               $ref: '#/components/headers/Idempotency-Key'
-        '500':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/TransferServiceRestServiceError'
+        '500':
           description: Internal Server Error - the server could not process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferServiceRestServiceError'
+      security:
+      - clientKey: []
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      x-addedInVersion: '3'
+      x-sortIndex: 2
+      x-methodName: approveInitiatedTransfers
   /transfers/cancel:
     post:
       tags:
@@ -927,118 +981,120 @@ paths:
 
 
         Reach out to your Adyen contact to set up these permissions.'
-      x-addedInVersion: '3'
       operationId: post-transfers-cancel
-      x-sortIndex: 3
-      x-methodName: cancelInitiatedTransfers
-      security:
-      - clientKey: []
-      - BasicAuth: []
-      - ApiKeyAuth: []
+      parameters:
+      - $ref: '#/components/parameters/Idempotency-Key'
       requestBody:
         content:
           application/json:
+            schema:
+              $ref: '#/components/schemas/CancelTransfersRequest'
             examples:
               transfers-cancel:
                 $ref: '#/components/examples/post-transfers-cancel-transfers-cancel'
-            schema:
-              $ref: '#/components/schemas/CancelTransfersRequest'
-      parameters:
-      - $ref: '#/components/parameters/Idempotency-Key'
       responses:
         '200':
-          content:
-            application/json:
-              examples:
-                transfers-cancel:
-                  $ref: '#/components/examples/post-transfers-cancel-transfers-cancel-200'
           description: 'No Content - look at the actual response code for the status
             of the request. '
           headers:
             Idempotency-Key:
               $ref: '#/components/headers/Idempotency-Key'
+          content:
+            application/json:
+              examples:
+                transfers-cancel:
+                  $ref: '#/components/examples/post-transfers-cancel-transfers-cancel-200'
         '401':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TransferServiceRestServiceError'
           description: Unauthorized - authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferServiceRestServiceError'
         '403':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TransferServiceRestServiceError'
           description: Forbidden - insufficient permissions to process the request.
-        '422':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/TransferServiceRestServiceError'
+        '422':
           description: Unprocessable Entity - a request validation error.
           headers:
             Idempotency-Key:
               $ref: '#/components/headers/Idempotency-Key'
-        '500':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/TransferServiceRestServiceError'
+        '500':
           description: Internal Server Error - the server could not process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferServiceRestServiceError'
+      security:
+      - clientKey: []
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      x-addedInVersion: '3'
+      x-sortIndex: 3
+      x-methodName: cancelInitiatedTransfers
   /transfers/{id}:
     get:
       tags:
       - Transfers
       summary: Get a transfer
       description: Returns the details of a specified transfer.
-      x-addedInVersion: '4'
       operationId: get-transfers-id
-      x-sortIndex: 6
-      x-methodName: getTransfer
-      security:
-      - clientKey: []
-      - BasicAuth: []
-      - ApiKeyAuth: []
       parameters:
-      - description: Unique identifier of the transfer.
-        name: id
+      - name: id
         in: path
+        description: Unique identifier of the transfer.
         required: true
+        style: simple
+        explode: false
         schema:
           type: string
       responses:
         '200':
+          description: OK - the request has succeeded.
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/TransferData'
               examples:
                 success:
                   $ref: '#/components/examples/get-transfers-id-success-200'
-              schema:
-                $ref: '#/components/schemas/TransferData'
-          description: OK - the request has succeeded.
         '401':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TransferServiceRestServiceError'
           description: Unauthorized - authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferServiceRestServiceError'
         '403':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TransferServiceRestServiceError'
           description: Forbidden - insufficient permissions to process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferServiceRestServiceError'
         '422':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TransferServiceRestServiceError'
           description: Unprocessable Entity - a request validation error.
-        '500':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/TransferServiceRestServiceError'
+        '500':
           description: Internal Server Error - the server could not process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferServiceRestServiceError'
+      security:
+      - clientKey: []
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      x-addedInVersion: '4'
+      x-sortIndex: 6
+      x-methodName: getTransfer
   /transfers/{transferId}/returns:
     post:
       tags:
@@ -1046,104 +1102,221 @@ paths:
       summary: Return a transfer
       description: Initiates the return of previously transferred funds without creating
         a new `transferId`.
-      x-addedInVersion: '3'
       operationId: post-transfers-transferId-returns
-      x-sortIndex: 4
-      x-methodName: returnTransfer
-      security:
-      - clientKey: []
-      - BasicAuth: []
-      - ApiKeyAuth: []
-      requestBody:
-        content:
-          application/json:
-            examples:
-              transfers-return:
-                $ref: '#/components/examples/post-transfers-transferId-returns-transfers-return'
-            schema:
-              $ref: '#/components/schemas/ReturnTransferRequest'
       parameters:
-      - description: The unique identifier of the transfer to be returned.
-        name: transferId
+      - name: transferId
         in: path
+        description: The unique identifier of the transfer to be returned.
         required: true
+        style: simple
+        explode: false
         schema:
           type: string
       - $ref: '#/components/parameters/Idempotency-Key'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReturnTransferRequest'
+            examples:
+              transfers-return:
+                $ref: '#/components/examples/post-transfers-transferId-returns-transfers-return'
       responses:
         '200':
-          content:
-            application/json:
-              examples:
-                transfers-return:
-                  $ref: '#/components/examples/post-transfers-transferId-returns-transfers-return-200'
-              schema:
-                $ref: '#/components/schemas/ReturnTransferResponse'
           description: OK - the request has succeeded.
           headers:
             Idempotency-Key:
               $ref: '#/components/headers/Idempotency-Key'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReturnTransferResponse'
+              examples:
+                transfers-return:
+                  $ref: '#/components/examples/post-transfers-transferId-returns-transfers-return-200'
         '401':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TransferServiceRestServiceError'
           description: Unauthorized - authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferServiceRestServiceError'
         '403':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TransferServiceRestServiceError'
           description: Forbidden - insufficient permissions to process the request.
-        '422':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/TransferServiceRestServiceError'
+        '422':
           description: Unprocessable Entity - a request validation error.
           headers:
             Idempotency-Key:
               $ref: '#/components/headers/Idempotency-Key'
-        '500':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/TransferServiceRestServiceError'
+        '500':
           description: Internal Server Error - the server could not process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferServiceRestServiceError'
+      security:
+      - clientKey: []
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      x-addedInVersion: '3'
+      x-sortIndex: 4
+      x-methodName: returnTransfer
+  /cashouts:
+    post:
+      tags:
+      - CashOut
+      summary: Initiate a cashout
+      description: Initiates a cashout request
+      operationId: post-cashouts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CashOutInfo'
+            examples:
+              initiate-cashout:
+                summary: Initiate a cashout request
+                description: Initiate a cashout for a balance account.
+                value:
+                  instructingBalanceAccountId: BA00000000000000000000001
+                  amount:
+                    currency: EUR
+                    value: 50000
+                  counterparty:
+                    transferInstrumentId: SE00000000000000000000001
+                  description: Cashout to bank account
+                  referenceForBeneficiary: CASHOUT-REF-001
+                  fee:
+                    amount:
+                      currency: EUR
+                      value: 500
+        required: true
+      responses:
+        '200':
+          description: OK - The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CashOut'
+              examples:
+                instruct-cashout:
+                  summary: Cashout initiated successfully
+                  description: The response returned when a cashout is successfully
+                    instructed.
+                  value:
+                    id: CO00000000000000000000001
+                    instructingBalanceAccountId: BA00000000000000000000001
+                    amount:
+                      currency: EUR
+                      value: 50000
+                    counterparty:
+                      transferInstrumentId: SE00000000000000000000001
+                    description: Cashout to bank account
+                    referenceForBeneficiary: CASHOUT-REF-001
+                    fee:
+                      amount:
+                        currency: EUR
+                        value: 500
+                    transfers:
+                    - id: 400F6060JMB1I0AB
+                      type: cashoutRepayment
+                      amount:
+                        currency: EUR
+                        value: 50500
+                    - id: 400F6060JMB1I0AA
+                      type: cashoutFee
+                      amount:
+                        currency: EUR
+                        value: 500
+        '400':
+          description: Bad Request - The request is malformed or is not in the expected
+            format.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '401':
+          description: Unauthorized - The API credential used in the request is invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '403':
+          description: Forbidden - The API credential does not have the right permissions.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '404':
+          description: Not Found - The requested resource was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '422':
+          description: Unprocessable Entity - A request validation error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '429':
+          description: Too Many Requests - Request rate limit exceeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '500':
+          description: Internal Service Error - An unrecoverable error occurred while
+            trying to perform the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+      x-methodName: initiateCashout
+      x-sortIndex: 0
 components:
   schemas:
     AULocalAccountIdentification:
+      type: object
       additionalProperties: false
       properties:
         accountNumber:
+          type: string
           description: The bank account number, without separators or whitespace.
           maxLength: 9
           minLength: 5
-          type: string
         bsbCode:
+          type: string
           description: The 6-digit [Bank State Branch (BSB) code](https://en.wikipedia.org/wiki/Bank_state_branch),
             without separators or whitespace.
           maxLength: 6
           minLength: 6
-          type: string
         type:
+          type: string
           default: auLocal
           description: '**auLocal**'
           enum:
           - auLocal
-          type: string
       required:
-      - type
       - accountNumber
       - bsbCode
-      type: object
+      - type
     AdditionalBankIdentification:
+      type: object
       additionalProperties: false
       properties:
         code:
-          description: The value of the additional bank identification.
           type: string
+          description: The value of the additional bank identification.
         type:
+          type: string
           description: "The type of additional bank identification, depending on the\
             \ country.\n\nPossible values:\n\n * **auBsbCode**: The 6-digit [Australian\
             \ Bank State Branch (BSB) code](https://en.wikipedia.org/wiki/Bank_state_branch),\
@@ -1158,32 +1331,32 @@ components:
           - caRoutingNumber
           - gbSortCode
           - usRoutingNumber
-          type: string
-      type: object
     Address:
+      type: object
       additionalProperties: false
       properties:
         city:
+          type: string
           description: "The name of the city.\n\nSupported characters: **[a-z] [A-Z]\
             \ [0-9] . - \u2014 / # , \u2019 \xB0 ( ) : ; [ ] & \\ |** and Space.\n\
             \n> Required when the `category` is **card**.\n"
           minLength: 3
-          type: string
         country:
+          type: string
           description: The two-character ISO 3166-1 alpha-2 country code. For example,
             **US**, **NL**, or **GB**.
-          type: string
         line1:
+          type: string
           description: "The first line of the street address.\n\nSupported characters:\
             \ **[a-z] [A-Z] [0-9] . - \u2014 / # , \u2019 \xB0 ( ) : ; [ ] & \\ |**\
             \ and Space.\n\n> Required when the `category` is **card**.\n"
-          type: string
         line2:
+          type: string
           description: "The second line of the street address.\n\nSupported characters:\
             \ **[a-z] [A-Z] [0-9] . - \u2014 / # , \u2019 \xB0 ( ) : ; [ ] & \\ |**\
             \ and Space.\n\n> Required when the `category` is **card**.\n"
-          type: string
         postalCode:
+          type: string
           description: 'The postal code.
 
             Maximum length:
@@ -1200,53 +1373,49 @@ components:
 
             '
           minLength: 3
-          type: string
         stateOrProvince:
+          type: string
           description: "   The two-letter ISO 3166-2 state or province code. For example,\
             \ **CA** in the US or **ON** in Canada.\n\n   > Required for the US and\
             \ Canada.\n"
-          type: string
       required:
       - country
-      type: object
     Airline:
+      type: object
       additionalProperties: false
       properties:
         legs:
+          type: array
           description: Details about the flight legs for this ticket.
           items:
             $ref: '#/components/schemas/Leg'
-          type: array
         ticketNumber:
-          description: The ticket's unique identifier
           type: string
-      type: object
+          description: The ticket's unique identifier
     Amount:
-      additionalProperties: false
+      type: object
       properties:
         currency:
+          type: string
           description: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes#currency-codes)
             of the amount.
-          maxLength: 3
-          minLength: 3
-          type: string
         value:
-          description: The numeric value of the amount, in [minor units](https://docs.adyen.com/development-resources/currency-codes#minor-units).
-          format: int64
           type: integer
+          format: int64
+          description: The numeric value of the amount, in [minor units](https://docs.adyen.com/development-resources/currency-codes#minor-units).
       required:
-      - value
       - currency
-      type: object
+      - value
     AmountAdjustment:
+      type: object
       additionalProperties: false
       properties:
         amount:
-          x-addedInVersion: '3'
-          description: The adjustment amount.
           $ref: '#/components/schemas/Amount'
-        amountAdjustmentType:
+          description: The adjustment amount.
           x-addedInVersion: '3'
+        amountAdjustmentType:
+          type: string
           description: 'The type of markup that is applied to an authorised payment.
 
 
@@ -1256,90 +1425,90 @@ components:
           - authHoldReserve
           - exchange
           - forexMarkup
-          type: string
-        basepoints:
           x-addedInVersion: '3'
-          description: The basepoints associated with the applied markup.
-          format: int32
+        basepoints:
           type: integer
-      type: object
+          format: int32
+          description: The basepoints associated with the applied markup.
+          x-addedInVersion: '3'
     ApproveTransfersRequest:
+      type: object
       additionalProperties: false
       properties:
         transferIds:
+          type: array
           description: Contains the unique identifiers of the transfers that you want
             to approve.
           items:
             type: string
-          type: array
-      type: object
     BRLocalAccountIdentification:
+      type: object
       additionalProperties: false
       properties:
         accountNumber:
+          type: string
           description: The bank account number, without separators or whitespace.
           maxLength: 10
           minLength: 1
-          type: string
         bankCode:
+          type: string
           description: The 3-digit bank code, with leading zeros.
           maxLength: 3
           minLength: 3
-          type: string
         branchNumber:
+          type: string
           description: The bank account branch number, without separators or whitespace.
           maxLength: 4
           minLength: 1
-          type: string
         ispb:
+          type: string
           description: The 8-digit ISPB, with leading zeros.
           maxLength: 8
           minLength: 8
-          type: string
         type:
+          type: string
           default: brLocal
           description: '**brLocal**'
           enum:
           - brLocal
-          type: string
       required:
-      - type
-      - branchNumber
       - accountNumber
       - bankCode
-      type: object
+      - branchNumber
+      - type
     BalanceMutation:
+      type: object
       additionalProperties: false
       properties:
         balance:
-          x-addedInVersion: '3'
+          type: integer
+          format: int64
           description: The amount in the payment's currency that is debited or credited
             on the balance accounting register.
-          format: int64
-          type: integer
+          x-addedInVersion: '3'
         currency:
-          x-addedInVersion: '3'
-          description: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).
           type: string
-        received:
+          description: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).
           x-addedInVersion: '3'
+        received:
+          type: integer
+          format: int64
           description: The amount in the payment's currency that is debited or credited
             on the received accounting register.
-          format: int64
-          type: integer
-        reserved:
           x-addedInVersion: '3'
+        reserved:
+          type: integer
+          format: int64
           description: The amount in the payment's currency that is debited or credited
             on the reserved accounting register.
-          format: int64
-          type: integer
-      type: object
+          x-addedInVersion: '3'
     BankAccountV3:
+      type: object
       additionalProperties: false
       properties:
         accountHolder:
-          description: Information about the owner of the bank account.
           $ref: '#/components/schemas/PartyIdentification'
+          description: Information about the owner of the bank account.
         accountIdentification:
           description: Contains the bank account details. The fields required in this
             object depend on the country of the bank account and the currency of the
@@ -1362,18 +1531,18 @@ components:
           - $ref: '#/components/schemas/UKLocalAccountIdentification'
           - $ref: '#/components/schemas/USLocalAccountIdentification'
         storedPaymentMethodId:
+          type: string
           description: The unique token that identifies the stored bank account details
             of the counterparty for a payout.
-          type: string
       required:
-      - accountIdentification
       - accountHolder
-      type: object
+      - accountIdentification
     BankCategoryData:
+      type: object
       additionalProperties: false
       properties:
         priority:
-          x-addedInVersion: '4'
+          type: string
           description: 'The priority for the bank transfer. This sets the speed at
             which the transfer is sent and the fees that you have to pay. Required
             for transfers with `category` **bank**.
@@ -1410,24 +1579,25 @@ components:
           - internal
           - regular
           - wire
-          type: string
+          x-addedInVersion: '4'
         type:
+          type: string
           default: bank
           description: '**bank**'
           enum:
           - bank
-          type: string
-      type: object
     CALocalAccountIdentification:
+      type: object
       additionalProperties: false
       properties:
         accountNumber:
+          type: string
           description: The 5- to 12-digit bank account number, without separators
             or whitespace.
           maxLength: 12
           minLength: 5
-          type: string
         accountType:
+          type: string
           default: checking
           description: 'The bank account type.
 
@@ -1436,33 +1606,33 @@ components:
           enum:
           - checking
           - savings
-          type: string
         institutionNumber:
+          type: string
           description: The 3-digit institution number, without separators or whitespace.
           maxLength: 3
           minLength: 3
-          type: string
         transitNumber:
+          type: string
           description: The 5-digit transit number, without separators or whitespace.
           maxLength: 5
           minLength: 5
-          type: string
         type:
+          type: string
           default: caLocal
           description: '**caLocal**'
           enum:
           - caLocal
-          type: string
       required:
-      - type
       - accountNumber
       - institutionNumber
       - transitNumber
-      type: object
+      - type
     CZLocalAccountIdentification:
+      type: object
       additionalProperties: false
       properties:
         accountNumber:
+          type: string
           description: "The 2- to 16-digit bank account number (\u010C\xEDslo \xFA\
             \u010Dtu) in the following format:\n\n- The optional prefix (p\u0159ed\u010D\
             \xEDsl\xED).\n\n- The required second part (z\xE1kladn\xED \u010D\xE1\
@@ -1472,89 +1642,89 @@ components:
             \ normalized)"
           maxLength: 17
           minLength: 2
-          type: string
         bankCode:
+          type: string
           description: "The 4-digit bank code (K\xF3d banky), without separators or\
             \ whitespace."
           maxLength: 4
           minLength: 4
-          type: string
         type:
+          type: string
           default: czLocal
           description: '**czLocal**'
           enum:
           - czLocal
-          type: string
       required:
-      - type
       - accountNumber
       - bankCode
-      type: object
+      - type
     CancelTransfersRequest:
+      type: object
       additionalProperties: false
       properties:
         transferIds:
+          type: array
           description: Contains the unique identifiers of the transfers that you want
             to cancel.
           items:
             type: string
-          type: array
-      type: object
     CapitalBalance:
+      type: object
       additionalProperties: false
       properties:
         currency:
-          description: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).
           type: string
+          description: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).
         fee:
+          type: integer
+          format: int64
           description: Fee amount.
-          format: int64
-          type: integer
         principal:
+          type: integer
+          format: int64
           description: Principal amount.
-          format: int64
-          type: integer
         total:
-          description: Total amount. A sum of principal amount and fee amount.
-          format: int64
           type: integer
+          format: int64
+          description: Total amount. A sum of principal amount and fee amount.
       required:
-      - principal
-      - fee
-      - total
       - currency
-      type: object
+      - fee
+      - principal
+      - total
     CapitalGrant:
+      type: object
       additionalProperties: false
       properties:
         amount:
-          description: An object containing the amount of the grant, in [minor units](https://docs.adyen.com/development-resources/currency-codes).
           $ref: '#/components/schemas/Amount'
+          description: An object containing the amount of the grant, in [minor units](https://docs.adyen.com/development-resources/currency-codes).
         balances:
-          description: An object containing the details of the existing grant.
           $ref: '#/components/schemas/CapitalBalance'
+          description: An object containing the details of the existing grant.
         counterparty:
+          $ref: '#/components/schemas/GrantCounterparty'
           description: An object containing the details of the receiving party of
             the grant.
-          $ref: '#/components/schemas/GrantCounterparty'
         fee:
+          $ref: '#/components/schemas/Fee'
           description: An object containing the fee currency and value, in [minor
             units](https://docs.adyen.com/development-resources/currency-codes).
-          $ref: '#/components/schemas/Fee'
         grantAccountId:
-          description: The identifier of the grant account used for the grant.
           type: string
+          description: The identifier of the grant account used for the grant.
         grantOfferId:
+          type: string
           description: The identifier of the grant offer that has been selected and
             from which the grant details will be used.
-          type: string
         id:
-          description: The identifier of the grant reference.
           type: string
+          description: The identifier of the grant reference.
         repayment:
-          description: An object containing the details of the 30-day repayment threshold.
           $ref: '#/components/schemas/Repayment'
+          description: An object containing the details of the 30-day repayment threshold.
         status:
+          type: string
           description: 'The current status of the grant. Possible values: **Pending**,
             **Active**, **Repaid**, **WrittenOff**, **Failed**, **Revoked**.'
           enum:
@@ -1564,60 +1734,60 @@ components:
           - Failed
           - WrittenOff
           - Revoked
-          type: string
       required:
+      - balances
       - grantAccountId
       - grantOfferId
       - id
       - status
-      - balances
-      type: object
     CapitalGrantInfo:
+      type: object
       additionalProperties: false
       properties:
         counterparty:
+          $ref: '#/components/schemas/GrantInfoCounterparty'
           description: An object containing the details of the receiving party of
             the grant.
-          $ref: '#/components/schemas/GrantInfoCounterparty'
         grantAccountId:
-          description: The identifier of the grant account used for the grant.
           type: string
+          description: The identifier of the grant account used for the grant.
         grantOfferId:
+          type: string
           description: The identifier of the grant offer that has been selected and
             from which the grant details will be used.
-          type: string
       required:
       - grantAccountId
       - grantOfferId
-      type: object
     CapitalGrants:
+      type: object
       additionalProperties: false
       properties:
         grants:
+          type: array
           description: The unique identifier of the grant.
           items:
             $ref: '#/components/schemas/CapitalGrant'
-          type: array
       required:
       - grants
-      type: object
     Card:
+      type: object
       additionalProperties: false
       properties:
         cardHolder:
-          description: Contains information about the cardholder.
           $ref: '#/components/schemas/PartyIdentification'
+          description: Contains information about the cardholder.
         cardIdentification:
-          description: Contains the identification details of the card.
           $ref: '#/components/schemas/CardIdentification'
+          description: Contains the identification details of the card.
       required:
-      - cardIdentification
       - cardHolder
-      type: object
+      - cardIdentification
     CardIdentification:
+      type: object
       additionalProperties: false
       properties:
         expiryMonth:
+          type: string
           description: 'The expiry month of the card.
 
 
@@ -1628,22 +1798,22 @@ components:
             * 11 = November'
           maxLength: 2
           minLength: 2
-          type: string
         expiryYear:
+          type: string
           description: 'The expiry year of the card.
 
 
             Format: four digits. For example: 2020'
           maxLength: 4
           minLength: 4
-          type: string
         issueNumber:
+          type: string
           description: The issue number of the card. Applies only to some UK debit
             cards.
           maxLength: 2
           minLength: 1
-          type: string
         number:
+          type: string
           description: 'The card number without any separators.
 
 
@@ -1651,8 +1821,8 @@ components:
             number.'
           maxLength: 19
           minLength: 4
-          type: string
         startMonth:
+          type: string
           description: 'The month when the card was issued. Applies only to some UK
             debit cards.
 
@@ -1664,8 +1834,8 @@ components:
             * 11 = November'
           maxLength: 2
           minLength: 2
-          type: string
         startYear:
+          type: string
           description: 'The year when the card was issued. Applies only to some UK
             debit cards.
 
@@ -1673,144 +1843,145 @@ components:
             Format: four digits. For example: 2020'
           maxLength: 4
           minLength: 4
-          type: string
         storedPaymentMethodId:
+          type: string
           description: 'The unique [token](/payouts/payout-service/pay-out-to-cards/manage-card-information#save-card-details)
             created to identify the counterparty.
 
 
             '
-          type: string
-      type: object
     ConfirmationTrackingData:
+      type: object
       additionalProperties: false
       properties:
         status:
+          type: string
           description: "The status of the transfer.\n\nPossible values:\n\n - **credited**:\
             \ the funds are credited to your user's transfer instrument or bank account.-\
             \ **accepted**: the request is accepted by the integration."
           enum:
           - credited
           - accepted
-          type: string
         type:
+          type: string
           default: confirmation
           description: "The type of the tracking event.\n\nPossible values:\n\n -\
             \ **confirmation**: the transfer passed Adyen's internal review."
           enum:
           - confirmation
-          type: string
       required:
-      - type
       - status
-      type: object
+      - type
     CounterpartyInfoV3:
+      type: object
       additionalProperties: false
       properties:
         balanceAccountId:
+          type: string
           description: The unique identifier of the counterparty [balance account](https://docs.adyen.com/api-explorer/balanceplatform/latest/post/balanceAccounts#responses-200-id).
-          type: string
         bankAccount:
-          description: Contains information about the counterparty bank account.
           $ref: '#/components/schemas/BankAccountV3'
+          description: Contains information about the counterparty bank account.
         card:
-          description: Contains information about the counterparty card.
           $ref: '#/components/schemas/Card'
+          description: Contains information about the counterparty card.
         transferInstrumentId:
-          description: The unique identifier of the counterparty [transfer instrument](https://docs.adyen.com/api-explorer/legalentity/latest/post/transferInstruments#responses-200-id).
           type: string
-      type: object
+          description: The unique identifier of the counterparty [transfer instrument](https://docs.adyen.com/api-explorer/legalentity/latest/post/transferInstruments#responses-200-id).
     CounterpartyV3:
+      type: object
       additionalProperties: false
       properties:
         balanceAccountId:
+          type: string
           description: The unique identifier of the counterparty [balance account](https://docs.adyen.com/api-explorer/balanceplatform/latest/post/balanceAccounts#responses-200-id).
-          type: string
         bankAccount:
-          description: Contains information about the counterparty bank account.
           $ref: '#/components/schemas/BankAccountV3'
+          description: Contains information about the counterparty bank account.
         card:
-          description: Contains information about the counterparty card.
           $ref: '#/components/schemas/Card'
+          description: Contains information about the counterparty card.
         merchant:
-          description: Contains information about the merchant.
           $ref: '#/components/schemas/MerchantData'
+          description: Contains information about the merchant.
         transferInstrumentId:
-          description: The unique identifier of the counterparty [transfer instrument](https://docs.adyen.com/api-explorer/legalentity/latest/post/transferInstruments#responses-200-id).
           type: string
-      type: object
+          description: The unique identifier of the counterparty [transfer instrument](https://docs.adyen.com/api-explorer/legalentity/latest/post/transferInstruments#responses-200-id).
     DKLocalAccountIdentification:
+      type: object
       additionalProperties: false
       properties:
         accountNumber:
+          type: string
           description: The 4-10 digits bank account number (Kontonummer) (without
             separators or whitespace).
           maxLength: 10
           minLength: 4
-          type: string
         bankCode:
+          type: string
           description: The 4-digit bank code (Registreringsnummer) (without separators
             or whitespace).
           maxLength: 4
           minLength: 4
-          type: string
         type:
+          type: string
           default: dkLocal
           description: '**dkLocal**'
           enum:
           - dkLocal
-          type: string
       required:
-      - type
       - accountNumber
       - bankCode
-      type: object
+      - type
     DirectDebitInformation:
+      type: object
       additionalProperties: false
       properties:
         dateOfSignature:
+          type: string
+          format: date-time
           description: The date when the direct debit mandate was accepted by your
             user, in [ISO-8601](https://www.w3.org/TR/NOTE-datetime) format.
-          format: date-time
-          type: string
         dueDate:
+          type: string
+          format: date-time
           description: The date when the funds are deducted from your user's balance
             account.
-          format: date-time
-          type: string
         mandateId:
-          description: Your unique identifier for the direct debit mandate.
           type: string
+          description: Your unique identifier for the direct debit mandate.
         sequenceType:
+          type: string
           description: 'Identifies the direct debit transfer''s type.
 
             Possible values: **OneOff**, **First**, **Recurring**, **Final**.'
-          type: string
-      type: object
     EstimationTrackingData:
+      type: object
       additionalProperties: false
       properties:
         estimatedArrivalTime:
+          type: string
+          format: date-time
           description: The estimated time the beneficiary should have access to the
             funds.
-          format: date-time
-          type: string
         type:
+          type: string
           default: estimation
           description: "The type of tracking event. \n\nPossible values: \n\n- **estimation**:\
             \ the estimated date and time of when the funds will be credited has been\
             \ determined."
           enum:
           - estimation
-          type: string
       required:
-      - type
       - estimatedArrivalTime
-      type: object
+      - type
     ExecutionDate:
+      type: object
       additionalProperties: false
       properties:
         date:
+          type: string
+          format: date
           description: 'The date when the transfer will be processed. This date must
             be:
 
@@ -1818,66 +1989,64 @@ components:
 
             * In the [ISO 8601 format](https://www.iso.org/iso-8601-date-and-time-format.html)
             **YYYY-MM-DD**. For example: 2025-01-31'
-          format: date
-          type: string
         timezone:
+          type: string
           description: "The timezone that applies to the execution date. Use a timezone\
             \ identifier from the [tz database](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones).\n\
             \nExample: **America/Los_Angeles**.\n Default value: **Europe/Amsterdam**."
-          type: string
-      type: object
     ExternalReason:
+      type: object
       additionalProperties: false
       properties:
         code:
+          type: string
           description: The reason code.
-          type: string
         description:
+          type: string
           description: The description of the reason code.
-          type: string
         namespace:
-          description: The namespace for the reason code.
           type: string
-      type: object
+          description: The namespace for the reason code.
     Fee:
-      additionalProperties: false
+      type: object
       properties:
         amount:
-          description: Contains the fee amount.
           $ref: '#/components/schemas/Amount'
+          description: Contains the fee amount.
       required:
       - amount
-      type: object
     FindTransfersResponse:
+      type: object
       additionalProperties: false
       properties:
         _links:
-          description: Contains links to the next and previous page whenever applicable.
           $ref: '#/components/schemas/Links'
+          description: Contains links to the next and previous page whenever applicable.
         data:
+          type: array
           description: Contains the transfers that match the query parameters.
           items:
             $ref: '#/components/schemas/TransferData'
-          type: array
-      type: object
     FundingInstrument:
+      type: object
       additionalProperties: false
       properties:
         cardIdentification:
+          $ref: '#/components/schemas/CardIdentification'
           description: "Card details used for the transfer, such as the Primary Account\
             \ Number (PAN) or stored payment method ID. Required if `sourceOfFunds`\
             \ is **DEBIT**. Provide either:\n - `storedPaymentMethodId` or \n - `expiryMonth`,\
             \ `expiryYear`, and `number`."
-          $ref: '#/components/schemas/CardIdentification'
         networkPaymentReference:
+          type: string
           description: The unique reference assigned by the card network for the pay-in
             transaction.
-          type: string
         reference:
+          type: string
           description: Your internal reference that identifies this funding instrument.
             Required if `sourceOfFunds` is **DEPOSIT_ACCOUNT**.
-          type: string
         sourceOfFunds:
+          type: string
           description: 'Indicates where the funds used for the transfer originated.
             Possible values are:
 
@@ -1887,150 +2056,150 @@ components:
           enum:
           - DEBIT
           - DEPOSIT_ACCOUNT
-          type: string
-      type: object
     GrantCounterparty:
+      type: object
       additionalProperties: false
       properties:
         accountHolderId:
-          description: The identifier of the receiving account holder.
           type: string
+          description: The identifier of the receiving account holder.
         balanceAccountId:
+          type: string
           description: The identifier of the balance account that belongs to the receiving
             account holder.
-          type: string
         transferInstrumentId:
+          type: string
           description: The identifier of the transfer instrument that belongs to the
             legal entity of the account holder.
-          type: string
-      type: object
     GrantInfoCounterparty:
+      type: object
       additionalProperties: false
       properties:
         balanceAccountId:
+          type: string
           description: The identifier of the balance account that belongs to the receiving
             account holder.
-          type: string
         transferInstrumentId:
+          type: string
           description: The identifier of the transfer instrument that belongs to the
             legal entity of the account holder.
-          type: string
-      type: object
     HKLocalAccountIdentification:
+      type: object
       additionalProperties: false
       properties:
         accountNumber:
+          type: string
           description: The 9- to 17-digit bank account number, without separators
             or whitespace. Starts with the 3-digit branch code.
           maxLength: 17
           minLength: 9
-          type: string
         clearingCode:
+          type: string
           description: The 3-digit clearing code, without separators or whitespace.
           maxLength: 3
           minLength: 3
-          type: string
         type:
+          type: string
           default: hkLocal
           description: '**hkLocal**'
           enum:
           - hkLocal
-          type: string
       required:
-      - type
       - accountNumber
       - clearingCode
-      type: object
+      - type
     HULocalAccountIdentification:
+      type: object
       additionalProperties: false
       properties:
         accountNumber:
+          type: string
           description: The 24-digit bank account number, without separators or whitespace.
           maxLength: 24
           minLength: 24
-          type: string
         type:
+          type: string
           default: huLocal
           description: '**huLocal**'
           enum:
           - huLocal
-          type: string
       required:
-      - type
       - accountNumber
-      type: object
+      - type
     IbanAccountIdentification:
+      type: object
       additionalProperties: false
       properties:
         bic:
-          description: The bank's 8- or 11-character BIC or SWIFT code.
           type: string
+          description: The bank's 8- or 11-character BIC or SWIFT code.
         iban:
+          type: string
           description: The international bank account number as defined in the [ISO-13616](https://www.iso.org/standard/81090.html)
             standard.
-          type: string
         type:
+          type: string
           default: iban
           description: '**iban**'
           enum:
           - iban
-          type: string
       required:
-      - type
       - iban
-      type: object
+      - type
     InterchangeData:
+      type: object
       additionalProperties: false
       properties:
         interchangeAmount:
-          description: The currency and value of the adjusted interchange fee.
           $ref: '#/components/schemas/Amount'
+          description: The currency and value of the adjusted interchange fee.
         interchangeRateIndicator:
+          type: string
           description: A 3-character alphanumeric code assigned by Visa that identifies
             the specific interchange reimbursement program a transaction qualified
             for. The code is assigned based on the card type, entry mode, and security
             data provided.
-          type: string
         type:
+          type: string
           default: interchangeData
           description: "The type of events data. \n\nPossible values: \n\n - **interchangeData**:\
             \ information about the interchange fee applied to a transaction."
           enum:
           - interchangeData
-          type: string
       required:
       - type
-      type: object
     InternalCategoryData:
+      type: object
       additionalProperties: false
       properties:
         modificationMerchantReference:
-          x-addedInVersion: '4'
+          type: string
           description: The capture's merchant reference included in the transfer.
-          type: string
-        modificationPspReference:
           x-addedInVersion: '4'
-          description: The capture reference included in the transfer.
+        modificationPspReference:
           type: string
+          description: The capture reference included in the transfer.
+          x-addedInVersion: '4'
         type:
+          type: string
           default: internal
           description: '**internal**'
           enum:
           - internal
-          type: string
-      type: object
     InternalReviewTrackingData:
+      type: object
       additionalProperties: false
       properties:
         reason:
+          type: string
           description: "The reason why the transfer failed Adyen's internal review.\
             \ \n\nPossible values:\n\n- **refusedForRegulatoryReasons**: the transfer\
             \ does not comply with Adyen's risk policy. For more information, [contact\
             \ the Support Team](https://www.adyen.help/hc/en-us/requests/new). "
           enum:
           - refusedForRegulatoryReasons
-          type: string
         status:
+          type: string
           description: "The status of the transfer.\n\nPossible values:\n\n - **pending**:\
             \ the transfer is under internal review by Adyen.\n\n- **failed**: the\
             \ transfer failed Adyen's internal review. For details, see `reason`.\n\
@@ -2038,46 +2207,44 @@ components:
           enum:
           - pending
           - failed
-          type: string
         type:
+          type: string
           default: internalReview
           description: "The type of tracking event. \n\nPossible values: \n\n - **internalReview**:\
             \ the transfer was flagged because it does not comply with Adyen's risk\
             \ policy."
           enum:
           - internalReview
-          type: string
       required:
-      - type
       - status
-      type: object
+      - type
     InvalidField:
-      additionalProperties: false
+      type: object
       properties:
         message:
+          type: string
           description: Description of the validation error.
-          type: string
         name:
+          type: string
           description: The field that has an invalid value.
-          type: string
         value:
-          description: The invalid value.
           type: string
+          description: The invalid value.
       required:
+      - message
       - name
       - value
-      - message
-      type: object
     IssuedCard:
+      type: object
       additionalProperties: false
       properties:
         authorisationType:
-          x-addedInVersion: '4'
+          type: string
           description: The authorisation type. For example, **defaultAuthorisation**,
             **preAuthorisation**, **finalAuthorisation**
-          type: string
-        panEntryMode:
           x-addedInVersion: '4'
+        panEntryMode:
+          type: string
           description: 'Indicates the method used for entering the PAN to initiate
             a transaction.
 
@@ -2092,9 +2259,9 @@ components:
           - magstripe
           - manual
           - token
-          type: string
-        processingType:
           x-addedInVersion: '4'
+        processingType:
+          type: string
           description: 'Contains information about how the payment was processed.
 
 
@@ -2109,172 +2276,172 @@ components:
           - purchaseWithCashback
           - recurring
           - token
-          type: string
-        relayedAuthorisationData:
           x-addedInVersion: '4'
+        relayedAuthorisationData:
+          $ref: '#/components/schemas/RelayedAuthorisationData'
           description: If you are using relayed authorisation, this object contains
             information from the relayed authorisation response from your server.
-          $ref: '#/components/schemas/RelayedAuthorisationData'
-        schemeTraceId:
           x-addedInVersion: '4'
+        schemeTraceId:
+          type: string
           description: The identifier of the original payment. This ID is provided
             by the scheme and can be alphanumeric or numeric, depending on the scheme.
             The `schemeTraceID` should refer to an original `schemeUniqueTransactionID`
             provided in an earlier payment (not necessarily processed by Adyen). A
             `schemeTraceId` is typically available for authorization adjustments or
             recurring payments.
-          type: string
-        schemeUniqueTransactionId:
           x-addedInVersion: '4'
+        schemeUniqueTransactionId:
+          type: string
           description: The unique identifier created by the scheme. This ID can be
             alphanumeric or numeric depending on the scheme.
-          type: string
-        threeDSecure:
           x-addedInVersion: '4'
-          description: The data of the result from the 3DS authentication.
+        threeDSecure:
           $ref: '#/components/schemas/ThreeDSecure'
+          description: The data of the result from the 3DS authentication.
+          x-addedInVersion: '4'
         type:
+          type: string
           default: issuedCard
           description: '**issuedCard**'
           enum:
           - issuedCard
-          type: string
         validationFacts:
-          x-addedInVersion: '4'
+          type: array
           description: The evaluation of the validation facts. See [validation checks](https://docs.adyen.com/issuing/validation-checks)
             for more information.
           items:
             $ref: '#/components/schemas/TransferNotificationValidationFact'
-          type: array
-      type: object
+          x-addedInVersion: '4'
     IssuingTransactionData:
+      type: object
       additionalProperties: false
       properties:
         captureCycleId:
-          description: captureCycleId associated with transfer event.
           type: string
+          description: captureCycleId associated with transfer event.
         type:
+          type: string
           default: issuingTransactionData
           description: "The type of events data. \n\nPossible values: \n\n - **issuingTransactionData**:\
             \ issuing transaction data"
           enum:
           - issuingTransactionData
-          type: string
       required:
       - type
-      type: object
     JSONObject:
       type: object
     Leg:
+      type: object
       additionalProperties: false
       properties:
         arrivalAirportCode:
+          type: string
           description: The IATA 3-letter airport code of the destination airport.
             This field is required if the airline data includes leg details.
-          type: string
         basicFareCode:
+          type: string
           description: The basic fare code for this leg.
-          type: string
         carrierCode:
-          description: IATA code of the carrier operating the flight.
           type: string
+          description: IATA code of the carrier operating the flight.
         departureAirportCode:
+          type: string
           description: The IATA three-letter airport code of the departure airport.
             This field is required if the airline data includes leg details
-          type: string
         departureDate:
+          type: string
           description: The flight departure date.
-          type: string
         flightNumber:
-          description: The flight identifier.
           type: string
-      type: object
+          description: The flight identifier.
     Link:
+      type: object
       additionalProperties: false
       properties:
         href:
-          description: The link to the resource.
           type: string
-      type: object
+          description: The link to the resource.
     Links:
+      type: object
       additionalProperties: false
       properties:
         next:
+          $ref: '#/components/schemas/Link'
           description: Contains a link to the next page.
-          $ref: '#/components/schemas/Link'
         prev:
-          description: Contains a link to the previous page.
           $ref: '#/components/schemas/Link'
-      type: object
+          description: Contains a link to the previous page.
     Lodging:
+      type: object
       additionalProperties: false
       properties:
         checkInDate:
-          description: The check-in date.
           type: string
+          description: The check-in date.
         numberOfNights:
-          description: The total number of nights the room is booked for.
-          format: int32
           type: integer
-      type: object
+          format: int32
+          description: The total number of nights the room is booked for.
     MerchantData:
+      type: object
       additionalProperties: false
       properties:
         acquirerId:
+          type: string
           description: The unique identifier of the merchant's acquirer.
-          type: string
         mcc:
+          type: string
           description: The merchant category code.
-          type: string
         merchantId:
+          type: string
           description: The unique identifier of the merchant.
-          type: string
         nameLocation:
-          description: Contains the name and location of the merchant.
           $ref: '#/components/schemas/NameLocation'
+          description: Contains the name and location of the merchant.
         postalCode:
-          description: The postal code of the merchant.
           type: string
-      type: object
+          description: The postal code of the merchant.
     MerchantPurchaseData:
+      type: object
       additionalProperties: false
       properties:
         airline:
-          description: Airline information.
           $ref: '#/components/schemas/Airline'
+          description: Airline information.
         lodging:
+          type: array
           description: Lodging information.
           items:
             $ref: '#/components/schemas/Lodging'
-          type: array
         type:
+          type: string
           default: merchantPurchaseData
           description: "The type of events data. \n\nPossible values: \n\n - **merchantPurchaseData**:\
             \ merchant purchase data"
           enum:
           - merchantPurchaseData
-          type: string
       required:
       - type
-      type: object
     Modification:
+      type: object
       additionalProperties: false
       properties:
         direction:
-          x-addedInVersion: '3'
+          type: string
           description: The direction of the money movement.
-          type: string
+          x-addedInVersion: '3'
         id:
-          x-addedInVersion: '3'
-          description: Our reference for the modification.
           type: string
-        reference:
+          description: Our reference for the modification.
           x-addedInVersion: '3'
+        reference:
+          type: string
           description: Your reference for the modification, used internally within
             your platform.
-          type: string
-        status:
           x-addedInVersion: '3'
+        status:
+          type: string
           description: The status of the transfer event.
           enum:
           - approvalPending
@@ -2347,164 +2514,165 @@ components:
           - secondChargeback
           - secondChargebackPending
           - undefined
-          type: string
-        type:
           x-addedInVersion: '3'
-          description: The type of transfer modification.
+        type:
           type: string
-      type: object
+          description: The type of transfer modification.
+          x-addedInVersion: '3'
     NOLocalAccountIdentification:
+      type: object
       additionalProperties: false
       properties:
         accountNumber:
+          type: string
           description: The 11-digit bank account number, without separators or whitespace.
           maxLength: 11
           minLength: 11
-          type: string
         type:
+          type: string
           default: noLocal
           description: '**noLocal**'
           enum:
           - noLocal
-          type: string
       required:
-      - type
       - accountNumber
-      type: object
+      - type
     NZLocalAccountIdentification:
+      type: object
       additionalProperties: false
       properties:
         accountNumber:
+          type: string
           description: The 15-16 digit bank account number. The first 2 digits are
             the bank number, the next 4 digits are the branch number, the next 7 digits
             are the account number, and the final 2-3 digits are the suffix.
           maxLength: 16
           minLength: 15
-          type: string
         type:
+          type: string
           default: nzLocal
           description: '**nzLocal**'
           enum:
           - nzLocal
-          type: string
       required:
-      - type
       - accountNumber
-      type: object
+      - type
     NameLocation:
+      type: object
       additionalProperties: false
       properties:
         city:
-          description: The city where the merchant is located.
           type: string
+          description: The city where the merchant is located.
         country:
+          type: string
           description: The country where the merchant is located in [three-letter
             country code](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3) format.
-          type: string
         countryOfOrigin:
+          type: string
           description: The home country in [three-digit country code](https://en.wikipedia.org/wiki/ISO_3166-1_numeric)
             format, used for government-controlled merchants such as embassies.
-          type: string
         name:
+          type: string
           description: The name of the merchant's shop or service.
-          type: string
         rawData:
+          type: string
           description: The raw data.
-          type: string
         state:
-          description: The state where the merchant is located.
           type: string
-      type: object
+          description: The state where the merchant is located.
     NumberAndBicAccountIdentification:
+      type: object
       additionalProperties: false
       properties:
         accountNumber:
+          type: string
           description: The bank account number, without separators or whitespace.
             The length and format depends on the bank or country.
           maxLength: 34
-          type: string
         additionalBankIdentification:
+          $ref: '#/components/schemas/AdditionalBankIdentification'
           description: Additional identification codes of the bank. Some banks may
             require these identifiers for cross-border transfers.
-          $ref: '#/components/schemas/AdditionalBankIdentification'
         bic:
+          type: string
           description: The bank's 8- or 11-character BIC or SWIFT code.
           maxLength: 11
           minLength: 8
-          type: string
         type:
+          type: string
           default: numberAndBic
           description: '**numberAndBic**'
           enum:
           - numberAndBic
-          type: string
       required:
-      - type
       - accountNumber
       - bic
-      type: object
+      - type
     PLLocalAccountIdentification:
+      type: object
       additionalProperties: false
       properties:
         accountNumber:
+          type: string
           description: The 26-digit bank account number ([Numer rachunku](https://pl.wikipedia.org/wiki/Numer_Rachunku_Bankowego)),
             without separators or whitespace.
           maxLength: 26
           minLength: 26
-          type: string
         type:
+          type: string
           default: plLocal
           description: '**plLocal**'
           enum:
           - plLocal
-          type: string
       required:
-      - type
       - accountNumber
-      type: object
+      - type
     PartyIdentification:
+      type: object
       additionalProperties: false
       properties:
         address:
-          description: The address of the bank account or card owner.
           $ref: '#/components/schemas/Address'
+          description: The address of the bank account or card owner.
         dateOfBirth:
+          type: string
+          format: date
           description: 'The date of birth of the individual in [ISO-8601](https://www.w3.org/TR/NOTE-datetime)
             format. For example, **YYYY-MM-DD**.
 
 
             Allowed only when `type` is **individual**.'
-          format: date
-          type: string
         email:
+          type: string
           description: 'The email address of the organization or individual. Maximum
             length: 254 characters.'
           maxLength: 254
-          type: string
         firstName:
+          type: string
           description: "The first name of the individual.\n\nSupported characters:\
             \ [a-z] [A-Z] - . / \u2014 and space.\n\nThis parameter is:\n- Allowed\
             \ only when `type` is **individual**.\n- Required when `category` is **card**."
-          type: string
         fullName:
+          type: string
           description: "The full name of the entity that owns the bank account or\
             \ card.\n\nSupported characters: [a-z] [A-Z] [0-9] , . ; : - \u2014 /\
             \ \\ + & ! ? @ ( ) \" ' and space.\n\nRequired when `category` is **bank**."
-          type: string
         lastName:
+          type: string
           description: "The last name of the individual.\n\nSupported characters:\
             \ [a-z] [A-Z] - . / \u2014 and space.\n\nThis parameter is:\n- Allowed\
             \ only when `type` is **individual**.\n- Required when `category` is **card**."
-          type: string
         reference:
+          type: string
           description: 'A unique reference to identify the party or counterparty involved
             in the transfer. For example, your client''s unique wallet or payee ID.
 
 
             Required when you include `cardIdentification.storedPaymentMethodId`.'
           maxLength: 150
-          type: string
         type:
+          type: string
           default: unknown
           description: 'The type of entity that owns the bank account or card.
 
@@ -2518,47 +2686,46 @@ components:
           - individual
           - organization
           - unknown
-          type: string
         url:
+          type: string
           description: 'The URL of the organization or individual. Maximum length:
             255 characters.'
           maxLength: 255
-          type: string
-      type: object
     PaymentInstrument:
+      type: object
       additionalProperties: false
       properties:
         description:
+          type: string
           description: The description of the resource.
-          type: string
         id:
+          type: string
           description: The unique identifier of the resource.
-          type: string
         reference:
+          type: string
           description: The reference for the resource.
-          type: string
         tokenType:
-          x-addedInVersion: '3'
-          description: The type of wallet that the network token is associated with.
           type: string
-      type: object
+          description: The type of wallet that the network token is associated with.
+          x-addedInVersion: '3'
     PlatformPayment:
+      type: object
       additionalProperties: false
       properties:
         modificationMerchantReference:
-          x-addedInVersion: '4'
+          type: string
           description: The capture's merchant reference included in the transfer.
-          type: string
+          x-addedInVersion: '4'
         modificationPspReference:
-          x-addedInVersion: '4'
+          type: string
           description: The capture reference included in the transfer.
-          type: string
+          x-addedInVersion: '4'
         paymentMerchantReference:
-          x-addedInVersion: '4'
-          description: The payment's merchant reference included in the transfer.
           type: string
-        platformPaymentType:
+          description: The payment's merchant reference included in the transfer.
           x-addedInVersion: '4'
+        platformPaymentType:
+          type: string
           description: 'Specifies the nature of the transfer. This parameter helps
             categorize transfers so you can reconcile transactions at a later time,
             using the Balance Platform Accounting Report for [marketplaces](https://docs.adyen.com/marketplaces/reports-and-fees/balance-platform-accounting-report/)
@@ -2640,130 +2807,131 @@ components:
           - Tip
           - TopUp
           - VAT
-          type: string
-        pspPaymentReference:
           x-addedInVersion: '4'
-          description: The payment reference included in the transfer.
+        pspPaymentReference:
           type: string
+          description: The payment reference included in the transfer.
+          x-addedInVersion: '4'
         type:
+          type: string
           default: platformPayment
           description: '**platformPayment**'
           enum:
           - platformPayment
-          type: string
-      type: object
     RelayedAuthorisationData:
+      type: object
       additionalProperties: false
       properties:
         metadata:
-          x-addedInVersion: '3'
+          type: object
           additionalProperties:
             type: string
           description: Contains key-value pairs of your references and descriptions,
             for example, `customId`:`your-own-custom-field-12345`.
-          type: object
-        reference:
           x-addedInVersion: '3'
-          description: Your reference for the relayed authorisation data.
+        reference:
           type: string
-      type: object
+          description: Your reference for the relayed authorisation data.
+          x-addedInVersion: '3'
     Repayment:
+      type: object
       additionalProperties: false
       properties:
         basisPoints:
+          type: integer
+          format: int32
           description: The repayment that is deducted daily from incoming net volume,
             in [basis points](https://www.investopedia.com/terms/b/basispoint.asp).
-          format: int32
-          type: integer
         term:
+          $ref: '#/components/schemas/RepaymentTerm'
           description: An object containing the details of the configuration for repayment
             term.
-          $ref: '#/components/schemas/RepaymentTerm'
         threshold:
-          description: An object containing the details of the 30-day repayment threshold.
           $ref: '#/components/schemas/ThresholdRepayment'
+          description: An object containing the details of the 30-day repayment threshold.
       required:
       - basisPoints
-      type: object
     RepaymentTerm:
+      type: object
       additionalProperties: false
       properties:
         estimatedDays:
-          description: The estimated term for repaying the grant, in days.
-          format: int32
           type: integer
+          format: int32
+          description: The estimated term for repaying the grant, in days.
         maximumDays:
+          type: integer
+          format: int32
           description: The maximum term for repaying the grant, in days. Only applies
             when `contractType` is **loan**.
-          format: int32
-          type: integer
       required:
       - estimatedDays
-      type: object
     ResourceReference:
+      type: object
       additionalProperties: false
       properties:
         description:
+          type: string
           description: The description of the resource.
-          type: string
         id:
+          type: string
           description: The unique identifier of the resource.
-          type: string
         reference:
-          description: The reference for the resource.
           type: string
-      type: object
+          description: The reference for the resource.
     RestServiceError:
+      type: object
       additionalProperties: false
       properties:
         detail:
+          type: string
           description: A human-readable explanation specific to this occurrence of
             the problem.
-          type: string
         errorCode:
-          description: A code that identifies the problem type.
           type: string
+          description: A code that identifies the problem type.
         instance:
+          type: string
           description: A unique URI that identifies the specific occurrence of the
             problem.
-          type: string
         invalidFields:
+          type: array
           description: Detailed explanation of each validation error, when applicable.
           items:
             $ref: '#/components/schemas/InvalidField'
-          type: array
         requestId:
+          type: string
           description: A unique reference for the request, essentially the same as
             `pspReference`.
-          type: string
         response:
-          description: JSON response payload.
           $ref: '#/components/schemas/JSONObject'
+          description: JSON response payload.
         status:
-          description: The HTTP status code.
-          format: int32
           type: integer
+          format: int32
+          description: The HTTP status code.
         title:
-          description: A short, human-readable summary of the problem type.
           type: string
+          description: A short, human-readable summary of the problem type.
         type:
+          type: string
           description: A URI that identifies the problem type, pointing to human-readable
             documentation on this problem type.
-          type: string
       required:
-      - type
-      - errorCode
-      - title
       - detail
+      - errorCode
       - status
-      type: object
+      - title
+      - type
     ReturnTransferRequest:
+      type: object
       additionalProperties: false
       properties:
         amount:
-          description: Contains information about the amount to be returned.
           $ref: '#/components/schemas/Amount'
+          description: Contains information about the amount to be returned.
         reference:
+          type: string
           description: 'Your internal reference for the return. If you don''t provide
             this in the request, Adyen generates a unique reference. This reference
             is used in all communication with you about the instruction status.
@@ -2776,20 +2944,20 @@ components:
 
             '
           maxLength: 80
-          type: string
       required:
       - amount
-      type: object
     ReturnTransferResponse:
+      type: object
       additionalProperties: false
       properties:
         id:
+          type: string
           description: The unique identifier of the return.
-          type: string
         reference:
-          description: Your internal reference for the return.
           type: string
+          description: Your internal reference for the return.
         status:
+          type: string
           description: 'The resulting status of the return.
 
 
@@ -2797,22 +2965,22 @@ components:
           enum:
           - Authorised
           - Declined
-          type: string
         transferId:
-          description: The unique identifier of the original transfer.
           type: string
-      type: object
+          description: The unique identifier of the original transfer.
     RoutingDetails:
+      type: object
       additionalProperties: false
       properties:
         detail:
+          type: string
           description: A human-readable explanation specific to this occurrence of
             the problem.
-          type: string
         errorCode:
-          description: A code that identifies the problem type.
           type: string
+          description: A code that identifies the problem type.
         priority:
+          type: string
           description: 'The priority for the bank transfer. This sets the speed at
             which the transfer is sent and the fees that you have to pay. Required
             for transfers with `category` **bank**.
@@ -2849,283 +3017,282 @@ components:
           - internal
           - regular
           - wire
-          type: string
         title:
-          description: A short, human-readable summary of the problem type.
           type: string
-      type: object
+          description: A short, human-readable summary of the problem type.
     SELocalAccountIdentification:
+      type: object
       additionalProperties: false
       properties:
         accountNumber:
+          type: string
           description: The 7- to 10-digit bank account number ([Bankkontonummer](https://sv.wikipedia.org/wiki/Bankkonto)),
             without the clearing number, separators, or whitespace.
           maxLength: 10
           minLength: 7
-          type: string
         clearingNumber:
+          type: string
           description: The 4- to 5-digit clearing number ([Clearingnummer](https://sv.wikipedia.org/wiki/Clearingnummer)),
             without separators or whitespace.
           maxLength: 5
           minLength: 4
-          type: string
         type:
+          type: string
           default: seLocal
           description: '**seLocal**'
           enum:
           - seLocal
-          type: string
       required:
-      - type
       - accountNumber
       - clearingNumber
-      type: object
+      - type
     SGLocalAccountIdentification:
+      type: object
       additionalProperties: false
       properties:
         accountNumber:
+          type: string
           description: The 4- to 19-digit bank account number, without separators
             or whitespace.
           maxLength: 19
           minLength: 4
-          type: string
         bic:
+          type: string
           description: The bank's 8- or 11-character BIC or SWIFT code.
           maxLength: 11
           minLength: 8
-          type: string
         type:
+          type: string
           default: sgLocal
           description: '**sgLocal**'
           enum:
           - sgLocal
-          type: string
       required:
       - accountNumber
       - bic
-      type: object
     ServiceError:
+      type: object
       additionalProperties: false
       properties:
         errorCode:
+          type: string
           description: The error code mapped to the error message.
-          type: string
         errorType:
+          type: string
           description: The category of the error.
-          type: string
         message:
+          type: string
           description: A short explanation of the issue.
-          type: string
         pspReference:
-          description: The PSP reference of the payment.
           type: string
+          description: The PSP reference of the payment.
         status:
-          description: The HTTP response status.
-          format: int32
           type: integer
-      type: object
+          format: int32
+          description: The HTTP response status.
     ThreeDSecure:
+      type: object
       additionalProperties: false
       properties:
         acsTransactionId:
-          x-addedInVersion: '4'
-          description: The transaction identifier for the Access Control Server
           type: string
-      type: object
+          description: The transaction identifier for the Access Control Server
+          x-addedInVersion: '4'
     ThresholdRepayment:
+      type: object
       additionalProperties: false
       properties:
         amount:
-          description: The amount to be repaid on a 30-day basis.
           $ref: '#/components/schemas/Amount'
+          description: The amount to be repaid on a 30-day basis.
       required:
       - amount
-      type: object
     Transaction:
+      type: object
       additionalProperties: false
       properties:
         accountHolder:
-          x-addedInVersion: '4'
+          $ref: '#/components/schemas/ResourceReference'
           description: Contains information about the account holder associated with
             the `balanceAccount`.
-          $ref: '#/components/schemas/ResourceReference'
-        amount:
-          x-addedInVersion: '1'
-          description: Contains information about the amount of the transaction.
-          $ref: '#/components/schemas/Amount'
-        balanceAccount:
           x-addedInVersion: '4'
+        amount:
+          $ref: '#/components/schemas/Amount'
+          description: Contains information about the amount of the transaction.
+          x-addedInVersion: '1'
+        balanceAccount:
+          $ref: '#/components/schemas/ResourceReference'
           description: Contains information about the balance account involved in
             the transaction.
-          $ref: '#/components/schemas/ResourceReference'
+          x-addedInVersion: '4'
         balancePlatform:
-          x-addedInVersion: '1'
+          type: string
           description: The unique identifier of the balance platform.
-          type: string
-        bookingDate:
           x-addedInVersion: '1'
-          description: The date the transaction was booked into the balance account.
-          format: date-time
+        bookingDate:
           type: string
+          format: date-time
+          description: The date the transaction was booked into the balance account.
+          x-addedInVersion: '1'
         creationDate:
+          type: string
+          format: date-time
           description: The date and time when the event was triggered, in ISO 8601
             extended format. For example, **2025-03-19T10:15:30+01:00**.
-          format: date-time
-          type: string
         description:
-          x-addedInVersion: '1'
+          type: string
           description: The `description` from the `/transfers` request.
-          type: string
-        id:
           x-addedInVersion: '1'
-          description: The unique identifier of the transaction.
+        id:
           type: string
+          description: The unique identifier of the transaction.
+          x-addedInVersion: '1'
         paymentInstrument:
-          x-addedInVersion: '4'
+          $ref: '#/components/schemas/PaymentInstrument'
           description: Contains information about the payment instrument that was
             used for the transaction.
-          $ref: '#/components/schemas/PaymentInstrument'
+          x-addedInVersion: '4'
         referenceForBeneficiary:
-          x-addedInVersion: '1'
+          type: string
           description: "The reference sent to or received from the counterparty.\n\
             \n* For outgoing funds, this is the [`referenceForBeneficiary`](https://docs.adyen.com/api-explorer/#/transfers/latest/post/transfers__resParam_referenceForBeneficiary)\
             \ from the  [`/transfers`](https://docs.adyen.com/api-explorer/#/transfers/latest/post/transfers__reqParam_referenceForBeneficiary)\
             \ request.\n\n * For incoming funds, this is the reference from the sender."
-          type: string
-        status:
           x-addedInVersion: '1'
+        status:
+          type: string
           description: "The status of the transaction.\n\n Possible values:\n\n* **pending**:\
             \ The transaction is still pending.\n\n* **booked**: The transaction has\
             \ been booked to the balance account.\n\n"
           enum:
           - booked
           - pending
-          type: string
-        transfer:
-          x-addedInVersion: '4'
-          description: Contains information about the transfer related to the transaction.
-          $ref: '#/components/schemas/TransferView'
-        valueDate:
           x-addedInVersion: '1'
+        transfer:
+          $ref: '#/components/schemas/TransferView'
+          description: Contains information about the transfer related to the transaction.
+          x-addedInVersion: '4'
+        valueDate:
+          type: string
+          format: date-time
           description: The date the transfer amount becomes available in the balance
             account.
-          format: date-time
-          type: string
+          x-addedInVersion: '1'
       required:
-      - id
       - accountHolder
-      - balanceAccount
       - amount
-      - status
-      - bookingDate
-      - valueDate
+      - balanceAccount
       - balancePlatform
-      type: object
+      - bookingDate
+      - id
+      - status
+      - valueDate
     TransactionEventViolation:
+      type: object
       additionalProperties: false
       properties:
         reason:
-          description: An explanation about why the transaction rule failed.
           type: string
+          description: An explanation about why the transaction rule failed.
         transactionRule:
-          description: Contains information about the transaction rule.
           $ref: '#/components/schemas/TransactionRuleReference'
+          description: Contains information about the transaction rule.
         transactionRuleSource:
+          $ref: '#/components/schemas/TransactionRuleSource'
           description: Contains information about the resource to which the transaction
             rule applies.
-          $ref: '#/components/schemas/TransactionRuleSource'
-      type: object
     TransactionRuleReference:
+      type: object
       additionalProperties: false
       properties:
         description:
+          type: string
           description: The description of the resource.
-          type: string
         id:
+          type: string
           description: The unique identifier of the resource.
-          type: string
         outcomeType:
-          x-addedInVersion: '4'
+          type: string
           description: The outcome type of the rule.
-          type: string
-        reference:
-          description: The reference for the resource.
-          type: string
-        score:
           x-addedInVersion: '4'
+        reference:
+          type: string
+          description: The reference for the resource.
+        score:
+          type: integer
+          format: int32
           description: The transaction score determined by the rule. Returned only
             when `outcomeType` is **scoreBased**.
-          format: int32
-          type: integer
-      type: object
+          x-addedInVersion: '4'
     TransactionRuleSource:
+      type: object
       additionalProperties: false
       properties:
         id:
-          description: ID of the resource, when applicable.
           type: string
+          description: ID of the resource, when applicable.
         type:
+          type: string
           description: "Indicates the type of resource for which the transaction rule\
             \ is defined.\n\nPossible values:\n\n * **PaymentInstrumentGroup**\n\n\
             * **PaymentInstrument**\n\n* **BalancePlatform**\n\n* **EntityUsageConfiguration**\n\
             \n* **PlatformRule**: The transaction rule is a platform-wide rule imposed\
             \ by Adyen."
-          type: string
-      type: object
     TransactionRulesResult:
+      type: object
       additionalProperties: false
       properties:
         advice:
-          description: The advice given by the Risk analysis.
           type: string
+          description: The advice given by the Risk analysis.
         allHardBlockRulesPassed:
-          x-addedInVersion: '4'
+          type: boolean
           description: Indicates whether the transaction passed the evaluation for
             all hardblock rules
-          type: boolean
-        score:
-          description: The score of the Risk analysis.
-          format: int32
-          type: integer
-        triggeredTransactionRules:
           x-addedInVersion: '4'
+        score:
+          type: integer
+          format: int32
+          description: The score of the Risk analysis.
+        triggeredTransactionRules:
+          type: array
           description: Array containing all the transaction rules that the transaction
             triggered.
           items:
             $ref: '#/components/schemas/TransactionEventViolation'
-          type: array
-      type: object
+          x-addedInVersion: '4'
     TransactionSearchResponse:
+      type: object
       additionalProperties: false
       properties:
         _links:
-          description: Contains links to the next and previous page whenever applicable.
           $ref: '#/components/schemas/Links'
+          description: Contains links to the next and previous page whenever applicable.
         data:
+          type: array
           description: Contains the transactions that match the query parameters.
           items:
             $ref: '#/components/schemas/Transaction'
-          type: array
-      type: object
     Transfer:
+      type: object
       additionalProperties: false
       properties:
         accountHolder:
-          x-addedInVersion: '3'
+          $ref: '#/components/schemas/ResourceReference'
           description: The account holder associated with the balance account involved
             in the transfer.
-          $ref: '#/components/schemas/ResourceReference'
-        amount:
-          x-addedInVersion: '1'
-          description: The amount of the transfer.
-          $ref: '#/components/schemas/Amount'
-        balanceAccount:
           x-addedInVersion: '3'
+        amount:
+          $ref: '#/components/schemas/Amount'
+          description: The amount of the transfer.
+          x-addedInVersion: '1'
+        balanceAccount:
+          $ref: '#/components/schemas/ResourceReference'
           description: Contains information about the balance account involved in
             the transfer.
-          $ref: '#/components/schemas/ResourceReference'
-        category:
           x-addedInVersion: '3'
+        category:
+          type: string
           description: "The category of the transfer.\n\nPossible values:\n\n - **bank**:\
             \ A transfer involving a [transfer instrument](https://docs.adyen.com/api-explorer/legalentity/latest/post/transferInstruments#responses-200-id)\
             \ or a bank account.\n\n- **card**: A transfer involving a third-party\
@@ -3141,36 +3308,36 @@ components:
           - issuedCard
           - platformPayment
           - topUp
-          type: string
+          x-addedInVersion: '3'
         categoryData:
-          x-addedInVersion: '4'
           description: The relevant data according to the transfer category.
           oneOf:
           - $ref: '#/components/schemas/BankCategoryData'
           - $ref: '#/components/schemas/InternalCategoryData'
           - $ref: '#/components/schemas/IssuedCard'
           - $ref: '#/components/schemas/PlatformPayment'
+          x-addedInVersion: '4'
         counterparty:
-          x-addedInVersion: '3'
-          description: The other party in the transfer.
           $ref: '#/components/schemas/CounterpartyV3'
-        createdAt:
+          description: The other party in the transfer.
           x-addedInVersion: '3'
+        createdAt:
+          type: string
+          format: date-time
           description: The date and time when the transfer was created, in ISO 8601
             extended format. For example, **2020-12-18T10:15:30+01:00**.
-          format: date-time
-          type: string
-        creationDate:
           x-addedInVersion: '3'
+        creationDate:
+          type: string
+          format: date-time
           deprecated: true
-          x-deprecatedInVersion: '3'
-          x-deprecatedMessage: Use createdAt or updatedAt
           description: The date and time when the event was triggered, in ISO 8601
             extended format. For example, **2020-12-18T10:15:30+01:00**.
-          format: date-time
-          type: string
+          x-addedInVersion: '3'
+          x-deprecatedInVersion: '3'
+          x-deprecatedMessage: Use createdAt or updatedAt
         description:
-          x-addedInVersion: '1'
+          type: string
           description: 'Your description for the transfer. It is used by most banks
             as the transfer description. We recommend sending a maximum of 140 characters,
             otherwise the description may be truncated.
@@ -3181,13 +3348,13 @@ components:
 
             Supported characters for **regular** and **fast** transfers to a US counterparty:
             **[a-z] [A-Z] [0-9] & $ % # @** **~ = + - _ '' " ! ?**'
-          type: string
+          x-addedInVersion: '1'
         directDebitInformation:
-          x-addedInVersion: '3'
-          description: The details of the direct debit.
           $ref: '#/components/schemas/DirectDebitInformation'
+          description: The details of the direct debit.
+          x-addedInVersion: '3'
         direction:
-          x-addedInVersion: '2'
+          type: string
           description: 'The direction of the transfer.
 
 
@@ -3195,9 +3362,9 @@ components:
           enum:
           - incoming
           - outgoing
-          type: string
+          x-addedInVersion: '2'
         executionDate:
-          x-addedInVersion: '3'
+          $ref: '#/components/schemas/ExecutionDate'
           description: 'Contains information about the date when the transfer will
             be processed. The execution date must be within 30 days of the current
             date.
@@ -3211,17 +3378,17 @@ components:
 
 
             '
-          $ref: '#/components/schemas/ExecutionDate'
-        id:
-          description: The ID of the resource.
-          type: string
-        paymentInstrument:
           x-addedInVersion: '3'
+        id:
+          type: string
+          description: The ID of the resource.
+        paymentInstrument:
+          $ref: '#/components/schemas/PaymentInstrument'
           description: Contains information about the payment instrument used in the
             transfer.
-          $ref: '#/components/schemas/PaymentInstrument'
+          x-addedInVersion: '3'
         reason:
-          x-addedInVersion: '2'
+          type: string
           description: Additional information about the status of the transfer.
           enum:
           - accountHierarchyNotActive
@@ -3309,38 +3476,38 @@ components:
           - unknown
           - withdrawalAmountExceeded
           - withdrawalCountExceeded
-          type: string
-        reference:
           x-addedInVersion: '2'
+        reference:
+          type: string
           description: Your reference for the transfer, used internally within your
             platform. If you don't provide this in the request, Adyen generates a
             unique reference.
           maxLength: 80
-          type: string
-        referenceForBeneficiary:
           x-addedInVersion: '2'
+        referenceForBeneficiary:
+          type: string
           description: " A reference that is sent to the recipient. This reference\
             \ is also sent in all webhooks related to the transfer, so you can use\
             \ it to track statuses for both the source and recipient of funds.\n\n\
             \ Supported characters: **a-z**, **A-Z**, **0-9**.The maximum length depends\
             \ on the `category`.\n\n - **internal**: 80 characters\n\n- **bank**:\
             \ 35 characters when transferring to an IBAN, 15 characters for others."
-          type: string
-        review:
-          x-addedInVersion: '3'
-          description: Contains status updates related to additional reviews.
-          $ref: '#/components/schemas/TransferReview'
-        status:
           x-addedInVersion: '2'
+        review:
+          $ref: '#/components/schemas/TransferReview'
+          description: Contains status updates related to additional reviews.
+          x-addedInVersion: '3'
+        status:
+          type: string
           description: "The result of the transfer.\n\nFor example:\n\n- **received**:\
             \ an outgoing transfer request is created.\n- **refused**: the transfer\
             \ request is rejected by Adyen for one of the following reasons:\n  -\
-            \ Lack of funds in the balance account.\n  - Transfer limit exceeded.\n\
-            \  - Transaction rule requirements violated.\n- **authorised**: the transfer\
-            \ request is authorized and the funds are reserved.\n- **booked**: the\
-            \ funds are deducted from your user's balance account.\n - **failed**:\
-            \ the transfer is rejected by the counterparty's bank.\n- **returned**:\
-            \ the transfer is returned by the counterparty's bank."
+            \ Transfer limit exceeded.\n  - Transaction rule requirements violated.\n\
+            - **authorised**: the transfer request is authorized and the funds are\
+            \ reserved.\n- **booked**: the funds are deducted from your user's balance\
+            \ account.\n - **failed**: the transfer is rejected by the counterparty's\
+            \ bank.\n- **returned**: the transfer is returned by the counterparty's\
+            \ bank."
           enum:
           - approvalPending
           - atmWithdrawal
@@ -3412,9 +3579,9 @@ components:
           - secondChargeback
           - secondChargebackPending
           - undefined
-          type: string
+          x-addedInVersion: '2'
         type:
-          x-addedInVersion: '3'
+          type: string
           description: The type of transfer or transaction. For example, **refund**,
             **payment**, **internalTransfer**, **bankTransfer**.
           enum:
@@ -3456,46 +3623,46 @@ components:
           - balanceAdjustment
           - balanceRollover
           - balanceMigration
-          type: string
-        ultimateParty:
           x-addedInVersion: '3'
+        ultimateParty:
+          $ref: '#/components/schemas/UltimatePartyIdentification'
           description: The ultimate sender of the funds of the transfer (ultimate
             debtor).
-          $ref: '#/components/schemas/UltimatePartyIdentification'
+          x-addedInVersion: '3'
       required:
+      - amount
+      - category
       - counterparty
       - status
-      - category
-      - amount
-      type: object
     TransferData:
+      type: object
       additionalProperties: false
       properties:
         accountHolder:
-          x-addedInVersion: '3'
+          $ref: '#/components/schemas/ResourceReference'
           description: The account holder associated with the balance account involved
             in the transfer.
-          $ref: '#/components/schemas/ResourceReference'
-        amount:
-          x-addedInVersion: '1'
-          description: The amount of the transfer.
-          $ref: '#/components/schemas/Amount'
-        balanceAccount:
           x-addedInVersion: '3'
+        amount:
+          $ref: '#/components/schemas/Amount'
+          description: The amount of the transfer.
+          x-addedInVersion: '1'
+        balanceAccount:
+          $ref: '#/components/schemas/ResourceReference'
           description: Contains information about the balance account involved in
             the transfer.
-          $ref: '#/components/schemas/ResourceReference'
-        balancePlatform:
-          description: The unique identifier of the balance platform.
-          type: string
-        balances:
           x-addedInVersion: '3'
+        balancePlatform:
+          type: string
+          description: The unique identifier of the balance platform.
+        balances:
+          type: array
           description: The list of the latest balance statuses in the transfer.
           items:
             $ref: '#/components/schemas/BalanceMutation'
-          type: array
-        category:
           x-addedInVersion: '3'
+        category:
+          type: string
           description: "The category of the transfer.\n\nPossible values:\n\n - **bank**:\
             \ A transfer involving a [transfer instrument](https://docs.adyen.com/api-explorer/legalentity/latest/post/transferInstruments#responses-200-id)\
             \ or a bank account.\n\n- **card**: A transfer involving a third-party\
@@ -3511,36 +3678,36 @@ components:
           - issuedCard
           - platformPayment
           - topUp
-          type: string
+          x-addedInVersion: '3'
         categoryData:
-          x-addedInVersion: '4'
           description: The relevant data according to the transfer category.
           oneOf:
           - $ref: '#/components/schemas/BankCategoryData'
           - $ref: '#/components/schemas/InternalCategoryData'
           - $ref: '#/components/schemas/IssuedCard'
           - $ref: '#/components/schemas/PlatformPayment'
+          x-addedInVersion: '4'
         counterparty:
-          x-addedInVersion: '3'
-          description: The other party in the transfer.
           $ref: '#/components/schemas/TransferNotificationCounterParty'
-        createdAt:
+          description: The other party in the transfer.
           x-addedInVersion: '3'
+        createdAt:
+          type: string
+          format: date-time
           description: The date and time when the transfer was created, in ISO 8601
             extended format. For example, **2020-12-18T10:15:30+01:00**.
-          format: date-time
-          type: string
-        creationDate:
           x-addedInVersion: '3'
+        creationDate:
+          type: string
+          format: date-time
           deprecated: true
-          x-deprecatedInVersion: '3'
-          x-deprecatedMessage: Use createdAt or updatedAt
           description: The date and time when the event was triggered, in ISO 8601
             extended format. For example, **2020-12-18T10:15:30+01:00**.
-          format: date-time
-          type: string
+          x-addedInVersion: '3'
+          x-deprecatedInVersion: '3'
+          x-deprecatedMessage: Use createdAt or updatedAt
         description:
-          x-addedInVersion: '1'
+          type: string
           description: 'Your description for the transfer. It is used by most banks
             as the transfer description. We recommend sending a maximum of 140 characters,
             otherwise the description may be truncated.
@@ -3551,13 +3718,13 @@ components:
 
             Supported characters for **regular** and **fast** transfers to a US counterparty:
             **[a-z] [A-Z] [0-9] & $ % # @** **~ = + - _ '' " ! ?**'
-          type: string
+          x-addedInVersion: '1'
         directDebitInformation:
-          x-addedInVersion: '3'
-          description: The details of the direct debit.
           $ref: '#/components/schemas/DirectDebitInformation'
+          description: The details of the direct debit.
+          x-addedInVersion: '3'
         direction:
-          x-addedInVersion: '2'
+          type: string
           description: 'The direction of the transfer.
 
 
@@ -3565,21 +3732,21 @@ components:
           enum:
           - incoming
           - outgoing
-          type: string
+          x-addedInVersion: '2'
         eventId:
-          x-addedInVersion: '4'
+          type: string
           description: The unique identifier of the latest transfer event. Included
             only when the `category` is **issuedCard**.
-          type: string
+          x-addedInVersion: '4'
         events:
-          x-addedInVersion: '3'
+          type: array
           description: The list of events leading up to the current status of the
             transfer.
           items:
             $ref: '#/components/schemas/TransferEvent'
-          type: array
-        executionDate:
           x-addedInVersion: '3'
+        executionDate:
+          $ref: '#/components/schemas/ExecutionDate'
           description: 'Contains information about the date when the transfer will
             be processed. The execution date must be within 30 days of the current
             date.
@@ -3593,21 +3760,21 @@ components:
 
 
             '
-          $ref: '#/components/schemas/ExecutionDate'
+          x-addedInVersion: '3'
         externalReason:
-          x-addedInVersion: '3'
-          description: The external reason of this transfer.
           $ref: '#/components/schemas/ExternalReason'
-        id:
-          description: The ID of the resource.
-          type: string
-        paymentInstrument:
+          description: The external reason of this transfer.
           x-addedInVersion: '3'
+        id:
+          type: string
+          description: The ID of the resource.
+        paymentInstrument:
+          $ref: '#/components/schemas/PaymentInstrument'
           description: Contains information about the payment instrument used in the
             transfer.
-          $ref: '#/components/schemas/PaymentInstrument'
+          x-addedInVersion: '3'
         reason:
-          x-addedInVersion: '2'
+          type: string
           description: Additional information about the status of the transfer.
           enum:
           - accountHierarchyNotActive
@@ -3695,48 +3862,48 @@ components:
           - unknown
           - withdrawalAmountExceeded
           - withdrawalCountExceeded
-          type: string
-        reference:
           x-addedInVersion: '2'
+        reference:
+          type: string
           description: Your reference for the transfer, used internally within your
             platform. If you don't provide this in the request, Adyen generates a
             unique reference.
           maxLength: 80
-          type: string
-        referenceForBeneficiary:
           x-addedInVersion: '2'
+        referenceForBeneficiary:
+          type: string
           description: " A reference that is sent to the recipient. This reference\
             \ is also sent in all webhooks related to the transfer, so you can use\
             \ it to track statuses for both the source and recipient of funds.\n\n\
             \ Supported characters: **a-z**, **A-Z**, **0-9**.The maximum length depends\
             \ on the `category`.\n\n - **internal**: 80 characters\n\n- **bank**:\
             \ 35 characters when transferring to an IBAN, 15 characters for others."
-          type: string
+          x-addedInVersion: '2'
         review:
-          x-addedInVersion: '3'
-          description: Contains status updates related to additional reviews.
           $ref: '#/components/schemas/TransferReview'
-        sequenceNumber:
+          description: Contains status updates related to additional reviews.
           x-addedInVersion: '3'
+        sequenceNumber:
+          type: integer
+          format: int32
           description: 'The sequence number of the transfer webhook. The numbers start
             from 1 and increase with each new webhook for a specific transfer.
 
 
             The sequence number can help you restore the correct sequence of events
             even if they arrive out of order.'
-          format: int32
-          type: integer
+          x-addedInVersion: '3'
         status:
-          x-addedInVersion: '2'
+          type: string
           description: "The result of the transfer.\n\nFor example:\n\n- **received**:\
             \ an outgoing transfer request is created.\n- **refused**: the transfer\
             \ request is rejected by Adyen for one of the following reasons:\n  -\
-            \ Lack of funds in the balance account.\n  - Transfer limit exceeded.\n\
-            \  - Transaction rule requirements violated.\n- **authorised**: the transfer\
-            \ request is authorized and the funds are reserved.\n- **booked**: the\
-            \ funds are deducted from your user's balance account.\n - **failed**:\
-            \ the transfer is rejected by the counterparty's bank.\n- **returned**:\
-            \ the transfer is returned by the counterparty's bank."
+            \ Transfer limit exceeded.\n  - Transaction rule requirements violated.\n\
+            - **authorised**: the transfer request is authorized and the funds are\
+            \ reserved.\n- **booked**: the funds are deducted from your user's balance\
+            \ account.\n - **failed**: the transfer is rejected by the counterparty's\
+            \ bank.\n- **returned**: the transfer is returned by the counterparty's\
+            \ bank."
           enum:
           - approvalPending
           - atmWithdrawal
@@ -3808,20 +3975,20 @@ components:
           - secondChargeback
           - secondChargebackPending
           - undefined
-          type: string
+          x-addedInVersion: '2'
         tracking:
-          x-addedInVersion: '3'
           description: The latest tracking information of the transfer.
           oneOf:
           - $ref: '#/components/schemas/ConfirmationTrackingData'
           - $ref: '#/components/schemas/EstimationTrackingData'
           - $ref: '#/components/schemas/InternalReviewTrackingData'
+          x-addedInVersion: '3'
         transactionRulesResult:
-          x-addedInVersion: '3'
-          description: Contains the results of the evaluation of the transaction rules.
           $ref: '#/components/schemas/TransactionRulesResult'
-        type:
+          description: Contains the results of the evaluation of the transaction rules.
           x-addedInVersion: '3'
+        type:
+          type: string
           description: The type of transfer or transaction. For example, **refund**,
             **payment**, **internalTransfer**, **bankTransfer**.
           enum:
@@ -3863,89 +4030,89 @@ components:
           - balanceAdjustment
           - balanceRollover
           - balanceMigration
-          type: string
-        ultimateParty:
           x-addedInVersion: '3'
+        ultimateParty:
+          $ref: '#/components/schemas/UltimatePartyIdentification'
           description: The ultimate sender of the funds of the transfer (ultimate
             debtor).
-          $ref: '#/components/schemas/UltimatePartyIdentification'
-        updatedAt:
           x-addedInVersion: '3'
+        updatedAt:
+          type: string
+          format: date-time
           description: The date and time when the event was triggered, in ISO 8601
             extended format. For example, **2020-12-18T10:15:30+01:00**.
-          format: date-time
-          type: string
+          x-addedInVersion: '3'
       required:
-      - status
-      - category
       - amount
-      type: object
+      - category
+      - status
     TransferEvent:
+      type: object
       additionalProperties: false
       properties:
         amount:
-          x-addedInVersion: '3'
+          $ref: '#/components/schemas/Amount'
           description: The original journal amount. Only applicable for [issuing](https://docs.adyen.com/issuing/)
             integrations.
-          $ref: '#/components/schemas/Amount'
-        amountAdjustments:
           x-addedInVersion: '3'
+        amountAdjustments:
+          type: array
           description: The amount adjustments in this transfer. Only applicable for
             [issuing](https://docs.adyen.com/issuing/) integrations.
           items:
             $ref: '#/components/schemas/AmountAdjustment'
-          type: array
+          x-addedInVersion: '3'
         arn:
-          x-addedInVersion: '4'
+          type: string
           description: Scheme unique arn identifier useful for tracing captures, chargebacks,
             refunds, etc.
-          type: string
+          x-addedInVersion: '4'
         bookingDate:
-          x-addedInVersion: '3'
-          description: The date when the transfer request was sent.
-          format: date-time
           type: string
-        estimatedArrivalTime:
+          format: date-time
+          description: The date when the transfer request was sent.
           x-addedInVersion: '3'
+        estimatedArrivalTime:
+          type: string
+          format: date-time
           description: The estimated time when the beneficiary should have access
             to the funds.
-          format: date-time
-          type: string
+          x-addedInVersion: '3'
         eventsData:
-          x-addedInVersion: '4'
+          type: array
           description: A list of event data.
           items:
             oneOf:
             - $ref: '#/components/schemas/InterchangeData'
             - $ref: '#/components/schemas/IssuingTransactionData'
             - $ref: '#/components/schemas/MerchantPurchaseData'
-          type: array
+          x-addedInVersion: '4'
         externalReason:
-          x-addedInVersion: '3'
-          description: The external reason for the transfer status.
           $ref: '#/components/schemas/ExternalReason'
+          description: The external reason for the transfer status.
+          x-addedInVersion: '3'
         id:
-          x-addedInVersion: '3'
-          description: The unique identifier of the transfer event.
           type: string
-        modification:
+          description: The unique identifier of the transfer event.
           x-addedInVersion: '3'
+        modification:
+          $ref: '#/components/schemas/Modification'
           description: The payment modification. Only applicable for [returned internal
             transfers](https://docs.adyen.com/platforms/internal-fund-transfers/internal-transfer-webhooks/#returned-internal-transfer).
-          $ref: '#/components/schemas/Modification'
-        mutations:
           x-addedInVersion: '3'
+        mutations:
+          type: array
           description: The list of balance mutations per event.
           items:
             $ref: '#/components/schemas/BalanceMutation'
-          type: array
-        originalAmount:
           x-addedInVersion: '3'
+        originalAmount:
+          $ref: '#/components/schemas/Amount'
           description: 'The amount in the original currency. Only applicable for [issuing](https://docs.adyen.com/issuing/)
             integrations. '
-          $ref: '#/components/schemas/Amount'
-        reason:
           x-addedInVersion: '3'
+        reason:
+          type: string
           description: The reason for the transfer status.
           enum:
           - accountHierarchyNotActive
@@ -4033,9 +4200,9 @@ components:
           - unknown
           - withdrawalAmountExceeded
           - withdrawalCountExceeded
-          type: string
-        status:
           x-addedInVersion: '3'
+        status:
+          type: string
           description: The status of the transfer event.
           enum:
           - approvalPending
@@ -4108,49 +4275,50 @@ components:
           - secondChargeback
           - secondChargebackPending
           - undefined
-          type: string
-        trackingData:
           x-addedInVersion: '3'
+        trackingData:
           description: Additional information for the tracking event.
           oneOf:
           - $ref: '#/components/schemas/ConfirmationTrackingData'
           - $ref: '#/components/schemas/EstimationTrackingData'
           - $ref: '#/components/schemas/InternalReviewTrackingData'
-        transactionId:
           x-addedInVersion: '3'
+        transactionId:
+          type: string
           description: The id of the transaction that is related to this accounting
             event. Only sent for events of type **accounting** where the balance changes.
-          type: string
-        type:
           x-addedInVersion: '3'
+        type:
+          type: string
           description: 'The type of the transfer event. Possible values: **accounting**,
             **tracking**.'
           enum:
           - accounting
           - tracing
           - tracking
-          type: string
+          x-addedInVersion: '3'
         updateDate:
-          x-addedInVersion: '3'
-          description: The date when the tracking status was updated.
-          format: date-time
           type: string
-        valueDate:
+          format: date-time
+          description: The date when the tracking status was updated.
           x-addedInVersion: '3'
+        valueDate:
+          type: string
+          format: date-time
           description: The date when the funds are expected to be deducted from or
             credited to the balance account. This date can be in either the past or
             future.
-          format: date-time
-          type: string
-      type: object
+          x-addedInVersion: '3'
     TransferInfo:
+      type: object
       additionalProperties: false
       properties:
         amount:
-          x-addedInVersion: '1'
-          description: The amount of the transfer.
           $ref: '#/components/schemas/Amount'
+          description: The amount of the transfer.
+          x-addedInVersion: '1'
         balanceAccountId:
+          type: string
           description: 'The unique identifier of the source [balance account](https://docs.adyen.com/api-explorer/balanceplatform/latest/post/balanceAccounts#responses-200-id).
 
 
@@ -4159,9 +4327,8 @@ components:
             of the **virtual** **bankAccount**. If you only specify a balance account
             ID, Adyen uses the default **physical** **bankAccount** payment instrument
             assigned to the balance account.'
-          type: string
         category:
-          x-addedInVersion: '3'
+          type: string
           description: "The category of the transfer.\n\nPossible values:\n\n - **bank**:\
             \ A transfer involving a [transfer instrument](https://docs.adyen.com/api-explorer/legalentity/latest/post/transferInstruments#responses-200-id)\
             \ or a bank account.\n\n- **card**: A transfer involving a third-party\
@@ -4177,14 +4344,14 @@ components:
           - issuedCard
           - platformPayment
           - topUp
-          type: string
-        counterparty:
           x-addedInVersion: '3'
+        counterparty:
+          $ref: '#/components/schemas/CounterpartyInfoV3'
           description: The other party involved in the funds transfer. A bank account,
             a balance account, a card, or a transfer instrument is required.
-          $ref: '#/components/schemas/CounterpartyInfoV3'
+          x-addedInVersion: '3'
         description:
-          x-addedInVersion: '1'
+          type: string
           description: 'Your description for the transfer. It is used by most banks
             as the transfer description. We recommend sending a maximum of 140 characters,
             otherwise the description may be truncated.
@@ -4196,9 +4363,9 @@ components:
             Supported characters for **regular** and **fast** transfers to a US counterparty:
             **[a-z] [A-Z] [0-9] & $ % # @** **~ = + - _ '' " ! ?**'
           maxLength: 140
-          type: string
+          x-addedInVersion: '1'
         executionDate:
-          x-addedInVersion: '3'
+          $ref: '#/components/schemas/ExecutionDate'
           description: 'The date when the transfer will be processed. This date must
             be within 30 days of the current date.
 
@@ -4211,8 +4378,9 @@ components:
 
 
             '
-          $ref: '#/components/schemas/ExecutionDate'
+          x-addedInVersion: '3'
         paymentInstrumentId:
+          type: string
           description: 'The unique identifier of the source [payment instrument](https://docs.adyen.com/api-explorer/balanceplatform/latest/post/paymentInstruments#responses-200-id).
 
 
@@ -4220,9 +4388,8 @@ components:
             must specify the payment instrument ID of the **virtual** **bankAccount**.
             If you only specify a balance account ID, Adyen uses the default **physical**
             **bankAccount** payment instrument assigned to the balance account.'
-          type: string
         priorities:
-          x-addedInVersion: '4'
+          type: array
           description: " The list of priorities for the bank transfer. This sets the\
             \ speed at which the transfer is sent and the fees that you have to pay.\
             \ You can provide multiple priorities. Adyen will try to pay out using\
@@ -4239,6 +4406,7 @@ components:
             \ bank account (by bank account number/IBAN).\n\nRequired for transfers\
             \ with `category` **bank**. For more details, see [fallback priorities](https://docs.adyen.com/payouts/payout-service/payout-to-users/#fallback-priorities)."
           items:
+            type: string
             enum:
             - crossBorder
             - fast
@@ -4246,10 +4414,9 @@ components:
             - internal
             - regular
             - wire
-            type: string
-          type: array
+          x-addedInVersion: '4'
         priority:
-          x-addedInVersion: '3'
+          type: string
           description: 'The priority for the bank transfer. This sets the speed at
             which the transfer is sent and the fees that you have to pay. Required
             for transfers with `category` **bank**.
@@ -4286,29 +4453,29 @@ components:
           - internal
           - regular
           - wire
-          type: string
+          x-addedInVersion: '3'
         reference:
-          x-addedInVersion: '2'
+          type: string
           description: Your reference for the transfer, used internally within your
             platform. If you don't provide this in the request, Adyen generates a
             unique reference.
           maxLength: 80
-          type: string
-        referenceForBeneficiary:
           x-addedInVersion: '2'
+        referenceForBeneficiary:
+          type: string
           description: " A reference that is sent to the recipient. This reference\
             \ is also sent in all webhooks related to the transfer, so you can use\
             \ it to track statuses for both parties involved in the funds movement.\n\
             \n Supported characters: **a-z**, **A-Z**, **0-9**. The maximum length\
             \ depends on the `category`.\n\n- **internal**: 80 characters\n\n- **bank**:\
             \ 35 characters when transferring to an IBAN, 15 characters for others."
-          type: string
+          x-addedInVersion: '2'
         review:
-          x-addedInVersion: '3'
-          description: 'Contains information required for triggering transfer reviews. '
           $ref: '#/components/schemas/TransferRequestReview'
-        type:
+          description: 'Contains information required for triggering transfer reviews. '
           x-addedInVersion: '3'
+        type:
+          type: string
           description: "The type of transfer.\n\nPossible values:\n\n - **bankTransfer**:\
             \ for push transfers to a transfer instrument or a bank account. The `category`\
             \ must be **bank**.\n- **internalTransfer**: for push transfers between\
@@ -4319,102 +4486,103 @@ components:
           - bankTransfer
           - internalTransfer
           - internalDirectDebit
-          type: string
-        ultimateParty:
           x-addedInVersion: '3'
+        ultimateParty:
+          $ref: '#/components/schemas/UltimatePartyIdentification'
           description: The ultimate sender of the funds of the transfer (ultimate
             debtor).
-          $ref: '#/components/schemas/UltimatePartyIdentification'
+          x-addedInVersion: '3'
       required:
-      - category
       - amount
+      - category
       - counterparty
-      type: object
     TransferNotificationCounterParty:
+      type: object
       additionalProperties: false
       properties:
         balanceAccountId:
+          type: string
           description: The unique identifier of the counterparty [balance account](https://docs.adyen.com/api-explorer/balanceplatform/latest/post/balanceAccounts#responses-200-id).
-          type: string
         bankAccount:
-          description: Contains information about the counterparty bank account.
           $ref: '#/components/schemas/BankAccountV3'
+          description: Contains information about the counterparty bank account.
         card:
-          description: Contains information about the counterparty card.
           $ref: '#/components/schemas/Card'
+          description: Contains information about the counterparty card.
         merchant:
-          description: Contains information about the merchant.
           $ref: '#/components/schemas/TransferNotificationMerchantData'
+          description: Contains information about the merchant.
         transferInstrumentId:
-          description: The unique identifier of the counterparty [transfer instrument](https://docs.adyen.com/api-explorer/legalentity/latest/post/transferInstruments#responses-200-id).
           type: string
-      type: object
+          description: The unique identifier of the counterparty [transfer instrument](https://docs.adyen.com/api-explorer/legalentity/latest/post/transferInstruments#responses-200-id).
     TransferNotificationMerchantData:
+      type: object
       additionalProperties: false
       properties:
         acquirerId:
+          type: string
           description: The unique identifier of the merchant's acquirer.
-          type: string
         city:
+          type: string
           description: The city where the merchant is located.
-          type: string
         country:
-          description: The country where the merchant is located.
           type: string
+          description: The country where the merchant is located.
         countryCode:
+          type: string
           description: The two-character country code of the merchant's location,
             in [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)
             format.
-          type: string
         mcc:
+          type: string
           description: The merchant category code.
-          type: string
         merchantId:
+          type: string
           description: The unique identifier of the merchant.
-          type: string
         name:
+          type: string
           description: The name of the merchant's shop or service.
-          type: string
         postalCode:
-          description: The postal code of the merchant.
           type: string
-      type: object
+          description: The postal code of the merchant.
     TransferNotificationValidationFact:
+      type: object
       additionalProperties: false
       properties:
         result:
+          type: string
           description: The evaluation result of the validation fact.
-          type: string
         type:
-          description: The type of the validation fact.
           type: string
-      type: object
+          description: The type of the validation fact.
     TransferRequestReview:
+      type: object
       additionalProperties: false
       properties:
         numberOfApprovalsRequired:
+          type: integer
+          format: int32
           description: Specifies the number of [approvals](https://docs.adyen.com/api-explorer/transfers/latest/post/transfers/approve)
             required to process the transfer.
-          format: int32
-          type: integer
         scaOnApproval:
+          type: boolean
           description: 'Specifies whether you will initiate Strong Customer Authentication
             (SCA) in thePOST [/transfers/approve](https://docs.adyen.com/api-explorer/transfers/latest/post/transfers/approve)
             request.
 
 
             Only applies to transfers made with an Adyen [business account](https://docs.adyen.com/platforms/business-accounts).'
-          type: boolean
-      type: object
     TransferReview:
+      type: object
       additionalProperties: false
       properties:
         numberOfApprovalsRequired:
+          type: integer
+          format: int32
           description: Shows the number of [approvals](https://docs.adyen.com/api-explorer/transfers/latest/post/transfers/approve)
             required to process the transfer.
-          format: int32
-          type: integer
         scaOnApproval:
+          type: string
           description: 'Shows the status of the Strong Customer Authentication (SCA)
             process.
 
@@ -4424,115 +4592,115 @@ components:
           - completed
           - notApplicable
           - required
-          type: string
-      type: object
     TransferServiceRestServiceError:
+      type: object
       additionalProperties: false
       properties:
         detail:
+          type: string
           description: A human-readable explanation specific to this occurrence of
             the problem.
-          type: string
         errorCode:
-          description: A code that identifies the problem type.
           type: string
+          description: A code that identifies the problem type.
         instance:
+          type: string
           description: A unique URI that identifies the specific occurrence of the
             problem.
-          type: string
         invalidFields:
+          type: array
           description: Detailed explanation of each validation error, when applicable.
           items:
             $ref: '#/components/schemas/InvalidField'
-          type: array
         requestId:
+          type: string
           description: A unique reference for the request, essentially the same as
             `pspReference`.
-          type: string
         response:
-          description: JSON response payload.
           $ref: '#/components/schemas/JSONObject'
+          description: JSON response payload.
         routingDetails:
+          type: array
           description: Detailed explanation of each attempt to route the transfer
             with the priorities from the request.
           items:
             $ref: '#/components/schemas/RoutingDetails'
-          type: array
         status:
-          description: The HTTP status code.
-          format: int32
           type: integer
+          format: int32
+          description: The HTTP status code.
         title:
-          description: A short, human-readable summary of the problem type.
           type: string
+          description: A short, human-readable summary of the problem type.
         type:
+          type: string
           description: A URI that identifies the problem type, pointing to human-readable
             documentation on this problem type.
-          type: string
       required:
-      - type
-      - errorCode
-      - title
       - detail
+      - errorCode
       - status
-      type: object
+      - title
+      - type
     TransferView:
+      type: object
       additionalProperties: false
       properties:
         categoryData:
-          x-addedInVersion: '4'
           description: The relevant data according to the transfer category.
           oneOf:
           - $ref: '#/components/schemas/BankCategoryData'
           - $ref: '#/components/schemas/InternalCategoryData'
           - $ref: '#/components/schemas/IssuedCard'
           - $ref: '#/components/schemas/PlatformPayment'
-        id:
-          description: The ID of the resource.
-          type: string
-        reference:
           x-addedInVersion: '4'
+        id:
+          type: string
+          description: The ID of the resource.
+        reference:
+          type: string
           description: The [`reference`](https://docs.adyen.com/api-explorer/#/transfers/latest/post/transfers__reqParam_reference)
             from the `/transfers` request. If you haven't provided any, Adyen generates
             a unique reference.
-          type: string
+          x-addedInVersion: '4'
       required:
       - reference
-      type: object
     UKLocalAccountIdentification:
+      type: object
       additionalProperties: false
       properties:
         accountNumber:
+          type: string
           description: The 8-digit bank account number, without separators or whitespace.
           maxLength: 8
           minLength: 8
-          type: string
         sortCode:
+          type: string
           description: The 6-digit [sort code](https://en.wikipedia.org/wiki/Sort_code),
             without separators or whitespace.
           maxLength: 6
           minLength: 6
-          type: string
         type:
+          type: string
           default: ukLocal
           description: '**ukLocal**'
           enum:
           - ukLocal
-          type: string
       required:
-      - type
       - accountNumber
       - sortCode
-      type: object
+      - type
     USLocalAccountIdentification:
+      type: object
       additionalProperties: false
       properties:
         accountNumber:
+          type: string
           description: The bank account number, without separators or whitespace.
           maxLength: 18
           minLength: 2
-          type: string
         accountType:
+          type: string
           default: checking
           description: 'The bank account type.
 
@@ -4541,70 +4709,70 @@ components:
           enum:
           - checking
           - savings
-          type: string
         routingNumber:
+          type: string
           description: The 9-digit [routing number](https://en.wikipedia.org/wiki/ABA_routing_transit_number),
             without separators or whitespace.
           maxLength: 9
           minLength: 9
-          type: string
         type:
+          type: string
           default: usLocal
           description: '**usLocal**'
           enum:
           - usLocal
-          type: string
       required:
-      - type
       - accountNumber
       - routingNumber
-      type: object
+      - type
     UltimatePartyIdentification:
+      type: object
       additionalProperties: false
       properties:
         address:
-          description: The address of the bank account or card owner.
           $ref: '#/components/schemas/Address'
+          description: The address of the bank account or card owner.
         dateOfBirth:
+          type: string
+          format: date
           description: 'The date of birth of the individual in [ISO-8601](https://www.w3.org/TR/NOTE-datetime)
             format. For example, **YYYY-MM-DD**.
 
 
             Allowed only when `type` is **individual**.'
-          format: date
-          type: string
         email:
+          type: string
           description: 'The email address of the organization or individual. Maximum
             length: 254 characters.'
           maxLength: 254
-          type: string
         firstName:
+          type: string
           description: "The first name of the individual.\n\nSupported characters:\
             \ [a-z] [A-Z] - . / \u2014 and space.\n\nThis parameter is:\n- Allowed\
             \ only when `type` is **individual**.\n- Required when `category` is **card**."
-          type: string
         fullName:
+          type: string
           description: "The full name of the entity that owns the bank account or\
             \ card.\n\nSupported characters: [a-z] [A-Z] [0-9] , . ; : - \u2014 /\
             \ \\ + & ! ? @ ( ) \" ' and space.\n\nRequired when `category` is **bank**."
-          type: string
         fundingInstrument:
-          description: Details of the card or token used to fund the pay-in transaction.
           $ref: '#/components/schemas/FundingInstrument'
+          description: Details of the card or token used to fund the pay-in transaction.
         lastName:
+          type: string
           description: "The last name of the individual.\n\nSupported characters:\
             \ [a-z] [A-Z] - . / \u2014 and space.\n\nThis parameter is:\n- Allowed\
             \ only when `type` is **individual**.\n- Required when `category` is **card**."
-          type: string
         reference:
+          type: string
           description: 'A unique reference to identify the party or counterparty involved
             in the transfer. For example, your client''s unique wallet or payee ID.
 
 
             Required when you include `cardIdentification.storedPaymentMethodId`.'
           maxLength: 150
-          type: string
         type:
+          type: string
           default: unknown
           description: 'The type of entity that owns the bank account or card.
 
@@ -4618,45 +4786,239 @@ components:
           - individual
           - organization
           - unknown
-          type: string
         url:
+          type: string
           description: 'The URL of the organization or individual. Maximum length:
             255 characters.'
           maxLength: 255
-          type: string
+    CashOut:
       type: object
-  securitySchemes:
-    ApiKeyAuth:
-      in: header
-      name: X-API-Key
-      type: apiKey
-    BasicAuth:
-      scheme: basic
-      type: http
-    clientKey:
-      in: query
-      name: clientKey
-      type: apiKey
-  headers:
-    Idempotency-Key:
-      description: The idempotency key used for processing the request. Present if
-        the key was provided in the request.
-      schema:
-        type: string
-    auth-param1:
-      description: Base64-encoded blob of data. You will need auth-param1 when authenticating
-        your user using the SDK.
-      schema:
-        type: string
+      properties:
+        amount:
+          $ref: '#/components/schemas/Amount'
+          description: Contains the amount of the cashout, in [minor units](https://docs.adyen.com/development-resources/currency-codes).
+        counterparty:
+          $ref: '#/components/schemas/CashOutInfoCounterparty'
+          description: Contains information about the counterparty of the cashout
+            transfer.
+        creationDate:
+          type: string
+          format: date-time
+          description: The date and time when the event was triggered, in ISO 8601
+            extended format. For example, **2025-03-19T10:15:30+01:00**.
+        description:
+          type: string
+          description: 'Allowed and returned only when you provide the `counterparty.transferInstrumentId`
+            field.
+
+
+            Your description of the cashout transfer. This description is used by
+            most banks as the transfer description. We recommend sending a maximum
+            of 140 characters, otherwise the description may be truncated.
+
+
+            If you do not provide a description, Adyen generates a description automatically.
+            This generated description is not returned in the response.
+
+
+            Supported characters: **[a-z] [A-Z] [0-9] / - ? : ( ) . , '' + Space**.'
+        fee:
+          $ref: '#/components/schemas/Fee'
+          description: Contains the currency and value of the cashout fee, in [minor
+            units](https://docs.adyen.com/development-resources/currency-codes).
+        id:
+          type: string
+          description: The unique identifier of the cashout reference.
+        instructingBalanceAccountId:
+          type: string
+          description: The unique identifier of the balance account that initiates
+            the cashout request.
+        referenceForBeneficiary:
+          type: string
+          description: 'Allowed and returned only when you provide the `counterparty.transferInstrumentId`
+            field.
+
+
+            The reference that is sent to the recipient of a cashout transfer. This
+            reference is also sent in all webhooks related to the cashout transfer,
+            so you can use it to track the status of the transfer.
+
+
+            If you do not provide a reference for the beneficiary, Adyen generates
+            one automatically. This generated reference for the beneficiary is not
+            returned in the response.
+
+
+            Supported characters: **a-z**, **A-Z**, **0-9**.'
+        transferInstrumentId:
+          type: string
+          deprecated: true
+          description: '**Use `counterparty.transferInstrumentId` instead.**
+
+
+            The unique identifier of the counterparty transfer instrument.'
+        transfers:
+          type: array
+          description: The list of transfers related to cashout.
+          items:
+            $ref: '#/components/schemas/CashOutTransfer'
+      required:
+      - amount
+      - id
+      - instructingBalanceAccountId
+      - transfers
+    CashOutInfo:
+      type: object
+      properties:
+        amount:
+          $ref: '#/components/schemas/Amount'
+          description: Contains the amount of the cashout, in [minor units](https://docs.adyen.com/development-resources/currency-codes).
+        counterparty:
+          $ref: '#/components/schemas/CashOutInfoCounterparty'
+          description: Contains information about the counterparty of the cashout
+            transfer.
+        creationDate:
+          type: string
+          format: date-time
+          description: The date and time when the event was triggered, in ISO 8601
+            extended format. For example, **2025-03-19T10:15:30+01:00**.
+        description:
+          type: string
+          description: 'Allowed and returned only when you provide the `counterparty.transferInstrumentId`
+            field.
+
+
+            Your description of the cashout transfer. This description is used by
+            most banks as the transfer description. We recommend sending a maximum
+            of 140 characters, otherwise the description may be truncated.
+
+
+            If you do not provide a description, Adyen generates a description automatically.
+            This generated description is not returned in the response.
+
+
+            Supported characters: **[a-z] [A-Z] [0-9] / - ? : ( ) . , '' + Space**.'
+        fee:
+          $ref: '#/components/schemas/Fee'
+          description: Contains the currency and value of the cashout fee, in [minor
+            units](https://docs.adyen.com/development-resources/currency-codes).
+        id:
+          type: string
+          description: The ID of the resource.
+          readOnly: true
+        instructingBalanceAccountId:
+          type: string
+          description: The unique identifier of the balance account that initiates
+            the cashout request.
+        referenceForBeneficiary:
+          type: string
+          description: 'Allowed and returned only when you provide the `counterparty.transferInstrumentId`
+            field.
+
+
+            The reference that is sent to the recipient of a cashout transfer. This
+            reference is also sent in all webhooks related to the cashout transfer,
+            so you can use it to track the status of the transfer.
+
+
+            If you do not provide a reference for the beneficiary, Adyen generates
+            one automatically. This generated reference for the beneficiary is not
+            returned in the response.
+
+
+            Supported characters: **a-z**, **A-Z**, **0-9**.'
+        transferInstrumentId:
+          type: string
+          deprecated: true
+          description: '**Use `counterparty.transferInstrumentId` instead.**
+
+
+            The unique identifier of the counterparty transfer instrument.'
+      required:
+      - amount
+      - instructingBalanceAccountId
+    CashOutInfoCounterparty:
+      type: object
+      properties:
+        transferInstrumentId:
+          type: string
+          description: 'The unique identifier of the counterparty transfer instrument.
+
+
+            If you do not provide this field, the cashout funds remain in the instructing
+            balance account after the cashout transfer is settled.'
+    CashOutTransfer:
+      type: object
+      properties:
+        amount:
+          $ref: '#/components/schemas/Amount'
+          description: The amount of the cashout instruction transaction, in [minor
+            units](https://docs.adyen.com/development-resources/currency-codes).
+        id:
+          type: string
+          description: The reference of the cashout transfer.
+        type:
+          type: string
+          description: "The type of the cashout transfer.\n\nPossible values: \n-\
+            \ **cashoutRepayment**: Corresponds to the transfer created to deduct\
+            \ the cashout amount after settlement.\n- **cashoutFee**: Corresponds\
+            \ to the transfer created to debit the cashout fee form the user's balance\
+            \ account."
+          enum:
+          - cashoutRepayment
+          - cashoutFee
+      required:
+      - amount
+      - id
+      - type
+    DefaultErrorResponseEntity:
+      type: object
+      description: Standardized error response following RFC-7807 format
+      externalDocs:
+        url: https://www.rfc-editor.org/rfc/rfc7807
+      properties:
+        detail:
+          type: string
+          description: A human-readable explanation specific to this occurrence of
+            the problem.
+        errorCode:
+          type: string
+          description: Unique business error code.
+        instance:
+          type: string
+          description: A URI that identifies the specific occurrence of the problem
+            if applicable.
+        invalidFields:
+          type: array
+          description: Array of fields with validation errors when applicable.
+          items:
+            $ref: '#/components/schemas/InvalidField'
+        requestId:
+          type: string
+          description: The unique reference for the request.
+        status:
+          type: integer
+          format: int32
+          description: The HTTP status code.
+        title:
+          type: string
+          description: A short, human-readable summary of the problem type.
+        type:
+          type: string
+          description: A URI that identifies the validation error type. It points
+            to human-readable documentation for the problem type.
   parameters:
     Idempotency-Key:
-      description: A unique identifier for the message with a maximum of 64 characters
-        (we recommend a UUID).
-      example: 37ca9c97-d1d1-4c62-89e8-706891a563ed
       name: Idempotency-Key
       in: header
+      description: A unique identifier for the message with a maximum of 64 characters
+        (we recommend a UUID).
+      required: false
+      style: simple
+      explode: false
       schema:
         type: string
+      example: 37ca9c97-d1d1-4c62-89e8-706891a563ed
   examples:
     get-transactions-id-success-200:
       summary: Response code - 200 OK
@@ -5072,8 +5434,8 @@ components:
         reference: Your internal reference for the transfer
         description: Your description for the transfer
         direction: outgoing
-        reason: approved
-        status: authorised
+        reason: pending
+        status: received
     post-transfers-payout-cross-border-platforms:
       summary: Make a cross-border transfer
       description: Example request to make a cross-border transfer
@@ -5116,8 +5478,8 @@ components:
         reference: Your internal reference for the transfer
         description: Your description for the transfer
         direction: outgoing
-        reason: approved
-        status: authorised
+        reason: pending
+        status: received
     post-transfers-payout-local-transfer-sepa:
       summary: Make a SEPA funds transfer
       description: Example request to make a SEPA funds transfer
@@ -5173,8 +5535,8 @@ components:
         reference: Your internal reference for the transfer
         description: Your description for the transfer
         direction: outgoing
-        reason: approved
-        status: authorised
+        reason: pending
+        status: received
     post-transfers-payout-local-transfer-us:
       summary: Make a US local funds transfer
       description: Example request to make a US local funds transfer
@@ -5232,8 +5594,8 @@ components:
         reference: Your internal reference for the transfer
         description: Your description for the transfer
         direction: outgoing
-        reason: approved
-        status: authorised
+        reason: pending
+        status: received
     post-transfers-payout-to-balance-account:
       summary: Transfer funds to another balance account
       description: Example request to transfer funds to another balance account
@@ -5271,8 +5633,8 @@ components:
         reference: Your internal reference for the transfer
         description: Your description for the transfer
         direction: outgoing
-        reason: approved
-        status: authorised
+        reason: pending
+        status: received
     post-transfers-payout-to-card-raw:
       summary: Pay out to a third-party card (raw card details)
       description: Example request to pay out to a third-party card using raw card
@@ -5337,9 +5699,9 @@ components:
               number: 432112******8765
         description: Your internal description of the transfer
         direction: outgoing
-        reason: approved
+        reason: pending
         reference: Your internal reference for the transfer
-        status: authorised
+        status: received
         type: cardTransfer
     post-transfers-payout-to-card-tokenized:
       summary: Pay out to a third-party card (tokenized card details)
@@ -5403,9 +5765,9 @@ components:
               storedPaymentMethodId: ZMV627QSCQVDKG66
         description: Your internal description of the transfer
         direction: outgoing
-        reason: approved
+        reason: pending
         reference: Your internal reference for the transfer
-        status: authorised
+        status: received
         type: cardTransfer
     post-transfers-payout-to-transfer-instrument:
       summary: Pay out to a transfer instrument
@@ -5452,8 +5814,8 @@ components:
         reference: Your internal reference for the transfer
         description: Your description for the transfer
         direction: outgoing
-        reason: approved
-        status: authorised
+        reason: pending
+        status: received
     post-transfers-transferId-returns-transfers-return:
       summary: Return an incoming internal transfer
       description: Example request to return an incoming internal transfer
@@ -5470,3 +5832,30 @@ components:
         reference: Your internal reference for the return
         status: Authorised
         transferId: 1W1UG35U8A9J5ZLG
+  headers:
+    Idempotency-Key:
+      description: The idempotency key used for processing the request. Present if
+        the key was provided in the request.
+      style: simple
+      explode: false
+      schema:
+        type: string
+    auth-param1:
+      description: Base64-encoded blob of data. You will need auth-param1 when authenticating
+        your user using the SDK.
+      style: simple
+      explode: false
+      schema:
+        type: string
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      name: X-API-Key
+      in: header
+    BasicAuth:
+      type: http
+      scheme: basic
+    clientKey:
+      type: apiKey
+      name: clientKey
+      in: query
