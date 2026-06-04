@@ -1173,7 +1173,8 @@ paths:
       tags:
       - CashOut
       summary: Initiate a cashout
-      description: Initiates a cashout request
+      description: Initiates a [cashout](https://docs.adyen.com/platforms/cash-out-instantly)
+        request.
       operationId: post-cashouts
       requestBody:
         content:
@@ -1513,6 +1514,25 @@ components:
           description: Contains the bank account details. The fields required in this
             object depend on the country of the bank account and the currency of the
             transfer.
+          discriminator:
+            propertyName: type
+            mapping:
+              iban: '#/components/schemas/IbanAccountIdentification'
+              numberAndBic: '#/components/schemas/NumberAndBicAccountIdentification'
+              auLocal: '#/components/schemas/AULocalAccountIdentification'
+              czLocal: '#/components/schemas/CZLocalAccountIdentification'
+              noLocal: '#/components/schemas/NOLocalAccountIdentification'
+              plLocal: '#/components/schemas/PLLocalAccountIdentification'
+              huLocal: '#/components/schemas/HULocalAccountIdentification'
+              seLocal: '#/components/schemas/SELocalAccountIdentification'
+              sgLocal: '#/components/schemas/SGLocalAccountIdentification'
+              ukLocal: '#/components/schemas/UKLocalAccountIdentification'
+              usLocal: '#/components/schemas/USLocalAccountIdentification'
+              brLocal: '#/components/schemas/BRLocalAccountIdentification'
+              dkLocal: '#/components/schemas/DKLocalAccountIdentification'
+              caLocal: '#/components/schemas/CALocalAccountIdentification'
+              nzLocal: '#/components/schemas/NZLocalAccountIdentification'
+              hkLocal: '#/components/schemas/HKLocalAccountIdentification'
           oneOf:
           - $ref: '#/components/schemas/AULocalAccountIdentification'
           - $ref: '#/components/schemas/BRLocalAccountIdentification'
@@ -2444,6 +2464,8 @@ components:
           type: string
           description: The status of the transfer event.
           enum:
+          - adviceAuthorised
+          - adviceRefused
           - approvalPending
           - atmWithdrawal
           - atmWithdrawalReversalPending
@@ -3311,6 +3333,13 @@ components:
           x-addedInVersion: '3'
         categoryData:
           description: The relevant data according to the transfer category.
+          discriminator:
+            propertyName: type
+            mapping:
+              issuedCard: '#/components/schemas/IssuedCard'
+              platformPayment: '#/components/schemas/PlatformPayment'
+              bank: '#/components/schemas/BankCategoryData'
+              internal: '#/components/schemas/InternalCategoryData'
           oneOf:
           - $ref: '#/components/schemas/BankCategoryData'
           - $ref: '#/components/schemas/InternalCategoryData'
@@ -3509,6 +3538,8 @@ components:
             \ bank.\n- **returned**: the transfer is returned by the counterparty's\
             \ bank."
           enum:
+          - adviceAuthorised
+          - adviceRefused
           - approvalPending
           - atmWithdrawal
           - atmWithdrawalReversalPending
@@ -3681,6 +3712,13 @@ components:
           x-addedInVersion: '3'
         categoryData:
           description: The relevant data according to the transfer category.
+          discriminator:
+            propertyName: type
+            mapping:
+              issuedCard: '#/components/schemas/IssuedCard'
+              platformPayment: '#/components/schemas/PlatformPayment'
+              bank: '#/components/schemas/BankCategoryData'
+              internal: '#/components/schemas/InternalCategoryData'
           oneOf:
           - $ref: '#/components/schemas/BankCategoryData'
           - $ref: '#/components/schemas/InternalCategoryData'
@@ -3905,6 +3943,8 @@ components:
             \ bank.\n- **returned**: the transfer is returned by the counterparty's\
             \ bank."
           enum:
+          - adviceAuthorised
+          - adviceRefused
           - approvalPending
           - atmWithdrawal
           - atmWithdrawalReversalPending
@@ -3978,6 +4018,12 @@ components:
           x-addedInVersion: '2'
         tracking:
           description: The latest tracking information of the transfer.
+          discriminator:
+            propertyName: type
+            mapping:
+              estimation: '#/components/schemas/EstimationTrackingData'
+              confirmation: '#/components/schemas/ConfirmationTrackingData'
+              internalReview: '#/components/schemas/InternalReviewTrackingData'
           oneOf:
           - $ref: '#/components/schemas/ConfirmationTrackingData'
           - $ref: '#/components/schemas/EstimationTrackingData'
@@ -4082,6 +4128,12 @@ components:
           type: array
           description: A list of event data.
           items:
+            discriminator:
+              propertyName: type
+              mapping:
+                merchantPurchaseData: '#/components/schemas/MerchantPurchaseData'
+                issuingTransactionData: '#/components/schemas/IssuingTransactionData'
+                interchangeData: '#/components/schemas/InterchangeData'
             oneOf:
             - $ref: '#/components/schemas/InterchangeData'
             - $ref: '#/components/schemas/IssuingTransactionData'
@@ -4205,6 +4257,8 @@ components:
           type: string
           description: The status of the transfer event.
           enum:
+          - adviceAuthorised
+          - adviceRefused
           - approvalPending
           - atmWithdrawal
           - atmWithdrawalReversalPending
@@ -4278,6 +4332,12 @@ components:
           x-addedInVersion: '3'
         trackingData:
           description: Additional information for the tracking event.
+          discriminator:
+            propertyName: type
+            mapping:
+              estimation: '#/components/schemas/EstimationTrackingData'
+              confirmation: '#/components/schemas/ConfirmationTrackingData'
+              internalReview: '#/components/schemas/InternalReviewTrackingData'
           oneOf:
           - $ref: '#/components/schemas/ConfirmationTrackingData'
           - $ref: '#/components/schemas/EstimationTrackingData'
@@ -4648,6 +4708,13 @@ components:
       properties:
         categoryData:
           description: The relevant data according to the transfer category.
+          discriminator:
+            propertyName: type
+            mapping:
+              issuedCard: '#/components/schemas/IssuedCard'
+              platformPayment: '#/components/schemas/PlatformPayment'
+              bank: '#/components/schemas/BankCategoryData'
+              internal: '#/components/schemas/InternalCategoryData'
           oneOf:
           - $ref: '#/components/schemas/BankCategoryData'
           - $ref: '#/components/schemas/InternalCategoryData'
@@ -4801,11 +4868,6 @@ components:
           $ref: '#/components/schemas/CashOutInfoCounterparty'
           description: Contains information about the counterparty of the cashout
             transfer.
-        creationDate:
-          type: string
-          format: date-time
-          description: The date and time when the event was triggered, in ISO 8601
-            extended format. For example, **2025-03-19T10:15:30+01:00**.
         description:
           type: string
           description: 'Allowed and returned only when you provide the `counterparty.transferInstrumentId`
@@ -4877,11 +4939,6 @@ components:
           $ref: '#/components/schemas/CashOutInfoCounterparty'
           description: Contains information about the counterparty of the cashout
             transfer.
-        creationDate:
-          type: string
-          format: date-time
-          description: The date and time when the event was triggered, in ISO 8601
-            extended format. For example, **2025-03-19T10:15:30+01:00**.
         description:
           type: string
           description: 'Allowed and returned only when you provide the `counterparty.transferInstrumentId`
