@@ -1127,7 +1127,51 @@ webhooks:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PrearbitrationIssuerWithdrawnNotificationRequest'
+              $ref: '#/components/schemas/PrearbitrationSchemeArbitrationNotificationRequest'
+      responses:
+        '200':
+          description: No Content - webhook events are accepted on the basis of the
+            HTTP status code.
+  /SCHEME_ARBITRATION_LOST:
+    post:
+      tags:
+      - Dispute
+      summary: The scheme has ruled in favor of the issuer.
+      description: The pre-arbitration case was escalated to [scheme arbitration](https://docs.adyen.com/risk-management/understanding-disputes/dispute-process-and-flow#dispute-process),
+        and the case was lost. The payment scheme has ruled that you are liable for
+        the dispute.
+      operationId: post-SCHEME_ARBITRATION_LOST
+      x-sortIndex: 0
+      x-methodName: thePrearbitrationCaseWasEscalatedToLostRuledForIssuer
+      security:
+      - BasicAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SchemeArbitrationLostNotificationRequest'
+      responses:
+        '200':
+          description: No Content - webhook events are accepted on the basis of the
+            HTTP status code.
+  /SCHEME_ARBITRATION_WON:
+    post:
+      tags:
+      - Dispute
+      summary: The scheme has ruled in your favor.
+      description: The pre-arbitration case was escalated to [scheme arbitration](https://docs.adyen.com/risk-management/understanding-disputes/dispute-process-and-flow#dispute-process),
+        and the case was won. The payment scheme has ruled that the issuer is liable
+        for the dispute. The dispute is closed.
+      operationId: post-SCHEME_ARBITRATION_WON
+      x-sortIndex: 0
+      x-methodName: thePrearbitrationCaseWasEscalatedToWonRuledForAcquirer
+      security:
+      - BasicAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SchemeArbitrationWonNotificationRequest'
       responses:
         '200':
           description: No Content - webhook events are accepted on the basis of the
@@ -1923,13 +1967,25 @@ components:
           type: object
         modifiedShopperReference:
           type: string
+        networkProcessingMode:
+          description: "Indicates the processing flow.\n\nPossible values:\n* **sale**:\
+            \ You do not need to separately capture the funds, because capture happens\
+            \ automatically as part of the transaction. \n* **auth**: If you have\
+            \ not [configured automatic capture for the transaction](https://docs.adyen.com/online-payments/capture#types-of-capture),\
+            \ you must manually capture the funds."
+          type: string
         networkToken.available:
           type: string
         networkToken.bin:
           type: string
         networkToken.tokenSummary:
           type: string
+        networkTxDate:
+          description: The network transaction date for Mastercard transactions processed
+            by Bank of America Merchant Services (BAMS).
+          type: string
         networkTxReference:
+          description: The network transaction reference from the scheme, when available.
           type: string
         nfc.expire:
           description: NFC related.
@@ -2191,6 +2247,8 @@ components:
           description: Total fraud score from risk.
           type: string
         transactionId:
+          type: string
+        transactionLinkId:
           type: string
         txScreening.appliedRule:
           type: string
@@ -5122,6 +5180,13 @@ components:
           description: 'A set of key-value pairs provided in the request, prefixed
             with ''metadata.''. For example, ''metadata.myField: myValue'''
           type: object
+        networkProcessingMode:
+          description: "Indicates the processing flow.\n\nPossible values:\n* **sale**:\
+            \ You do not need to separately capture the funds, because capture happens\
+            \ automatically as part of the transaction. \n* **auth**: If you have\
+            \ not [configured automatic capture for the transaction](https://docs.adyen.com/online-payments/capture#types-of-capture),\
+            \ you must manually capture the funds."
+          type: string
         networkToken.available:
           description: Recurring related.
           type: string
@@ -5130,6 +5195,13 @@ components:
           type: string
         networkToken.tokenSummary:
           description: Recurring related.
+          type: string
+        networkTxDate:
+          description: The network transaction date for Mastercard transactions processed
+            by Bank of America Merchant Services (BAMS).
+          type: string
+        networkTxReference:
+          description: The network transaction reference from the scheme, when available.
           type: string
         nfc.expire:
           description: NFC related.
@@ -5951,6 +6023,20 @@ components:
             $ref: '#/components/schemas/DisputesNotificationRequestItemWrapper'
           type: array
       type: object
+    PrearbitrationSchemeArbitrationNotificationRequest:
+      additionalProperties: false
+      properties:
+        live:
+          description: Informs about the origin of the notification. The value is
+            **true** when originating from the live environment, **false** for the
+            test environment.
+          type: string
+        notificationItems:
+          description: A container object for the details included in the notification.
+          items:
+            $ref: '#/components/schemas/DisputesNotificationRequestItemWrapper'
+          type: array
+      type: object
     PrearbitrationWonNotificationRequest:
       additionalProperties: false
       properties:
@@ -6246,6 +6332,13 @@ components:
           description: 'A set of key-value pairs provided in the request, prefixed
             with ''metadata.''. For example, ''metadata.myField: myValue'''
           type: object
+        networkProcessingMode:
+          description: "Indicates the processing flow.\n\nPossible values:\n* **sale**:\
+            \ You do not need to separately capture the funds, because capture happens\
+            \ automatically as part of the transaction. \n* **auth**: If you have\
+            \ not [configured automatic capture for the transaction](https://docs.adyen.com/online-payments/capture#types-of-capture),\
+            \ you must manually capture the funds."
+          type: string
         networkToken.available:
           description: Recurring related.
           type: string
@@ -6254,6 +6347,13 @@ components:
           type: string
         networkToken.tokenSummary:
           description: Recurring related.
+          type: string
+        networkTxDate:
+          description: The network transaction date for Mastercard transactions processed
+            by Bank of America Merchant Services (BAMS).
+          type: string
+        networkTxReference:
+          description: The network transaction reference from the scheme, when available.
           type: string
         nfc.expire:
           description: NFC related.
@@ -6573,6 +6673,13 @@ components:
         interactionCounter:
           type: string
         merchantOrderReference:
+          type: string
+        networkTxDate:
+          description: The network transaction date for Mastercard transactions processed
+            by Bank of America Merchant Services (BAMS).
+          type: string
+        networkTxReference:
+          description: The network transaction reference from the scheme, when available.
           type: string
         paymentLinkId:
           type: string
@@ -7096,6 +7203,13 @@ components:
           type: string
         merchantOrderReference:
           type: string
+        networkTxDate:
+          description: The network transaction date for Mastercard transactions processed
+            by Bank of America Merchant Services (BAMS).
+          type: string
+        networkTxReference:
+          description: The network transaction reference from the scheme, when available.
+          type: string
         paymentLinkId:
           type: string
         paymentMethodVariant:
@@ -7472,6 +7586,34 @@ components:
         NotificationRequestItem:
           $ref: '#/components/schemas/ReportAvailableNotificationRequestItem'
     RequestForInformationNotificationRequest:
+      additionalProperties: false
+      properties:
+        live:
+          description: Informs about the origin of the notification. The value is
+            **true** when originating from the live environment, **false** for the
+            test environment.
+          type: string
+        notificationItems:
+          description: A container object for the details included in the notification.
+          items:
+            $ref: '#/components/schemas/DisputesNotificationRequestItemWrapper'
+          type: array
+      type: object
+    SchemeArbitrationLostNotificationRequest:
+      additionalProperties: false
+      properties:
+        live:
+          description: Informs about the origin of the notification. The value is
+            **true** when originating from the live environment, **false** for the
+            test environment.
+          type: string
+        notificationItems:
+          description: A container object for the details included in the notification.
+          items:
+            $ref: '#/components/schemas/DisputesNotificationRequestItemWrapper'
+          type: array
+      type: object
+    SchemeArbitrationWonNotificationRequest:
       additionalProperties: false
       properties:
         live:
