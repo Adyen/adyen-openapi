@@ -1077,8 +1077,6 @@ components:
           x-addedInVersion: '3'
           description: The status of the transfer event.
           enum:
-          - adviceAuthorised
-          - adviceRefused
           - approvalPending
           - atmWithdrawal
           - atmWithdrawalReversalPending
@@ -1215,6 +1213,38 @@ components:
           type: string
         state:
           description: The state where the merchant is located.
+          type: string
+      type: object
+    NetworkReason:
+      additionalProperties: false
+      properties:
+        code:
+          description: The reason code provided by the network.
+          type: string
+        description:
+          description: The description of the reason code.
+          type: string
+        namespace:
+          description: 'The namespace that corresponds to the reason code.
+
+
+            Possible values:
+
+            *  **ukFpsRejectionCode**
+
+            *  **ukFpsReturnReasonCode**
+
+            *  **usAchReturnReasonCode**
+
+            *  **iso8583ResponseCode**
+
+
+            '
+          enum:
+          - iso8583ResponseCode
+          - ukFpsRejectionCode
+          - ukFpsReturnReasonCode
+          - usAchReturnReasonCode
           type: string
       type: object
     NumberAndBicAccountIdentification:
@@ -1769,6 +1799,11 @@ components:
         id:
           description: The ID of the resource.
           type: string
+        networkReason:
+          x-addedInVersion: '4'
+          description: Contains information that explains why the transfer was rejected
+            or returned by the network.
+          $ref: '#/components/schemas/NetworkReason'
         paymentInstrument:
           x-addedInVersion: '3'
           description: Contains information about the payment instrument used in the
@@ -1906,8 +1941,6 @@ components:
             \ bank.\n- **returned**: the transfer is returned by the counterparty's\
             \ bank."
           enum:
-          - adviceAuthorised
-          - adviceRefused
           - approvalPending
           - atmWithdrawal
           - atmWithdrawalReversalPending
@@ -1979,6 +2012,18 @@ components:
           - secondChargebackPending
           - undefined
           type: string
+        tracing:
+          x-addedInVersion: '4'
+          description: Contains information for tracing the transfer after Adyen forwards
+            it to the network.
+          discriminator:
+            mapping:
+              usAch: '#/components/schemas/USAchTracingData'
+              ukFps: '#/components/schemas/UKFpsTracingData'
+            propertyName: type
+          oneOf:
+          - $ref: '#/components/schemas/UKFpsTracingData'
+          - $ref: '#/components/schemas/USAchTracingData'
         tracking:
           x-addedInVersion: '3'
           description: The latest tracking information of the transfer.
@@ -2220,8 +2265,6 @@ components:
           x-addedInVersion: '3'
           description: The status of the transfer event.
           enum:
-          - adviceAuthorised
-          - adviceRefused
           - approvalPending
           - atmWithdrawal
           - atmWithdrawalReversalPending
@@ -2293,6 +2336,17 @@ components:
           - secondChargebackPending
           - undefined
           type: string
+        tracingData:
+          x-addedInVersion: '4'
+          description: Additional tracing information for the tracing event.
+          discriminator:
+            mapping:
+              usAch: '#/components/schemas/USAchTracingData'
+              ukFps: '#/components/schemas/UKFpsTracingData'
+            propertyName: type
+          oneOf:
+          - $ref: '#/components/schemas/UKFpsTracingData'
+          - $ref: '#/components/schemas/USAchTracingData'
         trackingData:
           x-addedInVersion: '3'
           description: Additional information for the tracking event.
@@ -2438,6 +2492,23 @@ components:
           - required
           type: string
       type: object
+    UKFpsTracingData:
+      additionalProperties: false
+      properties:
+        fpid:
+          description: The FPS trace number. This is a unique identifier assigned
+            to transfers processed by [FPS](https://www.bankofengland.co.uk/payment-systems/services/faster-payments-service).
+          type: string
+        type:
+          default: ukFps
+          description: '**ukFps**'
+          enum:
+          - ukFps
+          type: string
+      required:
+      - type
+      - fpid
+      type: object
     UKLocalAccountIdentification:
       additionalProperties: false
       properties:
@@ -2462,6 +2533,23 @@ components:
       - type
       - accountNumber
       - sortCode
+      type: object
+    USAchTracingData:
+      additionalProperties: false
+      properties:
+        traceNumber:
+          description: The ACH trace number. This is a unique 15-digit identifier
+            assigned to transfers processed by [ACH](https://fiscal.treasury.gov/payments-from-government/automated-clearing-house-ach).
+          type: string
+        type:
+          default: usAch
+          description: '**usAch**'
+          enum:
+          - usAch
+          type: string
+      required:
+      - type
+      - traceNumber
       type: object
     USLocalAccountIdentification:
       additionalProperties: false
