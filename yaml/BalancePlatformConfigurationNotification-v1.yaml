@@ -21,6 +21,7 @@ tags:
 - name: Card order
 - name: Direct debit mandates
 - name: Network token
+- name: Recurring top ups
 - name: Payout schedules
 - name: Score
 webhooks:
@@ -102,6 +103,87 @@ webhooks:
                 $ref: '#/components/examples/post-balancePlatform.balanceAccount.created-balancePlatform-balanceAccount-created'
             schema:
               $ref: '#/components/schemas/BalanceAccountNotificationRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BalancePlatformNotificationResponse'
+          description: OK - the request has succeeded.
+  balancePlatform.balanceAccount.recurringTopUp.created:
+    post:
+      tags:
+      - Recurring top ups
+      summary: Recurring top-up created
+      description: Adyen sends this webhook when a [recurring top-up](https://docs.adyen.com/api-explorer/balanceplatform/latest/post/balanceAccounts/_balanceAccountId_/recurringTopUps)
+        is successfully created for a balance account.
+      operationId: post-balancePlatform.balanceAccount.recurringTopUp.created
+      x-sortIndex: 1
+      x-methodName: recurringTopupCreated
+      security:
+      - BasicAuth: []
+      requestBody:
+        content:
+          application/json:
+            examples:
+              balancePlatform-recurringTopUp-created:
+                $ref: '#/components/examples/post-balancePlatform.balanceAccount.recurringTopUp.created-balancePlatform-recurringTopUp-created'
+            schema:
+              $ref: '#/components/schemas/TopUpConfigurationEventRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BalancePlatformNotificationResponse'
+          description: OK - the request has succeeded.
+  balancePlatform.balanceAccount.recurringTopUp.deleted:
+    post:
+      tags:
+      - Recurring top ups
+      summary: Recurring top-up deleted
+      description: Adyen sends this webhook when a [recurring top-up](https://docs.adyen.com/api-explorer/balanceplatform/latest/delete/balanceAccounts/_balanceAccountId_/recurringTopUps/_recurringTopUpId_)
+        is successfully deleted from a balance account.
+      operationId: post-balancePlatform.balanceAccount.recurringTopUp.deleted
+      x-sortIndex: 3
+      x-methodName: recurringTopupDeleted
+      security:
+      - BasicAuth: []
+      requestBody:
+        content:
+          application/json:
+            examples:
+              balancePlatform-recurringTopUp-deleted:
+                $ref: '#/components/examples/post-balancePlatform.balanceAccount.recurringTopUp.deleted-balancePlatform-recurringTopUp-deleted'
+            schema:
+              $ref: '#/components/schemas/TopUpConfigurationEventRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BalancePlatformNotificationResponse'
+          description: OK - the request has succeeded.
+  balancePlatform.balanceAccount.recurringTopUp.updated:
+    post:
+      tags:
+      - Recurring top ups
+      summary: Recurring top-up updated
+      description: Adyen sends this webhook when a [recurring top-up](https://docs.adyen.com/api-explorer/balanceplatform/latest/patch/balanceAccounts/_balanceAccountId_/recurringTopUps/_recurringTopUpId_)
+        is successfully updated for a balance account.
+      operationId: post-balancePlatform.balanceAccount.recurringTopUp.updated
+      x-sortIndex: 2
+      x-methodName: recurringTopupUpdated
+      security:
+      - BasicAuth: []
+      requestBody:
+        content:
+          application/json:
+            examples:
+              balancePlatform-recurringTopUp-updated:
+                $ref: '#/components/examples/post-balancePlatform.balanceAccount.recurringTopUp.updated-balancePlatform-recurringTopUp-updated'
+            schema:
+              $ref: '#/components/schemas/TopUpConfigurationUpdatedEventRequest'
       responses:
         '200':
           content:
@@ -2918,6 +3000,109 @@ components:
           description: The result of the authentication process.
           type: string
       type: object
+    TopUpConfigurationEventRequest:
+      additionalProperties: false
+      properties:
+        data:
+          description: Contains event details.
+          $ref: '#/components/schemas/TopUpWebhookData'
+        environment:
+          description: 'The environment from which the webhook originated.
+
+
+            Possible values: **test**, **live**.'
+          type: string
+        timestamp:
+          description: When the event was queued.
+          format: date-time
+          type: string
+        type:
+          description: Type of webhook.
+          enum:
+          - balancePlatform.balanceAccount.recurringTopUp.created
+          - balancePlatform.balanceAccount.recurringTopUp.deleted
+          type: string
+      required:
+      - environment
+      - type
+      - data
+      type: object
+    TopUpConfigurationUpdatedEventRequest:
+      additionalProperties: false
+      properties:
+        data:
+          description: Contains event details.
+          $ref: '#/components/schemas/TopUpUpdatedWebhookData'
+        environment:
+          description: 'The environment from which the webhook originated.
+
+
+            Possible values: **test**, **live**.'
+          type: string
+        timestamp:
+          description: When the event was queued.
+          format: date-time
+          type: string
+        type:
+          description: Type of webhook.
+          enum:
+          - balancePlatform.balanceAccount.recurringTopUp.updated
+          type: string
+      required:
+      - environment
+      - type
+      - data
+      type: object
+    TopUpUpdatedWebhookData:
+      additionalProperties: false
+      properties:
+        accountId:
+          description: The unique identifier of the balance account for which the
+            recurring top-up is configured.
+          type: string
+        balancePlatform:
+          description: The unique identifier of the balance platform.
+          type: string
+        creationDate:
+          description: The date and time when the event was triggered, in ISO 8601
+            extended format. For example, **2025-03-19T10:15:30+01:00**.
+          format: date-time
+          type: string
+        id:
+          description: The ID of the resource.
+          type: string
+        webhookTopUpConfiguration:
+          description: The recurring top-up configuration details.
+          $ref: '#/components/schemas/WebhookTopUpConfigurationUpdated'
+      required:
+      - accountId
+      - webhookTopUpConfiguration
+      type: object
+    TopUpWebhookData:
+      additionalProperties: false
+      properties:
+        accountId:
+          description: The unique identifier of the balance account for which the
+            recurring top-up is configured.
+          type: string
+        balancePlatform:
+          description: The unique identifier of the balance platform.
+          type: string
+        creationDate:
+          description: The date and time when the event was triggered, in ISO 8601
+            extended format. For example, **2025-03-19T10:15:30+01:00**.
+          format: date-time
+          type: string
+        id:
+          description: The ID of the resource.
+          type: string
+        webhookTopUpConfiguration:
+          description: The recurring top-up configuration details.
+          $ref: '#/components/schemas/WebhookTopUpConfiguration'
+      required:
+      - accountId
+      - webhookTopUpConfiguration
+      type: object
     UKLocalMandateAccountIdentification:
       additionalProperties: false
       properties:
@@ -3363,6 +3548,220 @@ components:
             Possible values: **applePay**, **googlePay**, **garminPay**.'
           type: string
       type: object
+    WebhookAmount:
+      additionalProperties: false
+      properties:
+        currency:
+          description: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).
+          type: string
+        value:
+          description: The amount, in [minor units](https://docs.adyen.com/development-resources/currency-codes).
+          format: int64
+          type: integer
+      required:
+      - currency
+      - value
+      type: object
+    WebhookTopUpAmount:
+      additionalProperties: false
+      properties:
+        fixedAmount:
+          description: The fixed amount with which you want to top up the balance
+            account.
+          $ref: '#/components/schemas/WebhookAmount'
+        targetAmount:
+          description: The target balance for the balance account that the top-up
+            must achieve.
+          $ref: '#/components/schemas/WebhookAmount'
+      type: object
+    WebhookTopUpConfiguration:
+      additionalProperties: false
+      properties:
+        counterparty:
+          description: The source of the funds.
+          $ref: '#/components/schemas/WebhookTopUpCounterparty'
+        description:
+          description: 'The message that is used in the top-up transfer''s description
+            body with a maximum length of 140 characters.
+
+
+            If the message is longer after replacing placeholders, the message is
+            cut off at 140 characters.'
+          maxLength: 140
+          type: string
+        id:
+          description: The unique identifier of the recurring top-up configuration.
+          type: string
+        mandate:
+          description: The mandate associated with the recurring top-up.
+          $ref: '#/components/schemas/WebhookTopUpMandate'
+        referenceForBeneficiary:
+          description: " A reference that is sent to the recipient. This reference\
+            \ is also sent in all webhooks related to the transfer, so you can use\
+            \ it to track statuses for both parties involved in the funds movement.\n\
+            \n Supported characters: **a-z**, **A-Z**, **0-9**."
+          maxLength: 80
+          type: string
+        status:
+          description: "The status of the top-up configuration.\n\nPossible values:\
+            \ \n\n * **active**: the top-up is enabled and funds are pulled in.\n\n\
+            \ * **inactive**: the top-up is disabled and cannot be triggered. \n\n"
+          enum:
+          - active
+          - inactive
+          type: string
+        topUpAmount:
+          description: The amount of the top-up. This can be a fixed amount or a target
+            amount.
+          $ref: '#/components/schemas/WebhookTopUpAmount'
+        trigger:
+          description: The condition that triggers the top-up. This can be a recurring
+            schedule or a minimum balance threshold.
+          $ref: '#/components/schemas/WebhookTopUpTrigger'
+      required:
+      - id
+      - counterparty
+      - description
+      - topUpAmount
+      - trigger
+      - status
+      type: object
+    WebhookTopUpConfigurationUpdated:
+      additionalProperties: false
+      properties:
+        counterparty:
+          description: The source of the funds.
+          $ref: '#/components/schemas/WebhookTopUpCounterparty'
+        description:
+          description: 'The message that is used in the top-up transfer''s description
+            body with a maximum length of 140 characters.
+
+
+            If the message is longer after replacing placeholders, the message is
+            cut off at 140 characters.'
+          maxLength: 140
+          type: string
+        disabledReason:
+          description: 'A machine-readable code identifying the reason the system
+            deactivated the top-up configuration. This field is only populated when
+            the status is `inactive`.
+
+
+            Possible values:
+
+
+            * **transferInstrumentDoesNotExist**
+
+            * **directDebitNotSupported**
+
+            * **accountHierarchyNotActive**
+
+            * **mandateNotFound**
+
+            * **mandateNotActive**
+
+            * **directDebitAmountThresholdExceeded**
+
+            * **topUpNotSupported**
+
+            * **routeNotFound**
+
+            * **counterpartyAccountBlocked**
+
+            * **counterpartyAccountInvalid**
+
+            * **unknown**'
+          type: string
+        id:
+          description: The unique identifier of the recurring top-up configuration.
+          type: string
+        mandate:
+          description: The mandate associated with the recurring top-up.
+          $ref: '#/components/schemas/WebhookTopUpMandate'
+        reasonDetail:
+          description: A human-readable description providing the specific reason
+            or context for why the configuration was disabled. This field is only
+            populated when the status is `inactive`.
+          type: string
+        referenceForBeneficiary:
+          description: " A reference that is sent to the recipient. This reference\
+            \ is also sent in all webhooks related to the transfer, so you can use\
+            \ it to track statuses for both parties involved in the funds movement.\n\
+            \n Supported characters: **a-z**, **A-Z**, **0-9**."
+          maxLength: 80
+          type: string
+        status:
+          description: "The status of the top-up configuration.\n\nPossible values:\
+            \ \n\n * **active**: the top-up is enabled and funds are pulled in.\n\n\
+            \ * **inactive**: the top-up is disabled and cannot be triggered. \n\n"
+          enum:
+          - active
+          - inactive
+          type: string
+        topUpAmount:
+          description: The amount of the top-up. This can be a fixed amount or a target
+            amount.
+          $ref: '#/components/schemas/WebhookTopUpAmount'
+        trigger:
+          description: The condition that triggers the top-up. This can be a recurring
+            schedule or a minimum balance threshold.
+          $ref: '#/components/schemas/WebhookTopUpTrigger'
+      required:
+      - id
+      - counterparty
+      - description
+      - topUpAmount
+      - trigger
+      - status
+      type: object
+    WebhookTopUpCounterparty:
+      additionalProperties: false
+      properties:
+        transferInstrumentId:
+          description: The unique identifier of the transfer instrument that is the
+            source of the funds.
+          type: string
+      type: object
+    WebhookTopUpMandate:
+      additionalProperties: false
+      properties:
+        creationDate:
+          description: The date when the mandate was created, in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601)
+            format.
+          format: date-time
+          type: string
+        reference:
+          description: The unique identifier of the mandate.
+          type: string
+      type: object
+    WebhookTopUpTrigger:
+      additionalProperties: false
+      properties:
+        schedule:
+          description: 'The schedule for recurring top-ups. Defines when the top-up
+            should be triggered based on time.
+
+
+            Possible values:
+
+
+            * **weekly**: triggers the top-up once per week.
+
+
+            * **monthly**: triggers the top-up once per month.
+
+
+            * **weekdays**: triggers the top-up on weekdays only.'
+          enum:
+          - monthly
+          - weekdays
+          - weekly
+          type: string
+        threshold:
+          description: The balance threshold that triggers the top-up. If the balance
+            falls below this amount, a top-up is initiated.
+          $ref: '#/components/schemas/WebhookAmount'
+      type: object
     resultDetails:
       additionalProperties: false
       properties:
@@ -3667,6 +4066,98 @@ components:
         environment: test
         timestamp: '2024-12-15T15:42:03+01:00'
         type: balancePlatform.balanceAccount.created
+    post-balancePlatform.balanceAccount.recurringTopUp.created-balancePlatform-recurringTopUp-created:
+      summary: Recurring top-up created
+      description: Example webhook when a recurring top-up was created
+      value:
+        data:
+          balancePlatform: YOUR_BALANCE_PLATFORM
+          creationDate: '2026-04-17T10:30:00+01:00'
+          accountId: BA00000000000000000001
+          webhookTopUpConfiguration:
+            id: TU4227C224555B5FTD2NT2JV4WN5
+            description: Top up when balance is low
+            status: active
+            topUpAmount:
+              fixedAmount:
+                currency: EUR
+                value: 10000
+            trigger:
+              schedule: weekly
+              threshold:
+                currency: EUR
+                value: 5000
+            counterparty:
+              transferInstrumentId: SE00000000000000000001
+            referenceForBeneficiary: TopUpFromSavings
+            mandate:
+              reference: MND00000000000000000001
+              creationDate: '2026-04-17T10:30:00+01:00'
+        environment: test
+        timestamp: '2026-04-17T10:30:00+01:00'
+        type: balancePlatform.balanceAccount.recurringTopUp.created
+    post-balancePlatform.balanceAccount.recurringTopUp.deleted-balancePlatform-recurringTopUp-deleted:
+      summary: Recurring top-up deleted
+      description: Example webhook when a recurring top-up was deleted
+      value:
+        data:
+          balancePlatform: YOUR_BALANCE_PLATFORM
+          creationDate: '2026-04-17T10:30:00+01:00'
+          accountId: BA00000000000000000001
+          webhookTopUpConfiguration:
+            id: TU4227C224555B5FTD2NT2JV4WN5
+            description: Top up when balance is low
+            status: active
+            topUpAmount:
+              fixedAmount:
+                currency: EUR
+                value: 10000
+            trigger:
+              schedule: weekly
+              threshold:
+                currency: EUR
+                value: 5000
+            counterparty:
+              transferInstrumentId: SE00000000000000000001
+            referenceForBeneficiary: TopUpFromSavings
+            mandate:
+              reference: MND00000000000000000001
+              creationDate: '2026-04-17T10:30:00+01:00'
+        environment: test
+        timestamp: '2026-04-17T16:20:00+01:00'
+        type: balancePlatform.balanceAccount.recurringTopUp.deleted
+    post-balancePlatform.balanceAccount.recurringTopUp.updated-balancePlatform-recurringTopUp-updated:
+      summary: Recurring top-up updated
+      description: Example webhook when a recurring top-up was updated
+      value:
+        data:
+          balancePlatform: YOUR_BALANCE_PLATFORM
+          creationDate: '2026-04-17T10:30:00+01:00'
+          accountId: BA00000000000000000001
+          webhookTopUpConfiguration:
+            id: TU4227C224555B5FTD2NT2JV4WN5
+            description: Top up when balance is low - updated
+            status: inactive
+            topUpAmount:
+              fixedAmount:
+                currency: EUR
+                value: 15000
+            trigger:
+              schedule: monthly
+              threshold:
+                currency: EUR
+                value: 3000
+            counterparty:
+              transferInstrumentId: SE00000000000000000001
+            referenceForBeneficiary: TopUpFromSavings
+            mandate:
+              reference: MND00000000000000000001
+              creationDate: '2026-04-17T10:30:00+01:00'
+            disabledReason: counterpartyAccountBlocked
+            reasonDetail: The counterparty account is blocked.
+        environment: test
+        timestamp: '2026-04-17T14:45:00+01:00'
+        type: balancePlatform.balanceAccount.recurringTopUp.updated
     post-balancePlatform.balanceAccount.updated-balancePlatform-balanceAccount-updated:
       summary: Balance account updated
       description: Example webhook when a balance account was updated

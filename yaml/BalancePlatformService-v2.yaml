@@ -5245,6 +5245,691 @@ paths:
       x-group-parameters: 'false'
       x-methodName: getPayoutScheduleExecutions
       x-sortIndex: 8
+  /balanceAccounts/{balanceAccountId}/recurringTopUps:
+    get:
+      tags:
+      - Recurring top ups
+      summary: Get recurring top ups for a specific balanceAccountId
+      description: 'View all recurring top ups configured for a specific `balanceAccountId`.
+
+
+        For more information, refer to [Manage recurring top-ups](https://docs.adyen.com/issuing/add-manage-funds/top-ups/manage-recurring-top-ups).
+
+        '
+      operationId: get-balanceAccounts-balanceAccountId-recurringTopUps
+      parameters:
+      - name: balanceAccountId
+        in: path
+        description: The unique identifier of the balance account.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: limit
+        in: query
+        description: The number of items to return per page. Value must be between
+          1 and 100.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
+          format: int32
+          default: 10
+          maximum: 100
+          minimum: 1
+      - name: cursor
+        in: query
+        description: The cursor used for pagination. Required if you want to see the
+          next or previous page of results.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK - the request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecurringTopUpsResult'
+              examples:
+                get-recurring-topups-200:
+                  summary: Gets recurring top Ups config for a balanceAccountId
+                  description: Get Recurring top ups for a balanceAccountId
+                  value:
+                    recurringTopUps:
+                    - id: TUPC0000000000000000000001
+                      counterparty:
+                        transferInstrumentId: SE000000000000000000000001
+                      description: My description
+                      topUpAmount:
+                        fixed:
+                          value: 1000
+                          currency: EUR
+                      trigger:
+                        schedule:
+                          type: weekdays
+                        threshold:
+                          value: 100
+                          currency: EUR
+                      status: active
+                    link:
+                      next:
+                        href: /balanceAccounts/balanceAccount1/recurringTopUps?limit=10&cursor=nextCursorToken
+                      previous:
+                        href: /balanceAccounts/balanceAccount1/recurringTopUps?limit=10&cursor=previousCursorToken
+        '401':
+          description: Unauthorized - authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+              examples:
+                unauthorized-error-response:
+                  summary: Unauthorized error response
+                  description: Error response for unauthorized API requests
+                  value:
+                    type: https://docs.adyen.com/errors/unauthorized
+                    errorCode: '00_401'
+                    title: Unauthorized
+                    status: 401
+                    detail: Authentication failed
+                    requestId: req123456789
+        '403':
+          description: Forbidden - insufficient permissions to process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+              examples:
+                access-denied-error-response:
+                  summary: Access denied error response
+                  description: Error response when access to resource is denied
+                  value:
+                    type: https://docs.adyen.com/errors/forbidden
+                    errorCode: '00_403'
+                    title: Forbidden
+                    status: 403
+                    requestId: req123456789
+        '404':
+          description: Not Found - the recurring top up was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+              examples:
+                not-found-error-response:
+                  summary: Not found error response
+                  description: Error response when balance account or top-up is not
+                    found
+                  value:
+                    type: https://docs.adyen.com/errors/not-found
+                    errorCode: '30_013'
+                    title: Balance account not found
+                    status: 404
+                    detail: Could not find balance account with id SampleUSD.
+                    requestId: req123456789
+        '500':
+          description: Internal Server Error - the server could not process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+              examples:
+                internal-server-error-response:
+                  summary: Internal server error response
+                  description: Error response when an unexpected server error occurs
+                  value:
+                    type: https://docs.adyen.com/errors/internal-server-error
+                    errorCode: '00_500'
+                    title: Internal Server Error
+                    status: 500
+                    detail: An unexpected error occurred while processing the request.
+                    requestId: req123456789
+      x-group-parameters: 'true'
+      x-methodName: getRecurringTopUps
+      x-sortIndex: 12
+    post:
+      tags:
+      - Recurring top ups
+      summary: Create recurring top up
+      description: 'Create a recurring top up configuration.
+
+
+        For more information, refer to [Create recurring top-ups](https://docs.adyen.com/issuing/add-manage-funds/top-ups/create-recurring-top-ups).
+
+        '
+      operationId: post-balanceAccounts-balanceAccountId-recurringTopUps
+      parameters:
+      - name: balanceAccountId
+        in: path
+        description: The unique identifier of the balance account.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRecurringTopUp'
+            examples:
+              create-recurring-topup:
+                summary: Creates recurring topup
+                description: Creates a new persistent configuration for a recurrent
+                  top-up.
+                value:
+                  counterparty:
+                    transferInstrumentId: SE000000000000000000000001
+                  description: My description
+                  topUpAmount:
+                    fixed:
+                      value: 1000
+                      currency: EUR
+                  trigger:
+                    schedule:
+                      type: weekdays
+                    threshold:
+                      value: 100
+                      currency: EUR
+        required: true
+      responses:
+        '200':
+          description: OK - the request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecurringTopUp'
+              examples:
+                create-recurring-topup-200:
+                  summary: Successfully created recurring topup
+                  description: Successfully created a new persistent configuration
+                    for a recurrent top-up
+                  value:
+                    id: TUPC0000000000000000000001
+                    counterparty:
+                      transferInstrumentId: SE000000000000000000000001
+                    description: My description
+                    topUpAmount:
+                      fixed:
+                        value: 1000
+                        currency: EUR
+                    trigger:
+                      schedule:
+                        type: weekdays
+                      threshold:
+                        value: 100
+                        currency: EUR
+                    status: active
+        '400':
+          description: Bad Request - a problem reading or understanding the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+              examples:
+                bad-request-error-response:
+                  summary: Bad request error response
+                  description: Error response when the request body cannot be parsed
+                  value:
+                    type: https://docs.adyen.com/errors/bad-request
+                    errorCode: '00_400'
+                    title: Bad Request
+                    status: 400
+                    detail: The request could not be processed due to malformed syntax.
+                    requestId: req123456789
+        '401':
+          description: Unauthorized - authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+              examples:
+                unauthorized-error-response:
+                  summary: Unauthorized error response
+                  description: Error response for unauthorized API requests
+                  value:
+                    type: https://docs.adyen.com/errors/unauthorized
+                    errorCode: '00_401'
+                    title: Unauthorized
+                    status: 401
+                    detail: Authentication failed
+                    requestId: req123456789
+        '403':
+          description: Forbidden - insufficient permissions to process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+              examples:
+                access-denied-error-response:
+                  summary: Access denied error response
+                  description: Error response when access to resource is denied
+                  value:
+                    type: https://docs.adyen.com/errors/forbidden
+                    errorCode: '00_403'
+                    title: Forbidden
+                    status: 403
+                    requestId: req123456789
+        '422':
+          description: Unprocessable Entity - a request validation error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+              examples:
+                currency-mismatch-error-response:
+                  summary: Currency mismatch error response
+                  description: Error response when currency mismatch occurs
+                  value:
+                    type: https://docs.adyen.com/errors/validation
+                    errorCode: '29_001'
+                    title: The request is missing required fields or contains invalid
+                      data.
+                    status: 422
+                    detail: Account top up currency mismatch
+                    requestId: req123456789
+                feature-disabled-error-response:
+                  summary: Feature disabled error response
+                  description: Error response when feature is disabled
+                  value:
+                    type: https://docs.adyen.com/errors/validation
+                    errorCode: '29_001'
+                    title: The request is missing required fields or contains invalid
+                      data.
+                    status: 422
+                    detail: BAP property DirectDebitTopUp is not active for balance
+                      account
+                    requestId: req123456789
+                inactive-account-holder-error-response:
+                  summary: Inactive account holder error response
+                  description: Error response when account holder is inactive
+                  value:
+                    type: https://docs.adyen.com/errors/validation
+                    errorCode: '29_001'
+                    title: The request is missing required fields or contains invalid
+                      data.
+                    status: 422
+                    detail: BalanceAccountHolder PeterPanInactive has invalid account
+                      status inactive.
+                    requestId: req123456789
+                invalid-transfer-instrument-error-response:
+                  summary: Invalid transfer instrument error response
+                  description: Error response when transfer instrument is invalid
+                  value:
+                    type: https://docs.adyen.com/errors/validation
+                    errorCode: '29_001'
+                    title: The request is missing required fields or contains invalid
+                      data.
+                    status: 422
+                    detail: Invalid Transfer instrument with id 00000000-0000-0000-0000-000000000000
+                    requestId: req123456789
+                missing-capability-error-response:
+                  summary: Missing capability error response
+                  description: Error response when required capability is missing
+                  value:
+                    type: https://docs.adyen.com/errors/validation
+                    errorCode: '29_001'
+                    title: The request is missing required fields or contains invalid
+                      data.
+                    status: 422
+                    detail: Missing Capabilities [receiveFromTransferInstrument] for
+                      BalanceAccountHolder.PeterPanWithoutTransferInstrument
+                    requestId: req123456789
+                validation-error-response:
+                  summary: Validation error response
+                  description: Error response for request validation failures
+                  value:
+                    type: https://docs.adyen.com/errors/validation
+                    errorCode: '29_001'
+                    title: The request is missing required fields or contains invalid
+                      data.
+                    status: 422
+                    detail: No routes could be found using the provided sweep.
+                    requestId: req123456789
+      x-group-parameters: 'true'
+      x-methodName: createRecurringTopUp
+      x-sortIndex: 11
+  /balanceAccounts/{balanceAccountId}/recurringTopUps/{topUpId}:
+    delete:
+      tags:
+      - Recurring top ups
+      summary: Delete a recurring top up
+      description: 'Delete a recurring top up configuration by `topUpId`.
+
+
+        For more information, refer to [Manage recurring top-ups](https://docs.adyen.com/issuing/add-manage-funds/top-ups/manage-recurring-top-ups).
+
+        '
+      operationId: delete-balanceAccounts-balanceAccountId-recurringTopUps-topUpId
+      parameters:
+      - name: balanceAccountId
+        in: path
+        description: The unique identifier of the balance account.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: topUpId
+        in: path
+        description: The unique identifier of the recurring top-up you want to delete.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        '204':
+          description: No Content - the request has been successfully processed, but
+            there is no additional content.
+          content:
+            application/json: {}
+        '400':
+          description: Bad Request - a problem reading or understanding the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+              examples:
+                bad-request-error-response:
+                  summary: Bad request error response
+                  description: bad-request-error-response
+                  value:
+                    type: https://docs.adyen.com/errors/bad-request
+                    errorCode: '00_400'
+                    title: Bad Request
+                    status: 400
+                    detail: The request could not be processed due to malformed syntax.
+                    requestId: req123456789
+        '401':
+          description: Unauthorized - authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+              examples:
+                unauthorized-error-response:
+                  summary: Unauthorized error response
+                  description: unauthorized-error-response
+                  value:
+                    type: https://docs.adyen.com/errors/unauthorized
+                    errorCode: '00_401'
+                    title: Unauthorized
+                    status: 401
+                    detail: Authentication failed
+                    requestId: req123456789
+        '403':
+          description: Forbidden - insufficient permissions to process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+              examples:
+                access-denied-error-response:
+                  summary: Access denied error response
+                  description: access-denied-error-response
+                  value:
+                    type: https://docs.adyen.com/errors/forbidden
+                    errorCode: '00_403'
+                    title: Forbidden
+                    status: 403
+                    requestId: req123456789
+        '404':
+          description: Not Found - the recurring top up was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+              examples:
+                not-found-error-response:
+                  summary: Not found error response
+                  description: not-found-error-response
+                  value:
+                    type: https://docs.adyen.com/errors/not-found
+                    errorCode: '30_013'
+                    title: Balance account not found
+                    status: 404
+                    detail: Could not find balance account with id SampleUSD.
+                    requestId: req123456789
+        '422':
+          description: Unprocessable Entity - a request validation error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+              examples:
+                validation-error-response:
+                  summary: Validation error response
+                  description: validation-error-response
+                  value:
+                    type: https://docs.adyen.com/errors/validation
+                    errorCode: '29_001'
+                    title: The request is missing required fields or contains invalid
+                      data.
+                    status: 422
+                    detail: No routes could be found using the provided sweep.
+                    requestId: req123456789
+        '500':
+          description: Internal Server Error - the server could not process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+              examples:
+                internal-server-error-response:
+                  summary: Internal server error response
+                  description: internal-server-error-response
+                  value:
+                    type: https://docs.adyen.com/errors/internal-server-error
+                    errorCode: '00_500'
+                    title: Internal Server Error
+                    status: 500
+                    detail: An unexpected error occurred while processing the request.
+                    requestId: req123456789
+      x-group-parameters: 'true'
+      x-methodName: deleteRecurringTopUp
+      x-sortIndex: 14
+    patch:
+      tags:
+      - Recurring top ups
+      summary: Update a RecurringTopUp
+      description: 'Update the configuration of an existing recurring top up.
+
+
+        For more information, refer to [Manage recurring top-ups](https://docs.adyen.com/issuing/add-manage-funds/top-ups/manage-recurring-top-ups).'
+      operationId: patch-balanceAccounts-balanceAccountId-recurringTopUps-topUpId
+      parameters:
+      - name: balanceAccountId
+        in: path
+        description: The unique identifier of the balance account.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: topUpId
+        in: path
+        description: The unique identifier of the recurring top-up you want to update.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchableCreateRecurringTopUp'
+            examples:
+              update-recurring-topup:
+                summary: Partially updates the configuration of a recurring Top up
+                description: Partially updates the configuration of a recurring Top
+                  up
+                value:
+                  description: new description
+        required: true
+      responses:
+        '200':
+          description: OK - the request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecurringTopUp'
+              examples:
+                update-recurring-topup-200:
+                  summary: Successfully updated recurring topup
+                  description: Successfully updated the configuration of a recurring
+                    Top up
+                  value:
+                    id: TUPC0000000000000000000001
+                    counterparty:
+                      transferInstrumentId: SE000000000000000000000001
+                    description: new description
+                    topUpAmount:
+                      fixed:
+                        value: 1000
+                        currency: EUR
+                    trigger:
+                      schedule:
+                        type: weekdays
+                      threshold:
+                        value: 100
+                        currency: EUR
+                    status: inactive
+        '400':
+          description: Bad Request - a problem reading or understanding the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+              examples:
+                bad-request-error-response:
+                  summary: Bad request error response
+                  description: Error response when the request body cannot be parsed
+                  value:
+                    type: https://docs.adyen.com/errors/bad-request
+                    errorCode: '00_400'
+                    title: Bad Request
+                    status: 400
+                    detail: The request could not be processed due to malformed syntax.
+                    requestId: req123456789
+        '401':
+          description: Unauthorized - authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+              examples:
+                unauthorized-error-response:
+                  summary: Unauthorized error response
+                  description: Error response for unauthorized API requests
+                  value:
+                    type: https://docs.adyen.com/errors/unauthorized
+                    errorCode: '00_401'
+                    title: Unauthorized
+                    status: 401
+                    detail: Authentication failed
+                    requestId: req123456789
+        '403':
+          description: Forbidden - insufficient permissions to process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+              examples:
+                access-denied-error-response:
+                  summary: Access denied error response
+                  description: Error response when access to resource is denied
+                  value:
+                    type: https://docs.adyen.com/errors/forbidden
+                    errorCode: '00_403'
+                    title: Forbidden
+                    status: 403
+                    requestId: req123456789
+        '422':
+          description: Unprocessable Entity - a request validation error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+              examples:
+                currency-mismatch-error-response:
+                  summary: Currency mismatch error response
+                  description: Error response when currency mismatch occurs
+                  value:
+                    type: https://docs.adyen.com/errors/validation
+                    errorCode: '29_001'
+                    title: The request is missing required fields or contains invalid
+                      data.
+                    status: 422
+                    detail: Account top up currency mismatch
+                    requestId: req123456789
+                feature-disabled-error-response:
+                  summary: Feature disabled error response
+                  description: Error response when feature is disabled
+                  value:
+                    type: https://docs.adyen.com/errors/validation
+                    errorCode: '29_001'
+                    title: The request is missing required fields or contains invalid
+                      data.
+                    status: 422
+                    detail: BAP property DirectDebitTopUp is not active for balance
+                      account
+                    requestId: req123456789
+                inactive-account-holder-error-response:
+                  summary: Inactive account holder error response
+                  description: Error response when account holder is inactive
+                  value:
+                    type: https://docs.adyen.com/errors/validation
+                    errorCode: '29_001'
+                    title: The request is missing required fields or contains invalid
+                      data.
+                    status: 422
+                    detail: BalanceAccountHolder PeterPanInactive has invalid account
+                      status inactive.
+                    requestId: req123456789
+                invalid-transfer-instrument-error-response:
+                  summary: Invalid transfer instrument error response
+                  description: Error response when transfer instrument is invalid
+                  value:
+                    type: https://docs.adyen.com/errors/validation
+                    errorCode: '29_001'
+                    title: The request is missing required fields or contains invalid
+                      data.
+                    status: 422
+                    detail: Invalid Transfer instrument with id 00000000-0000-0000-0000-000000000000
+                    requestId: req123456789
+                missing-capability-error-response:
+                  summary: Missing capability error response
+                  description: Error response when required capability is missing
+                  value:
+                    type: https://docs.adyen.com/errors/validation
+                    errorCode: '29_001'
+                    title: The request is missing required fields or contains invalid
+                      data.
+                    status: 422
+                    detail: Missing Capabilities [receiveFromTransferInstrument] for
+                      BalanceAccountHolder.PeterPanWithoutTransferInstrument
+                    requestId: req123456789
+                validation-error-response:
+                  summary: Validation error response
+                  description: Error response for request validation failures
+                  value:
+                    type: https://docs.adyen.com/errors/validation
+                    errorCode: '29_001'
+                    title: The request is missing required fields or contains invalid
+                      data.
+                    status: 422
+                    detail: No routes could be found using the provided sweep.
+                    requestId: req123456789
+      x-group-parameters: 'true'
+      x-methodName: updateRecurringTopUps
+      x-sortIndex: 13
   /balanceAccounts/{id}/transferLimits:
     get:
       tags:
@@ -7619,6 +8304,65 @@ paths:
       x-methodName: beginScaDeviceRegistration
       x-sortIndex: 0
   /scaDevices/{deviceId}:
+    delete:
+      tags:
+      - SCA device management
+      summary: Delete an SCA device
+      description: Deletes a Strong Customer Authentication (SCA) device.
+      operationId: delete-scaDevices-deviceId
+      parameters:
+      - name: deviceId
+        in: path
+        description: The unique identifier of the SCA device to delete.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          maxLength: 30
+          minLength: 30
+      responses:
+        '204':
+          description: No Content - The device was deleted successfully.
+        '400':
+          description: Bad Request - The request contains invalid input and fails
+            validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '401':
+          description: Unauthorized - Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '403':
+          description: Forbidden - Insufficient permissions to process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '404':
+          description: Not Found - Device not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '422':
+          description: Unprocessable entity - A request validation error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '500':
+          description: Internal Server Error - The server could not process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+      x-methodName: deleteScaDevice
+      x-sortIndex: 0
     patch:
       tags:
       - SCA device management
@@ -12240,6 +12984,11 @@ components:
           - scoreBased
           - timedBlock
           x-addedInVersion: '2'
+        overridesRule:
+          type: string
+          description: The `id` of the transaction rule you want to override or skip
+            for the specified `entityKey`.
+          x-addedInVersion: '2'
         purpose:
           type: string
           description: 'Specifies the reason for creating the rule.
@@ -12319,10 +13068,14 @@ components:
             \ and then decline a transaction when the specified limits are met.\n\
             \ * **velocity**: add the amount or number of transactions based on a\
             \ specified time interval, and then decline a transaction when the specified\
-            \ limits are met.\n"
+            \ limits are met.\n * **bypass**: bypass or skip a rule for the specified\
+            \ `entityKey`. Transactions processed to that entity are no longer evaluated\
+            \ by the bypassed rule.  You must provide the `id` of the rule to bypass\
+            \ in `overridesRule` and leave the `ruleRestrictions` object empty.\n"
           enum:
           - allowList
           - blockList
+          - bypass
           - maxUsage
           - velocity
       required:
@@ -12411,6 +13164,11 @@ components:
           - scoreBased
           - timedBlock
           x-addedInVersion: '2'
+        overridesRule:
+          type: string
+          description: The `id` of the transaction rule you want to override or skip
+            for the specified `entityKey`.
+          x-addedInVersion: '2'
         purpose:
           type: string
           description: 'Specifies the reason for creating the rule.
@@ -12490,10 +13248,14 @@ components:
             \ and then decline a transaction when the specified limits are met.\n\
             \ * **velocity**: add the amount or number of transactions based on a\
             \ specified time interval, and then decline a transaction when the specified\
-            \ limits are met.\n"
+            \ limits are met.\n * **bypass**: bypass or skip a rule for the specified\
+            \ `entityKey`. Transactions processed to that entity are no longer evaluated\
+            \ by the bypassed rule.  You must provide the `id` of the rule to bypass\
+            \ in `overridesRule` and leave the `ruleRestrictions` object empty.\n"
           enum:
           - allowList
           - blockList
+          - bypass
           - maxUsage
           - velocity
       required:
@@ -13780,6 +14542,19 @@ components:
             - WEARABLE
       required:
       - operation
+    AmountDTO:
+      type: object
+      properties:
+        currency:
+          type: string
+          description: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).
+        value:
+          type: integer
+          format: int64
+          description: The amount of the transaction, in [minor units](https://docs.adyen.com/development-resources/currency-codes).
+      required:
+      - currency
+      - value
     ApproveAssociationRequest:
       type: object
       properties:
@@ -14666,6 +15441,51 @@ components:
       - balanceType
       - conditionType
       - value
+    CreateRecurringTopUp:
+      type: object
+      properties:
+        counterparty:
+          $ref: '#/components/schemas/TopUpCounterparty'
+          description: 'The details about the counterparty that is funding the top-up. '
+        description:
+          type: string
+          description: 'Your description for the recurring top-up.
+
+
+            Maximum length is 140 characters. If you set a longer description, it
+            will be cut off at 140 characters.'
+          maxLength: 140
+          minLength: 0
+        referenceForBeneficiary:
+          type: string
+          description: " A reference that is sent to the recipient. This reference\
+            \ is also sent in all webhooks related to the transfer, so you can use\
+            \ it to track statuses for both parties involved in the funds movement.\n\
+            \n Supported characters: **a-z**, **A-Z**, **0-9**."
+          maxLength: 80
+          minLength: 0
+        status:
+          type: string
+          description: "The status of the recurring top-up. If not provided, by default,\
+            \ this is set to **active**.\n\nPossible values: \n\n * **active**:  the\
+            \ top up is enabled and funds will be pulled in.\n\n * **inactive**: the\
+            \ top up is disabled and cannot be triggered. \n\n"
+          enum:
+          - active
+          - inactive
+        topUpAmount:
+          $ref: '#/components/schemas/TopUpAmount'
+          description: The currency and value to be added to the balance account,
+            specified in minor units. This can be a fixed amount or a target amount.
+        trigger:
+          $ref: '#/components/schemas/Trigger'
+          description: The condition that triggers the top-up. This can be a recurring
+            schedule or a minimum balance threshold.
+      required:
+      - counterparty
+      - description
+      - topUpAmount
+      - trigger
     CreateScaInformation:
       type: object
       properties:
@@ -14961,6 +15781,107 @@ components:
           - 'null'
           description: The unique identifier of the payment instrument linked to the
             mandate.
+    PatchableAmountDTO:
+      type: object
+      properties:
+        currency:
+          type: string
+          description: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).
+        value:
+          type: integer
+          format: int64
+          description: The amount of the transaction, in [minor units](https://docs.adyen.com/development-resources/currency-codes).
+    PatchableCreateRecurringTopUp:
+      type: object
+      properties:
+        description:
+          type: string
+          description: 'Your description for the recurring top-up.
+
+
+            Maximum length is 140 characters. If you set a longer description, it
+            will be cut off at 140 characters.'
+          maxLength: 140
+          minLength: 0
+        referenceForBeneficiary:
+          type:
+          - string
+          - 'null'
+          description: " A reference that is sent to the recipient. This reference\
+            \ is also sent in all webhooks related to the transfer, so you can use\
+            \ it to track statuses for both parties involved in the funds movement.\n\
+            \n Supported characters: **a-z**, **A-Z**, **0-9**."
+          maxLength: 80
+          minLength: 0
+        status:
+          type:
+          - string
+          - 'null'
+          description: "The status of the recurring top-up. If not provided, by default,\
+            \ this is set to **active**.\n\nPossible values: \n\n * **active**:  the\
+            \ top up is enabled and funds will be pulled in.\n\n * **inactive**: the\
+            \ top up is disabled and cannot be triggered. \n\n"
+          enum:
+          - active
+          - inactive
+        topUpAmount:
+          $ref: '#/components/schemas/PatchableTopUpAmount'
+          description: The currency and value to be added to the balance account,
+            specified in minor units. This can be a fixed amount or a target amount.
+        trigger:
+          $ref: '#/components/schemas/PatchableTrigger'
+          description: The condition that triggers the top-up. This can be a recurring
+            schedule or a minimum balance threshold.
+    PatchableSchedule:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ScheduleType'
+          description: 'The type of schedule at which the top up is executed.
+
+            * **weekdays**: pull in funds Monday-Friday at 07:00 AM in the local timezone
+            of the balance account.
+
+
+            * **weekly**: pull in funds every Monday at 07:00 AM in the local timezone
+            of the balance account.
+
+
+            * **monthly**: pull in funds every first of the month at 07:00 AM in the
+            local timezone of the balance account.
+
+            * **null** (default): continuous monitoring.'
+    PatchableTopUpAmount:
+      type: object
+      properties:
+        fixed:
+          type: object
+          description: The fixed amount with which you want to top up the balance
+            account.
+          oneOf:
+          - $ref: '#/components/schemas/PatchableAmountDTO'
+          - type: 'null'
+        target:
+          type: object
+          description: The target balance for the balance account that the top-up
+            must achieve.
+          oneOf:
+          - $ref: '#/components/schemas/PatchableAmountDTO'
+          - type: 'null'
+    PatchableTrigger:
+      type: object
+      properties:
+        schedule:
+          type: object
+          description: Contains the details about the schedule that determines when
+            the top up is executed.
+          oneOf:
+          - $ref: '#/components/schemas/PatchableSchedule'
+          - type: 'null'
+        threshold:
+          $ref: '#/components/schemas/PatchableAmountDTO'
+          description: The balance threshold that triggers the top-up. If the balance
+            falls below this amount, a top-up is initiated.
     PayoutScheduleExecution:
       type: object
       properties:
@@ -15009,6 +15930,68 @@ components:
             $ref: '#/components/schemas/PayoutScheduleExecution'
       required:
       - payoutScheduleExecutions
+    RecurringTopUp:
+      type: object
+      properties:
+        counterparty:
+          $ref: '#/components/schemas/TopUpCounterparty'
+          description: 'The details about the counterparty that is funding the top-up. '
+        description:
+          type: string
+          description: 'Your description for the recurring top-up.
+
+
+            Maximum length is 140 characters. If you set a longer description, it
+            will be cut off at 140 characters.'
+          maxLength: 140
+          minLength: 0
+        id:
+          type: string
+          description: The unique identifier of the top up.
+          readOnly: true
+        referenceForBeneficiary:
+          type: string
+          description: " A reference that is sent to the recipient. This reference\
+            \ is also sent in all webhooks related to the transfer, so you can use\
+            \ it to track statuses for both parties involved in the funds movement.\n\
+            \n Supported characters: **a-z**, **A-Z**, **0-9**."
+          maxLength: 80
+          minLength: 0
+        status:
+          type: string
+          description: "The status of the recurring top-up. If not provided, by default,\
+            \ this is set to **active**.\n\nPossible values: \n\n * **active**:  the\
+            \ top up is enabled and funds will be pulled in.\n\n * **inactive**: the\
+            \ top up is disabled and cannot be triggered. \n\n"
+          enum:
+          - active
+          - inactive
+        topUpAmount:
+          $ref: '#/components/schemas/TopUpAmount'
+          description: The currency and value to be added to the balance account,
+            specified in minor units. This can be a fixed amount or a target amount.
+        trigger:
+          $ref: '#/components/schemas/Trigger'
+          description: The condition that triggers the top-up. This can be a recurring
+            schedule or a minimum balance threshold.
+      required:
+      - counterparty
+      - description
+      - id
+      - topUpAmount
+      - trigger
+    RecurringTopUpsResult:
+      type: object
+      properties:
+        link:
+          $ref: '#/components/schemas/Link'
+        recurringTopUps:
+          type: array
+          items:
+            $ref: '#/components/schemas/RecurringTopUp'
+      required:
+      - link
+      - recurringTopUps
     RemoveAssociationRequest:
       type: object
       properties:
@@ -15159,6 +16142,33 @@ components:
       - notPerformed
       - pending
       - performed
+    Schedule:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ScheduleType'
+          description: 'The type of schedule at which the top up is executed.
+
+            * **weekdays**: pull in funds Monday-Friday at 07:00 AM in the local timezone
+            of the balance account.
+
+
+            * **weekly**: pull in funds every Monday at 07:00 AM in the local timezone
+            of the balance account.
+
+
+            * **monthly**: pull in funds every first of the month at 07:00 AM in the
+            local timezone of the balance account.
+
+            * **null** (default): continuous monitoring.'
+      required:
+      - type
+    ScheduleType:
+      type: string
+      enum:
+      - weekdays
+      - weekly
+      - monthly
     ScheduledPayoutFrequency:
       type: string
       x-extensible-enum:
@@ -15310,6 +16320,26 @@ components:
             $ref: '#/components/schemas/Summary'
       required:
       - data
+    TopUpAmount:
+      type: object
+      properties:
+        fixed:
+          $ref: '#/components/schemas/AmountDTO'
+          description: The fixed amount with which you want to top up the balance
+            account.
+        target:
+          $ref: '#/components/schemas/AmountDTO'
+          description: The target balance for the balance account that the top-up
+            must achieve.
+    TopUpCounterparty:
+      type: object
+      properties:
+        transferInstrumentId:
+          type: string
+          description: 'The unique identifier of the [transfer instrument](https://docs.adyen.com/api-explorer/legalentity/latest/post/transferInstruments#responses-200-id)
+            that is funding the top-up. '
+      required:
+      - transferInstrumentId
     TransferLimit:
       type: object
       description: The transfer limit configured to regulate outgoing transfers.
@@ -15395,6 +16425,19 @@ components:
       enum:
       - instant
       - all
+    Trigger:
+      type: object
+      properties:
+        schedule:
+          $ref: '#/components/schemas/Schedule'
+          description: Contains the details about the schedule that determines when
+            the top up is executed.
+        threshold:
+          $ref: '#/components/schemas/AmountDTO'
+          description: The balance threshold that triggers the top-up. If the balance
+            falls below this amount, a top-up is initiated.
+      required:
+      - threshold
     UKLocalMandateAccountIdentification:
       type: object
       allOf:
