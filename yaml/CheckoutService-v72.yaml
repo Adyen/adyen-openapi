@@ -2113,6 +2113,39 @@ paths:
       x-addedInVersion: '68'
       x-sortIndex: 2
       x-methodName: getResultOfPaymentSession
+    patch:
+      tags:
+      - Payments
+      summary: Update a payment session
+      description: 'Updates an existing payment session with the `sessionId` specified
+        in the path.
+
+
+        You can update the session''s `amount` and `payable` fields. The session can
+        only be updated if it is not yet payable.'
+      operationId: patch-sessions-sessionId
+      parameters:
+      - name: sessionId
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckoutSessionPatchSessionRequest'
+      responses:
+        '200':
+          description: OK - the request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckoutSessionPatchSessionResponse'
+      x-methodName: updateSession
+      x-sortIndex: 0
   /storedPaymentMethods:
     get:
       tags:
@@ -4423,6 +4456,9 @@ components:
         checkoutAttemptId:
           type: string
           description: The checkout attempt identifier.
+        financingProgram:
+          type: string
+          description: The Affirm financing program to apply to this transaction.
         sdkData:
           type: string
           description: Base64-encoded JSON object containing SDK related parameters
@@ -18296,6 +18332,39 @@ components:
       - errorCode
       - errorType
       - message
+    CheckoutSessionPatchSessionRequest:
+      type: object
+      properties:
+        amount:
+          $ref: '#/components/schemas/SessionAmountUpdate'
+          description: The amount to update for the payment session.
+        payable:
+          type: boolean
+          description: 'Indicates if the session is payable. If the payment amount
+            is final, set this to **true** to indicate that the session is payable,
+            so that the shopper can proceed to submit the payment. When you set this
+            to **true**, you can no longer update the session.
+
+
+            If you set this to **false**, you must make another request to update
+            the session and set this to **true** before the shopper can submit the
+            payment.
+
+            '
+        sessionData:
+          type: string
+          description: The encoded payment session data from the `beforeSubmit` callback
+            from [Drop-in](https://docs.adyen.com/online-payments/build-your-integration/sessions-flow?platform=Web&integration=Drop-in#update-the-session-amount)
+            or [the Component](https://docs.adyen.com/online-payments/build-your-integration/sessions-flow?platform=Web&integration=Components#update-the-session-amount).
+          minLength: 1
+      required:
+      - amount
+      - sessionData
+    CheckoutSessionPatchSessionResponse:
+      type: object
+      properties:
+        sessionData:
+          type: string
     PayToPaymentMethod:
       type: object
       allOf:
@@ -18315,6 +18384,19 @@ components:
       - INVALID
       - UNKNOWN
       - NOT_REQUIRED
+    SessionAmountUpdate:
+      type: object
+      properties:
+        currency:
+          type: string
+          description: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).
+        value:
+          type: integer
+          format: int64
+          description: The amount of the transaction, in [minor units](https://docs.adyen.com/development-resources/currency-codes).
+      required:
+      - currency
+      - value
     ShopperIdPaymentMethod:
       type: object
       discriminator:
