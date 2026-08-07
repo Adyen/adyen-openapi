@@ -1,0 +1,175 @@
+openapi: 3.1.0
+info:
+  version: '1'
+  x-publicVersion: true
+  title: Forward API webhook
+  description: 'The Forward API acts as a proxy layer that enables Adyen to forward
+    payment requests to third-party PSPs (Payment Service Providers) such as Stripe,
+    WorldPay, Fiserv, Braintree, etc.
+
+
+    We use webhooks to inform you about successful Forward API calls.'
+  termsOfService: https://www.adyen.com/legal/terms-and-conditions
+  contact:
+    name: Adyen Developer Experience team
+    url: https://github.com/Adyen/adyen-openapi
+tags:
+- name: General
+webhooks:
+  forwardApi.notification:
+    post:
+      tags:
+      - General
+      summary: Forward API notification
+      description: Adyen sends this webhook when you send a successful Forward API
+        request.
+      operationId: post-forwardApi.notification
+      x-sortIndex: 0
+      x-methodName: forwardApiNotification
+      security:
+      - BasicAuth: []
+      requestBody:
+        content:
+          application/json:
+            examples:
+              recurring-forwardApi.notification:
+                $ref: '#/components/examples/post-forwardApi.notification-recurring-forwardApi.notification'
+            schema:
+              $ref: '#/components/schemas/ForwardApiNotificationRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForwardApiNotificationResponse'
+          description: OK - the request has succeeded.
+components:
+  schemas:
+    ForwardApiNotificationData:
+      additionalProperties: false
+      properties:
+        amountCurrency:
+          description: The transaction amount 3 character ISO currency code.
+          type: string
+        amountValue:
+          description: The transaction amount in minor currency units.
+          format: int64
+          type: integer
+        eventDateTime:
+          description: The transaction date and time.
+          format: date-time
+          type: string
+        externalNetworkTxReferenceFound:
+          description: Confirms that the provided networkTxReference path successfully
+            matched a reference in the third-party response.
+          type: boolean
+        externalNetworkTxReferenceRequested:
+          description: It's being populated when networkTxReferencePaths is provided
+          type: boolean
+        externalPartyResponseBody:
+          description: The External Party response body.
+          type: string
+        externalPsp:
+          description: The External Psp.
+          type: string
+        externalPspTransactionStatus:
+          description: The External Psp transaction status.
+          type: string
+        externalTransactionLinkIdFound:
+          description: Confirms that the provided transactionLinkId path successfully
+            matched a reference in the third-party response.
+          type: boolean
+        externalTransactionLinkIdRequested:
+          description: It's being populated when transactionLinkIdPaths is provided
+          type: boolean
+        merchantAccountCode:
+          description: The merchant account code.
+          type: string
+        merchantCountryCode:
+          description: The merchant country code.
+          type: string
+        merchantReference:
+          description: Merchant transaction reference.
+          type: string
+        pspReference:
+          description: PSP Reference.
+          type: string
+        scheme:
+          description: Card transaction scheme.
+          type: string
+        shopperReference:
+          description: Shopper reference.
+          type: string
+        storedPaymentMethodId:
+          description: Stored Payment Method Id.
+          type: string
+      required:
+      - pspReference
+      - shopperReference
+      - storedPaymentMethodId
+      - scheme
+      - externalPsp
+      - merchantReference
+      - eventDateTime
+      - merchantAccountCode
+      - merchantCountryCode
+      type: object
+    ForwardApiNotificationRequest:
+      additionalProperties: false
+      properties:
+        createdAt:
+          description: Timestamp for when the webhook was created.
+          format: date-time
+          type: string
+        data:
+          description: Contains details of the update.
+          $ref: '#/components/schemas/ForwardApiNotificationData'
+        environment:
+          description: 'The environment from which the webhook originated.
+
+
+            Possible values: **test**, **live**.'
+          type: string
+        type:
+          description: Type of notification.
+          type: string
+        version:
+          description: The version of this webhook type.
+          type: string
+      required:
+      - type
+      - createdAt
+      type: object
+    ForwardApiNotificationResponse:
+      additionalProperties: false
+      properties:
+        notificationResponse:
+          description: Respond with any **2xx** HTTP status code to [accept the webhook](https://docs.adyen.com/development-resources/webhooks/#accept-webhooks).
+          type: string
+      type: object
+  securitySchemes:
+    BasicAuth:
+      scheme: basic
+      type: http
+  examples:
+    post-forwardApi.notification-recurring-forwardApi.notification:
+      summary: Forward Api Request
+      value:
+        type: forwardApi.notification
+        version: '1'
+        createdAt: '2023-02-27T16:14:06+01:00'
+        environment: test
+        data:
+          pspReference: QFQTPCQ8HXSKGK82
+          shopperReference: YOUR_SHOPPER_REFERENCE
+          storedPaymentMethodId: M5N7TQ4TG5PFWR50
+          scheme: visa
+          externalPsp: adyen
+          merchantReference: YOUR_ORDER_REFERENCE
+          externalPspTransactionStatus: Authorised
+          eventDateTime: '2023-02-27T16:14:06+01:00'
+          merchantAccountCode: YOUR_MERCHANT_ACCOUNT
+          merchantCountryCode: NL
+          amountValue: 100
+          amountCurrency: EUR
+          externalPartyResponseBody: '{"status": "success"}'
