@@ -8,8 +8,8 @@
     "description" : "Live Environment"
   } ],
   "info" : {
-    "title" : "Cross-border Invoices API",
-    "description" : "The Cross-border Invoices API enables merchants processing payments in INR to upload auditing documentation (invoices) in PDF format for each cross-border transaction. This is a regulatory requirement under the Reserve Bank of India (RBI) guidelines for cross-border payments.\n\n## Authentication\nYour Adyen contact will provide your API credential and an API key. To connect to the API, add an `X-API-Key` header with the API key as the value, for example:\n\n```\ncurl\n-H \"Content-Type: application/json\" \\\n-H \"X-API-Key: YOUR_API_KEY\" \\\n...\n```\n\nAlternatively, you can use the username and password to connect to the API using basic authentication. For example:\n\n```\ncurl\n-H \"Content-Type: application/json\" \\\n-U \"ws@Company.YOUR_COMPANY\":\"YOUR_WS_PASSWORD\" \\\n...\n```\n\n## Versioning\nThe Cross-border Invoices API supports [versioning](https://docs.adyen.com/development-resources/versioning) using a version suffix in the endpoint URL. This suffix has the following format: \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://document-collector-test.adyen.com/v1/crossBorderInvoices\n```\n\n## Going live\nWhen going live, your Adyen contact will provide your API credential for the live environment. You can then use the username and password to send requests to `https://document-collector-live.adyen.com/v1`.\n\n",
+    "title" : "Document Collector API",
+    "description" : "The Document Collector API enables merchants to upload supporting documentation required for payment processing. Currently, it supports uploading cross-border invoices in PDF format for transactions processed in INR, as required under the Reserve Bank of India (RBI) guidelines for cross-border payments.\n\n## Authentication\nYour Adyen contact will provide your API credential and an API key. To connect to the API, add an `X-API-Key` header with the API key as the value, for example:\n\n```\ncurl\n-H \"Content-Type: multipart/form-data\" \\\n-H \"X-API-Key: YOUR_API_KEY\" \\\n...\n```\n\nAlternatively, you can use the username and password to connect to the API using basic authentication. For example:\n\n```\ncurl\n-H \"Content-Type: multipart/form-data\" \\\n-U \"ws@Company.YOUR_COMPANY\":\"YOUR_WS_PASSWORD\" \\\n...\n```\n\n## Versioning\nThe Document Collector API supports [versioning](https://docs.adyen.com/development-resources/versioning) using a version suffix in the endpoint URL. This suffix has the following format: \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://document-collector-test.adyen.com/v1/crossBorderInvoices\n```\n\n## Going live\nWhen going live, your Adyen contact will provide your API credential for the live environment. You can then use the username and password to send requests to `https://document-collector-live.adyen.com/v1`.\n\n",
     "termsOfService" : "https://www.adyen.com/legal/terms-and-conditions",
     "contact" : {
       "name" : "Adyen Developer Experience team",
@@ -31,24 +31,16 @@
           "content" : {
             "multipart/form-data" : {
               "schema" : {
-                "required" : [ "context", "file", "merchantAccount" ],
-                "type" : "object",
-                "properties" : {
-                  "context" : {
-                    "$ref" : "#/components/schemas/DocumentContext"
-                  },
-                  "file" : {
-                    "type" : "string",
-                    "description" : "The PDF file to upload. Filename must be {pspReference}.pdf",
-                    "format" : "binary"
-                  },
-                  "merchantAccount" : {
-                    "maxLength" : 255,
-                    "minLength" : 1,
-                    "pattern" : "^[a-zA-Z0-9_]*$",
-                    "type" : "string",
-                    "description" : "The merchant account that the document belongs to",
-                    "example" : "YourMerchantAccount"
+                "$ref" : "#/components/schemas/DocumentUploadRequest"
+              },
+              "examples" : {
+                "upload-document" : {
+                  "summary" : "Upload a cross-border invoice document",
+                  "description" : "upload-document",
+                  "value" : {
+                    "file" : "(binary PDF named {pspReference}.pdf)",
+                    "context" : "paCbInvoice",
+                    "merchantAccount" : "YourMerchantAccount"
                   }
                 }
               }
@@ -254,8 +246,31 @@
       },
       "DocumentContext" : {
         "type" : "string",
-        "description" : "The document context indicating the type of document being uploaded",
+        "description" : "The document context indicating the type of document being uploaded.",
         "enum" : [ "paCbInvoice" ]
+      },
+      "DocumentUploadRequest" : {
+        "required" : [ "context", "file", "merchantAccount" ],
+        "type" : "object",
+        "properties" : {
+          "context" : {
+            "description" : "The document context indicating the type of document being uploaded.",
+            "$ref" : "#/components/schemas/DocumentContext"
+          },
+          "file" : {
+            "type" : "string",
+            "description" : "The PDF file to upload. Filename must be {pspReference}.pdf",
+            "format" : "binary"
+          },
+          "merchantAccount" : {
+            "maxLength" : 255,
+            "minLength" : 1,
+            "pattern" : "^[a-zA-Z0-9_]*$",
+            "type" : "string",
+            "description" : "The merchant account that the document belongs to.",
+            "example" : "YourMerchantAccount"
+          }
+        }
       },
       "DocumentUploadResponse" : {
         "type" : "object",
