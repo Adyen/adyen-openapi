@@ -3,12 +3,11 @@ info:
   version: '1'
   x-publicVersion: true
   title: Forward API webhook
-  description: 'The Forward API acts as a proxy layer that enables Adyen to forward
-    payment requests to third-party PSPs (Payment Service Providers) such as Stripe,
-    WorldPay, Fiserv, Braintree, etc.
+  description: 'The Forward API sends payment requests to third-party services on
+    your behalf.
 
 
-    We use webhooks to inform you about successful Forward API calls.'
+    Adyen uses webhooks to notify you about the result of Forward API requests.'
   termsOfService: https://www.adyen.com/legal/terms-and-conditions
   contact:
     name: Adyen Developer Experience team
@@ -20,12 +19,12 @@ webhooks:
     post:
       tags:
       - General
-      summary: Forward API notification
-      description: Adyen sends this webhook when you send a successful Forward API
-        request.
+      summary: Forward API request completed
+      description: Adyen forwarded a payment request to the third-party service on
+        your behalf.
       operationId: post-forwardApi.notification
       x-sortIndex: 0
-      x-methodName: forwardApiNotification
+      x-methodName: forwardApiRequestCompleted
       security:
       - BasicAuth: []
       requestBody:
@@ -49,10 +48,10 @@ components:
       additionalProperties: false
       properties:
         amountCurrency:
-          description: The transaction amount 3 character ISO currency code.
+          description: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).
           type: string
         amountValue:
-          description: The transaction amount in minor currency units.
+          description: The amount of the transaction, in [minor units](https://docs.adyen.com/development-resources/currency-codes).
           format: int64
           type: integer
         eventDateTime:
@@ -60,48 +59,54 @@ components:
           format: date-time
           type: string
         externalNetworkTxReferenceFound:
-          description: Confirms that the provided networkTxReference path successfully
-            matched a reference in the third-party response.
+          description: Indicates if the `networkTxReferencePaths` matched a reference
+            in the third-party response.
           type: boolean
         externalNetworkTxReferenceRequested:
-          description: It's being populated when networkTxReferencePaths is provided
+          description: Indicates if a `networkTxReferencePaths` value was provided
+            in the request.
           type: boolean
         externalPartyResponseBody:
-          description: The External Party response body.
+          description: The raw response body returned by the third-party service.
           type: string
         externalPsp:
-          description: The External Psp.
+          description: The third-party service that processed the payment request.
           type: string
         externalPspTransactionStatus:
-          description: The External Psp transaction status.
+          description: The transaction status returned by the third-party service.
           type: string
         externalTransactionLinkIdFound:
-          description: Confirms that the provided transactionLinkId path successfully
-            matched a reference in the third-party response.
+          description: Indicates if the `transactionLinkIdPaths` matched a reference
+            in the third-party response.
           type: boolean
         externalTransactionLinkIdRequested:
-          description: It's being populated when transactionLinkIdPaths is provided
+          description: Indicates if a `transactionLinkIdPaths` value was provided
+            in the request.
           type: boolean
         merchantAccountCode:
-          description: The merchant account code.
+          description: The merchant account that is used to process the payment.
           type: string
         merchantCountryCode:
-          description: The merchant country code.
+          description: The country of the merchant account.
           type: string
         merchantReference:
-          description: Merchant transaction reference.
+          description: Your reference to uniquely identify the payment.
           type: string
         pspReference:
-          description: PSP Reference.
+          description: Adyen's 16-character reference associated with the request.
+            This value is globally unique, so you can use it as the reference when
+            you communicate with us about this request.
           type: string
         scheme:
-          description: Card transaction scheme.
+          description: The card network used for the transaction. For example, **visa**
+            or **mc**.
           type: string
         shopperReference:
-          description: Shopper reference.
+          description: Your reference to uniquely identify this shopper, for example
+            user ID or account ID.
           type: string
         storedPaymentMethodId:
-          description: Stored Payment Method Id.
+          description: The unique identifier of the token.
           type: string
       required:
       - pspReference
@@ -118,11 +123,11 @@ components:
       additionalProperties: false
       properties:
         createdAt:
-          description: Timestamp for when the webhook was created.
+          description: The date and time when the webhook was created.
           format: date-time
           type: string
         data:
-          description: Contains details of the update.
+          description: The details of the Forward API request.
           $ref: '#/components/schemas/ForwardApiNotificationData'
         environment:
           description: 'The environment from which the webhook originated.
@@ -131,7 +136,7 @@ components:
             Possible values: **test**, **live**.'
           type: string
         type:
-          description: Type of notification.
+          description: The type of notification.
           type: string
         version:
           description: The version of this webhook type.
