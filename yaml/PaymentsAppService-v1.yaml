@@ -1,12 +1,7 @@
 openapi: 3.1.0
-servers:
-- url: https://management-live.adyen.com/v1
-  description: Live Environment
-- url: https://management-test.adyen.com/v1
-  description: Test Environment
 info:
   title: Payments App API
-  description: 'Board and manage the Adyen Payments App on your Android mobile devices.
+  description: 'Board and manage the Adyen Payments App on your mobile devices.
 
     ## Authentication
 
@@ -50,7 +45,11 @@ info:
     name: Adyen Developer Experience team
     url: https://github.com/Adyen/adyen-openapi
   version: '1'
-  x-timestamp: '2025-09-18T14:42:18Z'
+servers:
+- url: https://management-live.adyen.com/v1
+  description: Live Environment
+- url: https://management-test.adyen.com/v1
+  description: Test Environment
 tags:
 - name: Payments App
 paths:
@@ -60,8 +59,8 @@ paths:
       - Payments App
       summary: Create a boarding token - merchant level
       description: "Creates a boarding token used to authenticate the installation\
-        \ of a Payments App instance on an Android device. The boarding token is created\
-        \ for the `boardingRequestToken` of the Payments App for the merchant account\
+        \ of a Payments App instance on a device. The boarding token is created for\
+        \ the `boardingRequestToken` of the Payments App for the merchant account\
         \ identified in the path. \n\nTo make this request, your API credential must\
         \ have the following [role](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\
         * Adyen Payments App role\n"
@@ -71,9 +70,11 @@ paths:
         in: path
         description: The unique identifier of the merchant account.
         required: true
+        style: simple
+        explode: false
         schema:
-          minLength: 1
           type: string
+          minLength: 1
       requestBody:
         content:
           application/json:
@@ -119,15 +120,172 @@ paths:
                 $ref: '#/components/schemas/DefaultErrorResponseEntity'
       x-methodName: generatePaymentsAppBoardingTokenForMerchant
       x-sortIndex: 0
+  /merchants/{merchantId}/paymentsApps:
+    get:
+      tags:
+      - Payments App
+      summary: Get a list of Payments Apps - merchant level
+      description: 'Returns the list of Payments App instances for the merchant account
+        identified in the path.
+
+
+        To make this request, your API credential must have the following [role](https://docs.adyen.com/development-resources/api-credentials#api-permissions):
+
+        * Adyen Payments App role
+
+        '
+      operationId: get-merchants-merchantId-paymentsApps
+      parameters:
+      - name: merchantId
+        in: path
+        description: The unique identifier of the merchant account.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          minLength: 1
+      - name: statuses
+        in: query
+        description: "The status of the Payments App. Comma-separated list of one\
+          \ or more values. If no value is provided, the list returns all statuses.\
+          \ \n\nPossible values:\n\n* **BOARDING**\n\n * **BOARDED**\n\n * **REVOKED**"
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: limit
+        in: query
+        description: The number of items to return.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
+          format: int32
+          default: 10
+          maximum: 100
+      - name: offset
+        in: query
+        description: The number of items to skip.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
+          format: int64
+          default: 0
+      responses:
+        '200':
+          description: OK - the request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentsAppResponse'
+        '400':
+          description: Bad Request - a problem reading or understanding the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '401':
+          description: Unauthorized - authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '403':
+          description: Forbidden - insufficient permissions to process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '422':
+          description: Unprocessable Entity - a request validation error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '500':
+          description: Internal Server Error - the server could not process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+      x-group-parameters: 'false'
+      x-methodName: listPaymentsAppForMerchant
+      x-sortIndex: 0
+  /merchants/{merchantId}/paymentsApps/{installationId}/revoke:
+    post:
+      tags:
+      - Payments App
+      summary: Revoke Payments App instance authentication
+      description: 'Revokes the authentication of the Payments App instance for the
+        `installationId` and merchant account identified in the path. This call revokes
+        the authentication of the Payments App instance with the `installationId`
+        identified in the path for both merchant accounts and stores.
+
+
+        To make this request, your API credential must have the following [role](https://docs.adyen.com/development-resources/api-credentials#api-permissions):
+
+        * Adyen Payments App role
+
+        '
+      operationId: post-merchants-merchantId-paymentsApps-installationId-revoke
+      parameters:
+      - name: merchantId
+        in: path
+        description: The unique identifier of the merchant account.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          minLength: 1
+      - name: installationId
+        in: path
+        description: The unique identifier of the Payments App instance on a device.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          minLength: 1
+      responses:
+        '200':
+          description: OK - the request has succeeded.
+          content:
+            application/json: {}
+        '400':
+          description: Bad Request - a problem reading or understanding the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '401':
+          description: Unauthorized - authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '500':
+          description: Internal Server Error - the server could not process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+      x-methodName: revokePaymentsApp
+      x-sortIndex: 0
   /merchants/{merchantId}/stores/{storeId}/generatePaymentsAppBoardingToken:
     post:
       tags:
       - Payments App
       summary: Create a boarding token - store level
       description: 'Creates a boarding token used to authenticate the installation
-        of a Payments App instance on an Android device. The boarding token is created
-        for the `boardingRequestToken` of the Payments App for the store identified
-        in the path.
+        of a Payments App instance on a device. The boarding token is created for
+        the `boardingRequestToken` of the Payments App for the store identified in
+        the path.
 
 
         To make this request, your API credential must have the following [role](https://docs.adyen.com/development-resources/api-credentials#api-permissions):
@@ -141,16 +299,20 @@ paths:
         in: path
         description: The unique identifier of the merchant account.
         required: true
+        style: simple
+        explode: false
         schema:
-          minLength: 1
           type: string
+          minLength: 1
       - name: storeId
         in: path
         description: The unique identifier of the store.
         required: true
+        style: simple
+        explode: false
         schema:
-          minLength: 1
           type: string
+          minLength: 1
       requestBody:
         content:
           application/json:
@@ -196,91 +358,6 @@ paths:
                 $ref: '#/components/schemas/DefaultErrorResponseEntity'
       x-methodName: generatePaymentsAppBoardingTokenForStore
       x-sortIndex: 0
-  /merchants/{merchantId}/paymentsApps:
-    get:
-      tags:
-      - Payments App
-      summary: Get a list of Payments Apps - merchant level
-      description: 'Returns the list of Payments App instances for the merchant account
-        identified in the path.
-
-
-        To make this request, your API credential must have the following [role](https://docs.adyen.com/development-resources/api-credentials#api-permissions):
-
-        * Adyen Payments App role
-
-        '
-      operationId: get-merchants-merchantId-paymentsApps
-      parameters:
-      - name: merchantId
-        in: path
-        description: The unique identifier of the merchant account.
-        required: true
-        schema:
-          minLength: 1
-          type: string
-      - name: statuses
-        in: query
-        description: "The status of the Payments App. Comma-separated list of one\
-          \ or more values. If no value is provided, the list returns all statuses.\
-          \ \n\nPossible values:\n\n* **BOARDING**\n\n * **BOARDED**\n\n * **REVOKED**"
-        schema:
-          type: string
-      - name: limit
-        in: query
-        description: The number of items to return.
-        schema:
-          maximum: 100
-          type: integer
-          format: int32
-          default: 10
-      - name: offset
-        in: query
-        description: The number of items to skip.
-        schema:
-          type: integer
-          format: int64
-          default: 0
-      responses:
-        '200':
-          description: OK - the request has succeeded.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaymentsAppResponse'
-        '400':
-          description: Bad Request - a problem reading or understanding the request.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DefaultErrorResponseEntity'
-        '401':
-          description: Unauthorized - authentication required.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DefaultErrorResponseEntity'
-        '403':
-          description: Forbidden - insufficient permissions to process the request.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DefaultErrorResponseEntity'
-        '422':
-          description: Unprocessable Entity - a request validation error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DefaultErrorResponseEntity'
-        '500':
-          description: Internal Server Error - the server could not process the request.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DefaultErrorResponseEntity'
-      x-group-parameters: 'false'
-      x-methodName: listPaymentsAppForMerchant
-      x-sortIndex: 0
   /merchants/{merchantId}/stores/{storeId}/paymentsApps:
     get:
       tags:
@@ -301,34 +378,47 @@ paths:
         in: path
         description: The unique identifier of the merchant account.
         required: true
+        style: simple
+        explode: false
         schema:
-          minLength: 1
           type: string
+          minLength: 1
       - name: storeId
         in: path
         description: The unique identifier of the store.
         required: true
+        style: simple
+        explode: false
         schema:
-          minLength: 1
           type: string
+          minLength: 1
       - name: statuses
         in: query
         description: "The status of the Payments App. Comma-separated list of one\
           \ or more values. If no value is provided, the list returns all statuses.\
           \ \n\nPossible values:\n\n* **BOARDING**\n\n * **BOARDED**\n\n * **REVOKED**"
+        required: false
+        style: form
+        explode: true
         schema:
           type: string
       - name: limit
         in: query
         description: The number of items to return.
+        required: false
+        style: form
+        explode: true
         schema:
-          maximum: 100
           type: integer
           format: int32
           default: 10
+          maximum: 100
       - name: offset
         in: query
         description: The number of items to skip.
+        required: false
+        style: form
+        explode: true
         schema:
           type: integer
           format: int64
@@ -373,69 +463,20 @@ paths:
       x-group-parameters: 'false'
       x-methodName: listPaymentsAppForStore
       x-sortIndex: 0
-  /merchants/{merchantId}/paymentsApps/{installationId}/revoke:
-    post:
-      tags:
-      - Payments App
-      summary: Revoke Payments App instance authentication
-      description: 'Revokes the authentication of the Payments App instance for the
-        `installationId` and merchant account identified in the path. This call revokes
-        the authentication of the Payments App instance with the `installationId`
-        identified in the path for both merchant accounts and stores.
-
-
-        To make this request, your API credential must have the following [role](https://docs.adyen.com/development-resources/api-credentials#api-permissions):
-
-        * Adyen Payments App role
-
-        '
-      operationId: post-merchants-merchantId-paymentsApps-installationId-revoke
-      parameters:
-      - name: merchantId
-        in: path
-        description: The unique identifier of the merchant account.
-        required: true
-        schema:
-          minLength: 1
-          type: string
-      - name: installationId
-        in: path
-        description: The unique identifier of the Payments App instance on a device.
-        required: true
-        schema:
-          minLength: 1
-          type: string
-      responses:
-        '200':
-          description: OK - the request has succeeded.
-          content:
-            application/json: {}
-        '400':
-          description: Bad Request - a problem reading or understanding the request.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DefaultErrorResponseEntity'
-        '401':
-          description: Unauthorized - authentication required.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DefaultErrorResponseEntity'
-        '500':
-          description: Internal Server Error - the server could not process the request.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DefaultErrorResponseEntity'
-      x-methodName: revokePaymentsApp
-      x-sortIndex: 0
 components:
   schemas:
-    BoardingTokenResponse:
+    BoardingTokenRequest:
+      type: object
+      properties:
+        boardingRequestToken:
+          type: string
+          description: The boardingToken request token.
+        subMerchantData:
+          $ref: '#/components/schemas/SubMerchantData'
+          description: Data of the sub-merchant.
       required:
-      - boardingToken
-      - installationId
+      - boardingRequestToken
+    BoardingTokenResponse:
       type: object
       properties:
         boardingToken:
@@ -444,8 +485,14 @@ components:
         installationId:
           type: string
           description: The unique identifier of the Payments App instance.
+      required:
+      - boardingToken
+      - installationId
     DefaultErrorResponseEntity:
       type: object
+      description: Standardized error response following RFC-7807 format
+      externalDocs:
+        url: https://www.rfc-editor.org/rfc/rfc7807
       properties:
         detail:
           type: string
@@ -468,8 +515,8 @@ components:
           description: The unique reference for the request.
         status:
           type: integer
-          description: The HTTP status code.
           format: int32
+          description: The HTTP status code.
         title:
           type: string
           description: A short, human-readable summary of the problem type.
@@ -477,38 +524,23 @@ components:
           type: string
           description: A URI that identifies the validation error type. It points
             to human-readable documentation for the problem type.
-      description: Standardized error response following RFC-7807 format
-      externalDocs:
-        url: https://www.rfc-editor.org/rfc/rfc7807
     InvalidField:
-      required:
-      - message
-      - name
-      - value
       type: object
       properties:
+        message:
+          type: string
+          description: Description of the validation error.
         name:
           type: string
           description: The field that has an invalid value.
         value:
           type: string
           description: The invalid value.
-        message:
-          type: string
-          description: Description of the validation error.
-    BoardingTokenRequest:
       required:
-      - boardingRequestToken
-      type: object
-      properties:
-        boardingRequestToken:
-          type: string
-          description: The boardingToken request token.
+      - message
+      - name
+      - value
     PaymentsAppDto:
-      required:
-      - installationId
-      - merchantAccountCode
-      - status
       type: object
       properties:
         installationId:
@@ -523,9 +555,11 @@ components:
         status:
           type: string
           description: The status of the Payments App instance.
-    PaymentsAppResponse:
       required:
-      - paymentsApps
+      - installationId
+      - merchantAccountCode
+      - status
+    PaymentsAppResponse:
       type: object
       properties:
         paymentsApps:
@@ -533,6 +567,57 @@ components:
           description: List of Payments Apps.
           items:
             $ref: '#/components/schemas/PaymentsAppDto'
+      required:
+      - paymentsApps
+    SubMerchantData:
+      type: object
+      properties:
+        city:
+          type: string
+          description: The city of the sub-merchant.
+        country:
+          type: string
+          description: The country of the sub-merchant.
+        displayName:
+          type: string
+          description: The display name of the merchant.
+          minLength: 1
+        email:
+          type: string
+          format: email
+          description: The email of the sub-merchant.
+        id:
+          type: string
+          description: The sub-merchant's ID.
+          minLength: 1
+        mcc:
+          type: string
+          description: The MCC of the sub-merchant.
+          minLength: 1
+        name:
+          type: string
+          description: The name of the sub-merchant.
+          minLength: 1
+        phoneNumber:
+          type: string
+          description: The phone number of the sub-merchant.
+        postalCode:
+          type: string
+          description: The postal code of the sub-merchant.
+        state:
+          type: string
+          description: The state of the sub-merchant.
+        street:
+          type: string
+          description: The street of the sub-merchant.
+        taxId:
+          type: string
+          description: The tax ID of the sub-merchant.
+      required:
+      - displayName
+      - id
+      - mcc
+      - name
   securitySchemes:
     ApiKeyAuth:
       type: apiKey
