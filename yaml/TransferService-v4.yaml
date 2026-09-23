@@ -827,6 +827,8 @@ paths:
                   $ref: '#/components/examples/post-transfers-payout-cross-border-202'
                 payout-cross-border-platforms:
                   $ref: '#/components/examples/post-transfers-payout-cross-border-platforms-202'
+                payout-cross-border-refused:
+                  $ref: '#/components/examples/post-transfers-payout-cross-border-refused-202'
                 payout-local-transfer-sepa:
                   $ref: '#/components/examples/post-transfers-payout-local-transfer-sepa-202'
                 payout-local-transfer-us:
@@ -2263,6 +2265,18 @@ components:
           description: The authorisation type. For example, **defaultAuthorisation**,
             **preAuthorisation**, **finalAuthorisation**
           x-addedInVersion: '4'
+        networkVariant:
+          type: string
+          description: The card variant associated with the payment network used to
+            route or process the transaction. For single-network cards, this matches
+            the `brandVariant`. For US dual-network cards routed over an alternate
+            network, this value reflects the specific tier or sub-type under that
+            processing network.
+          enum:
+          - maestro_us
+          - mastercard
+          - visa
+          x-addedInVersion: '4'
         panEntryMode:
           type: string
           description: 'Indicates the method used for entering the PAN to initiate
@@ -2530,6 +2544,7 @@ components:
           - reserveAdjustment
           - reserveAdjustmentPending
           - returned
+          - reversalReceived
           - reversed
           - secondChargeback
           - secondChargebackPending
@@ -2624,6 +2639,8 @@ components:
 
             *  **usAchReturnReasonCode**
 
+            *  **usAchCorrectionReasonCode**
+
             *  **iso8583ResponseCode**
 
 
@@ -2633,6 +2650,7 @@ components:
           - ukFpsRejectionCode
           - ukFpsReturnReasonCode
           - usAchReturnReasonCode
+          - usAchCorrectionReasonCode
     NumberAndBicAccountIdentification:
       type: object
       additionalProperties: false
@@ -3634,6 +3652,7 @@ components:
           - reserveAdjustment
           - reserveAdjustmentPending
           - returned
+          - reversalReceived
           - reversed
           - secondChargeback
           - secondChargebackPending
@@ -3682,6 +3701,8 @@ components:
           - balanceAdjustment
           - balanceRollover
           - balanceMigration
+          - fxSell
+          - fxBuy
           x-addedInVersion: '3'
         ultimateParty:
           $ref: '#/components/schemas/UltimatePartyIdentification'
@@ -4042,6 +4063,7 @@ components:
           - reserveAdjustment
           - reserveAdjustmentPending
           - returned
+          - reversalReceived
           - reversed
           - secondChargeback
           - secondChargebackPending
@@ -4119,6 +4141,8 @@ components:
           - balanceAdjustment
           - balanceRollover
           - balanceMigration
+          - fxSell
+          - fxBuy
           x-addedInVersion: '3'
         ultimateParty:
           $ref: '#/components/schemas/UltimatePartyIdentification'
@@ -4366,6 +4390,7 @@ components:
           - reserveAdjustment
           - reserveAdjustmentPending
           - returned
+          - reversalReceived
           - reversed
           - secondChargeback
           - secondChargebackPending
@@ -5623,6 +5648,47 @@ components:
         direction: outgoing
         reason: pending
         status: received
+    post-transfers-payout-cross-border-refused-202:
+      summary: Refused transfer due to insufficient balance
+      description: Example response for a transfer refused because the balance account
+        does not have enough funds
+      value:
+        creationDate: '2024-01-01T00:00:00Z'
+        id: 4VXO00000000000001
+        accountHolder:
+          description: Your account holder description
+          id: AH00000000000000000000001
+          reference: Your account holder reference
+        amount:
+          currency: EUR
+          value: 10000
+        balanceAccount:
+          description: Your balance account description
+          id: BA00000000000000000000001
+        category: bank
+        categoryData:
+          priority: crossBorder
+          type: bank
+        counterparty:
+          bankAccount:
+            accountHolder:
+              address:
+                city: Paris
+                country: FR
+                line1: 6-8 Boulevard Haussmann
+                postalCode: '75009'
+              fullName: Jean Dupont
+              type: unknown
+            accountIdentification:
+              type: iban
+              iban: FR0000000000000000000000117
+        description: Your description for the transfer
+        direction: outgoing
+        reason: notEnoughBalance
+        reference: Your internal reference for the transfer
+        referenceForBeneficiary: Your reference for the beneficiary
+        status: refused
+        type: bankTransfer
     post-transfers-payout-local-transfer-sepa:
       summary: Make a SEPA funds transfer
       description: Example request to make a SEPA funds transfer

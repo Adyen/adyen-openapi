@@ -1,7 +1,5 @@
 openapi: 3.1.0
 info:
-  version: '4'
-  x-publicVersion: true
   title: Transaction webhooks
   description: 'After a transfer is booked in a balance account, Adyen sends webhooks
     with information about the transaction.
@@ -16,75 +14,42 @@ info:
   contact:
     name: Adyen Developer Experience team
     url: https://github.com/Adyen/adyen-openapi
+  version: '4'
+  x-publicVersion: true
 tags:
 - name: General
-webhooks:
-  balancePlatform.transaction.created:
-    post:
-      tags:
-      - General
-      summary: Transaction created
-      description: 'After a transfer is booked in a balance account, Adyen sends this
-        webhook with information about the transaction.
-
-
-        '
-      x-addedInVersion: '1'
-      operationId: post-balancePlatform.transaction.created
-      x-sortIndex: 0
-      x-methodName: transactionCreated
-      security:
-      - BasicAuth: []
-      requestBody:
-        content:
-          application/json:
-            examples:
-              01.balancePlatform-transaction-created-payout-ti:
-                $ref: '#/components/examples/post-balancePlatform.transaction.created-01.balancePlatform-transaction-created-payout-ti'
-              02.balancePlatform-transaction-created-internal-incoming:
-                $ref: '#/components/examples/post-balancePlatform.transaction.created-02.balancePlatform-transaction-created-internal-incoming'
-              03.balancePlatform-transaction-created-outgoing-business-account:
-                $ref: '#/components/examples/post-balancePlatform.transaction.created-03.balancePlatform-transaction-created-outgoing-business-account'
-            schema:
-              $ref: '#/components/schemas/TransactionNotificationRequestV4'
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BalancePlatformNotificationResponse'
-          description: OK - the request has succeeded.
 components:
   schemas:
     Amount:
+      type: object
       additionalProperties: false
       properties:
         currency:
+          type: string
           description: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes#currency-codes)
             of the amount.
           maxLength: 3
           minLength: 3
-          type: string
         value:
-          description: The numeric value of the amount, in [minor units](https://docs.adyen.com/development-resources/currency-codes#minor-units).
-          format: int64
           type: integer
+          format: int64
+          description: The numeric value of the amount, in [minor units](https://docs.adyen.com/development-resources/currency-codes#minor-units).
       required:
-      - value
       - currency
-      type: object
+      - value
     BalancePlatformNotificationResponse:
+      type: object
       additionalProperties: false
       properties:
         notificationResponse:
-          description: Respond with any **2xx** HTTP status code to [accept the webhook](https://docs.adyen.com/development-resources/webhooks/#accept-webhooks).
           type: string
-      type: object
+          description: Respond with any **2xx** HTTP status code to [accept the webhook](https://docs.adyen.com/development-resources/webhooks/#accept-webhooks).
     BankCategoryData:
+      type: object
       additionalProperties: false
       properties:
         priority:
-          x-addedInVersion: '4'
+          type: string
           description: 'The priority for the bank transfer. This sets the speed at
             which the transfer is sent and the fees that you have to pay. Required
             for transfers with `category` **bank**.
@@ -121,42 +86,54 @@ components:
           - internal
           - regular
           - wire
-          type: string
+          x-addedInVersion: '4'
         type:
+          type: string
           default: bank
           description: '**bank**'
           enum:
           - bank
-          type: string
-      type: object
     InternalCategoryData:
+      type: object
       additionalProperties: false
       properties:
         modificationMerchantReference:
-          x-addedInVersion: '4'
+          type: string
           description: The capture's merchant reference included in the transfer.
-          type: string
-        modificationPspReference:
           x-addedInVersion: '4'
-          description: The capture reference included in the transfer.
+        modificationPspReference:
           type: string
+          description: The capture reference included in the transfer.
+          x-addedInVersion: '4'
         type:
+          type: string
           default: internal
           description: '**internal**'
           enum:
           - internal
-          type: string
-      type: object
     IssuedCard:
+      type: object
       additionalProperties: false
       properties:
         authorisationType:
-          x-addedInVersion: '4'
+          type: string
           description: The authorisation type. For example, **defaultAuthorisation**,
             **preAuthorisation**, **finalAuthorisation**
-          type: string
-        panEntryMode:
           x-addedInVersion: '4'
+        networkVariant:
+          type: string
+          description: The card variant associated with the payment network used to
+            route or process the transaction. For single-network cards, this matches
+            the `brandVariant`. For US dual-network cards routed over an alternate
+            network, this value reflects the specific tier or sub-type under that
+            processing network.
+          enum:
+          - maestro_us
+          - mastercard
+          - visa
+          x-addedInVersion: '4'
+        panEntryMode:
+          type: string
           description: 'Indicates the method used for entering the PAN to initiate
             a transaction.
 
@@ -171,9 +148,9 @@ components:
           - magstripe
           - manual
           - token
-          type: string
-        processingType:
           x-addedInVersion: '4'
+        processingType:
+          type: string
           description: 'Contains information about how the payment was processed.
 
 
@@ -188,78 +165,78 @@ components:
           - purchaseWithCashback
           - recurring
           - token
-          type: string
-        relayedAuthorisationData:
           x-addedInVersion: '4'
+        relayedAuthorisationData:
+          $ref: '#/components/schemas/RelayedAuthorisationData'
           description: If you are using relayed authorisation, this object contains
             information from the relayed authorisation response from your server.
-          $ref: '#/components/schemas/RelayedAuthorisationData'
-        schemeTraceId:
           x-addedInVersion: '4'
+        schemeTraceId:
+          type: string
           description: The identifier of the original payment. This ID is provided
             by the scheme and can be alphanumeric or numeric, depending on the scheme.
             The `schemeTraceID` should refer to an original `schemeUniqueTransactionID`
             provided in an earlier payment (not necessarily processed by Adyen). A
             `schemeTraceId` is typically available for authorization adjustments or
             recurring payments.
-          type: string
-        schemeUniqueTransactionId:
           x-addedInVersion: '4'
+        schemeUniqueTransactionId:
+          type: string
           description: The unique identifier created by the scheme. This ID can be
             alphanumeric or numeric depending on the scheme.
-          type: string
-        threeDSecure:
           x-addedInVersion: '4'
-          description: The data of the result from the 3DS authentication.
+        threeDSecure:
           $ref: '#/components/schemas/ThreeDSecure'
+          description: The data of the result from the 3DS authentication.
+          x-addedInVersion: '4'
         type:
+          type: string
           default: issuedCard
           description: '**issuedCard**'
           enum:
           - issuedCard
-          type: string
         validationFacts:
-          x-addedInVersion: '4'
+          type: array
           description: The evaluation of the validation facts. See [validation checks](https://docs.adyen.com/issuing/validation-checks)
             for more information.
           items:
             $ref: '#/components/schemas/TransferNotificationValidationFact'
-          type: array
-      type: object
+          x-addedInVersion: '4'
     PaymentInstrument:
+      type: object
       additionalProperties: false
       properties:
         description:
+          type: string
           description: The description of the resource.
-          type: string
         id:
+          type: string
           description: The unique identifier of the resource.
-          type: string
         reference:
+          type: string
           description: The reference for the resource.
-          type: string
         tokenType:
-          x-addedInVersion: '3'
-          description: The type of wallet that the network token is associated with.
           type: string
-      type: object
+          description: The type of wallet that the network token is associated with.
+          x-addedInVersion: '3'
     PlatformPayment:
+      type: object
       additionalProperties: false
       properties:
         modificationMerchantReference:
-          x-addedInVersion: '4'
+          type: string
           description: The capture's merchant reference included in the transfer.
-          type: string
+          x-addedInVersion: '4'
         modificationPspReference:
-          x-addedInVersion: '4'
+          type: string
           description: The capture reference included in the transfer.
-          type: string
+          x-addedInVersion: '4'
         paymentMerchantReference:
-          x-addedInVersion: '4'
-          description: The payment's merchant reference included in the transfer.
           type: string
-        platformPaymentType:
+          description: The payment's merchant reference included in the transfer.
           x-addedInVersion: '4'
+        platformPaymentType:
+          type: string
           description: 'Specifies the nature of the transfer. This parameter helps
             categorize transfers so you can reconcile transactions at a later time,
             using the Balance Platform Accounting Report for [marketplaces](https://docs.adyen.com/marketplaces/reports-and-fees/balance-platform-accounting-report/)
@@ -341,218 +318,213 @@ components:
           - Tip
           - TopUp
           - VAT
-          type: string
-        pspPaymentReference:
           x-addedInVersion: '4'
-          description: The payment reference included in the transfer.
+        pspPaymentReference:
           type: string
+          description: The payment reference included in the transfer.
+          x-addedInVersion: '4'
         type:
+          type: string
           default: platformPayment
           description: '**platformPayment**'
           enum:
           - platformPayment
-          type: string
-      type: object
     RelayedAuthorisationData:
+      type: object
       additionalProperties: false
       properties:
         metadata:
-          x-addedInVersion: '3'
+          type: object
           additionalProperties:
             type: string
           description: Contains key-value pairs of your references and descriptions,
             for example, `customId`:`your-own-custom-field-12345`.
-          type: object
-        reference:
           x-addedInVersion: '3'
-          description: Your reference for the relayed authorisation data.
+        reference:
           type: string
-      type: object
+          description: Your reference for the relayed authorisation data.
+          x-addedInVersion: '3'
     Resource:
+      type: object
       additionalProperties: false
       properties:
         balancePlatform:
-          description: The unique identifier of the balance platform.
           type: string
+          description: The unique identifier of the balance platform.
         creationDate:
+          type: string
+          format: date-time
           description: The date and time when the event was triggered, in ISO 8601
             extended format. For example, **2025-03-19T10:15:30+01:00**.
-          format: date-time
-          type: string
         id:
-          description: The ID of the resource.
           type: string
-      type: object
+          description: The ID of the resource.
     ResourceReference:
+      type: object
       additionalProperties: false
       properties:
         description:
+          type: string
           description: The description of the resource.
-          type: string
         id:
+          type: string
           description: The unique identifier of the resource.
-          type: string
         reference:
-          description: The reference for the resource.
           type: string
-      type: object
+          description: The reference for the resource.
     ThreeDSecure:
+      type: object
       additionalProperties: false
       properties:
         acsTransactionId:
-          x-addedInVersion: '4'
-          description: The transaction identifier for the Access Control Server
           type: string
-      type: object
+          description: The transaction identifier for the Access Control Server
+          x-addedInVersion: '4'
     Transaction:
+      type: object
       additionalProperties: false
       properties:
         accountHolder:
-          x-addedInVersion: '4'
+          $ref: '#/components/schemas/ResourceReference'
           description: Contains information about the account holder associated with
             the `balanceAccount`.
-          $ref: '#/components/schemas/ResourceReference'
-        amount:
-          x-addedInVersion: '1'
-          description: Contains information about the amount of the transaction.
-          $ref: '#/components/schemas/Amount'
-        balanceAccount:
           x-addedInVersion: '4'
+        amount:
+          $ref: '#/components/schemas/Amount'
+          description: Contains information about the amount of the transaction.
+          x-addedInVersion: '1'
+        balanceAccount:
+          $ref: '#/components/schemas/ResourceReference'
           description: Contains information about the balance account involved in
             the transaction.
-          $ref: '#/components/schemas/ResourceReference'
+          x-addedInVersion: '4'
         balancePlatform:
-          x-addedInVersion: '1'
+          type: string
           description: The unique identifier of the balance platform.
-          type: string
-        bookingDate:
           x-addedInVersion: '1'
-          description: The date the transaction was booked into the balance account.
-          format: date-time
+        bookingDate:
           type: string
+          format: date-time
+          description: The date the transaction was booked into the balance account.
+          x-addedInVersion: '1'
         creationDate:
+          type: string
+          format: date-time
           description: The date and time when the event was triggered, in ISO 8601
             extended format. For example, **2025-03-19T10:15:30+01:00**.
-          format: date-time
-          type: string
         description:
-          x-addedInVersion: '1'
+          type: string
           description: The `description` from the `/transfers` request.
-          type: string
-        id:
           x-addedInVersion: '1'
-          description: The unique identifier of the transaction.
+        id:
           type: string
+          description: The unique identifier of the transaction.
+          x-addedInVersion: '1'
         paymentInstrument:
-          x-addedInVersion: '4'
+          $ref: '#/components/schemas/PaymentInstrument'
           description: Contains information about the payment instrument that was
             used for the transaction.
-          $ref: '#/components/schemas/PaymentInstrument'
+          x-addedInVersion: '4'
         referenceForBeneficiary:
-          x-addedInVersion: '1'
+          type: string
           description: "The reference sent to or received from the counterparty.\n\
             \n* For outgoing funds, this is the [`referenceForBeneficiary`](https://docs.adyen.com/api-explorer/#/transfers/latest/post/transfers__resParam_referenceForBeneficiary)\
             \ from the  [`/transfers`](https://docs.adyen.com/api-explorer/#/transfers/latest/post/transfers__reqParam_referenceForBeneficiary)\
             \ request.\n\n * For incoming funds, this is the reference from the sender."
-          type: string
-        status:
           x-addedInVersion: '1'
+        status:
+          type: string
           description: "The status of the transaction.\n\n Possible values:\n\n* **pending**:\
             \ The transaction is still pending.\n\n* **booked**: The transaction has\
             \ been booked to the balance account.\n\n"
           enum:
           - booked
           - pending
-          type: string
-        transfer:
-          x-addedInVersion: '4'
-          description: Contains information about the transfer related to the transaction.
-          $ref: '#/components/schemas/TransferView'
-        valueDate:
           x-addedInVersion: '1'
+        transfer:
+          $ref: '#/components/schemas/TransferView'
+          description: Contains information about the transfer related to the transaction.
+          x-addedInVersion: '4'
+        valueDate:
+          type: string
+          format: date-time
           description: The date the transfer amount becomes available in the balance
             account.
-          format: date-time
-          type: string
+          x-addedInVersion: '1'
       required:
-      - id
       - accountHolder
-      - balanceAccount
       - amount
-      - status
-      - bookingDate
-      - valueDate
+      - balanceAccount
       - balancePlatform
-      type: object
+      - bookingDate
+      - id
+      - status
+      - valueDate
     TransactionNotificationRequestV4:
+      type: object
       additionalProperties: false
       properties:
         data:
-          description: Contains details about the event.
           $ref: '#/components/schemas/Transaction'
+          description: Contains details about the event.
         environment:
+          type: string
           description: 'The environment from which the webhook originated.
 
 
             Possible values: **test**, **live**.'
-          type: string
         timestamp:
-          description: When the event was queued.
-          format: date-time
           type: string
+          format: date-time
+          description: When the event was queued.
         type:
+          type: string
           description: Type of the webhook.
           enum:
           - balancePlatform.transaction.created
-          type: string
       required:
-      - environment
       - data
-      type: object
+      - environment
     TransferNotificationValidationFact:
+      type: object
       additionalProperties: false
       properties:
         result:
+          type: string
           description: The evaluation result of the validation fact.
-          type: string
         type:
-          description: The type of the validation fact.
           type: string
-      type: object
+          description: The type of the validation fact.
     TransferView:
+      type: object
       additionalProperties: false
       properties:
         categoryData:
-          x-addedInVersion: '4'
           description: The relevant data according to the transfer category.
           discriminator:
+            propertyName: type
             mapping:
               issuedCard: '#/components/schemas/IssuedCard'
               platformPayment: '#/components/schemas/PlatformPayment'
               bank: '#/components/schemas/BankCategoryData'
               internal: '#/components/schemas/InternalCategoryData'
-            propertyName: type
           oneOf:
           - $ref: '#/components/schemas/BankCategoryData'
           - $ref: '#/components/schemas/InternalCategoryData'
           - $ref: '#/components/schemas/IssuedCard'
           - $ref: '#/components/schemas/PlatformPayment'
-        id:
-          description: The ID of the resource.
-          type: string
-        reference:
           x-addedInVersion: '4'
+        id:
+          type: string
+          description: The ID of the resource.
+        reference:
+          type: string
           description: The [`reference`](https://docs.adyen.com/api-explorer/#/transfers/latest/post/transfers__reqParam_reference)
             from the `/transfers` request. If you haven't provided any, Adyen generates
             a unique reference.
-          type: string
+          x-addedInVersion: '4'
       required:
       - reference
-      type: object
-  securitySchemes:
-    BasicAuth:
-      scheme: basic
-      type: http
   examples:
     post-balancePlatform.transaction.created-01.balancePlatform-transaction-created-payout-ti:
       summary: Transaction related to a payout
@@ -658,3 +630,43 @@ components:
         environment: test
         timestamp: '2023-08-11T16:16:35+02:00'
         type: balancePlatform.transaction.created
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+webhooks:
+  balancePlatform.transaction.created:
+    post:
+      tags:
+      - General
+      summary: Transaction created
+      description: 'After a transfer is booked in a balance account, Adyen sends this
+        webhook with information about the transaction.
+
+
+        '
+      operationId: post-balancePlatform.transaction.created
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransactionNotificationRequestV4'
+            examples:
+              01.balancePlatform-transaction-created-payout-ti:
+                $ref: '#/components/examples/post-balancePlatform.transaction.created-01.balancePlatform-transaction-created-payout-ti'
+              02.balancePlatform-transaction-created-internal-incoming:
+                $ref: '#/components/examples/post-balancePlatform.transaction.created-02.balancePlatform-transaction-created-internal-incoming'
+              03.balancePlatform-transaction-created-outgoing-business-account:
+                $ref: '#/components/examples/post-balancePlatform.transaction.created-03.balancePlatform-transaction-created-outgoing-business-account'
+      responses:
+        '200':
+          description: OK - the request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BalancePlatformNotificationResponse'
+      security:
+      - BasicAuth: []
+      x-addedInVersion: '1'
+      x-sortIndex: 0
+      x-methodName: transactionCreated

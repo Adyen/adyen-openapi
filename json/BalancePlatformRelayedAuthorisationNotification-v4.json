@@ -1,1355 +1,1256 @@
 {
-   "openapi" : "3.1.0",
-   "info" : {
-      "version" : "4",
-      "x-publicVersion" : true,
-      "title" : "Authorization webhooks",
-      "description" : "Adyen sends webhooks to inform your system about events related to transaction authorizations.\n",
-      "termsOfService" : "https://www.adyen.com/legal/terms-and-conditions",
-      "contact" : {
-         "name" : "Adyen Developer Experience team",
-         "url" : "https://github.com/Adyen/adyen-openapi"
-      }
-   },
-   "tags" : [
-      {
-         "name" : "Relayed authorization"
-      }
-   ],
-   "webhooks" : {
-      "balancePlatform.authorisation.relayed" : {
-         "post" : {
-            "tags" : [
-               "Relayed authorization"
-            ],
-            "summary" : "Relayed authorization requested",
-            "description" : "Adyen sends this webhook to allow you to provide [relayed authorization](https://docs.adyen.com/issuing/authorisation/relayed-authorisation/#respond-to-webhook) for a transaction.\n\nTo complete a relayed authorization, respond to this webhook with an **HTTP 200** response. Include the `authorisationDecision` in the response body.\n\nIf we do not receive the response within two seconds, we apply your [fallback logic](https://docs.adyen.com/issuing/authorisation/relayed-authorisation/#fallback).",
-            "operationId" : "post-balancePlatform.authorisation.relayed",
-            "x-sortIndex" : 2,
-            "x-methodName" : "relayedAuthorizationRequested",
-            "security" : [
-               {
-                  "BasicAuth" : [
-                     ]
-               }
-            ],
-            "requestBody" : {
-               "content" : {
-                  "application/json" : {
-                     "examples" : {
-                        "balancePlatform.authorisation.relayed" : {
-                           "$ref" : "#/components/examples/post-balancePlatform.authorisation.relayed-balancePlatform.authorisation.relayed"
-                        }
-                     },
-                     "schema" : {
-                        "$ref" : "#/components/schemas/RelayedAuthorisationRequest"
-                     }
-                  }
-               }
-            },
-            "responses" : {
-               "200" : {
-                  "content" : {
-                     "application/json" : {
-                        "examples" : {
-                           "balancePlatform.authorisation.relayed" : {
-                              "$ref" : "#/components/examples/WebhookAck"
-                           }
-                        },
-                        "schema" : {
-                           "$ref" : "#/components/schemas/RelayedAuthorisationResponse"
-                        }
-                     }
-                  },
-                  "description" : "OK - the request has succeeded."
-               },
-               "400" : {
-                  "content" : {
-                     "application/json" : {
-                        "schema" : {
-                           "$ref" : "#/components/schemas/ServiceError"
-                        }
-                     }
-                  },
-                  "description" : "Bad Request - a problem reading or understanding the request."
-               },
-               "401" : {
-                  "content" : {
-                     "application/json" : {
-                        "schema" : {
-                           "$ref" : "#/components/schemas/ServiceError"
-                        }
-                     }
-                  },
-                  "description" : "Unauthorized - authentication required."
-               },
-               "403" : {
-                  "content" : {
-                     "application/json" : {
-                        "schema" : {
-                           "$ref" : "#/components/schemas/ServiceError"
-                        }
-                     }
-                  },
-                  "description" : "Forbidden - insufficient permissions to process the request."
-               },
-               "422" : {
-                  "content" : {
-                     "application/json" : {
-                        "schema" : {
-                           "$ref" : "#/components/schemas/ServiceError"
-                        }
-                     }
-                  },
-                  "description" : "Unprocessable Entity - a request validation error."
-               },
-               "500" : {
-                  "content" : {
-                     "application/json" : {
-                        "schema" : {
-                           "$ref" : "#/components/schemas/ServiceError"
-                        }
-                     }
-                  },
-                  "description" : "Internal Server Error - the server could not process the request."
-               }
-            }
-         }
-      }
-   },
-   "components" : {
-      "schemas" : {
-         "Amount" : {
-            "additionalProperties" : false,
-            "properties" : {
-               "currency" : {
-                  "description" : "The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes#currency-codes) of the amount.",
-                  "maxLength" : 3,
-                  "minLength" : 3,
-                  "type" : "string"
-               },
-               "value" : {
-                  "description" : "The numeric value of the amount, in [minor units](https://docs.adyen.com/development-resources/currency-codes#minor-units).",
-                  "format" : "int64",
-                  "type" : "integer"
-               }
-            },
-            "required" : [
-               "value",
-               "currency"
-            ],
-            "type" : "object"
-         },
-         "AmountAdjustment" : {
-            "additionalProperties" : false,
-            "properties" : {
-               "amount" : {
-                  "description" : "The adjustment amount.",
-                  "$ref" : "#/components/schemas/Amount"
-               },
-               "amountAdjustmentType" : {
-                  "description" : "The type of markup that is applied to an authorised payment.\n\nPossible values: **exchange**, **forexMarkup**, **authHoldReserve**, **atmMarkup**.",
-                  "enum" : [
-                     "atmMarkup",
-                     "authHoldReserve",
-                     "exchange",
-                     "forexMarkup"
-                  ],
-                  "type" : "string"
-               },
-               "basepoints" : {
-                  "description" : "The basepoints associated with the applied markup.",
-                  "format" : "int32",
-                  "type" : "integer"
-               },
-               "fixedAmount" : {
-                  "description" : "The specific amount of the adjustment.",
-                  "$ref" : "#/components/schemas/Amount"
-               },
-               "floorAmount" : {
-                  "description" : "The minimum amount of the adjustment.",
-                  "$ref" : "#/components/schemas/Amount"
-               },
-               "limitAmount" : {
-                  "description" : "The maximum amount of the adjustment.",
-                  "$ref" : "#/components/schemas/Amount"
-               }
-            },
-            "type" : "object"
-         },
-         "Authentication" : {
-            "additionalProperties" : false,
-            "properties" : {
-               "email" : {
-                  "description" : "The email address where the one-time password (OTP) is sent.",
-                  "type" : "string"
-               },
-               "password" : {
-                  "description" : "The password used for 3D Secure password-based authentication. The value must be between 1 to 30 characters and must only contain the following supported characters.\n\n* Characters between **a-z**, **A-Z**, and **0-9**\n\n* Special characters: **äöüßÄÖÜ+-*/ç%()=?!~#'\",;:$&àùòâôûáúó**",
-                  "maxLength" : 30,
-                  "minLength" : 1,
-                  "type" : "string"
-               },
-               "phone" : {
-                  "description" : "The phone number where the one-time password (OTP) is sent.\n\nThis object must have:\n\n* A `type` set to **mobile**.\n\n* A `number` with a valid country code.\n\n* A `number` with more than 4 digits, excluding the country code.\n\n>Make sure to verify that the card user owns the phone number.",
-                  "$ref" : "#/components/schemas/Phone"
-               }
-            },
-            "type" : "object"
-         },
-         "AuthorisationDecisionRequest" : {
-            "additionalProperties" : false,
-            "properties" : {
-               "reasonCode" : {
-                  "description" : "The reason of the authorization decision.",
-                  "type" : "string"
-               },
-               "status" : {
-                  "description" : "The status of the authorization decision. Possible values: **Authorised** or **Refused**.",
-                  "type" : "string"
-               },
-               "statusCode" : {
-                  "description" : "The code of the authorization decision.",
-                  "type" : "string"
-               }
-            },
-            "type" : "object"
-         },
-         "AuthorisationDecisionResponse" : {
-            "additionalProperties" : false,
-            "properties" : {
-               "refusalReason" : {
-                  "description" : "The reason for refusing the authorization.",
-                  "type" : "string"
-               },
-               "status" : {
-                  "description" : "The status of the authorization. \n\nPossible values: \n\n* **Authorised** \n\n* **Refused** \n\nFor more information, refer to [Use relayed authorization](https://docs.adyen.com/issuing/authorisation/relayed-authorisation/).",
-                  "enum" : [
-                     "Authorised",
-                     "Refused"
-                  ],
-                  "type" : "string"
-               }
-            },
-            "required" : [
-               "status"
-            ],
-            "type" : "object"
-         },
-         "BalanceMutation" : {
-            "additionalProperties" : false,
-            "properties" : {
-               "balanceAfter" : {
-                  "description" : "The balance amount after the mutation.",
-                  "$ref" : "#/components/schemas/Amount"
-               },
-               "balanceBefore" : {
-                  "description" : "The balance amount before the mutation.",
-                  "$ref" : "#/components/schemas/Amount"
-               },
-               "currency" : {
-                  "description" : "The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).",
-                  "type" : "string"
-               },
-               "mutationAmount" : {
-                  "description" : "The amount of the mutation.",
-                  "$ref" : "#/components/schemas/Amount"
-               },
-               "type" : {
-                  "description" : "The type of the mutation.",
-                  "type" : "string"
-               }
-            },
-            "type" : "object"
-         },
-         "BankAccountDetails" : {
-            "additionalProperties" : false,
-            "properties" : {
-               "accountNumber" : {
-                  "description" : "The bank account number, without separators or whitespace.",
-                  "type" : "string"
-               },
-               "accountType" : {
-                  "default" : "checking",
-                  "description" : "The bank account type.\n\nPossible values: **checking** or **savings**. Defaults to **checking**.",
-                  "type" : "string"
-               },
-               "branchNumber" : {
-                  "description" : "The bank account branch number, without separators or whitespace",
-                  "type" : "string"
-               },
-               "formFactor" : {
-                  "default" : "physical",
-                  "description" : "Business accounts with a `formFactor` value of **physical** are business accounts issued under the central bank of that country. The default value is **physical** for NL, US, and UK business accounts. \n\nAdyen creates a local IBAN for business accounts when the `formFactor` value is set to **virtual**. The local IBANs that are supported are for DE and FR, which reference a physical NL account, with funds being routed through the central bank of NL.",
-                  "type" : "string"
-               },
-               "iban" : {
-                  "description" : "The international bank account number as defined in the [ISO-13616](https://www.iso.org/standard/81090.html) standard.",
-                  "type" : "string"
-               },
-               "routingNumber" : {
-                  "description" : "The [routing number](https://en.wikipedia.org/wiki/ABA_routing_transit_number), without separators or whitespace.",
-                  "type" : "string"
-               },
-               "sortCode" : {
-                  "description" : "The [sort code](https://en.wikipedia.org/wiki/Sort_code), without separators or whitespace.",
-                  "type" : "string"
-               },
-               "type" : {
-                  "default" : "iban",
-                  "description" : "**iban** or **usLocal** or **ukLocal**",
-                  "type" : "string"
-               }
-            },
-            "required" : [
-               "type"
-            ],
-            "type" : "object"
-         },
-         "BulkAddress" : {
-            "additionalProperties" : false,
-            "properties" : {
-               "city" : {
-                  "description" : "The name of the city.",
-                  "type" : "string"
-               },
-               "company" : {
-                  "description" : "The name of the company.",
-                  "type" : "string"
-               },
-               "country" : {
-                  "description" : "The two-character ISO-3166-1 alpha-2 country code. For example, **US**.",
-                  "type" : "string"
-               },
-               "email" : {
-                  "description" : "The email address.",
-                  "type" : "string"
-               },
-               "houseNumberOrName" : {
-                  "description" : "The house number or name.",
-                  "type" : "string"
-               },
-               "line1" : {
-                  "x-addedInVersion" : "2",
-                  "description" : "The name of the street and the number of the building.\n\nFor example: **Simon Carmiggeltstraat 6-50**.",
-                  "type" : "string"
-               },
-               "line2" : {
-                  "x-addedInVersion" : "2",
-                  "description" : "Additional information about the delivery address. For example, an apartment number.",
-                  "type" : "string"
-               },
-               "line3" : {
-                  "x-addedInVersion" : "2",
-                  "description" : "Additional information about the delivery address.",
-                  "type" : "string"
-               },
-               "mobile" : {
-                  "description" : "The full telephone number.",
-                  "type" : "string"
-               },
-               "name" : {
-                  "x-addedInVersion" : "2",
-                  "description" : "The recipient’s name (person or contact), for example ‘John Doe’.",
-                  "type" : "string"
-               },
-               "postalCode" : {
-                  "description" : "The postal code.\n\nMaximum length:\n\n* 5 digits for addresses in the US.\n\n* 10 characters for all other countries.",
-                  "type" : "string"
-               },
-               "stateOrProvince" : {
-                  "description" : "The two-letter ISO 3166-2 state or province code.\n\nMaximum length: 2 characters for addresses in the US.",
-                  "type" : "string"
-               },
-               "street" : {
-                  "description" : "The streetname of the house.",
-                  "type" : "string"
-               }
-            },
-            "required" : [
-               "country"
-            ],
-            "type" : "object"
-         },
-         "Card" : {
-            "additionalProperties" : false,
-            "properties" : {
-               "authentication" : {
-                  "description" : "Contains the card user's password and mobile phone number. This is required when you issue cards that can be used to make online payments within the EEA and the UK, or can be added to digital wallets. Refer to [3D Secure and digital wallets](https://docs.adyen.com/issuing/3d-secure-and-wallets) for more information.",
-                  "$ref" : "#/components/schemas/Authentication"
-               },
-               "bin" : {
-                  "description" : "The bank identification number (BIN) of the card number.",
-                  "type" : "string"
-               },
-               "brand" : {
-                  "description" : "The brand of the physical or the virtual card.\nPossible values: **visa**, **mc**.",
-                  "type" : "string"
-               },
-               "brandVariant" : {
-                  "description" : "The brand variant of the physical or the virtual card. For example, **visadebit** or **mcprepaid**.\n>Reach out to your Adyen contact to get the values relevant for your integration.",
-                  "type" : "string"
-               },
-               "cardholderName" : {
-                  "description" : "The name of the cardholder.\n Maximum length: 26 characters.",
-                  "maxLength" : 26,
-                  "type" : "string"
-               },
-               "configuration" : {
-                  "description" : "Contains information about the configuration profile for your cards. The configuration profile consists of settings required when creating a physical or a virtual card. You identify a configuration profile with its `configurationProfileId`.\n\nWhen you provide this field in a request, you can override the settings of an existing configuration profile.\n\nReach out to your Adyen contact to get the values that you can send in this object.",
-                  "$ref" : "#/components/schemas/CardConfiguration"
-               },
-               "cvc" : {
-                  "description" : "The CVC2 value of the card.\n> The CVC2 is not sent by default. This is only returned in the `POST` response for single-use virtual cards.",
-                  "type" : "string"
-               },
-               "deliveryContact" : {
-                  "x-addedInVersion" : "2",
-                  "description" : "The delivery contact (name and address) for physical card delivery.",
-                  "$ref" : "#/components/schemas/DeliveryContact"
-               },
-               "expiration" : {
-                  "description" : "The expiration date of the card.",
-                  "$ref" : "#/components/schemas/Expiry"
-               },
-               "formFactor" : {
-                  "description" : "The form factor of the card.\nPossible values: **virtual**, **physical**.",
-                  "enum" : [
-                     "physical",
-                     "unknown",
-                     "virtual"
-                  ],
-                  "type" : "string"
-               },
-               "lastFour" : {
-                  "description" : "Last last four digits of the card number.",
-                  "type" : "string"
-               },
-               "number" : {
-                  "description" : "The primary account number (PAN) of the card.\n> The PAN is masked by default and returned only for single-use virtual cards.",
-                  "type" : "string"
-               },
-               "threeDSecure" : {
-                  "description" : "The 3DS configuration of the physical or the virtual card. Possible values: **fullySupported**, **secureCorporate**.\n> Reach out to your Adyen contact to get the values relevant for your integration.",
-                  "type" : "string"
-               },
-               "usage" : {
-                  "description" : "Specifies how many times the card can be used. Possible values: **singleUse**, **multiUse**.\n\n> Reach out to your Adyen contact to determine the value relevant for your integration.",
-                  "type" : "string"
-               }
-            },
-            "required" : [
-               "formFactor",
-               "cardholderName",
-               "brand",
-               "brandVariant"
-            ],
-            "type" : "object"
-         },
-         "CardConfiguration" : {
-            "additionalProperties" : false,
-            "properties" : {
-               "activation" : {
-                  "description" : "The activation label attached to the card that contains the activation instructions.\n\nThis field overrides the activation label design ID defined in the card configuration profile.",
-                  "type" : "string"
-               },
-               "activationUrl" : {
-                  "description" : "Your app's URL, if you want to activate cards through your app. For example, **my-app://ref1236a7d**. A QR code is created based on this URL, and is included in the carrier. Before you use this field, reach out to your Adyen contact to set up the QR code process. \n\nMaximum length: 255 characters.",
-                  "maxLength" : 255,
-                  "type" : "string"
-               },
-               "bulkAddress" : {
-                  "description" : "Overrides the shipment bulk address defined in the card configuration profile.",
-                  "$ref" : "#/components/schemas/BulkAddress"
-               },
-               "cardImageId" : {
-                  "description" : "The unique identifier of the card image. This image is printed on the full front of the card.",
-                  "type" : "string"
-               },
-               "carrier" : {
-                  "description" : "The letter or packaging to which the card is attached.\n\nThis field overrides the carrier design ID defined in the card configuration profile. ",
-                  "type" : "string"
-               },
-               "carrierImageId" : {
-                  "description" : "The unique identifier of the carrier image. This image is printed on the letter to which the card is attached.",
-                  "type" : "string"
-               },
-               "configurationProfileId" : {
-                  "description" : "The unique identifier of the card configuration profile that contains the settings that are applied to the card. For example, the envelope and PIN mailer designs or the logistics company handling the shipment.\n\nYou can override some of the existing settings in the configuration profile by providing the corresponding fields in the `configuration` object. For example, send the `shipmentMethod` to override the logistics company defined in the card configuration profile.",
-                  "type" : "string"
-               },
-               "currency" : {
-                  "description" : "The three-letter [ISO-4217](https://en.wikipedia.org/wiki/ISO_4217) currency code of the card. For example, **EUR**.\n\nThis field overrides the existing currency setting on the card configuration profile.",
-                  "type" : "string"
-               },
-               "envelope" : {
-                  "description" : "Overrides the envelope design ID defined in the card configuration profile. ",
-                  "type" : "string"
-               },
-               "insert" : {
-                  "description" : "Any additional material, such as marketing material, that is shipped together with the card.\n\nThis field overrides the insert design ID defined in the card configuration profile.",
-                  "type" : "string"
-               },
-               "languages" : {
-                  "x-addedInVersion" : "3",
-                  "description" : "A list of two-letter [ISO-639-1](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) language codes of the card. For example, **[en,es]**.",
-                  "items" : {
-                     "type" : "string"
-                  },
-                  "type" : "array"
-               },
-               "logoImageId" : {
-                  "description" : "The unique identifier of the logo image. This image is printed on the partial front of the card, for example, a logo on the upper right corner.",
-                  "type" : "string"
-               },
-               "pinMailer" : {
-                  "description" : "The letter on which the PIN of the card is printed.\n\nThis field overrides the PIN mailer design ID defined in the card configuration profile.",
-                  "type" : "string"
-               },
-               "printLine" : {
-                  "description" : "Print Line.\n\nText printed on the physical card below the cardholder name. You provide the value, which can be up to 26 characters.",
-                  "type" : "string"
-               },
-               "shipmentMethod" : {
-                  "description" : "The logistics company that ships the card.\n\nThis field overrides the logistics company defined in the card configuration profile.",
-                  "type" : "string"
-               }
-            },
-            "required" : [
-               "configurationProfileId"
-            ],
-            "type" : "object"
-         },
-         "DeliveryAddress" : {
-            "additionalProperties" : false,
-            "properties" : {
-               "city" : {
-                  "description" : "The name of the city.",
-                  "type" : "string"
-               },
-               "country" : {
-                  "description" : "The two-character ISO-3166-1 alpha-2 country code. For example, **US**.\n>If you don't know the country or are not collecting the country from the shopper, provide `country` as `ZZ`.",
-                  "type" : "string"
-               },
-               "line1" : {
-                  "description" : "The name of the street and the number of the building.\n\nFor example: **Simon Carmiggeltstraat 6-50**.",
-                  "type" : "string"
-               },
-               "line2" : {
-                  "description" : "Additional information about the delivery address. For example, an apartment number.",
-                  "type" : "string"
-               },
-               "line3" : {
-                  "description" : "Additional information about the delivery address.",
-                  "type" : "string"
-               },
-               "postalCode" : {
-                  "description" : "The postal code.\nMaximum length:\n* 5 digits for an address in the US.\n* 10 characters for an address in all other countries.",
-                  "type" : "string"
-               },
-               "stateOrProvince" : {
-                  "description" : "The state or province code, maximum 3 characters. For example, **CA** for California in the US or **ON** for Ontario in Canada.\n> Required for the US and Canada.",
-                  "type" : "string"
-               }
-            },
-            "required" : [
-               "country"
-            ],
-            "type" : "object"
-         },
-         "DeliveryContact" : {
-            "additionalProperties" : false,
-            "properties" : {
-               "address" : {
-                  "description" : "The address of the contact.",
-                  "$ref" : "#/components/schemas/DeliveryAddress"
-               },
-               "company" : {
-                  "x-addedInVersion" : "2",
-                  "description" : "The company name of the contact.",
-                  "type" : "string"
-               },
-               "email" : {
-                  "description" : "The email address of the contact.",
-                  "type" : "string"
-               },
-               "name" : {
-                  "description" : "The name of the contact.",
-                  "$ref" : "#/components/schemas/Name"
-               },
-               "phone" : {
-                  "x-addedInVersion" : "3",
-                  "description" : "The phone of the contact.",
-                  "$ref" : "#/components/schemas/Phone"
-               },
-               "webAddress" : {
-                  "description" : "The URL of the contact's website.",
-                  "type" : "string"
-               }
-            },
-            "required" : [
-               "name",
-               "address"
-            ],
-            "type" : "object"
-         },
-         "Expiry" : {
-            "additionalProperties" : false,
-            "properties" : {
-               "month" : {
-                  "description" : "The month in which the card will expire.",
-                  "type" : "string"
-               },
-               "year" : {
-                  "description" : "The year in which the card will expire.",
-                  "type" : "string"
-               }
-            },
-            "type" : "object"
-         },
-         "IbanAccountIdentification" : {
-            "additionalProperties" : false,
-            "properties" : {
-               "bic" : {
-                  "description" : "The bank's 8- or 11-character BIC or SWIFT code.",
-                  "type" : "string"
-               },
-               "iban" : {
-                  "description" : "The international bank account number as defined in the [ISO-13616](https://www.iso.org/standard/81090.html) standard.",
-                  "type" : "string"
-               },
-               "type" : {
-                  "default" : "iban",
-                  "description" : "**iban**",
-                  "enum" : [
-                     "iban"
-                  ],
-                  "type" : "string"
-               }
-            },
-            "required" : [
-               "type",
-               "iban"
-            ],
-            "type" : "object"
-         },
-         "MerchantData" : {
-            "additionalProperties" : false,
-            "properties" : {
-               "acquirerId" : {
-                  "description" : "The unique identifier of the merchant's acquirer.",
-                  "type" : "string"
-               },
-               "mcc" : {
-                  "description" : "The merchant category code.",
-                  "type" : "string"
-               },
-               "merchantId" : {
-                  "description" : "The unique identifier of the merchant.",
-                  "type" : "string"
-               },
-               "nameLocation" : {
-                  "description" : "Contains the name and location of the merchant.",
-                  "$ref" : "#/components/schemas/NameLocation"
-               },
-               "postalCode" : {
-                  "description" : "The postal code of the merchant.",
-                  "type" : "string"
-               }
-            },
-            "type" : "object"
-         },
-         "Name" : {
-            "additionalProperties" : false,
-            "properties" : {
-               "firstName" : {
-                  "description" : "The first name.",
-                  "maxLength" : 80,
-                  "type" : "string"
-               },
-               "lastName" : {
-                  "description" : "The last name.",
-                  "maxLength" : 80,
-                  "type" : "string"
-               }
-            },
-            "required" : [
-               "firstName",
-               "lastName"
-            ],
-            "type" : "object"
-         },
-         "NameLocation" : {
-            "additionalProperties" : false,
-            "properties" : {
-               "city" : {
-                  "description" : "The city where the merchant is located.",
-                  "type" : "string"
-               },
-               "country" : {
-                  "description" : "The country where the merchant is located in [three-letter country code](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3) format.",
-                  "type" : "string"
-               },
-               "countryOfOrigin" : {
-                  "description" : "The home country in [three-digit country code](https://en.wikipedia.org/wiki/ISO_3166-1_numeric) format, used for government-controlled merchants such as embassies.",
-                  "type" : "string"
-               },
-               "name" : {
-                  "description" : "The name of the merchant's shop or service.",
-                  "type" : "string"
-               },
-               "rawData" : {
-                  "description" : "The raw data.",
-                  "type" : "string"
-               },
-               "state" : {
-                  "description" : "The state where the merchant is located.",
-                  "type" : "string"
-               }
-            },
-            "type" : "object"
-         },
-         "PaymentInstrument" : {
-            "additionalProperties" : false,
-            "properties" : {
-               "additionalBankAccountIdentifications" : {
-                  "deprecated" : true,
-                  "x-deprecatedInVersion" : "2",
-                  "x-deprecatedMessage" : "Please use `bankAccount` object instead",
-                  "description" : "Contains optional, additional business account details. Returned when you create a payment instrument with `type` **bankAccount**.",
-                  "items" : {
-                     "discriminator" : {
-                        "mapping" : {
-                           "iban" : "#/components/schemas/IbanAccountIdentification"
-                        },
-                        "propertyName" : "type"
-                     },
-                     "oneOf" : [
-                        {
-                           "$ref" : "#/components/schemas/IbanAccountIdentification"
-                        }
-                     ]
-                  },
-                  "type" : "array"
-               },
-               "balanceAccountId" : {
-                  "description" : "The unique identifier of the [balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/v1/post/balanceAccounts__resParam_id) associated with the payment instrument.",
-                  "type" : "string"
-               },
-               "bankAccount" : {
-                  "description" : "Contains the business account details. Returned when you create a payment instrument with `type` **bankAccount**.",
-                  "$ref" : "#/components/schemas/BankAccountDetails"
-               },
-               "card" : {
-                  "description" : "Contains information about the card payment instrument. Returned when you create a payment instrument with `type` **card**.",
-                  "$ref" : "#/components/schemas/Card"
-               },
-               "description" : {
-                  "description" : "Your description for the payment instrument, maximum 300 characters.",
-                  "maxLength" : 300,
-                  "type" : "string"
-               },
-               "id" : {
-                  "description" : "The unique identifier of the payment instrument.",
-                  "type" : "string"
-               },
-               "issuingCountryCode" : {
-                  "description" : "The two-character [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country code where the payment instrument is issued. For example, **NL** or **US**.",
-                  "type" : "string"
-               },
-               "paymentInstrumentGroupId" : {
-                  "description" : "The unique identifier of the [payment instrument group](https://docs.adyen.com/api-explorer/#/balanceplatform/v1/post/paymentInstrumentGroups__resParam_id) to which the payment instrument belongs.",
-                  "type" : "string"
-               },
-               "reference" : {
-                  "description" : "Your reference for the payment instrument, maximum 150 characters.",
-                  "maxLength" : 150,
-                  "type" : "string"
-               },
-               "replacedById" : {
-                  "description" : "The unique identifier of the payment instrument that replaced this payment instrument.",
-                  "type" : "string"
-               },
-               "replacementOfId" : {
-                  "description" : "The unique identifier of the payment instrument that is replaced by this payment instrument.",
-                  "type" : "string"
-               },
-               "status" : {
-                  "description" : "The status of the payment instrument. If a status is not specified when creating a payment instrument, it is set to **active** by default. However, there can be exceptions for cards based on the `card.formFactor` and the `issuingCountryCode`. For example, when issuing physical cards in the US, the default status is **inactive**.\n\nPossible values: \n\n * **active**:  The payment instrument is active and can be used to make payments. \n\n * **inactive**: The payment instrument is inactive and cannot be used to make payments. \n\n * **suspended**: The payment instrument is suspended, either because it was stolen or lost. \n\n * **closed**: The payment instrument is permanently closed. This action cannot be undone. \n\n",
-                  "enum" : [
-                     "active",
-                     "closed",
-                     "inactive",
-                     "suspended"
-                  ],
-                  "type" : "string"
-               },
-               "statusComment" : {
-                  "x-addedInVersion" : "2",
-                  "description" : "The status comment provides additional information for the statusReason of the payment instrument.",
-                  "type" : "string"
-               },
-               "statusReason" : {
-                  "x-addedInVersion" : "2",
-                  "description" : "The reason for the status of the payment instrument.\n\nPossible values: **accountClosure**, **damaged**, **endOfLife**, **expired**, **lost**, **stolen**, **suspectedFraud**, **transactionRule**, **other**.\nIf the reason is **other**, you must also send the `statusComment` parameter describing the status change.",
-                  "enum" : [
-                     "accountClosure",
-                     "damaged",
-                     "endOfLife",
-                     "expired",
-                     "lost",
-                     "other",
-                     "stolen",
-                     "suspectedFraud",
-                     "transactionRule"
-                  ],
-                  "type" : "string"
-               },
-               "type" : {
-                  "description" : "The type of payment instrument.\n\nPossible values: **card**, **bankAccount**.",
-                  "enum" : [
-                     "bankAccount",
-                     "card"
-                  ],
-                  "type" : "string"
-               }
-            },
-            "required" : [
-               "balanceAccountId",
-               "issuingCountryCode",
-               "type",
-               "id"
-            ],
-            "type" : "object"
-         },
-         "Phone" : {
-            "additionalProperties" : false,
-            "properties" : {
-               "number" : {
-                  "description" : "The full phone number provided as a single string. \nFor example, **\"0031 6 11 22 33 44\"**, **\"+316/1122-3344\"**, \n\n or **\"(0031) 611223344\"**.",
-                  "type" : "string"
-               },
-               "type" : {
-                  "description" : "Type of phone number.\nPossible values: \n**Landline**, **Mobile**.\n",
-                  "enum" : [
-                     "landline",
-                     "mobile"
-                  ],
-                  "type" : "string"
-               }
-            },
-            "required" : [
-               "number",
-               "type"
-            ],
-            "type" : "object"
-         },
-         "RelayedAuthorisationRequest" : {
-            "additionalProperties" : false,
-            "properties" : {
-               "accountHolder" : {
-                  "description" : "The reference of the account holder.",
-                  "$ref" : "#/components/schemas/ResourceReference"
-               },
-               "amount" : {
-                  "description" : "The amount of the transaction.",
-                  "$ref" : "#/components/schemas/Amount"
-               },
-               "amountAdjustments" : {
-                  "description" : "The amount adjustments in the transaction.",
-                  "items" : {
-                     "$ref" : "#/components/schemas/AmountAdjustment"
-                  },
-                  "type" : "array"
-               },
-               "authCode" : {
-                  "description" : "The authorization code for the payment.",
-                  "type" : "string"
-               },
-               "authorisationDecision" : {
-                  "description" : "The decision of the authorization.",
-                  "$ref" : "#/components/schemas/AuthorisationDecisionRequest"
-               },
-               "authorisationType" : {
-                  "description" : "The authorization type.\n\nPossible values:\n* **finalAuthorisation**\n* **preAuthorisation**\n* **defaultAuthorisation**",
-                  "type" : "string"
-               },
-               "balanceAccount" : {
-                  "description" : "The reference of the balance account.",
-                  "$ref" : "#/components/schemas/ResourceReference"
-               },
-               "balanceMutations" : {
-                  "description" : "The list of balance mutations per event.",
-                  "items" : {
-                     "$ref" : "#/components/schemas/BalanceMutation"
-                  },
-                  "type" : "array"
-               },
-               "balancePlatform" : {
-                  "description" : "The unique identifier of the balance platform.",
-                  "type" : "string"
-               },
-               "entryMode" : {
-                  "description" : "The entry mode of the information of the payment instrument. For example: **contactless**, **chip**, **magstripe**.",
-                  "type" : "string"
-               },
-               "environment" : {
-                  "description" : "The environment from which the webhook originated.\nPossible values: **test**, **live**.\n",
-                  "type" : "string"
-               },
-               "id" : {
-                  "description" : "The unique identifier of the transfer.",
-                  "type" : "string"
-               },
-               "merchantData" : {
-                  "description" : "The information about the merchant.",
-                  "$ref" : "#/components/schemas/MerchantData"
-               },
-               "originalAmount" : {
-                  "description" : "The amount in the original currency.",
-                  "$ref" : "#/components/schemas/Amount"
-               },
-               "paymentInstrument" : {
-                  "description" : "Contains information about the payment instrument.",
-                  "$ref" : "#/components/schemas/PaymentInstrument"
-               },
-               "processingType" : {
-                  "description" : "The processing type used for this payment. For example: **ecommerce**, **pos**, **moto**.",
-                  "type" : "string"
-               },
-               "reference" : {
-                  "description" : "The reference of the payment.",
-                  "type" : "string"
-               },
-               "schemeRiskScore" : {
-                  "description" : "The risk score provided by the card schemes.",
-                  "format" : "int32",
-                  "type" : "integer"
-               },
-               "schemeTraceId" : {
-                  "description" : "The identifier of the original payment. This ID is provided by the scheme and can be alphanumeric or numeric, depending on the scheme.",
-                  "type" : "string"
-               },
-               "schemeUniqueTransactionId" : {
-                  "description" : "The unique identifier created by the scheme. This ID can be alphanumeric or numeric depending on the scheme.",
-                  "type" : "string"
-               },
-               "scores" : {
-                  "description" : "The list of transaction scores.",
-                  "items" : {
-                     "$ref" : "#/components/schemas/TransactionScoring"
-                  },
-                  "type" : "array"
-               },
-               "threeDSecure" : {
-                  "description" : "The data of the result from the 3DS authentication.",
-                  "$ref" : "#/components/schemas/ThreeDSecure"
-               },
-               "transactionRulesResult" : {
-                  "description" : "Contains the results of the evaluation of the transaction rules.",
-                  "$ref" : "#/components/schemas/TransactionRulesResult"
-               },
-               "type" : {
-                  "description" : "Type of notification.",
-                  "enum" : [
-                     "balancePlatform.authorisation.relayed"
-                  ],
-                  "type" : "string"
-               },
-               "validationResult" : {
-                  "description" : "Contains the checks that Adyen performed to validate the payment and the result of each.",
-                  "items" : {
-                     "$ref" : "#/components/schemas/ValidationResult"
-                  },
-                  "type" : "array"
-               }
-            },
-            "type" : "object"
-         },
-         "RelayedAuthorisationResponse" : {
-            "additionalProperties" : false,
-            "properties" : {
-               "authorisationDecision" : {
-                  "description" : "Object representing the authorization decision.",
-                  "$ref" : "#/components/schemas/AuthorisationDecisionResponse"
-               },
-               "metadata" : {
-                  "additionalProperties" : {
-                     "type" : "string"
-                  },
-                  "description" : "Object that contains key-value pairs that you can use in your reporting or other business process.",
-                  "type" : "object"
-               },
-               "reference" : {
-                  "description" : "Reference of the payment.",
-                  "type" : "string"
-               }
-            },
-            "type" : "object"
-         },
-         "ResourceReference" : {
-            "additionalProperties" : false,
-            "properties" : {
-               "description" : {
-                  "description" : "The description of the resource.",
-                  "type" : "string"
-               },
-               "id" : {
-                  "description" : "The unique identifier of the resource.",
-                  "type" : "string"
-               },
-               "reference" : {
-                  "description" : "The reference for the resource.",
-                  "type" : "string"
-               }
-            },
-            "type" : "object"
-         },
-         "ServiceError" : {
-            "additionalProperties" : false,
-            "properties" : {
-               "errorCode" : {
-                  "description" : "The error code mapped to the error message.",
-                  "type" : "string"
-               },
-               "errorType" : {
-                  "description" : "The category of the error.",
-                  "type" : "string"
-               },
-               "message" : {
-                  "description" : "A short explanation of the issue.",
-                  "type" : "string"
-               },
-               "pspReference" : {
-                  "description" : "The PSP reference of the payment.",
-                  "type" : "string"
-               },
-               "status" : {
-                  "description" : "The HTTP response status.",
-                  "format" : "int32",
-                  "type" : "integer"
-               }
-            },
-            "type" : "object"
-         },
-         "ThreeDSecure" : {
-            "additionalProperties" : false,
-            "properties" : {
-               "acsTransactionId" : {
-                  "description" : "The transaction identifier for the Access Control Server",
-                  "type" : "string"
-               },
-               "authenticationResult" : {
-                  "description" : "The result from the performed authentication",
-                  "type" : "string"
-               },
-               "authenticationType" : {
-                  "description" : "The type of the performed authentication",
-                  "type" : "string"
-               },
-               "dsTransactionId" : {
-                  "description" : "The transaction identifier for the Directory server",
-                  "type" : "string"
-               }
-            },
-            "type" : "object"
-         },
-         "TransactionEventViolation" : {
-            "additionalProperties" : false,
-            "properties" : {
-               "reason" : {
-                  "description" : "An explanation about why the transaction rule failed.",
-                  "type" : "string"
-               },
-               "transactionRule" : {
-                  "description" : "Contains information about the transaction rule.",
-                  "$ref" : "#/components/schemas/TransactionRuleReference"
-               },
-               "transactionRuleSource" : {
-                  "description" : "Contains information about the resource to which the transaction rule applies.",
-                  "$ref" : "#/components/schemas/TransactionRuleSource"
-               }
-            },
-            "type" : "object"
-         },
-         "TransactionRuleReference" : {
-            "additionalProperties" : false,
-            "properties" : {
-               "description" : {
-                  "description" : "The description of the resource.",
-                  "type" : "string"
-               },
-               "id" : {
-                  "description" : "The unique identifier of the resource.",
-                  "type" : "string"
-               },
-               "outcomeType" : {
-                  "x-addedInVersion" : "4",
-                  "description" : "The outcome type of the rule.",
-                  "type" : "string"
-               },
-               "reference" : {
-                  "description" : "The reference for the resource.",
-                  "type" : "string"
-               },
-               "score" : {
-                  "x-addedInVersion" : "4",
-                  "description" : "The transaction score determined by the rule. Returned only when `outcomeType` is **scoreBased**.",
-                  "format" : "int32",
-                  "type" : "integer"
-               }
-            },
-            "type" : "object"
-         },
-         "TransactionRuleSource" : {
-            "additionalProperties" : false,
-            "properties" : {
-               "id" : {
-                  "description" : "ID of the resource, when applicable.",
-                  "type" : "string"
-               },
-               "type" : {
-                  "description" : "Indicates the type of resource for which the transaction rule is defined.\n\nPossible values:\n\n * **PaymentInstrumentGroup**\n\n* **PaymentInstrument**\n\n* **BalancePlatform**\n\n* **EntityUsageConfiguration**\n\n* **PlatformRule**: The transaction rule is a platform-wide rule imposed by Adyen.",
-                  "type" : "string"
-               }
-            },
-            "type" : "object"
-         },
-         "TransactionRulesResult" : {
-            "additionalProperties" : false,
-            "properties" : {
-               "advice" : {
-                  "description" : "The advice given by the Risk analysis.",
-                  "type" : "string"
-               },
-               "allHardBlockRulesPassed" : {
-                  "x-addedInVersion" : "4",
-                  "description" : "Indicates whether the transaction passed the evaluation for all hardblock rules",
-                  "type" : "boolean"
-               },
-               "score" : {
-                  "description" : "The score of the Risk analysis.",
-                  "format" : "int32",
-                  "type" : "integer"
-               },
-               "triggeredTransactionRules" : {
-                  "x-addedInVersion" : "4",
-                  "description" : "Array containing all the transaction rules that the transaction triggered.",
-                  "items" : {
-                     "$ref" : "#/components/schemas/TransactionEventViolation"
-                  },
-                  "type" : "array"
-               }
-            },
-            "type" : "object"
-         },
-         "TransactionScoring" : {
-            "additionalProperties" : false,
-            "properties" : {
-               "type" : {
-                  "description" : "The type of score.",
-                  "type" : "string"
-               },
-               "value" : {
-                  "description" : "The value of the score.",
-                  "type" : "string"
-               }
-            },
-            "type" : "object"
-         },
-         "ValidationResult" : {
-            "additionalProperties" : false,
-            "properties" : {
-               "result" : {
-                  "description" : "The result of the check.\n\nPossible values:\n\n- **valid**: The validation was successful.\n\n- **invalid**: The validation failed.\n\n- **notValidated**: The validation was not performed because some services were unreachable or Adyen does not have the information needed to perform the check.\n\n- **notApplicable**: The validation is not applicable.",
-                  "type" : "string"
-               },
-               "type" : {
-                  "description" : "Type of check.",
-                  "type" : "string"
-               }
-            },
-            "type" : "object"
-         }
+  "openapi" : "3.1.0",
+  "info" : {
+    "title" : "Authorization webhooks",
+    "description" : "Adyen sends webhooks to inform your system about events related to transaction authorizations.\n",
+    "termsOfService" : "https://www.adyen.com/legal/terms-and-conditions",
+    "contact" : {
+      "name" : "Adyen Developer Experience team",
+      "url" : "https://github.com/Adyen/adyen-openapi"
+    },
+    "version" : "4",
+    "x-publicVersion" : true
+  },
+  "tags" : [ {
+    "name" : "Relayed authorization"
+  } ],
+  "components" : {
+    "schemas" : {
+      "Amount" : {
+        "type" : "object",
+        "additionalProperties" : false,
+        "properties" : {
+          "currency" : {
+            "type" : "string",
+            "description" : "The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes#currency-codes) of the amount.",
+            "maxLength" : 3,
+            "minLength" : 3
+          },
+          "value" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "The numeric value of the amount, in [minor units](https://docs.adyen.com/development-resources/currency-codes#minor-units)."
+          }
+        },
+        "required" : [ "currency", "value" ]
       },
-      "securitySchemes" : {
-         "BasicAuth" : {
-            "scheme" : "basic",
-            "type" : "http"
-         }
+      "AmountAdjustment" : {
+        "type" : "object",
+        "additionalProperties" : false,
+        "properties" : {
+          "amount" : {
+            "$ref" : "#/components/schemas/Amount",
+            "description" : "The adjustment amount."
+          },
+          "amountAdjustmentType" : {
+            "type" : "string",
+            "description" : "The type of markup that is applied to an authorised payment.\n\nPossible values: **exchange**, **forexMarkup**, **authHoldReserve**, **atmMarkup**.",
+            "enum" : [ "atmMarkup", "authHoldReserve", "exchange", "forexMarkup" ]
+          },
+          "basepoints" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "The basepoints associated with the applied markup."
+          },
+          "fixedAmount" : {
+            "$ref" : "#/components/schemas/Amount",
+            "description" : "The specific amount of the adjustment."
+          },
+          "floorAmount" : {
+            "$ref" : "#/components/schemas/Amount",
+            "description" : "The minimum amount of the adjustment."
+          },
+          "limitAmount" : {
+            "$ref" : "#/components/schemas/Amount",
+            "description" : "The maximum amount of the adjustment."
+          }
+        }
       },
-      "examples" : {
-         "WebhookAck" : {
-            "summary" : "Respond with your relayed authorization decision: \"Authorised\" to continue, \"Refused\" to refuse",
-            "value" : {
-               "authorisationDecision" : {
-                  "status" : "Authorised"
-               },
-               "reference" : "myBalancePlatformPayment_12345",
-               "metadata" : {
-                  "customId" : "your-own-custom-field-12345"
-               }
+      "Authentication" : {
+        "type" : "object",
+        "additionalProperties" : false,
+        "properties" : {
+          "email" : {
+            "type" : "string",
+            "description" : "The email address where the one-time password (OTP) is sent."
+          },
+          "password" : {
+            "type" : "string",
+            "description" : "The password used for 3D Secure password-based authentication. The value must be between 1 to 30 characters and must only contain the following supported characters.\n\n* Characters between **a-z**, **A-Z**, and **0-9**\n\n* Special characters: **äöüßÄÖÜ+-*/ç%()=?!~#'\",;:$&àùòâôûáúó**",
+            "maxLength" : 30,
+            "minLength" : 1
+          },
+          "phone" : {
+            "$ref" : "#/components/schemas/Phone",
+            "description" : "The phone number where the one-time password (OTP) is sent.\n\nThis object must have:\n\n* A `type` set to **mobile**.\n\n* A `number` with a valid country code.\n\n* A `number` with more than 4 digits, excluding the country code.\n\n>Make sure to verify that the card user owns the phone number."
+          }
+        }
+      },
+      "AuthorisationDecisionRequest" : {
+        "type" : "object",
+        "additionalProperties" : false,
+        "properties" : {
+          "reasonCode" : {
+            "type" : "string",
+            "description" : "The reason of the authorization decision."
+          },
+          "status" : {
+            "type" : "string",
+            "description" : "The status of the authorization decision. Possible values: **Authorised** or **Refused**."
+          },
+          "statusCode" : {
+            "type" : "string",
+            "description" : "The code of the authorization decision."
+          }
+        }
+      },
+      "AuthorisationDecisionResponse" : {
+        "type" : "object",
+        "additionalProperties" : false,
+        "properties" : {
+          "refusalReason" : {
+            "type" : "string",
+            "description" : "The reason for refusing the authorization."
+          },
+          "status" : {
+            "type" : "string",
+            "description" : "The status of the authorization. \n\nPossible values: \n\n* **Authorised** \n\n* **Refused** \n\nFor more information, refer to [Use relayed authorization](https://docs.adyen.com/issuing/authorisation/relayed-authorisation/).",
+            "enum" : [ "Authorised", "Refused" ]
+          }
+        },
+        "required" : [ "status" ]
+      },
+      "BalanceMutation" : {
+        "type" : "object",
+        "additionalProperties" : false,
+        "properties" : {
+          "balanceAfter" : {
+            "$ref" : "#/components/schemas/Amount",
+            "description" : "The balance amount after the mutation."
+          },
+          "balanceBefore" : {
+            "$ref" : "#/components/schemas/Amount",
+            "description" : "The balance amount before the mutation."
+          },
+          "currency" : {
+            "type" : "string",
+            "description" : "The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes)."
+          },
+          "mutationAmount" : {
+            "$ref" : "#/components/schemas/Amount",
+            "description" : "The amount of the mutation."
+          },
+          "type" : {
+            "type" : "string",
+            "description" : "The type of the mutation."
+          }
+        }
+      },
+      "BankAccountDetails" : {
+        "type" : "object",
+        "additionalProperties" : false,
+        "properties" : {
+          "accountNumber" : {
+            "type" : "string",
+            "description" : "The bank account number, without separators or whitespace."
+          },
+          "accountType" : {
+            "type" : "string",
+            "default" : "checking",
+            "description" : "The bank account type.\n\nPossible values: **checking** or **savings**. Defaults to **checking**."
+          },
+          "branchNumber" : {
+            "type" : "string",
+            "description" : "The bank account branch number, without separators or whitespace"
+          },
+          "formFactor" : {
+            "type" : "string",
+            "default" : "physical",
+            "description" : "Business accounts with a `formFactor` value of **physical** are business accounts issued under the central bank of that country. The default value is **physical** for NL, US, and UK business accounts. \n\nAdyen creates a local IBAN for business accounts when the `formFactor` value is set to **virtual**. The local IBANs that are supported are for DE and FR, which reference a physical NL account, with funds being routed through the central bank of NL."
+          },
+          "iban" : {
+            "type" : "string",
+            "description" : "The international bank account number as defined in the [ISO-13616](https://www.iso.org/standard/81090.html) standard."
+          },
+          "routingNumber" : {
+            "type" : "string",
+            "description" : "The [routing number](https://en.wikipedia.org/wiki/ABA_routing_transit_number), without separators or whitespace."
+          },
+          "sortCode" : {
+            "type" : "string",
+            "description" : "The [sort code](https://en.wikipedia.org/wiki/Sort_code), without separators or whitespace."
+          },
+          "type" : {
+            "type" : "string",
+            "default" : "iban",
+            "description" : "**iban** or **usLocal** or **ukLocal**"
+          }
+        },
+        "required" : [ "type" ]
+      },
+      "BulkAddress" : {
+        "type" : "object",
+        "additionalProperties" : false,
+        "properties" : {
+          "city" : {
+            "type" : "string",
+            "description" : "The name of the city."
+          },
+          "company" : {
+            "type" : "string",
+            "description" : "The name of the company."
+          },
+          "country" : {
+            "type" : "string",
+            "description" : "The two-character ISO-3166-1 alpha-2 country code. For example, **US**."
+          },
+          "email" : {
+            "type" : "string",
+            "description" : "The email address."
+          },
+          "houseNumberOrName" : {
+            "type" : "string",
+            "description" : "The house number or name."
+          },
+          "line1" : {
+            "type" : "string",
+            "description" : "The name of the street and the number of the building.\n\nFor example: **Simon Carmiggeltstraat 6-50**.",
+            "x-addedInVersion" : "2"
+          },
+          "line2" : {
+            "type" : "string",
+            "description" : "Additional information about the delivery address. For example, an apartment number.",
+            "x-addedInVersion" : "2"
+          },
+          "line3" : {
+            "type" : "string",
+            "description" : "Additional information about the delivery address.",
+            "x-addedInVersion" : "2"
+          },
+          "mobile" : {
+            "type" : "string",
+            "description" : "The full telephone number."
+          },
+          "name" : {
+            "type" : "string",
+            "description" : "The recipient’s name (person or contact), for example ‘John Doe’.",
+            "x-addedInVersion" : "2"
+          },
+          "postalCode" : {
+            "type" : "string",
+            "description" : "The postal code.\n\nMaximum length:\n\n* 5 digits for addresses in the US.\n\n* 10 characters for all other countries."
+          },
+          "stateOrProvince" : {
+            "type" : "string",
+            "description" : "The two-letter ISO 3166-2 state or province code.\n\nMaximum length: 2 characters for addresses in the US."
+          },
+          "street" : {
+            "type" : "string",
+            "description" : "The streetname of the house."
+          }
+        },
+        "required" : [ "country" ]
+      },
+      "Card" : {
+        "type" : "object",
+        "additionalProperties" : false,
+        "properties" : {
+          "authentication" : {
+            "$ref" : "#/components/schemas/Authentication",
+            "description" : "Contains the card user's password and mobile phone number. This is required when you issue cards that can be used to make online payments within the EEA and the UK, or can be added to digital wallets. Refer to [3D Secure and digital wallets](https://docs.adyen.com/issuing/3d-secure-and-wallets) for more information."
+          },
+          "bin" : {
+            "type" : "string",
+            "description" : "The bank identification number (BIN) of the card number."
+          },
+          "brand" : {
+            "type" : "string",
+            "description" : "The brand of the physical or the virtual card.\nPossible values: **visa**, **mc**."
+          },
+          "brandVariant" : {
+            "type" : "string",
+            "description" : "The brand variant of the physical or the virtual card. For example, **visadebit** or **mcprepaid**.\n>Reach out to your Adyen contact to get the values relevant for your integration."
+          },
+          "cardholderName" : {
+            "type" : "string",
+            "description" : "The name of the cardholder.\n Maximum length: 26 characters.",
+            "maxLength" : 26
+          },
+          "configuration" : {
+            "$ref" : "#/components/schemas/CardConfiguration",
+            "description" : "Contains information about the configuration profile for your cards. The configuration profile consists of settings required when creating a physical or a virtual card. You identify a configuration profile with its `configurationProfileId`.\n\nWhen you provide this field in a request, you can override the settings of an existing configuration profile.\n\nReach out to your Adyen contact to get the values that you can send in this object."
+          },
+          "cvc" : {
+            "type" : "string",
+            "description" : "The CVC2 value of the card.\n> The CVC2 is not sent by default. This is only returned in the `POST` response for single-use virtual cards."
+          },
+          "deliveryContact" : {
+            "$ref" : "#/components/schemas/DeliveryContact",
+            "description" : "The delivery contact (name and address) for physical card delivery.",
+            "x-addedInVersion" : "2"
+          },
+          "expiration" : {
+            "$ref" : "#/components/schemas/Expiry",
+            "description" : "The expiration date of the card."
+          },
+          "formFactor" : {
+            "type" : "string",
+            "description" : "The form factor of the card.\nPossible values: **virtual**, **physical**.",
+            "enum" : [ "physical", "unknown", "virtual" ]
+          },
+          "lastFour" : {
+            "type" : "string",
+            "description" : "Last last four digits of the card number."
+          },
+          "number" : {
+            "type" : "string",
+            "description" : "The primary account number (PAN) of the card.\n> The PAN is masked by default and returned only for single-use virtual cards."
+          },
+          "threeDSecure" : {
+            "type" : "string",
+            "description" : "The 3DS configuration of the physical or the virtual card. Possible values: **fullySupported**, **secureCorporate**.\n> Reach out to your Adyen contact to get the values relevant for your integration."
+          },
+          "usage" : {
+            "type" : "string",
+            "description" : "Specifies how many times the card can be used. Possible values: **singleUse**, **multiUse**.\n\n> Reach out to your Adyen contact to determine the value relevant for your integration."
+          }
+        },
+        "required" : [ "brand", "brandVariant", "cardholderName", "formFactor" ]
+      },
+      "CardConfiguration" : {
+        "type" : "object",
+        "additionalProperties" : false,
+        "properties" : {
+          "activation" : {
+            "type" : "string",
+            "description" : "The activation label attached to the card that contains the activation instructions.\n\nThis field overrides the activation label design ID defined in the card configuration profile."
+          },
+          "activationUrl" : {
+            "type" : "string",
+            "description" : "Your app's URL, if you want to activate cards through your app. For example, **my-app://ref1236a7d**. A QR code is created based on this URL, and is included in the carrier. Before you use this field, reach out to your Adyen contact to set up the QR code process. \n\nMaximum length: 255 characters.",
+            "maxLength" : 255
+          },
+          "bulkAddress" : {
+            "$ref" : "#/components/schemas/BulkAddress",
+            "description" : "Overrides the shipment bulk address defined in the card configuration profile."
+          },
+          "cardImageId" : {
+            "type" : "string",
+            "description" : "The unique identifier of the card image. This image is printed on the full front of the card."
+          },
+          "carrier" : {
+            "type" : "string",
+            "description" : "The letter or packaging to which the card is attached.\n\nThis field overrides the carrier design ID defined in the card configuration profile. "
+          },
+          "carrierImageId" : {
+            "type" : "string",
+            "description" : "The unique identifier of the carrier image. This image is printed on the letter to which the card is attached."
+          },
+          "configurationProfileId" : {
+            "type" : "string",
+            "description" : "The unique identifier of the card configuration profile that contains the settings that are applied to the card. For example, the envelope and PIN mailer designs or the logistics company handling the shipment.\n\nYou can override some of the existing settings in the configuration profile by providing the corresponding fields in the `configuration` object. For example, send the `shipmentMethod` to override the logistics company defined in the card configuration profile."
+          },
+          "currency" : {
+            "type" : "string",
+            "description" : "The three-letter [ISO-4217](https://en.wikipedia.org/wiki/ISO_4217) currency code of the card. For example, **EUR**.\n\nThis field overrides the existing currency setting on the card configuration profile."
+          },
+          "envelope" : {
+            "type" : "string",
+            "description" : "Overrides the envelope design ID defined in the card configuration profile. "
+          },
+          "insert" : {
+            "type" : "string",
+            "description" : "Any additional material, such as marketing material, that is shipped together with the card.\n\nThis field overrides the insert design ID defined in the card configuration profile."
+          },
+          "languages" : {
+            "type" : "array",
+            "description" : "A list of two-letter [ISO-639-1](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) language codes of the card. For example, **[en,es]**.",
+            "items" : {
+              "type" : "string"
+            },
+            "x-addedInVersion" : "3"
+          },
+          "logoImageId" : {
+            "type" : "string",
+            "description" : "The unique identifier of the logo image. This image is printed on the partial front of the card, for example, a logo on the upper right corner."
+          },
+          "pinMailer" : {
+            "type" : "string",
+            "description" : "The letter on which the PIN of the card is printed.\n\nThis field overrides the PIN mailer design ID defined in the card configuration profile."
+          },
+          "printLine" : {
+            "type" : "string",
+            "description" : "Print Line.\n\nText printed on the physical card below the cardholder name. You provide the value, which can be up to 26 characters."
+          },
+          "shipmentMethod" : {
+            "type" : "string",
+            "description" : "The logistics company that ships the card.\n\nThis field overrides the logistics company defined in the card configuration profile."
+          }
+        },
+        "required" : [ "configurationProfileId" ]
+      },
+      "DeliveryAddress" : {
+        "type" : "object",
+        "additionalProperties" : false,
+        "properties" : {
+          "city" : {
+            "type" : "string",
+            "description" : "The name of the city."
+          },
+          "country" : {
+            "type" : "string",
+            "description" : "The two-character ISO-3166-1 alpha-2 country code. For example, **US**.\n>If you don't know the country or are not collecting the country from the shopper, provide `country` as `ZZ`."
+          },
+          "line1" : {
+            "type" : "string",
+            "description" : "The name of the street and the number of the building.\n\nFor example: **Simon Carmiggeltstraat 6-50**."
+          },
+          "line2" : {
+            "type" : "string",
+            "description" : "Additional information about the delivery address. For example, an apartment number."
+          },
+          "line3" : {
+            "type" : "string",
+            "description" : "Additional information about the delivery address."
+          },
+          "postalCode" : {
+            "type" : "string",
+            "description" : "The postal code.\nMaximum length:\n* 5 digits for an address in the US.\n* 10 characters for an address in all other countries."
+          },
+          "stateOrProvince" : {
+            "type" : "string",
+            "description" : "The state or province code, maximum 3 characters. For example, **CA** for California in the US or **ON** for Ontario in Canada.\n> Required for the US and Canada."
+          }
+        },
+        "required" : [ "country" ]
+      },
+      "DeliveryContact" : {
+        "type" : "object",
+        "additionalProperties" : false,
+        "properties" : {
+          "address" : {
+            "$ref" : "#/components/schemas/DeliveryAddress",
+            "description" : "The address of the contact."
+          },
+          "company" : {
+            "type" : "string",
+            "description" : "The company name of the contact.",
+            "x-addedInVersion" : "2"
+          },
+          "email" : {
+            "type" : "string",
+            "description" : "The email address of the contact."
+          },
+          "name" : {
+            "$ref" : "#/components/schemas/Name",
+            "description" : "The name of the contact."
+          },
+          "phone" : {
+            "$ref" : "#/components/schemas/Phone",
+            "description" : "The phone of the contact.",
+            "x-addedInVersion" : "3"
+          },
+          "webAddress" : {
+            "type" : "string",
+            "description" : "The URL of the contact's website."
+          }
+        },
+        "required" : [ "address", "name" ]
+      },
+      "Expiry" : {
+        "type" : "object",
+        "additionalProperties" : false,
+        "properties" : {
+          "month" : {
+            "type" : "string",
+            "description" : "The month in which the card will expire."
+          },
+          "year" : {
+            "type" : "string",
+            "description" : "The year in which the card will expire."
+          }
+        }
+      },
+      "IbanAccountIdentification" : {
+        "type" : "object",
+        "additionalProperties" : false,
+        "properties" : {
+          "bic" : {
+            "type" : "string",
+            "description" : "The bank's 8- or 11-character BIC or SWIFT code."
+          },
+          "iban" : {
+            "type" : "string",
+            "description" : "The international bank account number as defined in the [ISO-13616](https://www.iso.org/standard/81090.html) standard."
+          },
+          "type" : {
+            "type" : "string",
+            "default" : "iban",
+            "description" : "**iban**",
+            "enum" : [ "iban" ]
+          }
+        },
+        "required" : [ "iban", "type" ]
+      },
+      "MerchantData" : {
+        "type" : "object",
+        "additionalProperties" : false,
+        "properties" : {
+          "acquirerId" : {
+            "type" : "string",
+            "description" : "The unique identifier of the merchant's acquirer."
+          },
+          "mcc" : {
+            "type" : "string",
+            "description" : "The merchant category code."
+          },
+          "merchantId" : {
+            "type" : "string",
+            "description" : "The unique identifier of the merchant."
+          },
+          "nameLocation" : {
+            "$ref" : "#/components/schemas/NameLocation",
+            "description" : "Contains the name and location of the merchant."
+          },
+          "postalCode" : {
+            "type" : "string",
+            "description" : "The postal code of the merchant."
+          }
+        }
+      },
+      "Name" : {
+        "type" : "object",
+        "additionalProperties" : false,
+        "properties" : {
+          "firstName" : {
+            "type" : "string",
+            "description" : "The first name.",
+            "maxLength" : 80
+          },
+          "lastName" : {
+            "type" : "string",
+            "description" : "The last name.",
+            "maxLength" : 80
+          }
+        },
+        "required" : [ "firstName", "lastName" ]
+      },
+      "NameLocation" : {
+        "type" : "object",
+        "additionalProperties" : false,
+        "properties" : {
+          "city" : {
+            "type" : "string",
+            "description" : "The city where the merchant is located."
+          },
+          "country" : {
+            "type" : "string",
+            "description" : "The country where the merchant is located in [three-letter country code](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3) format."
+          },
+          "countryOfOrigin" : {
+            "type" : "string",
+            "description" : "The home country in [three-digit country code](https://en.wikipedia.org/wiki/ISO_3166-1_numeric) format, used for government-controlled merchants such as embassies."
+          },
+          "name" : {
+            "type" : "string",
+            "description" : "The name of the merchant's shop or service."
+          },
+          "rawData" : {
+            "type" : "string",
+            "description" : "The raw data."
+          },
+          "state" : {
+            "type" : "string",
+            "description" : "The state where the merchant is located."
+          }
+        }
+      },
+      "PaymentInstrument" : {
+        "type" : "object",
+        "additionalProperties" : false,
+        "properties" : {
+          "additionalBankAccountIdentifications" : {
+            "type" : "array",
+            "deprecated" : true,
+            "description" : "Contains optional, additional business account details. Returned when you create a payment instrument with `type` **bankAccount**.",
+            "items" : {
+              "discriminator" : {
+                "propertyName" : "type",
+                "mapping" : {
+                  "iban" : "#/components/schemas/IbanAccountIdentification"
+                }
+              },
+              "oneOf" : [ {
+                "$ref" : "#/components/schemas/IbanAccountIdentification"
+              } ]
+            },
+            "x-deprecatedInVersion" : "2",
+            "x-deprecatedMessage" : "Please use `bankAccount` object instead"
+          },
+          "balanceAccountId" : {
+            "type" : "string",
+            "description" : "The unique identifier of the [balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/v1/post/balanceAccounts__resParam_id) associated with the payment instrument."
+          },
+          "bankAccount" : {
+            "$ref" : "#/components/schemas/BankAccountDetails",
+            "description" : "Contains the business account details. Returned when you create a payment instrument with `type` **bankAccount**."
+          },
+          "card" : {
+            "$ref" : "#/components/schemas/Card",
+            "description" : "Contains information about the card payment instrument. Returned when you create a payment instrument with `type` **card**."
+          },
+          "description" : {
+            "type" : "string",
+            "description" : "Your description for the payment instrument, maximum 300 characters.",
+            "maxLength" : 300
+          },
+          "id" : {
+            "type" : "string",
+            "description" : "The unique identifier of the payment instrument."
+          },
+          "issuingCountryCode" : {
+            "type" : "string",
+            "description" : "The two-character [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country code where the payment instrument is issued. For example, **NL** or **US**."
+          },
+          "paymentInstrumentGroupId" : {
+            "type" : "string",
+            "description" : "The unique identifier of the [payment instrument group](https://docs.adyen.com/api-explorer/#/balanceplatform/v1/post/paymentInstrumentGroups__resParam_id) to which the payment instrument belongs."
+          },
+          "reference" : {
+            "type" : "string",
+            "description" : "Your reference for the payment instrument, maximum 150 characters.",
+            "maxLength" : 150
+          },
+          "replacedById" : {
+            "type" : "string",
+            "description" : "The unique identifier of the payment instrument that replaced this payment instrument."
+          },
+          "replacementOfId" : {
+            "type" : "string",
+            "description" : "The unique identifier of the payment instrument that is replaced by this payment instrument."
+          },
+          "status" : {
+            "type" : "string",
+            "description" : "The status of the payment instrument. If a status is not specified when creating a payment instrument, it is set to **active** by default. However, there can be exceptions for cards based on the `card.formFactor` and the `issuingCountryCode`. For example, when issuing physical cards in the US, the default status is **inactive**.\n\nPossible values: \n\n * **active**:  The payment instrument is active and can be used to make payments. \n\n * **inactive**: The payment instrument is inactive and cannot be used to make payments. \n\n * **suspended**: The payment instrument is suspended, either because it was stolen or lost. \n\n * **closed**: The payment instrument is permanently closed. This action cannot be undone. \n\n",
+            "enum" : [ "active", "closed", "inactive", "suspended" ]
+          },
+          "statusComment" : {
+            "type" : "string",
+            "description" : "The status comment provides additional information for the statusReason of the payment instrument.",
+            "x-addedInVersion" : "2"
+          },
+          "statusReason" : {
+            "type" : "string",
+            "description" : "The reason for the status of the payment instrument.\n\nPossible values: **accountClosure**, **damaged**, **endOfLife**, **expired**, **lost**, **stolen**, **suspectedFraud**, **transactionRule**, **other**.\nIf the reason is **other**, you must also send the `statusComment` parameter describing the status change.",
+            "enum" : [ "accountClosure", "damaged", "endOfLife", "expired", "lost", "other", "stolen", "suspectedFraud", "transactionRule" ],
+            "x-addedInVersion" : "2"
+          },
+          "type" : {
+            "type" : "string",
+            "description" : "The type of payment instrument.\n\nPossible values: **card**, **bankAccount**.",
+            "enum" : [ "bankAccount", "card" ]
+          }
+        },
+        "required" : [ "balanceAccountId", "id", "issuingCountryCode", "type" ]
+      },
+      "Phone" : {
+        "type" : "object",
+        "additionalProperties" : false,
+        "properties" : {
+          "number" : {
+            "type" : "string",
+            "description" : "The full phone number provided as a single string. \nFor example, **\"0031 6 11 22 33 44\"**, **\"+316/1122-3344\"**, \n\n or **\"(0031) 611223344\"**."
+          },
+          "type" : {
+            "type" : "string",
+            "description" : "Type of phone number.\nPossible values: \n**Landline**, **Mobile**.\n",
+            "enum" : [ "landline", "mobile" ]
+          }
+        },
+        "required" : [ "number", "type" ]
+      },
+      "RelayedAuthorisationRequest" : {
+        "type" : "object",
+        "additionalProperties" : false,
+        "properties" : {
+          "accountHolder" : {
+            "$ref" : "#/components/schemas/ResourceReference",
+            "description" : "The reference of the account holder."
+          },
+          "amount" : {
+            "$ref" : "#/components/schemas/Amount",
+            "description" : "The amount of the transaction."
+          },
+          "amountAdjustments" : {
+            "type" : "array",
+            "description" : "The amount adjustments in the transaction.",
+            "items" : {
+              "$ref" : "#/components/schemas/AmountAdjustment"
             }
-         },
-         "post-balancePlatform.authorisation.relayed-balancePlatform.authorisation.relayed" : {
-            "summary" : "Relayed authorization request",
-            "description" : "Example webhook for a request for relayed authorization",
-            "value" : {
-               "accountHolder" : {
-                  "description" : "Account holder description",
-                  "id" : "AH123ABCDEFGHIJKLMN456789"
-               },
-               "amount" : {
-                  "currency" : "EUR",
-                  "value" : -2700
-               },
-               "authCode" : "123456",
-               "authorisationDecision" : {
-                  "reasonCode" : "APPROVED",
-                  "status" : "Authorised",
-                  "statusCode" : "APPROVED"
-               },
-               "authorisationType" : "finalAuthorisation",
-               "balanceAccount" : {
-                  "description" : "Balance Account Description",
-                  "id" : "BA123ABCDEFGHIJKLMN456789"
-               },
-               "balanceMutations" : [
-                  {
-                     "balanceAfter" : {
-                        "currency" : "EUR",
-                        "value" : 221163
-                     },
-                     "balanceBefore" : {
-                        "currency" : "EUR",
-                        "value" : 221190
-                     },
-                     "currency" : "EUR",
-                     "mutationAmount" : {
-                        "currency" : "EUR",
-                        "value" : -2700
-                     },
-                     "type" : "AuthorisedOutgoing"
-                  }
-               ],
-               "balancePlatform" : "TestBalancePlatform",
-               "entryMode" : "contactless",
-               "id" : "2ABCBA13456ABCDE",
-               "merchantData" : {
-                  "acquirerId" : "012345",
-                  "mcc" : "5813",
-                  "merchantId" : "000123450000123",
-                  "nameLocation" : {
-                     "city" : "Amsterdam",
-                     "country" : "NLD",
-                     "name" : "Tea Shop NLD",
-                     "rawData" : "TeaShop_NLD"
-                  },
-                  "postalCode" : "3333AB"
-               },
-               "originalAmount" : {
-                  "currency" : "EUR",
-                  "value" : -2700
-               },
-               "paymentInstrument" : {
-                  "balanceAccountId" : "BA123ABCDEFGHIJKLMN456789",
-                  "description" : "PaymentInstrument Description",
-                  "issuingCountryCode" : "NL",
-                  "paymentInstrumentGroupId" : "PG3123ABCDEFGHIJKLMN456789",
-                  "reference" : "123456789",
-                  "status" : "active",
-                  "type" : "card",
-                  "card" : {
-                     "authentication" : {
-                        "email" : "john.doe@provider.com"
-                     },
-                     "brand" : "mc",
-                     "brandVariant" : "mc_debit_bpd",
-                     "cardholderName" : "John Doe",
-                     "formFactor" : "virtual",
-                     "bin" : "555555",
-                     "expiration" : {
-                        "month" : "09",
-                        "year" : "2027"
-                     },
-                     "lastFour" : "0000",
-                     "number" : "12345ABCDE"
-                  },
-                  "id" : "PI123ABCDEFGHIJKLMN456789"
-               },
-               "processingType" : "token",
-               "reference" : "ABCDEFGHIJ",
-               "schemeUniqueTransactionId" : "ABCDEFU2B1305",
-               "transactionRulesResult" : {
-                  "allHardBlockRulesPassed" : true,
-                  "score" : 80
-               },
-               "validationResult" : [
-                  {
-                     "result" : "valid",
-                     "type" : "TransactionValidation"
-                  },
-                  {
-                     "result" : "valid",
-                     "type" : "PaymentInstrumentExpirationCheck"
-                  },
-                  {
-                     "result" : "valid",
-                     "type" : "BalanceCheck"
-                  },
-                  {
-                     "result" : "valid",
-                     "type" : "Screening"
-                  },
-                  {
-                     "result" : "valid",
-                     "type" : "RealBalanceAvailable"
-                  },
-                  {
-                     "result" : "notValidated",
-                     "type" : "MITAllowedMerchant"
-                  },
-                  {
-                     "result" : "valid",
-                     "type" : "PaymentInstrumentFound"
-                  },
-                  {
-                     "result" : "valid",
-                     "type" : "TransactionRules"
-                  },
-                  {
-                     "result" : "valid",
-                     "type" : "AccountLookup"
-                  },
-                  {
-                     "result" : "valid",
-                     "type" : "PaymentInstrumentActive"
-                  },
-                  {
-                     "result" : "valid",
-                     "type" : "CardholderAuthentication"
-                  },
-                  {
-                     "result" : "valid",
-                     "type" : "PaymentInstrument"
-                  },
-                  {
-                     "result" : "valid",
-                     "type" : "CardAuthentication"
-                  },
-                  {
-                     "result" : "valid",
-                     "type" : "PartyScreening"
-                  },
-                  {
-                     "result" : "valid",
-                     "type" : "InputExpiryDateCheck"
-                  }
-               ],
-               "environment" : "test",
-               "type" : "balancePlatform.authorisation.relayed"
+          },
+          "authCode" : {
+            "type" : "string",
+            "description" : "The authorization code for the payment."
+          },
+          "authorisationDecision" : {
+            "$ref" : "#/components/schemas/AuthorisationDecisionRequest",
+            "description" : "The decision of the authorization."
+          },
+          "authorisationType" : {
+            "type" : "string",
+            "description" : "The authorization type.\n\nPossible values:\n* **finalAuthorisation**\n* **preAuthorisation**\n* **defaultAuthorisation**"
+          },
+          "balanceAccount" : {
+            "$ref" : "#/components/schemas/ResourceReference",
+            "description" : "The reference of the balance account."
+          },
+          "balanceMutations" : {
+            "type" : "array",
+            "description" : "The list of balance mutations per event.",
+            "items" : {
+              "$ref" : "#/components/schemas/BalanceMutation"
             }
-         }
+          },
+          "balancePlatform" : {
+            "type" : "string",
+            "description" : "The unique identifier of the balance platform."
+          },
+          "entryMode" : {
+            "type" : "string",
+            "description" : "The entry mode of the information of the payment instrument. For example: **contactless**, **chip**, **magstripe**."
+          },
+          "environment" : {
+            "type" : "string",
+            "description" : "The environment from which the webhook originated.\nPossible values: **test**, **live**.\n"
+          },
+          "id" : {
+            "type" : "string",
+            "description" : "The unique identifier of the transfer."
+          },
+          "merchantData" : {
+            "$ref" : "#/components/schemas/MerchantData",
+            "description" : "The information about the merchant."
+          },
+          "originalAmount" : {
+            "$ref" : "#/components/schemas/Amount",
+            "description" : "The amount in the original currency."
+          },
+          "paymentInstrument" : {
+            "$ref" : "#/components/schemas/PaymentInstrument",
+            "description" : "Contains information about the payment instrument."
+          },
+          "processingType" : {
+            "type" : "string",
+            "description" : "The processing type used for this payment. For example: **ecommerce**, **pos**, **moto**."
+          },
+          "reference" : {
+            "type" : "string",
+            "description" : "The reference of the payment."
+          },
+          "schemeRiskScore" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "The risk score provided by the card schemes."
+          },
+          "schemeTraceId" : {
+            "type" : "string",
+            "description" : "The identifier of the original payment. This ID is provided by the scheme and can be alphanumeric or numeric, depending on the scheme."
+          },
+          "schemeUniqueTransactionId" : {
+            "type" : "string",
+            "description" : "The unique identifier created by the scheme. This ID can be alphanumeric or numeric depending on the scheme."
+          },
+          "scores" : {
+            "type" : "array",
+            "description" : "The list of transaction scores.",
+            "items" : {
+              "$ref" : "#/components/schemas/TransactionScoring"
+            }
+          },
+          "threeDSecure" : {
+            "$ref" : "#/components/schemas/ThreeDSecure",
+            "description" : "The data of the result from the 3DS authentication."
+          },
+          "transactionRulesResult" : {
+            "$ref" : "#/components/schemas/TransactionRulesResult",
+            "description" : "Contains the results of the evaluation of the transaction rules."
+          },
+          "type" : {
+            "type" : "string",
+            "description" : "Type of notification.",
+            "enum" : [ "balancePlatform.authorisation.relayed" ]
+          },
+          "validationResult" : {
+            "type" : "array",
+            "description" : "Contains the checks that Adyen performed to validate the payment and the result of each.",
+            "items" : {
+              "$ref" : "#/components/schemas/ValidationResult"
+            }
+          }
+        }
+      },
+      "RelayedAuthorisationResponse" : {
+        "type" : "object",
+        "additionalProperties" : false,
+        "properties" : {
+          "authorisationDecision" : {
+            "$ref" : "#/components/schemas/AuthorisationDecisionResponse",
+            "description" : "Object representing the authorization decision."
+          },
+          "metadata" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            },
+            "description" : "Object that contains key-value pairs that you can use in your reporting or other business process."
+          },
+          "reference" : {
+            "type" : "string",
+            "description" : "Reference of the payment."
+          }
+        }
+      },
+      "ResourceReference" : {
+        "type" : "object",
+        "additionalProperties" : false,
+        "properties" : {
+          "description" : {
+            "type" : "string",
+            "description" : "The description of the resource."
+          },
+          "id" : {
+            "type" : "string",
+            "description" : "The unique identifier of the resource."
+          },
+          "reference" : {
+            "type" : "string",
+            "description" : "The reference for the resource."
+          }
+        }
+      },
+      "ServiceError" : {
+        "type" : "object",
+        "additionalProperties" : false,
+        "properties" : {
+          "errorCode" : {
+            "type" : "string",
+            "description" : "The error code mapped to the error message."
+          },
+          "errorType" : {
+            "type" : "string",
+            "description" : "The category of the error."
+          },
+          "message" : {
+            "type" : "string",
+            "description" : "A short explanation of the issue."
+          },
+          "pspReference" : {
+            "type" : "string",
+            "description" : "The PSP reference of the payment."
+          },
+          "status" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "The HTTP response status."
+          }
+        }
+      },
+      "ThreeDSecure" : {
+        "type" : "object",
+        "additionalProperties" : false,
+        "properties" : {
+          "acsTransactionId" : {
+            "type" : "string",
+            "description" : "The transaction identifier for the Access Control Server"
+          },
+          "authenticationResult" : {
+            "type" : "string",
+            "description" : "The result from the performed authentication"
+          },
+          "authenticationType" : {
+            "type" : "string",
+            "description" : "The type of the performed authentication"
+          },
+          "dsTransactionId" : {
+            "type" : "string",
+            "description" : "The transaction identifier for the Directory server"
+          }
+        }
+      },
+      "TransactionEventViolation" : {
+        "type" : "object",
+        "additionalProperties" : false,
+        "properties" : {
+          "reason" : {
+            "type" : "string",
+            "description" : "An explanation about why the transaction rule failed."
+          },
+          "transactionRule" : {
+            "$ref" : "#/components/schemas/TransactionRuleReference",
+            "description" : "Contains information about the transaction rule."
+          },
+          "transactionRuleSource" : {
+            "$ref" : "#/components/schemas/TransactionRuleSource",
+            "description" : "Contains information about the resource to which the transaction rule applies."
+          }
+        }
+      },
+      "TransactionRuleReference" : {
+        "type" : "object",
+        "additionalProperties" : false,
+        "properties" : {
+          "description" : {
+            "type" : "string",
+            "description" : "The description of the resource."
+          },
+          "id" : {
+            "type" : "string",
+            "description" : "The unique identifier of the resource."
+          },
+          "outcomeType" : {
+            "type" : "string",
+            "description" : "The outcome type of the rule.",
+            "x-addedInVersion" : "4"
+          },
+          "reference" : {
+            "type" : "string",
+            "description" : "The reference for the resource."
+          },
+          "score" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "The transaction score determined by the rule. Returned only when `outcomeType` is **scoreBased**.",
+            "x-addedInVersion" : "4"
+          }
+        }
+      },
+      "TransactionRuleSource" : {
+        "type" : "object",
+        "additionalProperties" : false,
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "description" : "ID of the resource, when applicable."
+          },
+          "type" : {
+            "type" : "string",
+            "description" : "Indicates the type of resource for which the transaction rule is defined.\n\nPossible values:\n\n * **PaymentInstrumentGroup**\n\n* **PaymentInstrument**\n\n* **BalancePlatform**\n\n* **EntityUsageConfiguration**\n\n* **PlatformRule**: The transaction rule is a platform-wide rule imposed by Adyen."
+          }
+        }
+      },
+      "TransactionRulesResult" : {
+        "type" : "object",
+        "additionalProperties" : false,
+        "properties" : {
+          "advice" : {
+            "type" : "string",
+            "description" : "The advice given by the Risk analysis."
+          },
+          "allHardBlockRulesPassed" : {
+            "type" : "boolean",
+            "description" : "Indicates whether the transaction passed the evaluation for all hardblock rules",
+            "x-addedInVersion" : "4"
+          },
+          "score" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "The score of the Risk analysis."
+          },
+          "triggeredTransactionRules" : {
+            "type" : "array",
+            "description" : "Array containing all the transaction rules that the transaction triggered.",
+            "items" : {
+              "$ref" : "#/components/schemas/TransactionEventViolation"
+            },
+            "x-addedInVersion" : "4"
+          }
+        }
+      },
+      "TransactionScoring" : {
+        "type" : "object",
+        "additionalProperties" : false,
+        "properties" : {
+          "type" : {
+            "type" : "string",
+            "description" : "The type of score."
+          },
+          "value" : {
+            "type" : "string",
+            "description" : "The value of the score."
+          }
+        }
+      },
+      "ValidationResult" : {
+        "type" : "object",
+        "additionalProperties" : false,
+        "properties" : {
+          "result" : {
+            "type" : "string",
+            "description" : "The result of the check.\n\nPossible values:\n\n- **valid**: The validation was successful.\n\n- **invalid**: The validation failed.\n\n- **notValidated**: The validation was not performed because some services were unreachable or Adyen does not have the information needed to perform the check.\n\n- **notApplicable**: The validation is not applicable."
+          },
+          "type" : {
+            "type" : "string",
+            "description" : "Type of check."
+          }
+        }
       }
-   }
+    },
+    "examples" : {
+      "WebhookAck" : {
+        "summary" : "Respond with your relayed authorization decision: \"Authorised\" to continue, \"Refused\" to refuse",
+        "value" : {
+          "authorisationDecision" : {
+            "status" : "Authorised"
+          },
+          "reference" : "myBalancePlatformPayment_12345",
+          "metadata" : {
+            "customId" : "your-own-custom-field-12345"
+          }
+        }
+      },
+      "post-balancePlatform.authorisation.relayed-balancePlatform.authorisation.relayed" : {
+        "summary" : "Relayed authorization request",
+        "description" : "Example webhook for a request for relayed authorization",
+        "value" : {
+          "accountHolder" : {
+            "description" : "Account holder description",
+            "id" : "AH123ABCDEFGHIJKLMN456789"
+          },
+          "amount" : {
+            "currency" : "EUR",
+            "value" : -2700
+          },
+          "authCode" : "123456",
+          "authorisationDecision" : {
+            "reasonCode" : "APPROVED",
+            "status" : "Authorised",
+            "statusCode" : "APPROVED"
+          },
+          "authorisationType" : "finalAuthorisation",
+          "balanceAccount" : {
+            "description" : "Balance Account Description",
+            "id" : "BA123ABCDEFGHIJKLMN456789"
+          },
+          "balanceMutations" : [ {
+            "balanceAfter" : {
+              "currency" : "EUR",
+              "value" : 221163
+            },
+            "balanceBefore" : {
+              "currency" : "EUR",
+              "value" : 221190
+            },
+            "currency" : "EUR",
+            "mutationAmount" : {
+              "currency" : "EUR",
+              "value" : -2700
+            },
+            "type" : "AuthorisedOutgoing"
+          } ],
+          "balancePlatform" : "TestBalancePlatform",
+          "entryMode" : "contactless",
+          "id" : "2ABCBA13456ABCDE",
+          "merchantData" : {
+            "acquirerId" : "012345",
+            "mcc" : "5813",
+            "merchantId" : "000123450000123",
+            "nameLocation" : {
+              "city" : "Amsterdam",
+              "country" : "NLD",
+              "name" : "Tea Shop NLD",
+              "rawData" : "TeaShop_NLD"
+            },
+            "postalCode" : "3333AB"
+          },
+          "originalAmount" : {
+            "currency" : "EUR",
+            "value" : -2700
+          },
+          "paymentInstrument" : {
+            "balanceAccountId" : "BA123ABCDEFGHIJKLMN456789",
+            "description" : "PaymentInstrument Description",
+            "issuingCountryCode" : "NL",
+            "paymentInstrumentGroupId" : "PG3123ABCDEFGHIJKLMN456789",
+            "reference" : "123456789",
+            "status" : "active",
+            "type" : "card",
+            "card" : {
+              "authentication" : {
+                "email" : "john.doe@provider.com"
+              },
+              "brand" : "mc",
+              "brandVariant" : "mc_debit_bpd",
+              "cardholderName" : "John Doe",
+              "formFactor" : "virtual",
+              "bin" : "555555",
+              "expiration" : {
+                "month" : "09",
+                "year" : "2027"
+              },
+              "lastFour" : "0000",
+              "number" : "12345ABCDE"
+            },
+            "id" : "PI123ABCDEFGHIJKLMN456789"
+          },
+          "processingType" : "token",
+          "reference" : "ABCDEFGHIJ",
+          "schemeUniqueTransactionId" : "ABCDEFU2B1305",
+          "transactionRulesResult" : {
+            "allHardBlockRulesPassed" : true,
+            "score" : 80
+          },
+          "validationResult" : [ {
+            "result" : "valid",
+            "type" : "TransactionValidation"
+          }, {
+            "result" : "valid",
+            "type" : "PaymentInstrumentExpirationCheck"
+          }, {
+            "result" : "valid",
+            "type" : "BalanceCheck"
+          }, {
+            "result" : "valid",
+            "type" : "Screening"
+          }, {
+            "result" : "valid",
+            "type" : "RealBalanceAvailable"
+          }, {
+            "result" : "notValidated",
+            "type" : "MITAllowedMerchant"
+          }, {
+            "result" : "valid",
+            "type" : "PaymentInstrumentFound"
+          }, {
+            "result" : "valid",
+            "type" : "TransactionRules"
+          }, {
+            "result" : "valid",
+            "type" : "AccountLookup"
+          }, {
+            "result" : "valid",
+            "type" : "PaymentInstrumentActive"
+          }, {
+            "result" : "valid",
+            "type" : "CardholderAuthentication"
+          }, {
+            "result" : "valid",
+            "type" : "PaymentInstrument"
+          }, {
+            "result" : "valid",
+            "type" : "CardAuthentication"
+          }, {
+            "result" : "valid",
+            "type" : "PartyScreening"
+          }, {
+            "result" : "valid",
+            "type" : "InputExpiryDateCheck"
+          } ],
+          "environment" : "test",
+          "type" : "balancePlatform.authorisation.relayed"
+        }
+      }
+    },
+    "securitySchemes" : {
+      "BasicAuth" : {
+        "type" : "http",
+        "scheme" : "basic"
+      }
+    }
+  },
+  "webhooks" : {
+    "balancePlatform.authorisation.relayed" : {
+      "post" : {
+        "tags" : [ "Relayed authorization" ],
+        "summary" : "Relayed authorization requested",
+        "description" : "Adyen sends this webhook to allow you to provide [relayed authorization](https://docs.adyen.com/issuing/authorisation/relayed-authorisation/#respond-to-webhook) for a transaction.\n\nTo complete a relayed authorization, respond to this webhook with an **HTTP 200** response. Include the `authorisationDecision` in the response body.\n\nIf we do not receive the response within two seconds, we apply your [fallback logic](https://docs.adyen.com/issuing/authorisation/relayed-authorisation/#fallback).",
+        "operationId" : "post-balancePlatform.authorisation.relayed",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/RelayedAuthorisationRequest"
+              },
+              "examples" : {
+                "balancePlatform.authorisation.relayed" : {
+                  "$ref" : "#/components/examples/post-balancePlatform.authorisation.relayed-balancePlatform.authorisation.relayed"
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK - the request has succeeded.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelayedAuthorisationResponse"
+                },
+                "examples" : {
+                  "balancePlatform.authorisation.relayed" : {
+                    "$ref" : "#/components/examples/WebhookAck"
+                  }
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Bad Request - a problem reading or understanding the request.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ServiceError"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized - authentication required.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ServiceError"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Forbidden - insufficient permissions to process the request.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ServiceError"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "Unprocessable Entity - a request validation error.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ServiceError"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Internal Server Error - the server could not process the request.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ServiceError"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "BasicAuth" : [ ]
+        } ],
+        "x-sortIndex" : 2,
+        "x-methodName" : "relayedAuthorizationRequested"
+      }
+    }
+  }
 }
