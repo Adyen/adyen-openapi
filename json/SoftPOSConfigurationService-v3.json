@@ -1,5 +1,15 @@
 {
   "openapi" : "3.1.0",
+  "info" : {
+    "title" : "SoftPOS configuration API",
+    "description" : "The SoftPOS configuration API is used in the mutual authentication flow between an Adyen Android or iOS [Mobile SDK](https://docs.adyen.com/point-of-sale/ipp-mobile/) and the Adyen payments platform.\nThe Mobile SDK for Android or iOS devices enables businesses to accept in-person payments using a commercial off-the-shelf (COTS) device like a phone. \nFor example, Tap to Pay transactions, or transactions on a mobile device in combination with a card reader.\n\n## Authentication\nEach request to the POS Mobile API must be signed with an API key. [Generate your API key](https://docs.adyen.com/development-resources/api-credentials#generate-api-key) in the Customer Area and then set this key to the `X-API-Key` header value.\nYou also need to have a [client key](https://docs.adyen.com/development-resources/client-side-authentication/). The client key is part of the setup but you will not need to use it in your integration later. Therefore, when you set up the client key, you do not need to specify allowed origins, and you do not need to store the key in your system. \nTo access the live endpoints, you need to generate a new API key and client key in your live Customer Area.\n## Versioning\n\nThe POS Mobile API handles versioning as part of the endpoint URL.\n\nFor example:\n```\nhttps://softposconfig-test.adyen.com/softposconfig/v{version}/auth/certificate\n```\n\n## Going live\nTo access the live endpoints, you need an API key and client key from your live Customer Area, and switch to the live endpoint that is geographically closest to your location.\n### Australia:\nhttps://softposconfig-live-au.adyen.com/softposconfig/v{version}/auth/certificate\n### Asia Pacific South East:\nhttps://softposconfig-live-apse.adyen.com/softposconfig/v{version}/auth/certificate\n### Europe:\nhttps://softposconfig-live.adyen.com/softposconfig/v{version}/auth/certificate\n### North East Asia:\nhttps://softposconfig-live-nea.adyen.com/softposconfig/v{version}/auth/certificate\n### United States:\nhttps://softposconfig-live-us.adyen.com/softposconfig/v3/auth/certificate\n## Methods",
+    "termsOfService" : "https://www.adyen.com/legal/terms-and-conditions",
+    "contact" : {
+      "name" : "Adyen Developer Experience team",
+      "url" : "https://github.com/Adyen/adyen-openapi"
+    },
+    "version" : "3"
+  },
   "servers" : [ {
     "url" : "https://softposconfig-test.adyen.com/softposconfig/v3",
     "description" : "Test environment"
@@ -19,16 +29,6 @@
     "url" : "https://softposconfig-live-us.adyen.com/softposconfig/v3",
     "description" : "Live environment for United States of America"
   } ],
-  "info" : {
-    "title" : "SoftPOS configuration API",
-    "description" : "The SoftPOS configuration API is used in the mutual authentication flow between an Adyen Android or iOS [Mobile SDK](https://docs.adyen.com/point-of-sale/ipp-mobile/) and the Adyen payments platform.\nThe Mobile SDK for Android or iOS devices enables businesses to accept in-person payments using a commercial off-the-shelf (COTS) device like a phone. \nFor example, Tap to Pay transactions, or transactions on a mobile device in combination with a card reader.\n\n## Authentication\nEach request to the POS Mobile API must be signed with an API key. [Generate your API key](https://docs.adyen.com/development-resources/api-credentials#generate-api-key) in the Customer Area and then set this key to the `X-API-Key` header value.\nYou also need to have a [client key](https://docs.adyen.com/development-resources/client-side-authentication/). The client key is part of the setup but you will not need to use it in your integration later. Therefore, when you set up the client key, you do not need to specify allowed origins, and you do not need to store the key in your system. \nTo access the live endpoints, you need to generate a new API key and client key in your live Customer Area.\n## Versioning\n\nThe POS Mobile API handles versioning as part of the endpoint URL.\n\nFor example:\n```\nhttps://softposconfig-test.adyen.com/softposconfig/v{version}/auth/certificate\n```\n\n## Going live\nTo access the live endpoints, you need an API key and client key from your live Customer Area, and switch to the live endpoint that is geographically closest to your location.\n### Australia:\nhttps://softposconfig-live-au.adyen.com/softposconfig/v{version}/auth/certificate\n### Asia Pacific South East:\nhttps://softposconfig-live-apse.adyen.com/softposconfig/v{version}/auth/certificate\n### Europe:\nhttps://softposconfig-live.adyen.com/softposconfig/v{version}/auth/certificate\n### North East Asia:\nhttps://softposconfig-live-nea.adyen.com/softposconfig/v{version}/auth/certificate\n### United States:\nhttps://softposconfig-live-us.adyen.com/softposconfig/v3/auth/certificate\n## Methods",
-    "termsOfService" : "https://www.adyen.com/legal/terms-and-conditions",
-    "contact" : {
-      "name" : "Adyen Developer Experience team",
-      "url" : "https://github.com/Adyen/adyen-openapi"
-    },
-    "version" : "3"
-  },
   "tags" : [ {
     "name" : "Session authentication"
   } ],
@@ -43,6 +43,9 @@
           "name" : "X-API-Key",
           "in" : "header",
           "description" : "The API key to authenticate API requests.",
+          "required" : false,
+          "style" : "simple",
+          "explode" : false,
           "schema" : {
             "type" : "string"
           }
@@ -188,7 +191,6 @@
   "components" : {
     "schemas" : {
       "CertificateLoadingRequest" : {
-        "required" : [ "merchantAccount", "setupToken" ],
         "type" : "object",
         "properties" : {
           "merchantAccount" : {
@@ -204,10 +206,11 @@
             "description" : "The reference of the store that you want to process transactions for. Do not include this parameter if your account structure uses merchant accounts as stores, or if you are a registered payment facilitator."
           },
           "subMerchantData" : {
-            "description" : "The details of the sub-merchant that you want to process transactions for.Required if you are a registered payment facilitator. Do not include this parameter if you are not a payment facilitator.",
-            "$ref" : "#/components/schemas/SubMerchantData"
+            "$ref" : "#/components/schemas/SubMerchantData",
+            "description" : "The details of the sub-merchant that you want to process transactions for.Required if you are a registered payment facilitator. Do not include this parameter if you are not a payment facilitator."
           }
-        }
+        },
+        "required" : [ "merchantAccount", "setupToken" ]
       },
       "CertificateLoadingResponse" : {
         "type" : "object",
@@ -236,6 +239,10 @@
       },
       "DefaultErrorResponseEntity" : {
         "type" : "object",
+        "description" : "Standardized error response following RFC-7807 format",
+        "externalDocs" : {
+          "url" : "https://www.rfc-editor.org/rfc/rfc7807"
+        },
         "properties" : {
           "detail" : {
             "type" : "string",
@@ -262,8 +269,8 @@
           },
           "status" : {
             "type" : "integer",
-            "description" : "The HTTP status code.",
-            "format" : "int32"
+            "format" : "int32",
+            "description" : "The HTTP status code."
           },
           "title" : {
             "type" : "string",
@@ -273,14 +280,9 @@
             "type" : "string",
             "description" : "A URI that identifies the validation error type. It points to human-readable documentation for the problem type."
           }
-        },
-        "description" : "Standardized error response following RFC-7807 format",
-        "externalDocs" : {
-          "url" : "https://www.rfc-editor.org/rfc/rfc7807"
         }
       },
       "InvalidField" : {
-        "required" : [ "message", "name", "value" ],
         "type" : "object",
         "properties" : {
           "message" : {
@@ -295,10 +297,10 @@
             "type" : "string",
             "description" : "The invalid value."
           }
-        }
+        },
+        "required" : [ "message", "name", "value" ]
       },
       "SubMerchantData" : {
-        "required" : [ "displayName", "id", "mcc", "name" ],
         "type" : "object",
         "properties" : {
           "city" : {
@@ -349,7 +351,8 @@
             "type" : "string",
             "description" : "The tax ID of the sub-merchant. Required only in Brazil and for Cartes Bancaires in France.\nFor Brazil, this is the 11-digit CPF or 14-digit CNPJ.\nFor France, this is the SIRET, with a maximum of 14 digits."
           }
-        }
+        },
+        "required" : [ "displayName", "id", "mcc", "name" ]
       }
     },
     "securitySchemes" : {
