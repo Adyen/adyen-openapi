@@ -431,12 +431,6 @@
               "examples" : {
                 "donations-campaigns" : {
                   "$ref" : "#/components/examples/post-donations-donations-campaigns"
-                },
-                "donations-classic" : {
-                  "$ref" : "#/components/examples/post-donations-donations-classic"
-                },
-                "donations-with-token" : {
-                  "$ref" : "#/components/examples/post-donations-donations-with-token"
                 }
               }
             }
@@ -458,12 +452,6 @@
                 "examples" : {
                   "donations-campaigns" : {
                     "$ref" : "#/components/examples/post-donations-donations-campaigns-200"
-                  },
-                  "donations-classic" : {
-                    "$ref" : "#/components/examples/post-donations-donations-classic-200"
-                  },
-                  "donations-with-token" : {
-                    "$ref" : "#/components/examples/post-donations-donations-with-token-200"
                   }
                 }
               }
@@ -527,9 +515,6 @@
                   "$ref" : "#/components/schemas/ServiceError"
                 },
                 "examples" : {
-                  "donations-with-token" : {
-                    "$ref" : "#/components/examples/post-donations-donations-with-token-422"
-                  },
                   "generic" : {
                     "$ref" : "#/components/examples/generic-422"
                   }
@@ -3039,7 +3024,7 @@
       "post" : {
         "tags" : [ "Recurring" ],
         "summary" : "Create a token to store payment details",
-        "description" : "Creates a token to store the shopper's payment details. This token can be used for the shopper's future payments.",
+        "description" : "Creates a token to store the shopper's payment details. This token can be used for the shopper's future payments.\n\nTo make this request, your API credential must have the following [role](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n\n* API tokenise payment details",
         "operationId" : "post-storedPaymentMethods",
         "parameters" : [ {
           "$ref" : "#/components/parameters/Idempotency-Key"
@@ -6078,7 +6063,7 @@
         "properties" : {
           "accountUpdate" : {
             "type" : "boolean",
-            "description" : "Whether to check for a card account update (true) or not (false)"
+            "description" : "Set to **true** to check if the account tied to the card has been updated."
           },
           "dryRun" : {
             "type" : "boolean",
@@ -6090,18 +6075,18 @@
           },
           "networkTxReferencePaths" : {
             "type" : "array",
-            "description" : "Set in tokenize:true case when forwarding PAN. Addresses to the possible location(s) of networkTxReference in the incoming 3rd party response",
+            "description" : "Only include when `tokenize` is set to **true**.<br><br>A list of addresses to possible location(s) of the `networkTxReference` that will be returned in the third party response.",
             "items" : {
               "type" : "string"
             }
           },
           "tokenize" : {
             "type" : "boolean",
-            "description" : "Set to **true**, the payment details are [tokenized](https://docs.adyen.com/online-payments/tokenization)."
+            "description" : "Set to **true** to [tokenize](https://docs.adyen.com/online-payments/tokenization) the payment details."
           },
           "transactionLinkIdPaths" : {
             "type" : "array",
-            "description" : "Set in tokenize:true case when forwarding PAN. Addresses to the possible location(s) of transactionLinkId in the incoming 3rd party response",
+            "description" : "Only include when `tokenize` is set to **true**.<br><br>A list of addresses to possible location(s) of the `transactionLinkId` that will be returned in the third party response.",
             "items" : {
               "type" : "string"
             }
@@ -6361,7 +6346,7 @@
         "properties" : {
           "plans" : {
             "type" : "array",
-            "description" : "Defines the type of installment plan. If not set, defaults to **regular**.\n\nPossible values:\n* **regular**\n* **revolving**\n* **bonus**\n* **with_interest**\n* **buynow_paylater**\n* **nointerest_bonus**\n* **interest_bonus**\n* **refund_prctg**\n* **nointeres_refund_prctg**\n* **interes_refund_prctg**",
+            "description" : "Defines the type of installment plan. If not set, defaults to **regular**.\n\nPossible values:\n* **regular**\n* **revolving**\n* **bonus**",
             "items" : {
               "type" : "string",
               "enum" : [ "bonus", "buynow_paylater", "interes_refund_prctg", "interest_bonus", "nointeres_refund_prctg", "nointerest_bonus", "refund_prctg", "regular", "revolving", "with_interest" ]
@@ -6374,7 +6359,7 @@
           },
           "values" : {
             "type" : "array",
-            "description" : "An array of the number of installments that the shopper can choose from. For example, **[2,3,5]**. This cannot be specified simultaneously with `maxValue`.",
+            "description" : "An array of the number of installments that the shopper can choose from. For example, **[2,3,5]**.",
             "items" : {
               "type" : "integer",
               "format" : "int32"
@@ -8974,6 +8959,11 @@
             "description" : "A string containing a structured JSON object. This is a passthrough field used to enable custom features or data exchange with Klarna.",
             "maxLength" : 10240
           },
+          "klarnaNetworkPaymentAccountId" : {
+            "type" : "string",
+            "description" : "The Klarna Network Payment Account identifier to use for the transaction. Required when `klarnaNetworkSessionToken` is provided.",
+            "maxLength" : 256
+          },
           "klarnaNetworkSessionToken" : {
             "type" : "string",
             "description" : "The token obtained from the Klarna SDK during an Express Checkout flow.",
@@ -10070,7 +10060,7 @@
           "type" : {
             "type" : "string",
             "description" : "The payment method type.",
-            "enum" : [ "alipay", "multibanco", "bankTransfer", "bankTransfer_IBAN", "paynow", "affirm_pos", "iris", "wero", "trustly", "trustlyvector", "oney", "facilypay", "facilypay_3x", "facilypay_4x", "facilypay_6x", "facilypay_10x", "facilypay_12x", "unionpay", "kcp_banktransfer", "kcp_payco", "kcp_creditcard", "wechatpaySDK", "wechatpayQR", "wechatpayWeb", "molpay_boost", "wallet_IN", "payu_IN_cashcard", "payu_IN_nb", "paytm", "molpay_ebanking_VN", "molpay_ebanking_MY", "molpay_ebanking_direct_MY", "swish", "bizum", "walley", "walley_b2b", "paypo", "scalapay", "scalapay_3x", "scalapay_4x", "molpay_fpx", "payme", "payme_pos", "konbini", "directEbanking", "boletobancario", "cashticket", "ikano", "karenmillen", "oasis", "warehouse", "primeiropay_boleto", "mada", "benefit", "knet", "omannet", "kcp_naverpay", "fawry", "atome", "naps", "nordea", "boletobancario_bradesco", "boletobancario_itau", "boletobancario_santander", "boletobancario_bancodobrasil", "boletobancario_hsbc", "molpay_maybank2u", "molpay_cimb", "molpay_rhb", "molpay_amb", "molpay_hlb", "molpay_affin_epg", "molpay_bankislam", "molpay_publicbank", "fpx_agrobank", "touchngo", "maybank2u_mae", "duitnow", "promptpay", "twint_pos", "alipay_hk", "alipay_hk_web", "alipay_hk_wap", "alipay_wap", "balanceplatform" ]
+            "enum" : [ "alipay", "multibanco", "bankTransfer", "bankTransfer_IBAN", "paynow", "affirm_pos", "iris", "wero", "trustly", "trustlyvector", "oney", "facilypay", "facilypay_3x", "facilypay_4x", "facilypay_6x", "facilypay_10x", "facilypay_12x", "unionpay", "kcp_banktransfer", "kcp_payco", "kcp_creditcard", "wechatpaySDK", "wechatpayQR", "wechatpayWeb", "molpay_boost", "wallet_IN", "payu_IN_cashcard", "payu_IN_nb", "paytm", "molpay_ebanking_VN", "molpay_ebanking_MY", "molpay_ebanking_direct_MY", "swish", "bizum", "walley", "walley_b2b", "paypo", "satispay", "scalapay", "scalapay_3x", "scalapay_4x", "molpay_fpx", "payme", "payme_pos", "konbini", "directEbanking", "boletobancario", "cashticket", "ikano", "karenmillen", "oasis", "warehouse", "primeiropay_boleto", "mada", "benefit", "knet", "omannet", "kcp_naverpay", "fawry", "atome", "naps", "nordea", "boletobancario_bradesco", "boletobancario_itau", "boletobancario_santander", "boletobancario_bancodobrasil", "boletobancario_hsbc", "molpay_maybank2u", "molpay_cimb", "molpay_rhb", "molpay_amb", "molpay_hlb", "molpay_affin_epg", "molpay_bankislam", "molpay_publicbank", "fpx_agrobank", "touchngo", "maybank2u_mae", "duitnow", "promptpay", "twint_pos", "alipay_hk", "alipay_hk_web", "alipay_hk_wap", "alipay_wap", "balanceplatform" ]
           }
         },
         "title" : "Payment Details"
@@ -10253,7 +10243,7 @@
           },
           "expiresAt" : {
             "type" : "string",
-            "description" : "The date when the payment link expires.\n\n[ISO 8601](https://www.w3.org/TR/NOTE-datetime) format with time zone designator **Z**: YYYY-MM-DDThh:mm:ss+TZD, for example, **2020-12-18T10:15:30Z**.\n\nThe maximum expiry date is 70 days after the payment link is created.\n\nIf not provided, the payment link expires 24 hours after it was created."
+            "description" : "The date when the payment link expires.\n\n[ISO 8601](https://www.w3.org/TR/NOTE-datetime) format with time zone designator **Z**: YYYY-MM-DDThh:mm:ssZ, for example, **2020-12-18T10:15:30Z**.\n\nThe maximum expiry date is 70 days after the payment link is created.\n\nIf not provided, the payment link expires 24 hours after it was created."
           },
           "fundOrigin" : {
             "$ref" : "#/components/schemas/FundOrigin",
@@ -10445,7 +10435,7 @@
           },
           "expiresAt" : {
             "type" : "string",
-            "description" : "The date when the payment link expires.\n\n[ISO 8601](https://www.w3.org/TR/NOTE-datetime) format with time zone designator **Z**: YYYY-MM-DDThh:mm:ss+TZD, for example, **2020-12-18T10:15:30Z**.\n\nThe maximum expiry date is 70 days after the payment link is created.\n\nIf not provided, the payment link expires 24 hours after it was created."
+            "description" : "The date when the payment link expires.\n\n[ISO 8601](https://www.w3.org/TR/NOTE-datetime) format with time zone designator **Z**: YYYY-MM-DDThh:mm:ssZ, for example, **2020-12-18T10:15:30Z**.\n\nThe maximum expiry date is 70 days after the payment link is created.\n\nIf not provided, the payment link expires 24 hours after it was created."
           },
           "fundOrigin" : {
             "$ref" : "#/components/schemas/FundOrigin",
@@ -11255,7 +11245,7 @@
           },
           "merchantOrderReference" : {
             "type" : "string",
-            "description" : "You can use this reference to link multiple transactions to one another (for example, to track order authorization rate).For each billing cycle, this reference should be unique. After the first authorized payment attempt, do not reuse the reference. If you use this parameter, include it in all of the payment requests that you make. \n We strongly recommend that you:\n* Always include this parameter, so that you can benefit from linking payment requests to one another, in case of authorization retries. \n* Additionally include the following parameters in the `additionalData` object: [`retry.orderAttemptNumber`](https://docs.adyen.com/api-explorer/Checkout/latest/post/sessions#request-additionalData-AdditionalDataRetry-retry-orderAttemptNumber), [`retry.chainAttemptNumber`](https://docs.adyen.com/api-explorer/Checkout/latest/post/sessions#request-additionalData-AdditionalDataRetry-retry-chainAttemptNumber), and [`retry.skipRetry`](https://docs.adyen.com/api-explorer/Checkout/latest/post/sessions#request-additionalData-AdditionalDataRetry-retry-skipRetry)",
+            "description" : "You can use this reference to link multiple transactions to one another (for example, to track order authorization rate). For each billing cycle, this reference should be unique. After the first authorized payment attempt, do not reuse the reference. If you use this parameter, include it in all of the payment requests that you make. \n We strongly recommend that you:\n* Always include this parameter, so that you can benefit from linking payment requests to one another, in case of authorization retries. \n* Additionally include the following parameters in the `additionalData` object: [`retry.orderAttemptNumber`](https://docs.adyen.com/api-explorer/Checkout/latest/post/sessions#request-additionalData-AdditionalDataRetry-retry-orderAttemptNumber), [`retry.chainAttemptNumber`](https://docs.adyen.com/api-explorer/Checkout/latest/post/sessions#request-additionalData-AdditionalDataRetry-retry-chainAttemptNumber), and [`retry.skipRetry`](https://docs.adyen.com/api-explorer/Checkout/latest/post/sessions#request-additionalData-AdditionalDataRetry-retry-skipRetry)",
             "maxLength" : 1000
           },
           "merchantRiskIndicator" : {
@@ -11450,6 +11440,7 @@
                 "alma" : "#/components/schemas/AlmaDetails",
                 "ancv" : "#/components/schemas/AncvDetails",
                 "paypo" : "#/components/schemas/PaymentDetails",
+                "satispay" : "#/components/schemas/PaymentDetails",
                 "scalapay" : "#/components/schemas/PaymentDetails",
                 "scalapay_3x" : "#/components/schemas/PaymentDetails",
                 "scalapay_4x" : "#/components/schemas/PaymentDetails",
@@ -11689,7 +11680,7 @@
           },
           "reference" : {
             "type" : "string",
-            "description" : "The reference to uniquely identify a payment. This reference is used in all communication with you about the payment status. To provide multiple references for one transaction, separate the reference values with the hyphen (`-`) character.We strongly recommend that you use a unique value for each transaction.\nMaximum length: 80 characters."
+            "description" : "The reference to uniquely identify a payment. This reference is used in all communication with you about the payment status. To provide multiple references for one transaction, separate the reference values with the hyphen (`-`) character. We strongly recommend that you use a unique value for each transaction.\nMaximum length: 80 characters."
           },
           "returnUrl" : {
             "type" : "string",
@@ -15277,100 +15268,6 @@
             },
             "merchantReference" : "YOUR_DONATION_REFERENCE"
           }
-        }
-      },
-      "post-donations-donations-classic" : {
-        "summary" : "Make a donation to a donation account",
-        "value" : {
-          "amount" : {
-            "currency" : "EUR",
-            "value" : 1000
-          },
-          "reference" : "YOUR_DONATION_REFERENCE",
-          "paymentMethod" : {
-            "type" : "scheme"
-          },
-          "donationToken" : "YOUR_DONATION_TOKEN",
-          "donationOriginalPspReference" : "991559660454807J",
-          "donationAccount" : "NONPROFIT_ACCOUNT",
-          "returnUrl" : "https://your-company.example.com/...",
-          "merchantAccount" : "YOUR_MERCHANT_ACCOUNT",
-          "shopperInteraction" : "ContAuth"
-        }
-      },
-      "post-donations-donations-classic-200" : {
-        "summary" : "Successful donation transaction",
-        "value" : {
-          "id" : "UNIQUE_RESOURCE_ID",
-          "status" : "completed",
-          "donationAccount" : "NONPROFIT_ACCOUNT",
-          "merchantAccount" : "YOUR_MERCHANT_ACCOUNT",
-          "amount" : {
-            "currency" : "EUR",
-            "value" : 1000
-          },
-          "reference" : "YOUR_DONATION_REFERENCE",
-          "payment" : {
-            "pspReference" : "8535762347980628",
-            "resultCode" : "Authorised",
-            "amount" : {
-              "currency" : "EUR",
-              "value" : 1000
-            },
-            "merchantReference" : "YOUR_DONATION_REFERENCE"
-          }
-        }
-      },
-      "post-donations-donations-with-token" : {
-        "summary" : "Make a donation to a donation account with a token",
-        "value" : {
-          "amount" : {
-            "currency" : "EUR",
-            "value" : 1000
-          },
-          "reference" : "YOUR_DONATION_REFERENCE",
-          "paymentMethod" : {
-            "type" : "scheme",
-            "recurringDetailReference" : "7219687191761347"
-          },
-          "returnUrl" : "https://your-company.example.com/...",
-          "merchantAccount" : "YOUR_MERCHANT_ACCOUNT",
-          "donationAccount" : "NONPROFIT_ACCOUNT",
-          "shopperInteraction" : "ContAuth",
-          "shopperReference" : "YOUR_SHOPPER_REFERENCE",
-          "recurringProcessingModel" : "CardOnFile"
-        }
-      },
-      "post-donations-donations-with-token-200" : {
-        "summary" : "Successful donation transaction with a token",
-        "value" : {
-          "amount" : {
-            "currency" : "EUR",
-            "value" : 500
-          },
-          "donationAccount" : "NONPROFIT_ACCOUNT",
-          "id" : "UNIQUE_RESOURCE_ID",
-          "merchantAccount" : "YOUR_MERCHANT_ACCOUNT",
-          "payment" : {
-            "pspReference" : "FJM726V375BV9D82",
-            "resultCode" : "Authorised",
-            "amount" : {
-              "currency" : "EUR",
-              "value" : 500
-            },
-            "merchantReference" : "YOUR_DONATION_REFERENCE"
-          },
-          "reference" : "1412563167350061",
-          "status" : "completed"
-        }
-      },
-      "post-donations-donations-with-token-422" : {
-        "summary" : "Example error response when the donation account isn't valid",
-        "value" : {
-          "status" : 422,
-          "errorCode" : "187",
-          "message" : "Field 'additionalData.donationAccount' is not valid.",
-          "errorType" : "validation"
         }
       },
       "post-orders-basic" : {
