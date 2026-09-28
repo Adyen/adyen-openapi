@@ -1,9 +1,4 @@
 openapi: 3.1.0
-servers:
-- url: https://test.adyen.com/authe/api/v1
-  description: Test Environment
-- url: https://authe-live.adyen.com/authe/api/v1
-  description: Live Environment
 info:
   title: Session authentication API
   description: "The Session authentication API enables you to create and manage the\
@@ -31,6 +26,11 @@ info:
     name: Adyen Developer Experience team
     url: https://github.com/Adyen/adyen-openapi
   version: '1'
+servers:
+- url: https://test.adyen.com/authe/api/v1
+  description: Test Environment
+- url: https://authe-live.adyen.com/authe/api/v1
+  description: Live Environment
 tags:
 - name: Session authentication
 paths:
@@ -169,37 +169,38 @@ paths:
 components:
   schemas:
     AccountHolderResource:
-      required:
-      - accountHolderId
       type: object
       allOf:
       - $ref: '#/components/schemas/Resource'
       - type: object
         properties:
           accountHolderId:
-            minLength: 1
             type: string
             description: The unique identifier of the resource connected to the component.
               For [Platform Experience components](https://docs.adyen.com/platforms/build-user-dashboards),
               this is the account holder linked to the balance account shown in the
               component.
-    AuthenticationSessionRequest:
+            minLength: 1
       required:
-      - allowOrigin
-      - policy
-      - product
+      - accountHolderId
+    AuthenticationSessionRequest:
       type: object
       properties:
         allowOrigin:
           type: string
-          description: The URL where the component will appear. In your live environment,
+          description: 'The URL where the component will appear. In your live environment,
             you must protect the URL with an SSL certificate and ensure that it starts
             with `https://`.
+
+
+            Required for creating a session for Platform Experience and Onboarding
+            components. Omitting this parameter results in an unusable session token.'
         policy:
+          $ref: '#/components/schemas/Policy'
           description: An object that contains a description of the allowed resources
             and roles for the requested session.
-          $ref: '#/components/schemas/Policy'
         product:
+          $ref: '#/components/schemas/ProductType'
           description: 'The type of component.
 
 
@@ -209,7 +210,9 @@ components:
 
             For [Platform Experience components](https://docs.adyen.com/platforms/build-user-dashboards),
             set this to **platform**.'
-          $ref: '#/components/schemas/ProductType'
+      required:
+      - policy
+      - product
     AuthenticationSessionResponse:
       type: object
       properties:
@@ -221,6 +224,9 @@ components:
           description: The session token created.
     DefaultErrorResponseEntity:
       type: object
+      description: Standardized error response following RFC-7807 format
+      externalDocs:
+        url: https://www.rfc-editor.org/rfc/rfc7807
       properties:
         detail:
           type: string
@@ -243,8 +249,8 @@ components:
           description: The unique reference for the request.
         status:
           type: integer
-          description: The HTTP status code.
           format: int32
+          description: The HTTP status code.
         title:
           type: string
           description: A short, human-readable summary of the problem type.
@@ -252,14 +258,7 @@ components:
           type: string
           description: A URI that identifies the validation error type. It points
             to human-readable documentation for the problem type.
-      description: Standardized error response following RFC-7807 format
-      externalDocs:
-        url: https://www.rfc-editor.org/rfc/rfc7807
     InvalidField:
-      required:
-      - message
-      - name
-      - value
       type: object
       properties:
         message:
@@ -271,16 +270,17 @@ components:
         value:
           type: string
           description: The invalid value.
-    LegalEntityResource:
       required:
-      - legalEntityId
+      - message
+      - name
+      - value
+    LegalEntityResource:
       type: object
       allOf:
       - $ref: '#/components/schemas/Resource'
       - type: object
         properties:
           legalEntityId:
-            minLength: 1
             type: string
             description: 'The unique identifier of the resource connected to the component.
 
@@ -289,22 +289,24 @@ components:
               platform and owns the [transfer instrument](https://docs.adyen.com/api-explorer/legalentity/latest/post/transferInstruments).
               For sole proprietorships, this is the legal entity of the individual
               owner.'
-    PaymentInstrumentResource:
+            minLength: 1
       required:
-      - paymentInstrumentId
+      - legalEntityId
+    PaymentInstrumentResource:
       type: object
       allOf:
       - $ref: '#/components/schemas/Resource'
       - type: object
         properties:
           paymentInstrumentId:
-            minLength: 1
             type: string
+            minLength: 1
+      required:
+      - paymentInstrumentId
     Policy:
       type: object
       properties:
         resources:
-          uniqueItems: true
           type: array
           description: 'An object containing the type and the unique identifier of
             the user of the component.
@@ -321,12 +323,13 @@ components:
             account shown in the component.'
           items:
             $ref: '#/components/schemas/Resource'
-        roles:
           uniqueItems: true
+        roles:
           type: array
           description: The name of the role required to use the component.
           items:
             type: string
+          uniqueItems: true
     ProductType:
       type: string
       enum:
@@ -335,8 +338,15 @@ components:
       - bank
     Resource:
       type: object
+      discriminator:
+        propertyName: type
+        mapping:
+          accountHolder: '#/components/schemas/AccountHolderResource'
+          legalEntity: '#/components/schemas/LegalEntityResource'
+          paymentInstrument: '#/components/schemas/PaymentInstrumentResource'
       properties:
         type:
+          $ref: '#/components/schemas/ResourceType'
           description: 'The resource type.
 
 
@@ -345,13 +355,6 @@ components:
 
             You must also include the corresponding unique identifier of the resource.
             For example, the account holder ID.'
-          $ref: '#/components/schemas/ResourceType'
-      discriminator:
-        propertyName: type
-        mapping:
-          accountHolder: '#/components/schemas/AccountHolderResource'
-          legalEntity: '#/components/schemas/LegalEntityResource'
-          paymentInstrument: '#/components/schemas/PaymentInstrumentResource'
     ResourceType:
       type: string
       enum:

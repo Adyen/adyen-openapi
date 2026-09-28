@@ -1,12 +1,5 @@
 {
   "openapi" : "3.1.0",
-  "servers" : [ {
-    "url" : "https://test.adyen.com/authe/api/v1",
-    "description" : "Test Environment"
-  }, {
-    "url" : "https://authe-live.adyen.com/authe/api/v1",
-    "description" : "Live Environment"
-  } ],
   "info" : {
     "title" : "Session authentication API",
     "description" : "The Session authentication API enables you to create and manage the JSON Web Tokens (JWT) required for integrating [components](https://docs.adyen.com/platforms/components-overview).\n## Authentication\nWe recommend that you use an API key to connect to the Session authentication API. Generate an API key in your Customer Area if you have a [platform setup](https://docs.adyen.com/platforms/manage-access/api-credentials-web-service/#generate-api-key) or [marketplace setup](https://docs.adyen.com/marketplaces/manage-access/api-credentials-web-service/#generate-api-key). If you have an Adyen Issuing integration, [generate an API key](https://docs.adyen.com/issuing/manage-access/api-credentials-web-service/#generate-api-key) in your Balance Platform Customer Area.\n\nTo connect to the Session authentication API, add an `X-API-Key` header with the API key as the value, for example:\n\n ```\ncurl\n-H 'Content-Type: application/json' \\\n-H 'X-API-Key: YOUR_API_KEY' \\\n...\n```\n\n## Roles and permissions\nTo create a token, you must meet specific requirements. These requirements vary depending on the type of component. For more information, see the documentation for [Onboarding](https://docs.adyen.com/platforms/onboard-users/components) and [Platform Experience](https://docs.adyen.com/platforms/build-user-dashboards) components.\n\n## Going live\nTo access the live endpoint, generate an API key in your live Customer Area if you have a [platform](https://docs.adyen.com/platforms/) or [marketplace setup](https://docs.adyen.com/marketplaces/). If you have an Adyen Issuing integration, [generate an API key](https://docs.adyen.com/issuing/manage-access/api-credentials-web-service/#generate-api-key) in your Balance Platform Customer Area. You can then use the API key to send requests to `https://authe-live.adyen.com/authe/api/v1`.\n\n",
@@ -17,6 +10,13 @@
     },
     "version" : "1"
   },
+  "servers" : [ {
+    "url" : "https://test.adyen.com/authe/api/v1",
+    "description" : "Test Environment"
+  }, {
+    "url" : "https://authe-live.adyen.com/authe/api/v1",
+    "description" : "Live Environment"
+  } ],
   "tags" : [ {
     "name" : "Session authentication"
   } ],
@@ -181,7 +181,6 @@
   "components" : {
     "schemas" : {
       "AccountHolderResource" : {
-        "required" : [ "accountHolderId" ],
         "type" : "object",
         "allOf" : [ {
           "$ref" : "#/components/schemas/Resource"
@@ -189,30 +188,31 @@
           "type" : "object",
           "properties" : {
             "accountHolderId" : {
-              "minLength" : 1,
               "type" : "string",
-              "description" : "The unique identifier of the resource connected to the component. For [Platform Experience components](https://docs.adyen.com/platforms/build-user-dashboards), this is the account holder linked to the balance account shown in the component."
+              "description" : "The unique identifier of the resource connected to the component. For [Platform Experience components](https://docs.adyen.com/platforms/build-user-dashboards), this is the account holder linked to the balance account shown in the component.",
+              "minLength" : 1
             }
           }
-        } ]
+        } ],
+        "required" : [ "accountHolderId" ]
       },
       "AuthenticationSessionRequest" : {
-        "required" : [ "allowOrigin", "policy", "product" ],
         "type" : "object",
         "properties" : {
           "allowOrigin" : {
             "type" : "string",
-            "description" : "The URL where the component will appear. In your live environment, you must protect the URL with an SSL certificate and ensure that it starts with `https://`."
+            "description" : "The URL where the component will appear. In your live environment, you must protect the URL with an SSL certificate and ensure that it starts with `https://`.\n\nRequired for creating a session for Platform Experience and Onboarding components. Omitting this parameter results in an unusable session token."
           },
           "policy" : {
-            "description" : "An object that contains a description of the allowed resources and roles for the requested session.",
-            "$ref" : "#/components/schemas/Policy"
+            "$ref" : "#/components/schemas/Policy",
+            "description" : "An object that contains a description of the allowed resources and roles for the requested session."
           },
           "product" : {
-            "description" : "The type of component.\n\nFor [Onboarding components](https://docs.adyen.com/platforms/onboard-users/components), set this to **onboarding**.\n\nFor [Platform Experience components](https://docs.adyen.com/platforms/build-user-dashboards), set this to **platform**.",
-            "$ref" : "#/components/schemas/ProductType"
+            "$ref" : "#/components/schemas/ProductType",
+            "description" : "The type of component.\n\nFor [Onboarding components](https://docs.adyen.com/platforms/onboard-users/components), set this to **onboarding**.\n\nFor [Platform Experience components](https://docs.adyen.com/platforms/build-user-dashboards), set this to **platform**."
           }
-        }
+        },
+        "required" : [ "policy", "product" ]
       },
       "AuthenticationSessionResponse" : {
         "type" : "object",
@@ -229,6 +229,10 @@
       },
       "DefaultErrorResponseEntity" : {
         "type" : "object",
+        "description" : "Standardized error response following RFC-7807 format",
+        "externalDocs" : {
+          "url" : "https://www.rfc-editor.org/rfc/rfc7807"
+        },
         "properties" : {
           "detail" : {
             "type" : "string",
@@ -255,8 +259,8 @@
           },
           "status" : {
             "type" : "integer",
-            "description" : "The HTTP status code.",
-            "format" : "int32"
+            "format" : "int32",
+            "description" : "The HTTP status code."
           },
           "title" : {
             "type" : "string",
@@ -266,14 +270,9 @@
             "type" : "string",
             "description" : "A URI that identifies the validation error type. It points to human-readable documentation for the problem type."
           }
-        },
-        "description" : "Standardized error response following RFC-7807 format",
-        "externalDocs" : {
-          "url" : "https://www.rfc-editor.org/rfc/rfc7807"
         }
       },
       "InvalidField" : {
-        "required" : [ "message", "name", "value" ],
         "type" : "object",
         "properties" : {
           "message" : {
@@ -288,10 +287,10 @@
             "type" : "string",
             "description" : "The invalid value."
           }
-        }
+        },
+        "required" : [ "message", "name", "value" ]
       },
       "LegalEntityResource" : {
-        "required" : [ "legalEntityId" ],
         "type" : "object",
         "allOf" : [ {
           "$ref" : "#/components/schemas/Resource"
@@ -299,15 +298,15 @@
           "type" : "object",
           "properties" : {
             "legalEntityId" : {
-              "minLength" : 1,
               "type" : "string",
-              "description" : "The unique identifier of the resource connected to the component.\nFor [Onboarding components](https://docs.adyen.com/platforms/onboard-users/components), this is the legal entity that has a contractual relationship with your platform and owns the [transfer instrument](https://docs.adyen.com/api-explorer/legalentity/latest/post/transferInstruments). For sole proprietorships, this is the legal entity of the individual owner."
+              "description" : "The unique identifier of the resource connected to the component.\nFor [Onboarding components](https://docs.adyen.com/platforms/onboard-users/components), this is the legal entity that has a contractual relationship with your platform and owns the [transfer instrument](https://docs.adyen.com/api-explorer/legalentity/latest/post/transferInstruments). For sole proprietorships, this is the legal entity of the individual owner.",
+              "minLength" : 1
             }
           }
-        } ]
+        } ],
+        "required" : [ "legalEntityId" ]
       },
       "PaymentInstrumentResource" : {
-        "required" : [ "paymentInstrumentId" ],
         "type" : "object",
         "allOf" : [ {
           "$ref" : "#/components/schemas/Resource"
@@ -315,30 +314,31 @@
           "type" : "object",
           "properties" : {
             "paymentInstrumentId" : {
-              "minLength" : 1,
-              "type" : "string"
+              "type" : "string",
+              "minLength" : 1
             }
           }
-        } ]
+        } ],
+        "required" : [ "paymentInstrumentId" ]
       },
       "Policy" : {
         "type" : "object",
         "properties" : {
           "resources" : {
-            "uniqueItems" : true,
             "type" : "array",
             "description" : "An object containing the type and the unique identifier of the user of the component.\n\nFor [Onboarding components](https://docs.adyen.com/platforms/onboard-users/components), this is the ID of the legal entity that has a contractual relationship with your platform. For sole proprietorships, use the ID of the legal entity of the individual owner.\n\nFor [Platform Experience components](https://docs.adyen.com/platforms/build-user-dashboards), this is the ID of the account holder that is associated with the balance account shown in the component.",
             "items" : {
               "$ref" : "#/components/schemas/Resource"
-            }
+            },
+            "uniqueItems" : true
           },
           "roles" : {
-            "uniqueItems" : true,
             "type" : "array",
             "description" : "The name of the role required to use the component.",
             "items" : {
               "type" : "string"
-            }
+            },
+            "uniqueItems" : true
           }
         }
       },
@@ -348,18 +348,18 @@
       },
       "Resource" : {
         "type" : "object",
-        "properties" : {
-          "type" : {
-            "description" : "The resource type.\n\nPossible values: **accountHolder**, **legalEntity**.\n\nYou must also include the corresponding unique identifier of the resource. For example, the account holder ID.",
-            "$ref" : "#/components/schemas/ResourceType"
-          }
-        },
         "discriminator" : {
           "propertyName" : "type",
           "mapping" : {
             "accountHolder" : "#/components/schemas/AccountHolderResource",
             "legalEntity" : "#/components/schemas/LegalEntityResource",
             "paymentInstrument" : "#/components/schemas/PaymentInstrumentResource"
+          }
+        },
+        "properties" : {
+          "type" : {
+            "$ref" : "#/components/schemas/ResourceType",
+            "description" : "The resource type.\n\nPossible values: **accountHolder**, **legalEntity**.\n\nYou must also include the corresponding unique identifier of the resource. For example, the account holder ID."
           }
         }
       },
