@@ -1,7 +1,5 @@
 openapi: 3.1.0
 info:
-  version: '1'
-  x-publicVersion: true
   title: Authentication webhooks
   description: Adyen sends webhooks to inform your system about events related to
     cardholder authentication.
@@ -9,156 +7,58 @@ info:
   contact:
     name: Adyen Developer Experience team
     url: https://github.com/Adyen/adyen-openapi
+  version: '1'
+  x-publicVersion: true
 tags:
 - name: General
 - name: Out-of-band
-webhooks:
-  balancePlatform.authentication.created:
-    post:
-      tags:
-      - General
-      summary: Cardholder authenticated
-      description: Adyen sends this webhook when the process of cardholder authentication
-        is finalized, whether it is completed successfully, fails, or expires.
-      x-addedInVersion: '1'
-      operationId: post-balancePlatform.authentication.created
-      x-sortIndex: 1
-      x-methodName: cardholderAuthenticated
-      security:
-      - BasicAuth: []
-      requestBody:
-        content:
-          application/json:
-            examples:
-              balancePlatform-authentication-created-authenticated-challenge:
-                $ref: '#/components/examples/post-balancePlatform.authentication.created-balancePlatform-authentication-created-authenticated-challenge'
-              balancePlatform-authentication-created-authenticated-frictionless:
-                $ref: '#/components/examples/post-balancePlatform.authentication.created-balancePlatform-authentication-created-authenticated-frictionless'
-              balancePlatform-authentication-created-rejected:
-                $ref: '#/components/examples/post-balancePlatform.authentication.created-balancePlatform-authentication-created-rejected'
-            schema:
-              $ref: '#/components/schemas/AuthenticationNotificationRequest'
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BalancePlatformNotificationResponse'
-          description: OK - the request has succeeded.
-  balancePlatform.authentication.relayed:
-    post:
-      tags:
-      - Out-of-band
-      summary: Out-of-band authentication requested
-      description: 'Adyen sends this webhook when a cardholder must perform [out-of-band
-        authentication](https://docs.adyen.com/issuing/3d-secure/oob-auth-sdk/authenticate-cardholders).
-
-
-        To complete the authentication process, respond to this webhook with an **HTTP
-        200** response. Include the `authenticationDecision` in the response body.
-
-
-        If we do not receive the response within two seconds, the authentication process
-        stops.'
-      x-addedInVersion: '1'
-      operationId: post-balancePlatform.authentication.relayed
-      x-sortIndex: 2
-      x-methodName: outofbandAuthenticationRequested
-      security:
-      - BasicAuth: []
-      requestBody:
-        content:
-          application/json:
-            examples:
-              post-balancePlatform.authentication.relayed:
-                $ref: '#/components/examples/post-balancePlatform.authentication.relayed-post-balancePlatform.authentication.relayed'
-            schema:
-              $ref: '#/components/schemas/RelayedAuthenticationRequest'
-      responses:
-        '200':
-          content:
-            application/json:
-              examples:
-                post-balancePlatform.authentication.relayed:
-                  $ref: '#/components/examples/WebhookAck'
-              schema:
-                $ref: '#/components/schemas/RelayedAuthenticationResponse'
-          description: OK - the request has succeeded.
-        '400':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ServiceError'
-          description: Bad Request - a problem reading or understanding the request.
-        '401':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ServiceError'
-          description: Unauthorized - authentication required.
-        '403':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ServiceError'
-          description: Forbidden - insufficient permissions to process the request.
-        '422':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ServiceError'
-          description: Unprocessable Entity - a request validation error.
-        '500':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ServiceError'
-          description: Internal Server Error - the server could not process the request.
 components:
   schemas:
     Amount:
+      type: object
       additionalProperties: false
       properties:
         currency:
+          type: string
           description: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes#currency-codes)
             of the amount.
           maxLength: 3
           minLength: 3
-          type: string
         value:
-          description: The numeric value of the amount, in [minor units](https://docs.adyen.com/development-resources/currency-codes#minor-units).
-          format: int64
           type: integer
+          format: int64
+          description: The numeric value of the amount, in [minor units](https://docs.adyen.com/development-resources/currency-codes#minor-units).
       required:
-      - value
       - currency
-      type: object
+      - value
     AuthenticationDecision:
+      type: object
       additionalProperties: false
       properties:
         status:
+          type: string
           description: "The status of the authentication. \n\nPossible values: \n\n\
             * **refused** \n\n* **proceed** \n\nFor more information, refer to [Authenticate\
             \ cardholders using the Authentication SDK](https://docs.adyen.com/issuing/3d-secure/oob-auth-sdk/authenticate-cardholders/)."
           enum:
           - proceed
           - refused
-          type: string
       required:
       - status
-      type: object
     AuthenticationInfo:
+      type: object
       additionalProperties: false
       properties:
         acsTransId:
+          type: string
           description: Universally unique transaction identifier assigned by the Access
             Control Server (ACS) to identify a single transaction.
-          type: string
         challenge:
+          $ref: '#/components/schemas/ChallengeInfo'
           description: Information about Strong Customer Authentication (SCA). Returned
             when `type` is **challenge**.
-          $ref: '#/components/schemas/ChallengeInfo'
         challengeIndicator:
+          type: string
           description: 'Specifies a preference for receiving a challenge. Possible
             values:
 
@@ -198,14 +98,14 @@ components:
           - 09
           - '80'
           - '82'
-          type: string
         createdAt:
+          type: string
+          format: date-time
           description: "Date and time in UTC of the cardholder authentication. \n\n\
             [ISO 8601](https://www.w3.org/TR/NOTE-datetime) format: YYYY-MM-DDThh:mm:ss+TZD,\
             \ for example, **2020-12-18T10:15:30+01:00**."
-          format: date-time
-          type: string
         deviceChannel:
+          type: string
           description: 'Indicates the type of channel interface being used to initiate
             the transaction. Possible values:
 
@@ -220,12 +120,12 @@ components:
           - app
           - browser
           - ThreeDSRequestorInitiated
-          type: string
         dsTransID:
+          type: string
           description: Universally unique transaction identifier assigned by the DS
             (card scheme) to identify a single transaction.
-          type: string
         exemptionIndicator:
+          type: string
           description: 'Indicates the exemption type that was applied to the authentication
             by the issuer, if exemption applied. Possible values:
 
@@ -253,11 +153,11 @@ components:
           - acquirerExemption
           - noExemptionApplied
           - visaDAFExemption
-          type: string
         inPSD2Scope:
-          description: Indicates if the purchase was in the PSD2 scope.
           type: boolean
+          description: Indicates if the purchase was in the PSD2 scope.
         messageCategory:
+          type: string
           description: 'Identifies the category of the message for a specific use
             case. Possible values:
 
@@ -268,19 +168,19 @@ components:
           enum:
           - payment
           - nonPayment
-          type: string
         messageVersion:
-          description: The `messageVersion` value as defined in the 3D Secure 2 specification.
           type: string
+          description: The `messageVersion` value as defined in the 3D Secure 2 specification.
         riskScore:
-          description: Risk score calculated from the transaction rules.
-          format: int32
           type: integer
+          format: int32
+          description: Risk score calculated from the transaction rules.
         threeDSServerTransID:
+          type: string
           description: The `threeDSServerTransID` value as defined in the 3D Secure
             2 specification.
-          type: string
         transStatus:
+          type: string
           description: 'The `transStatus` value as defined in the 3D Secure 2 specification.
             Possible values:
 
@@ -303,8 +203,8 @@ components:
           - R
           - I
           - U
-          type: string
         transStatusReason:
+          type: string
           description: Provides information on why the `transStatus` field has the
             specified value. For possible values, refer to [our docs](https://docs.adyen.com/online-payments/3d-secure/api-reference#possible-transstatusreason-values).
           enum:
@@ -343,8 +243,8 @@ components:
           - '86'
           - '87'
           - '88'
-          type: string
         type:
+          type: string
           description: 'The type of authentication performed. Possible values:
 
 
@@ -354,40 +254,40 @@ components:
           enum:
           - frictionless
           - challenge
-          type: string
       required:
+      - acsTransId
       - challengeIndicator
+      - createdAt
+      - deviceChannel
       - dsTransID
+      - inPSD2Scope
+      - messageCategory
       - messageVersion
       - threeDSServerTransID
       - transStatus
-      - createdAt
       - type
-      - inPSD2Scope
-      - deviceChannel
-      - messageCategory
-      - acsTransId
-      type: object
     AuthenticationNotificationData:
+      type: object
       additionalProperties: false
       properties:
         authentication:
-          description: Contains information about the authentication.
           $ref: '#/components/schemas/AuthenticationInfo'
+          description: Contains information about the authentication.
         balancePlatform:
+          type: string
           description: The unique identifier of the balance platform.
-          type: string
         id:
-          description: The unique identifier of the authentication.
           type: string
+          description: The unique identifier of the authentication.
         paymentInstrumentId:
+          type: string
           description: The unique identifier of the payment instrument that was used
             for the authentication.
-          type: string
         purchase:
-          description: Contains information about the purchase.
           $ref: '#/components/schemas/PurchaseInfo'
+          description: Contains information about the purchase.
         status:
+          type: string
           description: 'Outcome of the authentication.
 
             Allowed values:
@@ -401,51 +301,51 @@ components:
           - authenticated
           - rejected
           - error
-          type: string
       required:
+      - authentication
       - id
       - paymentInstrumentId
-      - status
-      - authentication
       - purchase
-      type: object
+      - status
     AuthenticationNotificationRequest:
+      type: object
       additionalProperties: false
       properties:
         data:
-          description: Contains event details.
           $ref: '#/components/schemas/AuthenticationNotificationData'
+          description: Contains event details.
         environment:
+          type: string
           description: 'The environment from which the webhook originated.
 
 
             Possible values: **test**, **live**.'
-          type: string
         timestamp:
-          description: When the event was queued.
-          format: date-time
           type: string
+          format: date-time
+          description: When the event was queued.
         type:
+          type: string
           description: Type of notification.
           enum:
           - balancePlatform.authentication.created
-          type: string
       required:
+      - data
       - environment
       - type
-      - data
-      type: object
     BalancePlatformNotificationResponse:
+      type: object
       additionalProperties: false
       properties:
         notificationResponse:
-          description: Respond with any **2xx** HTTP status code to [accept the webhook](https://docs.adyen.com/development-resources/webhooks/#accept-webhooks).
           type: string
-      type: object
+          description: Respond with any **2xx** HTTP status code to [accept the webhook](https://docs.adyen.com/development-resources/webhooks/#accept-webhooks).
     ChallengeInfo:
+      type: object
       additionalProperties: false
       properties:
         challengeCancel:
+          type: string
           description: "Indicator informing the Access Control Server (ACS) and the\
             \ Directory Server (DS) that the authentication has been cancelled. Possible\
             \ values:\n* **00**: Data element is absent or value has been sent back\
@@ -465,8 +365,8 @@ components:
           - '06'
           - '07'
           - 08
-          type: string
         flow:
+          type: string
           description: 'The flow used in the challenge. Possible values:
 
 
@@ -479,150 +379,144 @@ components:
           - PWD_OTP_PHONE_FL
           - PWD_OTP_EMAIL_FL
           - OOB_TRIGGER_FL
-          type: string
         lastInteraction:
-          description: The last time of interaction with the challenge.
+          type: string
           format: date-time
-          type: string
+          description: The last time of interaction with the challenge.
         phoneNumber:
-          description: The last four digits of the phone number used in the challenge.
           type: string
+          description: The last four digits of the phone number used in the challenge.
         resends:
+          type: integer
+          format: int32
           description: The number of times the one-time password (OTP) was resent
             during the challenge.
-          format: int32
-          type: integer
         retries:
-          description: The number of retries used in the challenge.
-          format: int32
           type: integer
+          format: int32
+          description: The number of retries used in the challenge.
       required:
       - flow
       - lastInteraction
-      type: object
     Purchase:
+      type: object
       additionalProperties: false
       properties:
         date:
-          description: The time of the purchase.
+          type: string
           format: date-time
-          type: string
+          description: The time of the purchase.
         merchantName:
-          description: The name of the merchant.
           type: string
+          description: The name of the merchant.
         originalAmount:
-          description: The amount of the purchase in the original currency.
           $ref: '#/components/schemas/Amount'
+          description: The amount of the purchase in the original currency.
       required:
       - date
       - merchantName
       - originalAmount
-      type: object
     PurchaseInfo:
+      type: object
       additionalProperties: false
       properties:
         date:
+          type: string
           description: The date of the purchase.
-          type: string
         merchantName:
-          description: The name of the business that the cardholder purchased from.
           type: string
+          description: The name of the business that the cardholder purchased from.
         originalAmount:
-          description: The amount of the purchase.
           $ref: '#/components/schemas/Amount'
+          description: The amount of the purchase.
       required:
-      - merchantName
       - date
+      - merchantName
       - originalAmount
-      type: object
     RelayedAuthenticationRequest:
+      type: object
       additionalProperties: false
       properties:
         environment:
+          type: string
           description: 'The environment from which the webhook originated.
 
             Possible values: **test**, **live**.
 
             '
-          type: string
         id:
-          description: The unique identifier of the challenge.
           type: string
+          description: The unique identifier of the challenge.
         paymentInstrumentId:
+          type: string
           description: The unique identifier of the [payment instrument](https://docs.adyen.com/api-explorer/balanceplatform/latest/get/paymentInstruments/_id_)
             used for the purchase.
-          type: string
         purchase:
-          description: The details of the purchase.
           $ref: '#/components/schemas/Purchase'
+          description: The details of the purchase.
         threeDSRequestorAppURL:
+          type: string
           description: URL for auto-switching to the threeDS Requestor App. If not
             present, the threeDS Requestor App doesn't support auto-switching.
-          type: string
         timestamp:
-          description: When the event was queued.
-          format: date-time
           type: string
+          format: date-time
+          description: When the event was queued.
         type:
+          type: string
           description: Type of notification.
           enum:
           - balancePlatform.authentication.relayed
-          type: string
       required:
-      - id
-      - purchase
-      - paymentInstrumentId
-      - type
       - environment
-      type: object
+      - id
+      - paymentInstrumentId
+      - purchase
+      - type
     RelayedAuthenticationResponse:
+      type: object
       additionalProperties: false
       properties:
         authenticationDecision:
-          description: The decision regarding the authentication.
           $ref: '#/components/schemas/AuthenticationDecision'
+          description: The decision regarding the authentication.
       required:
       - authenticationDecision
-      type: object
     Resource:
+      type: object
       additionalProperties: false
       properties:
         balancePlatform:
-          description: The unique identifier of the balance platform.
           type: string
+          description: The unique identifier of the balance platform.
         creationDate:
+          type: string
+          format: date-time
           description: The date and time when the event was triggered, in ISO 8601
             extended format. For example, **2025-03-19T10:15:30+01:00**.
-          format: date-time
-          type: string
         id:
-          description: The ID of the resource.
           type: string
-      type: object
+          description: The ID of the resource.
     ServiceError:
+      type: object
       additionalProperties: false
       properties:
         errorCode:
+          type: string
           description: The error code mapped to the error message.
-          type: string
         errorType:
+          type: string
           description: The category of the error.
-          type: string
         message:
+          type: string
           description: A short explanation of the issue.
-          type: string
         pspReference:
-          description: The PSP reference of the payment.
           type: string
+          description: The PSP reference of the payment.
         status:
-          description: The HTTP response status.
-          format: int32
           type: integer
-      type: object
-  securitySchemes:
-    BasicAuth:
-      scheme: basic
-      type: http
+          format: int32
+          description: The HTTP response status.
   examples:
     WebhookAck:
       summary: 'Respond with your out-of-band authentication decision: "proceed" to
@@ -749,3 +643,109 @@ components:
           originalAmount:
             currency: EUR
             value: 14548
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+webhooks:
+  balancePlatform.authentication.created:
+    post:
+      tags:
+      - General
+      summary: Cardholder authenticated
+      description: Adyen sends this webhook when the process of cardholder authentication
+        is finalized, whether it is completed successfully, fails, or expires.
+      operationId: post-balancePlatform.authentication.created
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthenticationNotificationRequest'
+            examples:
+              balancePlatform-authentication-created-authenticated-challenge:
+                $ref: '#/components/examples/post-balancePlatform.authentication.created-balancePlatform-authentication-created-authenticated-challenge'
+              balancePlatform-authentication-created-authenticated-frictionless:
+                $ref: '#/components/examples/post-balancePlatform.authentication.created-balancePlatform-authentication-created-authenticated-frictionless'
+              balancePlatform-authentication-created-rejected:
+                $ref: '#/components/examples/post-balancePlatform.authentication.created-balancePlatform-authentication-created-rejected'
+      responses:
+        '200':
+          description: OK - the request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BalancePlatformNotificationResponse'
+      security:
+      - BasicAuth: []
+      x-addedInVersion: '1'
+      x-sortIndex: 1
+      x-methodName: cardholderAuthenticated
+  balancePlatform.authentication.relayed:
+    post:
+      tags:
+      - Out-of-band
+      summary: Out-of-band authentication requested
+      description: 'Adyen sends this webhook when a cardholder must perform [out-of-band
+        authentication](https://docs.adyen.com/issuing/3d-secure/oob-auth-sdk/authenticate-cardholders).
+
+
+        To complete the authentication process, respond to this webhook with an **HTTP
+        200** response. Include the `authenticationDecision` in the response body.
+
+
+        If we do not receive the response within two seconds, the authentication process
+        stops.'
+      operationId: post-balancePlatform.authentication.relayed
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RelayedAuthenticationRequest'
+            examples:
+              post-balancePlatform.authentication.relayed:
+                $ref: '#/components/examples/post-balancePlatform.authentication.relayed-post-balancePlatform.authentication.relayed'
+      responses:
+        '200':
+          description: OK - the request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RelayedAuthenticationResponse'
+              examples:
+                post-balancePlatform.authentication.relayed:
+                  $ref: '#/components/examples/WebhookAck'
+        '400':
+          description: Bad Request - a problem reading or understanding the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+        '401':
+          description: Unauthorized - authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+        '403':
+          description: Forbidden - insufficient permissions to process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+        '422':
+          description: Unprocessable Entity - a request validation error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+        '500':
+          description: Internal Server Error - the server could not process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+      security:
+      - BasicAuth: []
+      x-addedInVersion: '1'
+      x-sortIndex: 2
+      x-methodName: outofbandAuthenticationRequested
