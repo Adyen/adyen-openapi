@@ -1,9 +1,4 @@
 openapi: 3.1.0
-servers:
-- url: https://balanceplatform-api-test.adyen.com/a2aissuer-api/v1
-  description: Test Environment
-- url: https://balanceplatform-api-live.adyen.com/a2aissuer-api/v1
-  description: Live Environment
 info:
   title: Account-to-Account (A2A) payments API
   description: "The A2A payments API provides endpoints for A2A payment flows, enabling\
@@ -27,6 +22,11 @@ info:
     name: Adyen Developer Experience team
     url: https://github.com/Adyen/adyen-openapi
   version: '1'
+servers:
+- url: https://balanceplatform-api-test.adyen.com/a2aissuer-api/v1
+  description: Test Environment
+- url: https://balanceplatform-api-live.adyen.com/a2aissuer-api/v1
+  description: Live Environment
 tags:
 - name: Payments
   x-groupIndex: 1
@@ -584,6 +584,9 @@ paths:
         in: header
         description: 'Header for authenticating through SCA: Contains information
           for an SCA challenge for A2A payments.'
+        required: false
+        style: simple
+        explode: false
         schema:
           type: string
         example: SCA realm="Transfer" auth-param1="eyJjaGFsbGVuZ2UiOiJiVlV6ZW5wek0waFNl..."
@@ -927,109 +930,112 @@ paths:
 components:
   schemas:
     AccountHolder:
-      required:
-      - fullName
       type: object
       properties:
         fullName:
-          minLength: 1
           type: string
           description: Full name of the account holder.
           example: John Doe
-    AccountIdentification:
+          minLength: 1
       required:
-      - type
+      - fullName
+    AccountIdentification:
       type: object
-      properties:
-        type:
-          type: string
       discriminator:
         propertyName: type
         mapping:
           iban: '#/components/schemas/IbanAccountIdentification'
-    Amount:
+      properties:
+        type:
+          type: string
       required:
-      - currency
-      - value
+      - type
+    Amount:
       type: object
       properties:
         currency:
-          minLength: 1
           type: string
           description: The three-character [ISO 4217 currency code](https://docs.adyen.com/development-resources/currency-codes#currency-codes).
           example: EUR
+          minLength: 1
         value:
           type: integer
+          format: int64
           description: The amount of the transaction in [minor units](https://docs.adyen.com/development-resources/currency-codes#minor-units)
             (cents).
-          format: int64
           example: 499
-    CancelPaymentRequest:
       required:
-      - token
+      - currency
+      - value
+    CancelPaymentRequest:
       type: object
       properties:
         token:
-          maxLength: 1000
-          minLength: 1
           type: string
           description: The payment token is an identifier for the payment. It is generated
             by Adyen on the response of the payment details.
           example: ewoJIlNvbWVUb2tlbiIgOiAiU29tZUluZm8iCn0=
-    CancelPaymentResponse:
+          maxLength: 1000
+          minLength: 1
       required:
-      - links
+      - token
+    CancelPaymentResponse:
       type: object
       properties:
         links:
+          $ref: '#/components/schemas/Links'
           description: Contains redirection URLs to guide the user to the appropriate
             page, after a successful payment or a cancellation.
-          $ref: '#/components/schemas/Links'
-    ConfirmPaymentRequest:
       required:
-      - balanceAccountId
-      - token
+      - links
+    ConfirmPaymentRequest:
       type: object
       properties:
         balanceAccountId:
-          maxLength: 100
-          minLength: 1
           type: string
           description: The balance account ID of the account where the funds should
             be subtracted.
           example: BA00000000000000000000000
-        token:
-          maxLength: 1000
+          maxLength: 100
           minLength: 1
+        token:
           type: string
           description: The payment token is an identifier for the payment. It is generated
             by Adyen on the response of the payment details.
           example: ewoJIlNvbWVUb2tlbiIgOiAiU29tZUluZm8iCn0=
-    ConfirmPaymentResponse:
+          maxLength: 1000
+          minLength: 1
       required:
-      - links
+      - balanceAccountId
+      - token
+    ConfirmPaymentResponse:
       type: object
       properties:
         links:
+          $ref: '#/components/schemas/Links'
           description: Contains redirection URLs to guide the user to the appropriate
             page, after a successful payment or a cancellation.
-          $ref: '#/components/schemas/Links'
-    Counterparty:
       required:
-      - accountHolder
-      - accountIdentification
+      - links
+    Counterparty:
       type: object
       properties:
         accountHolder:
+          $ref: '#/components/schemas/AccountHolder'
           description: Contains the full name of the person or entity that receives
             the payment funds).
-          $ref: '#/components/schemas/AccountHolder'
         accountIdentification:
+          $ref: '#/components/schemas/AccountIdentification'
           description: Contains the account number to which the payment funds are
             sent.
-          $ref: '#/components/schemas/AccountIdentification'
+      required:
+      - accountHolder
+      - accountIdentification
     DefaultErrorResponseEntity:
       type: object
+      description: Standardized error response following RFC-7807 format
+      externalDocs:
+        url: https://www.rfc-editor.org/rfc/rfc7807
       properties:
         detail:
           type: string
@@ -1052,8 +1058,8 @@ components:
           description: The unique reference for the request.
         status:
           type: integer
-          description: The HTTP status code.
           format: int32
+          description: The HTTP status code.
         title:
           type: string
           description: A short, human-readable summary of the problem type.
@@ -1061,104 +1067,97 @@ components:
           type: string
           description: A URI that identifies the validation error type. It points
             to human-readable documentation for the problem type.
-      description: Standardized error response following RFC-7807 format
-      externalDocs:
-        url: https://www.rfc-editor.org/rfc/rfc7807
     Href:
-      required:
-      - href
       type: object
       properties:
         href:
           type: string
           description: The full URL for the redirection.
           example: https://someUrl
-    IbanAccountIdentification:
       required:
-      - iban
+      - href
+    IbanAccountIdentification:
       type: object
       allOf:
       - $ref: '#/components/schemas/AccountIdentification'
       - type: object
         properties:
           iban:
-            minLength: 1
             type: string
             description: The IBAN of the bank account.
             example: NL00AAAA0000000000
-    IdealAuthLinkRequest:
+            minLength: 1
       required:
-      - accountHolderId
+      - iban
+    IdealAuthLinkRequest:
       type: object
       properties:
         accountHolderId:
-          maxLength: 150
-          minLength: 1
           type: string
           description: The unique identifier of the account holder.
           example: AH00000000000000000000000
+          maxLength: 150
+          minLength: 1
+      required:
+      - accountHolderId
     IdealAuthLinkResponse:
       type: object
       properties:
         redirectUrl:
+          $ref: '#/components/schemas/Href'
           description: A short-lived URL that redirects the user to the iDEAL profile
             management page.
-          $ref: '#/components/schemas/Href'
           example: https://ideal.auth/someUrl
     IdealAuthenticateRequest:
-      required:
-      - accountHolderId
-      - payload
       type: object
       properties:
         accountHolderId:
-          maxLength: 150
-          minLength: 1
           type: string
           description: The unique identifier for an account holder.
           example: AH00000000000000000000000
-        payload:
-          maxLength: 400
+          maxLength: 150
           minLength: 1
+        payload:
           type: string
           description: A payload provided by iDEAL to complete the authentication
             process.
           example: https://ideal.auth/somePayload
+          maxLength: 400
+          minLength: 1
+      required:
+      - accountHolderId
+      - payload
     IdealAuthenticateResponse:
       type: object
       properties:
         redirectUrl:
+          $ref: '#/components/schemas/Href'
           description: A short-lived URL that redirects the user to the iDEAL page
             that is required for authentication.
-          $ref: '#/components/schemas/Href'
           example: https://ideal.auth/someUrl
     IdealPaymentDetailsRequest:
-      required:
-      - method
-      - payload
-      - source
       type: object
       allOf:
       - $ref: '#/components/schemas/PaymentDetailsRequest'
       - type: object
         properties:
           payload:
-            maxLength: 200
-            minLength: 1
             type: string
             description: An identifier for the payment, generated by the payment method,
               such as iDEAL. This is obtained from the specified `source`.
             example: https://somePayload
+            maxLength: 200
+            minLength: 1
           source:
+            $ref: '#/components/schemas/PaymentSource'
             description: 'The source used to obtain the payload. Possible values:
               `qr`, `redirect`, and `pushNotification`.'
-            $ref: '#/components/schemas/PaymentSource'
             example: redirect
-    InvalidField:
       required:
-      - message
-      - name
-      - value
+      - method
+      - payload
+      - source
+    InvalidField:
       type: object
       properties:
         message:
@@ -1170,34 +1169,33 @@ components:
         value:
           type: string
           description: The invalid value.
+      required:
+      - message
+      - name
+      - value
     Links:
       type: object
       properties:
         cancel:
+          $ref: '#/components/schemas/Href'
           description: The URL to where the user must be redirected after a payment
             has been canceled.
-          $ref: '#/components/schemas/Href'
           example: https://someUrl
         success:
+          $ref: '#/components/schemas/Href'
           description: The URL to where the user must be redirected after a successful
             payment.
-          $ref: '#/components/schemas/Href'
           example: https://someUrl
     PaymentDetails:
-      required:
-      - amount
-      - counterparty
-      - description
-      - expiresAt
       type: object
       properties:
         amount:
-          description: The amount of the payment.
           $ref: '#/components/schemas/Amount'
+          description: The amount of the payment.
         counterparty:
+          $ref: '#/components/schemas/Counterparty'
           description: Contains information about the party that receives the payment
             funds.
-          $ref: '#/components/schemas/Counterparty'
         description:
           type: string
           description: The description for the payment. It is generated by the payment
@@ -1205,42 +1203,47 @@ components:
           example: Payment at MyShop. ref:12345678
         expiresAt:
           type: string
+          format: date-time
           description: 'The expiration date of the payment in ISO DateTime format,
             as described on ISO 20022 (YYYY-MM-DDThh:mm:ss.sss+/-hh:mm).
 
 
             Example: **2025-12-30T14:15:30+01:00**'
-          format: date-time
           example: '2025-12-30T14:15:30+01:00'
-    PaymentDetailsRequest:
       required:
-      - method
+      - amount
+      - counterparty
+      - description
+      - expiresAt
+    PaymentDetailsRequest:
       type: object
-      properties:
-        method:
-          description: The payment method for the transaction.
-          $ref: '#/components/schemas/PaymentMethod'
-          example: ideal
       discriminator:
         propertyName: method
         mapping:
           ideal: '#/components/schemas/IdealPaymentDetailsRequest'
-    PaymentDetailsResponse:
+      properties:
+        method:
+          $ref: '#/components/schemas/PaymentMethod'
+          description: The payment method for the transaction.
+          example: ideal
       required:
-      - details
-      - token
+      - method
+    PaymentDetailsResponse:
       type: object
       properties:
         details:
+          $ref: '#/components/schemas/PaymentDetails'
           description: The details of the payment. You must show your user these details
             before they confirm or cancel the payment.
-          $ref: '#/components/schemas/PaymentDetails'
         token:
-          minLength: 1
           type: string
           description: The token that identifies the payment. It is generated by Adyen
             and is needed to confirm or cancel the payment.
           example: ewoJIlNvbWVUb2tlbiIgOiAiU29tZUluZm8iCn0=
+          minLength: 1
+      required:
+      - details
+      - token
     PaymentMethod:
       type: string
       enum:
@@ -1252,20 +1255,15 @@ components:
       - qr
       - pushNotification
     ProfileRegistrationRequest:
-      required:
-      - accountHolderId
-      - paymentInstrumentIds
       type: object
       properties:
         accountHolderId:
-          maxLength: 150
-          minLength: 1
           type: string
           description: The unique identifier of the account holder.
           example: AH00000000000000000000000
+          maxLength: 150
+          minLength: 1
         paymentInstrumentIds:
-          maxItems: 100
-          minItems: 1
           type: array
           description: The unique identifiers of the payment instruments to be associated
             with the iDEAL profile.
@@ -1273,16 +1271,21 @@ components:
           - PI00000000000000000000000
           - PI11111111111111111111111
           items:
+            type: string
             maxLength: 150
             minLength: 1
-            type: string
+          maxItems: 100
+          minItems: 1
+      required:
+      - accountHolderId
+      - paymentInstrumentIds
     ProfileRegistrationResponse:
       type: object
       properties:
         redirectUrl:
+          $ref: '#/components/schemas/Href'
           description: A short-lived URL that redirects the user to the iDEAL profile
             registration page.
-          $ref: '#/components/schemas/Href'
           example: https://ideal.auth/someUrl
   securitySchemes:
     ApiKeyAuth:
