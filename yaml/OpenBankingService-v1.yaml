@@ -1,9 +1,4 @@
 openapi: 3.1.0
-servers:
-- url: https://obgateway-test.adyen.com/obgateway/v1
-  description: Test Environment
-- url: https://obgateway-live.adyen.com/obgateway/v1
-  description: Live Environment
 info:
   title: Open Banking API
   description: "The Open Banking API provides secure endpoints to share financial\
@@ -27,6 +22,11 @@ info:
     name: Adyen Developer Experience team
     url: https://github.com/Adyen/adyen-openapi
   version: '1'
+servers:
+- url: https://obgateway-test.adyen.com/obgateway/v1
+  description: Test Environment
+- url: https://obgateway-live.adyen.com/obgateway/v1
+  description: Live Environment
 tags:
 - name: Account Verification
   x-groupIndex: 1
@@ -46,15 +46,18 @@ paths:
         description: The unique code you receive after a successful open banking flow
           that is included as a query parameter in the `redirectUrl` callback.
         required: true
+        style: simple
+        explode: false
         schema:
-          minLength: 1
           type: string
+          minLength: 1
       responses:
         '200':
           description: OK - The request has succeeded.
           headers:
             X-State:
               style: simple
+              explode: false
               schema:
                 description: The state provided in the routes generation request.
                 example: 123A-456B-789C-10D
@@ -292,9 +295,6 @@ paths:
 components:
   schemas:
     ACHAccountIdentifier:
-      required:
-      - accountNumber
-      - routingNumber
       type: object
       properties:
         accountLastDigits:
@@ -315,46 +315,49 @@ components:
           type: string
           description: The [routing number](https://en.wikipedia.org/wiki/ABA_routing_transit_number),
             without separators or whitespace.
+      required:
+      - accountNumber
+      - routingNumber
     AccountIdentifiers:
       type: object
       properties:
         ach:
+          $ref: '#/components/schemas/ACHAccountIdentifier'
           description: Identifiers relevant for Automated Clearing House (ACH) payments,
             primarily used in the United States.
-          $ref: '#/components/schemas/ACHAccountIdentifier'
         bacs:
+          $ref: '#/components/schemas/BACSAccountIdentifier'
           description: Identifiers relevant for Bankers' Automated Clearing Services
             (BACS) payments, primarily used in the United Kingdom.
-          $ref: '#/components/schemas/BACSAccountIdentifier'
         bsb:
+          $ref: '#/components/schemas/BSBAccountIdentifier'
           description: Identifiers relevant for Australian banking, specifically for
             BSB (Bank-State-Branch) numbers.
-          $ref: '#/components/schemas/BSBAccountIdentifier'
         eft:
+          $ref: '#/components/schemas/EFTAccountIdentifier'
           description: Identifiers relevant for Electronic Funds Transfer (EFT) payments,
             commonly used in Canada.
-          $ref: '#/components/schemas/EFTAccountIdentifier'
         iban:
+          $ref: '#/components/schemas/IBANAccountIdentifier'
           description: The international bank account number as defined in the ISO-13616
             standard.
-          $ref: '#/components/schemas/IBANAccountIdentifier'
         rix:
+          $ref: '#/components/schemas/RIXAccountIdentifier'
           description: Identifiers relevant for the Rix (Russian Interbank eXchange)
             system, used for interbank payments within Russia.
-          $ref: '#/components/schemas/RIXAccountIdentifier'
     AccountParty:
-      required:
-      - identity
-      - role
       type: object
       properties:
         identity:
-          description: Contains the identity details of the party.
           $ref: '#/components/schemas/Identity'
+          description: Contains the identity details of the party.
         role:
+          $ref: '#/components/schemas/PartyRole'
           description: Specifies a role or capacity of the party in relation to the
             bank account.
-          $ref: '#/components/schemas/PartyRole'
+      required:
+      - identity
+      - role
     AccountType:
       type: string
       enum:
@@ -389,10 +392,6 @@ components:
       - CA
       - AU
     AccountVerificationReportResponse:
-      required:
-      - accounts
-      - country
-      - id
       type: object
       properties:
         accounts:
@@ -401,24 +400,25 @@ components:
           items:
             $ref: '#/components/schemas/VerifiedAccount'
         country:
+          $ref: '#/components/schemas/AccountVerificationCountry'
           description: The location where the third-party individual's bank account
             is registered.
-          $ref: '#/components/schemas/AccountVerificationCountry'
         id:
           type: string
           description: The unique identifier for the specific report.
-    AccountVerificationRoutesRequest:
       required:
+      - accounts
       - country
-      - redirectUrl
+      - id
+    AccountVerificationRoutesRequest:
       type: object
       properties:
         country:
+          $ref: '#/components/schemas/AccountVerificationCountry'
           description: The location where the third-party individual's bank account
             is registered. Adyen uses this information to determine an available open
             banking provider, and to configure the open banking flow for that respective
             location.
-          $ref: '#/components/schemas/AccountVerificationCountry'
         locale:
           type: string
           description: 'The language to use in the open banking flow UI, specified
@@ -434,18 +434,19 @@ components:
             Default value: **en-US**'
         redirectUrl:
           type: string
+          format: url
           description: The URL where Adyen redirects the third-party individual after
             they complete the open banking flow.
-          format: url
         state:
           type: string
           description: A value that helps you identify the request in callback handling.
             You can generate this value on a per-session basis to protect the callback
             against Cross-Site Request Forgery (CSRF) attacks. This value  must be
             composed of characters that can be successfully URL-encoded.
-    AccountVerificationRoutesResponse:
       required:
-      - routes
+      - country
+      - redirectUrl
+    AccountVerificationRoutesResponse:
       type: object
       properties:
         routes:
@@ -454,10 +455,9 @@ components:
             each with its associated provider metadata.
           items:
             $ref: '#/components/schemas/Route'
-    BACSAccountIdentifier:
       required:
-      - accountNumber
-      - sortCode
+      - routes
+    BACSAccountIdentifier:
       type: object
       properties:
         accountNumber:
@@ -467,10 +467,10 @@ components:
           type: string
           description: A number that identifies the specific bank and branch where
             a UK bank account is held.
-    BSBAccountIdentifier:
       required:
       - accountNumber
-      - bsbCode
+      - sortCode
+    BSBAccountIdentifier:
       type: object
       properties:
         accountNumber:
@@ -479,8 +479,14 @@ components:
         bsbCode:
           type: string
           description: The BSB (Bank-State-Branch) code.
+      required:
+      - accountNumber
+      - bsbCode
     DefaultErrorResponseEntity:
       type: object
+      description: Standardized error response following RFC-7807 format
+      externalDocs:
+        url: https://www.rfc-editor.org/rfc/rfc7807
       properties:
         detail:
           type: string
@@ -503,8 +509,8 @@ components:
           description: The unique reference for the request.
         status:
           type: integer
-          description: The HTTP status code.
           format: int32
+          description: The HTTP status code.
         title:
           type: string
           description: A short, human-readable summary of the problem type.
@@ -512,14 +518,7 @@ components:
           type: string
           description: A URI that identifies the validation error type. It points
             to human-readable documentation for the problem type.
-      description: Standardized error response following RFC-7807 format
-      externalDocs:
-        url: https://www.rfc-editor.org/rfc/rfc7807
     EFTAccountIdentifier:
-      required:
-      - accountNumber
-      - branch
-      - institution
       type: object
       properties:
         accountNumber:
@@ -532,11 +531,11 @@ components:
         institution:
           type: string
           description: The financial institution that identifies the bank in Canada.
-    IBANAccountIdentifier:
       required:
-      - bban
-      - bic
-      - iban
+      - accountNumber
+      - branch
+      - institution
+    IBANAccountIdentifier:
       type: object
       properties:
         bban:
@@ -550,10 +549,11 @@ components:
           description: The international bank account number as defined in the [ISO-13616](https://www.iso.org/standard/81090.html)
             standard. This is the national identifier for the bank account, following
             the country-specific format, and is part of the full IBAN.
-    Identity:
       required:
-      - fullLegalName
-      - name
+      - bban
+      - bic
+      - iban
+    Identity:
       type: object
       properties:
         fullLegalName:
@@ -563,11 +563,10 @@ components:
           type: string
           description: A commonly used or human-readable name for the individual or
             entity.
-    InvalidField:
       required:
-      - message
+      - fullLegalName
       - name
-      - value
+    InvalidField:
       type: object
       properties:
         message:
@@ -579,6 +578,10 @@ components:
         value:
           type: string
           description: The invalid value.
+      required:
+      - message
+      - name
+      - value
     PartyRole:
       type: string
       enum:
@@ -587,26 +590,23 @@ components:
       - OTHER
       - UNKNOWN
     Provider:
-      required:
-      - logoURL
-      - name
       type: object
       properties:
         logoURL:
-          minLength: 1
           type: string
           description: The URL of the organization's or brand's logo. This URL typically
             points to an image file (e.g., .png, .jpg, .svg) that can be displayed
             to visually represent the entity.
-        name:
           minLength: 1
+        name:
           type: string
           description: The official or commonly used name of the organization, brand,
             or entity.
-    RIXAccountIdentifier:
+          minLength: 1
       required:
-      - accountNumber
-      - clearingNumber
+      - logoURL
+      - name
+    RIXAccountIdentifier:
       type: object
       properties:
         accountNumber:
@@ -615,31 +615,26 @@ components:
         clearingNumber:
           type: string
           description: The 4- to 5-digit clearing number, without separators or whitespace.
-    Route:
       required:
-      - link
-      - provider
+      - accountNumber
+      - clearingNumber
+    Route:
       type: object
       properties:
         link:
-          minLength: 1
           type: string
           description: The redirection link. You can use this link to redirect the
             user to the open banking flow when the user selects it.
+          minLength: 1
         provider:
+          $ref: '#/components/schemas/Provider'
           description: Metadata about the selected provider, including the name and
             company logo. You can use this information to inform the user about the
             provider they will be redirected to when they select the link.
-          $ref: '#/components/schemas/Provider'
-    VerifiedAccount:
       required:
-      - accountId
-      - accountName
-      - accountNumber
-      - accountType
-      - currency
-      - identifiers
-      - parties
+      - link
+      - provider
+    VerifiedAccount:
       type: object
       properties:
         accountId:
@@ -653,9 +648,9 @@ components:
           type: string
           description: The account number of the bank account.
         accountType:
+          $ref: '#/components/schemas/AccountType'
           description: The type of the bank account. Possible values are **CURRENT**,
             **SAVINGS**, **BUSINESS**, **CREDIT_CARD**, **LOAN**, **UNKNOWN**.
-          $ref: '#/components/schemas/AccountType'
         bankName:
           type: string
           description: The name of the banking institution where the bank account
@@ -664,14 +659,22 @@ components:
           type: string
           description: The currency of the funds in the bank account.
         identifiers:
+          $ref: '#/components/schemas/AccountIdentifiers'
           description: Contains various codes and details used to uniquely identify
             the bank account across different regions.
-          $ref: '#/components/schemas/AccountIdentifiers'
         parties:
           type: array
           description: Contains details of all parties associated with the report.
           items:
             $ref: '#/components/schemas/AccountParty'
+      required:
+      - accountId
+      - accountName
+      - accountNumber
+      - accountType
+      - currency
+      - identifiers
+      - parties
   securitySchemes:
     ApiKeyAuth:
       type: apiKey
