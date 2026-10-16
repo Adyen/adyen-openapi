@@ -1,9 +1,5 @@
 openapi: 3.1.0
-servers:
-- url: https://checkout-test.adyen.com/checkout/possdk/v68
 info:
-  version: '68'
-  x-publicVersion: true
   title: POS Mobile API
   description: ">This API is deprecated. Use the [SoftPOS configuration API](https://docs.adyen.com/api-explorer/softpos-configuration-api/latest/overview)\
     \ instead.\n\nThe POS Mobile API is used in the mutual authentication flow between\
@@ -30,6 +26,10 @@ info:
   contact:
     name: Adyen Developer Experience team
     url: https://github.com/Adyen/adyen-openapi
+  version: '68'
+  x-publicVersion: true
+servers:
+- url: https://checkout-test.adyen.com/checkout/possdk/v68
 tags:
 - name: General
 paths:
@@ -45,92 +45,84 @@ paths:
         \ received from the Adyen payments platform.\n>This request applies to **mobile\
         \ in-person** transactions. You cannot use this request to create online payments\
         \ sessions. \n\n"
+      operationId: post-sessions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSessionRequest'
+            examples:
+              createAuthSession:
+                $ref: '#/components/examples/post-sessions-createAuthSession'
+      responses:
+        '201':
+          description: Created - the request has been fulfilled and has resulted in
+            one or more new resources being created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateSessionResponse'
+              examples:
+                generic:
+                  $ref: '#/components/examples/post-sessions-generic-201'
       deprecated: true
+      security:
+      - BasicAuth: []
+      - ApiKeyAuth: []
       x-deprecatedInVersion: '68'
       x-deprecatedMessage: Use POST [/auth/certificate](https://docs.adyen.com/api-explorer/softpos-configuration-api/latest/post/auth/certificate)
         to establish secure communications.
       x-addedInVersion: '68'
-      operationId: post-sessions
       x-sortIndex: 0
       x-methodName: createCommunicationSession
-      security:
-      - BasicAuth: []
-      - ApiKeyAuth: []
-      requestBody:
-        content:
-          application/json:
-            examples:
-              createAuthSession:
-                $ref: '#/components/examples/post-sessions-createAuthSession'
-            schema:
-              $ref: '#/components/schemas/CreateSessionRequest'
-      responses:
-        '201':
-          content:
-            application/json:
-              examples:
-                generic:
-                  $ref: '#/components/examples/post-sessions-generic-201'
-              schema:
-                $ref: '#/components/schemas/CreateSessionResponse'
-          description: Created - the request has been fulfilled and has resulted in
-            one or more new resources being created.
 components:
   schemas:
     CreateSessionRequest:
+      type: object
       additionalProperties: false
       properties:
         merchantAccount:
-          description: The unique identifier of your merchant account.
           type: string
+          description: The unique identifier of your merchant account.
         setupToken:
+          type: string
           description: "The setup token provided by the POS Mobile SDK. \n- When using\
             \ the Android POS Mobile SDK, obtain the token through the `AuthenticationService.authenticate(setupToken)`\
             \ callback of `AuthenticationService`. \n- When using the iOS POS Mobile\
             \ SDK, obtain the token through the `PaymentServiceDelegate.register(with:)`\
             \ callback of `PaymentServiceDelegate`."
           maxLength: 50000
-          type: string
         store:
+          type: string
           description: The unique identifier of the store that you want to process
             transactions for.
-          type: string
       required:
       - merchantAccount
       - setupToken
-      type: object
     CreateSessionResponse:
+      type: object
       additionalProperties: false
       properties:
         id:
-          description: The unique identifier of the session.
           type: string
+          description: The unique identifier of the session.
         installationId:
+          type: string
           description: The unique identifier of the SDK installation. If you create
             the [Terminal API](https://docs.adyen.com/point-of-sale/design-your-integration/terminal-api/)
             transaction request on your backend, use this as the `POIID` in the `MessageHeader`
             of the request.
-          type: string
         merchantAccount:
-          description: The unique identifier of your merchant account.
           type: string
+          description: The unique identifier of your merchant account.
         sdkData:
+          type: string
           description: The data that the SDK uses to authenticate responses from the
             Adyen payments platform. Pass this value to your POS app.
-          type: string
         store:
+          type: string
           description: The unique identifier of the store that you want to process
             transactions for.
-          type: string
-      type: object
-  securitySchemes:
-    ApiKeyAuth:
-      in: header
-      name: X-API-Key
-      type: apiKey
-    BasicAuth:
-      scheme: basic
-      type: http
   examples:
     post-sessions-createAuthSession:
       summary: Create a communication session
@@ -148,3 +140,11 @@ components:
         merchantAccount: YOUR_MERCHANT_ACCOUNT
         store: YOUR_STORE_ID
         sdkData: SDK_DATA_BLOB
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      name: X-API-Key
+      in: header
+    BasicAuth:
+      type: http
+      scheme: basic
