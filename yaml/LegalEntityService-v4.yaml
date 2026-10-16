@@ -2894,6 +2894,8 @@ components:
 
             *  **adyenCapital**
 
+            *  **adyenCapitalCashAdvance**
+
             *  **adyenAccount**
 
             *  **adyenCard**
@@ -2906,11 +2908,14 @@ components:
 
             *  **kycOnInvite**
 
+            *  **directDebit**
+
 
             '
           enum:
           - adyenAccount
           - adyenCapital
+          - adyenCapitalCashAdvance
           - adyenCard
           - adyenChargeCard
           - adyenForPlatformsAdvanced
@@ -2918,6 +2923,7 @@ components:
           - adyenFranchisee
           - adyenIssuing
           - adyenPccr
+          - directDebit
           - kycOnInvite
     AdditionalBankIdentification:
       type: object
@@ -2951,7 +2957,15 @@ components:
           description: 'The name of the city. Required if `stateOrProvince` is provided.
 
 
-            If you specify the city, you must also send `postalCode` and `street`.'
+            If you specify the city, you must also send `postalCode` and `street`.
+
+
+            The city name must be at least 3 characters. If the city name contains
+            only repeated characters, the minimum length is two characters. For example,
+            Aa is accepted, but Aaaa is not.
+
+
+            For more information, see [validations on fields](https://docs.adyen.com/platforms/onboard-users/onboarding-versions/onboarding-v4/#validations).'
         country:
           type: string
           description: The two-letter [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)
@@ -2974,8 +2988,9 @@ components:
             and `street`.'
         street:
           type: string
-          description: The name of the street, and the house or building number. Required
-            if `stateOrProvince` and/or `city` is provided.
+          description: The name of the street, and the house or building number. Must
+            be at least 3 characters. Required if `stateOrProvince` and/or `city`
+            is provided. For more information, see [validations on fields](https://docs.adyen.com/platforms/onboard-users/onboarding-versions/onboarding-v4/#validations).
         street2:
           type: string
           description: The apartment, unit, or suite number.
@@ -3034,6 +3049,24 @@ components:
       properties:
         accountIdentification:
           description: Identification of the bank account.
+          discriminator:
+            propertyName: type
+            mapping:
+              iban: '#/components/schemas/IbanAccountIdentification'
+              numberAndBic: '#/components/schemas/NumberAndBicAccountIdentification'
+              auLocal: '#/components/schemas/AULocalAccountIdentification'
+              sgLocal: '#/components/schemas/SGLocalAccountIdentification'
+              nzLocal: '#/components/schemas/NZLocalAccountIdentification'
+              hkLocal: '#/components/schemas/HKLocalAccountIdentification'
+              czLocal: '#/components/schemas/CZLocalAccountIdentification'
+              noLocal: '#/components/schemas/NOLocalAccountIdentification'
+              plLocal: '#/components/schemas/PLLocalAccountIdentification'
+              huLocal: '#/components/schemas/HULocalAccountIdentification'
+              seLocal: '#/components/schemas/SELocalAccountIdentification'
+              ukLocal: '#/components/schemas/UKLocalAccountIdentification'
+              usLocal: '#/components/schemas/USLocalAccountIdentification'
+              dkLocal: '#/components/schemas/DKLocalAccountIdentification'
+              caLocal: '#/components/schemas/CALocalAccountIdentification'
           oneOf:
           - $ref: '#/components/schemas/AULocalAccountIdentification'
           - $ref: '#/components/schemas/CALocalAccountIdentification'
@@ -3399,6 +3432,7 @@ components:
             enum:
             - adyenAccount
             - adyenCapital
+            - adyenCapitalCashAdvance
             - adyenCard
             - adyenChargeCard
             - adyenForPlatformsAdvanced
@@ -3406,6 +3440,7 @@ components:
             - adyenFranchisee
             - adyenIssuing
             - adyenPccr
+            - directDebit
             - kycOnInvite
     CapabilityProblem:
       type: object
@@ -3703,8 +3738,7 @@ components:
           x-addedInVersion: '3'
         currencyOfFinancialData:
           type: string
-          description: The currency used for the annual turnover, balance sheet total,
-            and net assets.
+          description: The currency used for the financial data.
           x-addedInVersion: '3'
         dateOfFinancialData:
           type: string
@@ -3884,6 +3918,8 @@ components:
 
             *  **adyenCapital**
 
+            *  **adyenCapitalCashAdvance**
+
             *  **adyenAccount**
 
             *  **adyenCard**
@@ -3896,11 +3932,14 @@ components:
 
             *  **kycOnInvite**
 
+            *  **directDebit**
+
 
             '
           enum:
           - adyenAccount
           - adyenCapital
+          - adyenCapitalCashAdvance
           - adyenCard
           - adyenChargeCard
           - adyenForPlatformsAdvanced
@@ -3908,6 +3947,7 @@ components:
           - adyenFranchisee
           - adyenIssuing
           - adyenPccr
+          - directDebit
           - kycOnInvite
       required:
       - language
@@ -3953,6 +3993,8 @@ components:
 
             *  **adyenCapital**
 
+            *  **adyenCapitalCashAdvance**
+
             *  **adyenAccount**
 
             *  **adyenCard**
@@ -3965,11 +4007,14 @@ components:
 
             *  **kycOnInvite**
 
+            *  **directDebit**
+
 
             '
           enum:
           - adyenAccount
           - adyenCapital
+          - adyenCapitalCashAdvance
           - adyenCard
           - adyenChargeCard
           - adyenForPlatformsAdvanced
@@ -3977,6 +4022,7 @@ components:
           - adyenFranchisee
           - adyenIssuing
           - adyenPccr
+          - directDebit
           - kycOnInvite
     HKLocalAccountIdentification:
       type: object
@@ -4099,7 +4145,10 @@ components:
           description: Information about the individual's identification document.
         name:
           $ref: '#/components/schemas/Name'
-          description: The individual's name.
+          description: "The individual's name. The combined length of `firstName`\
+            \ and `lastName` must be at least 3 characters.\n\nOnly **-**, **\u2014\
+            **, **.**, **/** are allowed as special characters.\n\nFor more information,\
+            \ see [validations on fields](https://docs.adyen.com/platforms/onboard-users/onboarding-versions/onboarding-v4/#validations)."
         nationality:
           type: string
           description: The individual's nationality.
@@ -4108,7 +4157,17 @@ components:
           description: The phone number of the legal entity.
         residentialAddress:
           $ref: '#/components/schemas/Address'
-          description: The residential address of the individual.
+          description: 'The residential address of the individual. Individuals cannot
+            use a PO box as their residential address.
+
+
+            Address fields cannot contain emojis, only one repeated character (unless
+            two characters long), only symbols, only numbers, only spaces, or **fictitious
+            values** such as **John Doe** or **N/A**. All parts of the address must
+            be different. For example, Spain, Spain, Spain is not allowed.
+
+
+            For more information, see [validations on fields](https://docs.adyen.com/platforms/onboard-users/onboarding-versions/onboarding-v4/#validations).'
         support:
           $ref: '#/components/schemas/Support'
           description: Support information for the legal entity. Required if you have
@@ -4576,13 +4635,32 @@ components:
       properties:
         firstName:
           type: string
-          description: The individual's first name. Must not be blank.
+          description: "The individual's first name. Must not be blank.\n\nThe combined\
+            \ length of `firstName` and `lastName` must be at least 3 characters.\
+            \ For example, a `firstName` of N and `lastName` of Ha is accepted.\n\n\
+            Only the following special characters are allowed: **-**, **\u2014**,\
+            \ **.**, **/**. Accents and non-Latin scripts are allowed.\n\nThe field\
+            \ cannot contain emojis, only one repeated character (unless two characters\
+            \ long), only symbols, only numbers, only spaces, or **fictitious names**\
+            \ such as **John Doe** or **N/A**.\n\nFor more information, see [validations\
+            \ on fields](https://docs.adyen.com/platforms/onboard-users/onboarding-versions/onboarding-v4/#validations)."
         infix:
           type: string
-          description: The infix in the individual's name, if any.
+          description: "The infix in the individual's name, if any.\n\nOnly the following\
+            \ special characters are allowed: **-**, **\u2014**, **.**, **/**. Accents\
+            \ and non-Latin scripts are allowed.\n\nThe field cannot contain emojis,\
+            \ only symbols, only numbers, or only spaces.\n\nFor more information,\
+            \ see [validations on fields](https://docs.adyen.com/platforms/onboard-users/onboarding-versions/onboarding-v4/#validations)."
         lastName:
           type: string
-          description: The individual's last name. Must not be blank.
+          description: "The individual's last name. Must not be blank.\n\nThe combined\
+            \ length of `firstName` and `lastName` must be at least 3 characters.\n\
+            \nOnly the following special characters are allowed: **-**, **\u2014**,\
+            \ **.**, **/**. Accents and non-Latin scripts are allowed.\n\nThe field\
+            \ cannot contain emojis, only one repeated character (unless two characters\
+            \ long), only symbols, only numbers, only spaces, or **fictitious names**\
+            \ such as **John Doe** or **N/A**.\n\nFor more information, see [validations\
+            \ on fields](https://docs.adyen.com/platforms/onboard-users/onboarding-versions/onboarding-v4/#validations)."
       required:
       - firstName
       - lastName
@@ -4939,7 +5017,14 @@ components:
           x-addedInVersion: '3'
         legalName:
           type: string
-          description: The organization's legal name.
+          description: "The organization's legal name. Must be at least 3 characters.\n\
+            \nOnly the following special characters are allowed: **,**, **-**, **\u2014\
+            **, **.**, **;**, **:**, **&**, **?**, **@**, **(**, **)**, **\"**, **'**,\
+            \ **!**, **\\**, **+**, **/**. Accents and non-Latin scripts are allowed.\n\
+            \nThe field cannot contain emojis, only one repeated character (unless\
+            \ two characters long), only symbols, only numbers, only spaces, or **fictitious\
+            \ names** such as **John Doe** or **N/A**.\n\nFor more information, see\
+            \ [validations on fields](https://docs.adyen.com/platforms/onboard-users/onboarding-versions/onboarding-v4/#validations)."
         phone:
           $ref: '#/components/schemas/PhoneNumber'
           description: The phone number of the legal entity.
@@ -4949,8 +5034,19 @@ components:
             if the principal place of business is different from the `registeredAddress`.
         registeredAddress:
           $ref: '#/components/schemas/Address'
-          description: The address of the organization registered at their registrar
-            (such as the Chamber of Commerce).
+          description: 'The address of the organization registered at their registrar
+            (such as the Chamber of Commerce). If you use a PO box, you must also
+            provide a `principalPlaceOfBusiness`. The principal place of business
+            cannot be a PO box.
+
+
+            Address fields cannot contain emojis, only one repeated character (unless
+            two characters long), only symbols, only numbers, only spaces, or **fictitious
+            values** such as **John Doe** or **N/A**. All parts of the address must
+            be different. For example, Spain, Spain, Spain is not allowed.
+
+
+            For more information, see [validations on fields](https://docs.adyen.com/platforms/onboard-users/onboarding-versions/onboarding-v4/#validations).'
         registrationNumber:
           type: string
           description: The organization's registration number.
@@ -4960,6 +5056,16 @@ components:
             number available. Only applicable for organizations in New Zealand, and
             incorporated partnerships and government organizations in Australia.
           x-addedInVersion: '4'
+          nullable: true
+        residentialAddressIndicator:
+          type: boolean
+          description: 'Indicates if the `registeredAddress` is a place of residence,
+            instead of a business address.
+
+
+            Set to **true** if the address is a place of residence. The default value
+            is **false**.'
+          x-addedInVersion: '2'
           nullable: true
         statusOfLegalProceeding:
           type: string
@@ -4999,7 +5105,8 @@ components:
         taxReportingClassification:
           $ref: '#/components/schemas/TaxReportingClassification'
           description: The tax reporting classification (FATCA/CRS self-certification)
-            of the organization.
+            of the organization. Not required if your organization is US-based and
+            requests business bank account capabilities.
           x-addedInVersion: '2'
         type:
           type: string
@@ -5261,18 +5368,45 @@ components:
           x-addedInVersion: '3'
         name:
           type: string
-          description: The legal name.
+          description: "The legal name. Must be at least 3 characters.\n\nOnly the\
+            \ following special characters are allowed: **,**, **-**, **\u2014**,\
+            \ **.**, **;**, **:**, **&**, **?**, **@**, **(**, **)**, **\"**, **'**,\
+            \ **!**, **\\**, **+**, **/**. Accents and non-Latin scripts are allowed.\n\
+            \nThe field cannot contain emojis, only one repeated character (unless\
+            \ two characters long), only symbols, only numbers, only spaces, or **fictitious\
+            \ names** such as **John Doe** or **N/A**.\n\nFor more information, see\
+            \ [validations on fields](https://docs.adyen.com/platforms/onboard-users/onboarding-versions/onboarding-v4/#validations)."
         principalPlaceOfBusiness:
           $ref: '#/components/schemas/Address'
           description: The business address. Required if the principal place of business
             is different from the `registeredAddress`.
         registeredAddress:
           $ref: '#/components/schemas/Address'
-          description: The address registered at the registrar, such as the Chamber
-            of Commerce.
+          description: 'The address registered at the registrar, such as the Chamber
+            of Commerce. If you use a PO box, you must also provide a `principalPlaceOfBusiness`.
+            The principal place of business cannot be a PO box.
+
+
+            Address fields cannot contain emojis, only one repeated character (unless
+            two characters long), only symbols, only numbers, only spaces, or **fictitious
+            values** such as **John Doe** or **N/A**. All parts of the address must
+            be different. For example, Spain, Spain, Spain is not allowed.
+
+
+            For more information, see [validations on fields](https://docs.adyen.com/platforms/onboard-users/onboarding-versions/onboarding-v4/#validations).'
         registrationNumber:
           type: string
           description: The registration number.
+        residentialAddressIndicator:
+          type: boolean
+          description: 'Indicates if the `registeredAddress` is a place of residence,
+            instead of a business address.
+
+
+            Set to **true** if the address is a place of residence. The default value
+            is **false**.'
+          x-addedInVersion: '2'
+          nullable: true
         taxAbsent:
           type: boolean
           description: The tax information is absent.
@@ -5297,7 +5431,6 @@ components:
           type: string
           description: The VAT number.
       required:
-      - countryOfGoverningLaw
       - name
       - registeredAddress
     SourceOfFunds:
@@ -5642,6 +5775,8 @@ components:
 
             *  **adyenCapital**
 
+            *  **adyenCapitalCashAdvance**
+
             *  **adyenAccount**
 
             *  **adyenCard**
@@ -5654,11 +5789,14 @@ components:
 
             *  **kycOnInvite**
 
+            *  **directDebit**
+
 
             '
           enum:
           - adyenAccount
           - adyenCapital
+          - adyenCapitalCashAdvance
           - adyenCard
           - adyenChargeCard
           - adyenForPlatformsAdvanced
@@ -5666,6 +5804,7 @@ components:
           - adyenFranchisee
           - adyenIssuing
           - adyenPccr
+          - directDebit
           - kycOnInvite
         validTo:
           type: string
@@ -5797,18 +5936,45 @@ components:
           nullable: true
         name:
           type: string
-          description: The legal name.
+          description: "The legal name. Must be at least 3 characters.\n\nOnly the\
+            \ following special characters are allowed: **,**, **-**, **\u2014**,\
+            \ **.**, **;**, **:**, **&**, **?**, **@**, **(**, **)**, **\"**, **'**,\
+            \ **!**, **\\**, **+**, **/**. Accents and non-Latin scripts are allowed.\n\
+            \nThe field cannot contain emojis, only one repeated character (unless\
+            \ two characters long), only symbols, only numbers, only spaces, or **fictitious\
+            \ names** such as **John Doe** or **N/A**.\n\nFor more information, see\
+            \ [validations on fields](https://docs.adyen.com/platforms/onboard-users/onboarding-versions/onboarding-v4/#validations)."
         principalPlaceOfBusiness:
           $ref: '#/components/schemas/Address'
           description: The business address. Required if the principal place of business
             is different from the `registeredAddress`.
         registeredAddress:
           $ref: '#/components/schemas/Address'
-          description: The address registered at the registrar, such as the Chamber
-            of Commerce.
+          description: 'The address registered at the registrar, such as the Chamber
+            of Commerce. If you use a PO box, you must also provide a `principalPlaceOfBusiness`.
+            The principal place of business cannot be a PO box.
+
+
+            Address fields cannot contain emojis, only one repeated character (unless
+            two characters long), only symbols, only numbers, only spaces, or **fictitious
+            values** such as **John Doe** or **N/A**. All parts of the address must
+            be different. For example, Spain, Spain, Spain is not allowed.
+
+
+            For more information, see [validations on fields](https://docs.adyen.com/platforms/onboard-users/onboarding-versions/onboarding-v4/#validations).'
         registrationNumber:
           type: string
           description: The registration number.
+        residentialAddressIndicator:
+          type: boolean
+          description: 'Indicates if the `registeredAddress` is a place of residence,
+            instead of a business address.
+
+
+            Set to **true** if the address is a place of residence. The default value
+            is **false**.'
+          x-addedInVersion: '2'
+          nullable: true
         taxInformation:
           type: array
           description: The tax information of the entity.
@@ -5964,18 +6130,45 @@ components:
           nullable: true
         name:
           type: string
-          description: The legal name.
+          description: "The legal name. Must be at least 3 characters.\n\nOnly the\
+            \ following special characters are allowed: **,**, **-**, **\u2014**,\
+            \ **.**, **;**, **:**, **&**, **?**, **@**, **(**, **)**, **\"**, **'**,\
+            \ **!**, **\\**, **+**, **/**. Accents and non-Latin scripts are allowed.\n\
+            \nThe field cannot contain emojis, only one repeated character (unless\
+            \ two characters long), only symbols, only numbers, only spaces, or **fictitious\
+            \ names** such as **John Doe** or **N/A**.\n\nFor more information, see\
+            \ [validations on fields](https://docs.adyen.com/platforms/onboard-users/onboarding-versions/onboarding-v4/#validations)."
         principalPlaceOfBusiness:
           $ref: '#/components/schemas/Address'
           description: The business address. Required if the principal place of business
             is different from the `registeredAddress`.
         registeredAddress:
           $ref: '#/components/schemas/Address'
-          description: The address registered at the registrar, such as the Chamber
-            of Commerce.
+          description: 'The address registered at the registrar, such as the Chamber
+            of Commerce. If you use a PO box, you must also provide a `principalPlaceOfBusiness`.
+            The principal place of business cannot be a PO box.
+
+
+            Address fields cannot contain emojis, only one repeated character (unless
+            two characters long), only symbols, only numbers, only spaces, or **fictitious
+            values** such as **John Doe** or **N/A**. All parts of the address must
+            be different. For example, Spain, Spain, Spain is not allowed.
+
+
+            For more information, see [validations on fields](https://docs.adyen.com/platforms/onboard-users/onboarding-versions/onboarding-v4/#validations).'
         registrationNumber:
           type: string
           description: The registration number.
+        residentialAddressIndicator:
+          type: boolean
+          description: 'Indicates if the `registeredAddress` is a place of residence,
+            instead of a business address.
+
+
+            Set to **true** if the address is a place of residence. The default value
+            is **false**.'
+          x-addedInVersion: '2'
+          nullable: true
         taxInformation:
           type: array
           description: The tax information of the entity.
