@@ -1,9 +1,5 @@
 openapi: 3.1.0
-servers:
-- url: https://ca-test.adyen.com/ca/services/DataProtectionService/v1
 info:
-  version: '1'
-  x-publicVersion: true
   title: Adyen Data Protection API
   description: 'Adyen Data Protection API provides a way for you to process [Subject
     Erasure Requests](https://gdpr-info.eu/art-17-gdpr/) as mandated in GDPR.
@@ -52,6 +48,10 @@ info:
   contact:
     name: Adyen Developer Experience team
     url: https://github.com/Adyen/adyen-openapi
+  version: '1'
+  x-publicVersion: true
+servers:
+- url: https://ca-test.adyen.com/ca/services/DataProtectionService/v1
 tags:
 - name: General
 paths:
@@ -63,11 +63,6 @@ paths:
       description: Sends the PSP reference containing the shopper data that should
         be deleted.
       operationId: post-requestSubjectErasure
-      x-sortIndex: 0
-      x-methodName: requestSubjectErasure
-      security:
-      - BasicAuth: []
-      - ApiKeyAuth: []
       requestBody:
         content:
           application/json:
@@ -75,98 +70,103 @@ paths:
               $ref: '#/components/schemas/SubjectErasureByPspReferenceRequest'
       responses:
         '200':
+          description: OK - the request has succeeded.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/SubjectErasureResponse'
-          description: OK - the request has succeeded.
         '400':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ServiceError'
           description: Bad Request - a problem reading or understanding the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
         '401':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ServiceError'
           description: Unauthorized - authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
         '403':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ServiceError'
           description: Forbidden - insufficient permissions to process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
         '422':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ServiceError'
           description: Unprocessable Entity - a request validation error.
-        '500':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ServiceError'
+        '500':
           description: Internal Server Error - the server could not process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+      security:
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      x-sortIndex: 0
+      x-methodName: requestSubjectErasure
 components:
   schemas:
     ServiceError:
+      type: object
       additionalProperties: false
       properties:
         errorCode:
+          type: string
           description: The error code mapped to the error message.
-          type: string
         errorType:
+          type: string
           description: The category of the error.
-          type: string
         message:
+          type: string
           description: A short explanation of the issue.
-          type: string
         pspReference:
-          description: The PSP reference of the payment.
           type: string
+          description: The PSP reference of the payment.
         status:
-          description: The HTTP response status.
-          format: int32
           type: integer
-      type: object
+          format: int32
+          description: The HTTP response status.
     SubjectErasureByPspReferenceRequest:
+      type: object
       additionalProperties: false
       properties:
         forceErasure:
+          type: boolean
           description: Set this to **true** if you want to delete shopper-related
             data, even if the shopper has an existing recurring transaction. This
             only deletes the shopper-related data for the specific payment, but does
             not cancel the existing recurring transaction.
-          type: boolean
         merchantAccount:
-          description: Your merchant account
           type: string
+          description: Your merchant account
         pspReference:
+          type: string
           description: The PSP reference of the payment. We will delete all shopper-related
             data for this payment.
-          type: string
-      type: object
     SubjectErasureResponse:
+      type: object
       additionalProperties: false
       properties:
         result:
+          type: string
           description: The result of this operation.
           enum:
           - ACTIVE_RECURRING_TOKEN_EXISTS
           - ALREADY_PROCESSED
           - PAYMENT_NOT_FOUND
           - SUCCESS
-          type: string
-      type: object
+  examples: {}
   securitySchemes:
     ApiKeyAuth:
-      in: header
-      name: X-API-Key
       type: apiKey
+      name: X-API-Key
+      in: header
     BasicAuth:
-      scheme: basic
       type: http
-  examples: {}
+      scheme: basic
