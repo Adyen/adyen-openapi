@@ -4742,12 +4742,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DefaultErrorResponseEntity'
-        '403':
-          description: Forbidden - insufficient permissions to process the request.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DefaultErrorResponseEntity'
         '404':
           description: Not Found - the resource was not found
           content:
@@ -4766,6 +4760,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DefaultErrorResponseEntity'
+      security:
+      - BasicAuth: []
+      - ApiKeyAuth: []
       x-group-parameters: 'false'
       x-methodName: getBalanceAccountManagedSchedules
       x-sortIndex: 4
@@ -4843,12 +4840,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DefaultErrorResponseEntity'
-        '403':
-          description: Forbidden - insufficient permissions to process the request.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DefaultErrorResponseEntity'
         '404':
           description: Not Found - the resource was not found
           content:
@@ -4867,6 +4858,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DefaultErrorResponseEntity'
+      security:
+      - BasicAuth: []
+      - ApiKeyAuth: []
       x-methodName: applyManagedSchedule
       x-sortIndex: 3
   /balanceAccounts/{balanceAccountId}/payoutSchedules/{id}:
@@ -4928,12 +4922,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DefaultErrorResponseEntity'
-        '403':
-          description: Forbidden - insufficient permissions to process the request.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DefaultErrorResponseEntity'
         '404':
           description: Not Found - the resource was not found
           content:
@@ -4952,6 +4940,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DefaultErrorResponseEntity'
+      security:
+      - BasicAuth: []
+      - ApiKeyAuth: []
       x-methodName: getBalanceAccountManagedScheduleById
       x-sortIndex: 5
     delete:
@@ -4987,12 +4978,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DefaultErrorResponseEntity'
-        '403':
-          description: Forbidden - insufficient permissions to process the request.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DefaultErrorResponseEntity'
         '404':
           description: Not Found - the resource was not found
           content:
@@ -5011,6 +4996,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DefaultErrorResponseEntity'
+      security:
+      - BasicAuth: []
+      - ApiKeyAuth: []
       x-methodName: deleteBalanceAccountManagedSchedule
       x-sortIndex: 7
     patch:
@@ -5088,12 +5076,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DefaultErrorResponseEntity'
-        '403':
-          description: Forbidden - insufficient permissions to process the request.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DefaultErrorResponseEntity'
         '404':
           description: Not Found - the resource was not found
           content:
@@ -5112,6 +5094,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DefaultErrorResponseEntity'
+      security:
+      - BasicAuth: []
+      - ApiKeyAuth: []
       x-methodName: updateBalanceAccountManagedSchedule
       x-sortIndex: 6
   /balanceAccounts/{balanceAccountId}/payoutSchedules/{id}/executions:
@@ -5142,8 +5127,9 @@ paths:
           type: string
       - name: results
         in: query
-        description: 'Contains a list of payout statuses. If included, the response
-          returns only executed payouts that currently have one of the specified statuses.
+        description: 'Contains a comma-separated list of payout statuses. If included,
+          the response returns only executed payouts that currently have one of the
+          specified statuses.
 
 
           Possible statuses:
@@ -5152,14 +5138,15 @@ paths:
 
           - **failed**: The payout was not sent due to an error.
 
-          - **skipped**: The payout was not triggered as expected.'
+          - **skipped**: The payout was not triggered as expected.
+
+
+          Examples: `results=succeeded`, `results=failed,skipped`'
         required: false
         style: form
         explode: false
         schema:
-          type: array
-          items:
-            $ref: '#/components/schemas/ExecutionResult'
+          type: string
       - name: limit
         in: query
         description: 'The number of items returned per page.
@@ -5218,12 +5205,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DefaultErrorResponseEntity'
-        '403':
-          description: Forbidden - insufficient permissions to process the request.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DefaultErrorResponseEntity'
         '404':
           description: Not Found - the resource was not found
           content:
@@ -5242,6 +5223,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DefaultErrorResponseEntity'
+      security:
+      - BasicAuth: []
+      - ApiKeyAuth: []
       x-group-parameters: 'false'
       x-methodName: getPayoutScheduleExecutions
       x-sortIndex: 8
@@ -5764,7 +5748,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchableCreateRecurringTopUp'
+              $ref: '#/components/schemas/RecurringTopUpUpdate'
             examples:
               update-recurring-topup:
                 summary: Partially updates the configuration of a recurring Top up
@@ -5930,6 +5914,123 @@ paths:
       x-group-parameters: 'true'
       x-methodName: updateRecurringTopUps
       x-sortIndex: 13
+  /balanceAccounts/{balanceAccountId}/sweeps/{sweepId}/executions:
+    get:
+      tags:
+      - Custom payout schedules (sweeps)
+      summary: View executions of a custom payout schedule
+      description: Returns a paginated list of executions of a custom payout schedule
+        on a balance account. You can use query parameters to filter the executions
+        that are returned in the list.
+      operationId: get-balanceAccounts-balanceAccountId-sweeps-sweepId-executions
+      parameters:
+      - name: balanceAccountId
+        in: path
+        description: The unique identifier of the balance account.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: sweepId
+        in: path
+        description: The unique identifier of the sweep configuration.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: results
+        in: query
+        description: 'Contains a comma-separated list of sweep execution results.
+          If included, the response returns only sweep executions with the specified
+          results.
+
+
+          Possible results:
+
+          - **succeeded**: The sweep payout was completed successfully.
+
+          - **failed**: The sweep payout was not completed due to an error.
+
+          - **skipped**: The sweep payout was not triggered as expected.'
+        required: false
+        style: form
+        explode: false
+        schema:
+          type: string
+      - name: limit
+        in: query
+        description: The number of items returned per page. By default, the response
+          returns 10 items per page.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
+          format: int32
+          default: 10
+          minimum: 10
+      - name: cursor
+        in: query
+        description: The cursor from the `next` or `previous` pagination link in the
+          previous response.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK - The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayoutSweepExecutions'
+              examples:
+                list-sweep-executions:
+                  summary: Sweep executions retrieved
+                  description: Example response when retrieving executions of a sweep.
+                  value:
+                    sweepExecutions:
+                    - id: SWPE12345678901234567890123456
+                      triggeredAt: '2026-02-16T08:00:00Z'
+                      result: succeeded
+                      resultDetails:
+                        transferId: 4VXLNP68FCFE5FQ1
+                    link:
+                      next:
+                        href: https://balanceplatform-api-test.adyen.com/bcl/v2/balanceAccounts/BA000000000000000000001/sweeps/SWPC000000000000000000001/executions?limit=10&cursor=eyJvZmZzZXQiOjEwfQ
+        '401':
+          description: Unauthorized - authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '404':
+          description: Not Found - the resource was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '422':
+          description: Unprocessable Entity - a request validation error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+        '500':
+          description: Internal Server Error - the server could not process the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultErrorResponseEntity'
+      security:
+      - BasicAuth: []
+      - ApiKeyAuth: []
+      x-group-parameters: 'false'
+      x-methodName: getSweepExecutions
+      x-sortIndex: 6
   /balanceAccounts/{id}/transferLimits:
     get:
       tags:
@@ -6461,12 +6562,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DefaultErrorResponseEntity'
-        '403':
-          description: Forbidden - insufficient permissions to process the request.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DefaultErrorResponseEntity'
         '404':
           description: Not Found - the resource was not found
           content:
@@ -6523,12 +6618,6 @@ paths:
                 $ref: '#/components/schemas/BalancePlatformConfiguration'
         '401':
           description: Unauthorized - authentication required.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DefaultErrorResponseEntity'
-        '403':
-          description: Forbidden - insufficient permissions to process the request.
           content:
             application/json:
               schema:
@@ -8455,10 +8544,13 @@ paths:
       tags:
       - SCA device management
       summary: Create a new SCA association for a device
-      description: Creates an association between an SCA-enabled device and an entity,
+      description: 'Creates an association between an SCA-enabled device and an entity,
         such as an account holder. This action does not guarantee the association
         is immediately ready for use; its status may be `pendingApproval` if the account
-        holder has existing devices.
+        holder has existing devices. If the entity is configured to allow only a single
+        associated device and single-device replacement is enabled for your account,
+        the new association immediately replaces the existing one: its status is `active`
+        and the previously associated device is no longer associated.'
       operationId: post-scaDevices-deviceId-scaAssociations
       parameters:
       - name: deviceId
@@ -14555,6 +14647,16 @@ components:
       required:
       - currency
       - value
+    AmountUpdate:
+      type: object
+      properties:
+        currency:
+          type: string
+          description: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).
+        value:
+          type: integer
+          format: int64
+          description: The amount of the transaction, in [minor units](https://docs.adyen.com/development-resources/currency-codes).
     ApproveAssociationRequest:
       type: object
       properties:
@@ -14966,7 +15068,6 @@ components:
             funds are paid out.
       required:
       - balancePlatformPayoutScheduleId
-      - frequency
       - transferInstrumentId
     BalanceAccountConfigurationUpdate:
       type: object
@@ -15229,9 +15330,9 @@ components:
           description: The default [settlement delay](https://docs.adyen.com/platforms/settle-funds/#settlement-delay)
             for this payout schedule.
         userSettlementTime:
-          $ref: '#/components/schemas/LocalTime'
+          type: string
           description: The time when the payout funds are settled in your user's transfer
-            instrument.
+            instrument. For example, 11:30:00.
         userSettlementTimeZone:
           type: string
           description: The timezone of the `userSettlementTime`.
@@ -15679,21 +15780,6 @@ components:
       required:
       - link
       - mandates
-    LocalTime:
-      type: object
-      properties:
-        hour:
-          type: integer
-          format: int32
-        minute:
-          type: integer
-          format: int32
-        nano:
-          type: integer
-          format: int32
-        second:
-          type: integer
-          format: int32
     Mandate:
       type: object
       properties:
@@ -15781,107 +15867,6 @@ components:
           - 'null'
           description: The unique identifier of the payment instrument linked to the
             mandate.
-    PatchableAmountDTO:
-      type: object
-      properties:
-        currency:
-          type: string
-          description: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).
-        value:
-          type: integer
-          format: int64
-          description: The amount of the transaction, in [minor units](https://docs.adyen.com/development-resources/currency-codes).
-    PatchableCreateRecurringTopUp:
-      type: object
-      properties:
-        description:
-          type: string
-          description: 'Your description for the recurring top-up.
-
-
-            Maximum length is 140 characters. If you set a longer description, it
-            will be cut off at 140 characters.'
-          maxLength: 140
-          minLength: 0
-        referenceForBeneficiary:
-          type:
-          - string
-          - 'null'
-          description: " A reference that is sent to the recipient. This reference\
-            \ is also sent in all webhooks related to the transfer, so you can use\
-            \ it to track statuses for both parties involved in the funds movement.\n\
-            \n Supported characters: **a-z**, **A-Z**, **0-9**."
-          maxLength: 80
-          minLength: 0
-        status:
-          type:
-          - string
-          - 'null'
-          description: "The status of the recurring top-up. If not provided, by default,\
-            \ this is set to **active**.\n\nPossible values: \n\n * **active**:  the\
-            \ top up is enabled and funds will be pulled in.\n\n * **inactive**: the\
-            \ top up is disabled and cannot be triggered. \n\n"
-          enum:
-          - active
-          - inactive
-        topUpAmount:
-          $ref: '#/components/schemas/PatchableTopUpAmount'
-          description: The currency and value to be added to the balance account,
-            specified in minor units. This can be a fixed amount or a target amount.
-        trigger:
-          $ref: '#/components/schemas/PatchableTrigger'
-          description: The condition that triggers the top-up. This can be a recurring
-            schedule or a minimum balance threshold.
-    PatchableSchedule:
-      type: object
-      properties:
-        type:
-          $ref: '#/components/schemas/ScheduleType'
-          description: 'The type of schedule at which the top up is executed.
-
-            * **weekdays**: pull in funds Monday-Friday at 07:00 AM in the local timezone
-            of the balance account.
-
-
-            * **weekly**: pull in funds every Monday at 07:00 AM in the local timezone
-            of the balance account.
-
-
-            * **monthly**: pull in funds every first of the month at 07:00 AM in the
-            local timezone of the balance account.
-
-            * **null** (default): continuous monitoring.'
-    PatchableTopUpAmount:
-      type: object
-      properties:
-        fixed:
-          type: object
-          description: The fixed amount with which you want to top up the balance
-            account.
-          oneOf:
-          - $ref: '#/components/schemas/PatchableAmountDTO'
-          - type: 'null'
-        target:
-          type: object
-          description: The target balance for the balance account that the top-up
-            must achieve.
-          oneOf:
-          - $ref: '#/components/schemas/PatchableAmountDTO'
-          - type: 'null'
-    PatchableTrigger:
-      type: object
-      properties:
-        schedule:
-          type: object
-          description: Contains the details about the schedule that determines when
-            the top up is executed.
-          oneOf:
-          - $ref: '#/components/schemas/PatchableSchedule'
-          - type: 'null'
-        threshold:
-          $ref: '#/components/schemas/PatchableAmountDTO'
-          description: The balance threshold that triggers the top-up. If the balance
-            falls below this amount, a top-up is initiated.
     PayoutScheduleExecution:
       type: object
       properties:
@@ -15930,6 +15915,63 @@ components:
             $ref: '#/components/schemas/PayoutScheduleExecution'
       required:
       - payoutScheduleExecutions
+    PayoutSweepExecution:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The unique identifier of the sweep execution.
+        result:
+          $ref: '#/components/schemas/ExecutionResult'
+          description: 'The outcome of the sweep execution.
+
+
+            Possible results:
+
+            - **succeeded**: The sweep payout was completed successfully.
+
+            - **failed**: The sweep payout was not completed due to an error.
+
+            - **skipped**: The sweep payout was not triggered as expected.'
+        resultDetails:
+          $ref: '#/components/schemas/PayoutSweepExecutionDetails'
+          description: Details about the outcome of the sweep execution.
+        triggeredAt:
+          type: string
+          format: date-time
+          description: The timestamp of when the execution was triggered.
+    PayoutSweepExecutionDetails:
+      type: object
+      properties:
+        reason:
+          type: string
+          description: The human-readable reason for why the sweep execution was not
+            successful, if applicable.
+        reasonCode:
+          type: string
+          description: The reason code for why the sweep execution was not successful,
+            if applicable.
+        sweepConfigurationDisabled:
+          type: boolean
+          description: Indicates whether the sweep configuration was disabled.
+        transferId:
+          type: string
+          description: The unique identifier of the transfer created by the sweep
+            execution, if applicable.
+    PayoutSweepExecutions:
+      type: object
+      properties:
+        link:
+          $ref: '#/components/schemas/Link'
+          description: Contains links to the next and previous page whenever applicable.
+        sweepExecutions:
+          type: array
+          description: Contains a list of executions of the sweep configuration.
+          items:
+            $ref: '#/components/schemas/PayoutSweepExecution'
+      required:
+      - link
+      - sweepExecutions
     RecurringTopUp:
       type: object
       properties:
@@ -15980,6 +16022,47 @@ components:
       - id
       - topUpAmount
       - trigger
+    RecurringTopUpUpdate:
+      type: object
+      properties:
+        description:
+          type: string
+          description: 'Your description for the recurring top-up.
+
+
+            Maximum length is 140 characters. If you set a longer description, it
+            will be cut off at 140 characters.'
+          maxLength: 140
+          minLength: 0
+        referenceForBeneficiary:
+          type:
+          - string
+          - 'null'
+          description: " A reference that is sent to the recipient. This reference\
+            \ is also sent in all webhooks related to the transfer, so you can use\
+            \ it to track statuses for both parties involved in the funds movement.\n\
+            \n Supported characters: **a-z**, **A-Z**, **0-9**."
+          maxLength: 80
+          minLength: 0
+        status:
+          type:
+          - string
+          - 'null'
+          description: "The status of the recurring top-up. If not provided, by default,\
+            \ this is set to **active**.\n\nPossible values: \n\n * **active**:  the\
+            \ top up is enabled and funds will be pulled in.\n\n * **inactive**: the\
+            \ top up is disabled and cannot be triggered. \n\n"
+          enum:
+          - active
+          - inactive
+        topUpAmount:
+          $ref: '#/components/schemas/TopUpAmountUpdate'
+          description: The currency and value to be added to the balance account,
+            specified in minor units. This can be a fixed amount or a target amount.
+        trigger:
+          $ref: '#/components/schemas/TriggerUpdate'
+          description: The condition that triggers the top-up. This can be a recurring
+            schedule or a minimum balance threshold.
     RecurringTopUpsResult:
       type: object
       properties:
@@ -16169,6 +16252,25 @@ components:
       - weekdays
       - weekly
       - monthly
+    ScheduleUpdate:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ScheduleType'
+          description: 'The type of schedule at which the top up is executed.
+
+            * **weekdays**: pull in funds Monday-Friday at 07:00 AM in the local timezone
+            of the balance account.
+
+
+            * **weekly**: pull in funds every Monday at 07:00 AM in the local timezone
+            of the balance account.
+
+
+            * **monthly**: pull in funds every first of the month at 07:00 AM in the
+            local timezone of the balance account.
+
+            * **null** (default): continuous monitoring.'
     ScheduledPayoutFrequency:
       type: string
       x-extensible-enum:
@@ -16331,6 +16433,23 @@ components:
           $ref: '#/components/schemas/AmountDTO'
           description: The target balance for the balance account that the top-up
             must achieve.
+    TopUpAmountUpdate:
+      type: object
+      properties:
+        fixed:
+          type: object
+          description: The fixed amount with which you want to top up the balance
+            account.
+          oneOf:
+          - $ref: '#/components/schemas/AmountUpdate'
+          - type: 'null'
+        target:
+          type: object
+          description: The target balance for the balance account that the top-up
+            must achieve.
+          oneOf:
+          - $ref: '#/components/schemas/AmountUpdate'
+          - type: 'null'
     TopUpCounterparty:
       type: object
       properties:
@@ -16438,6 +16557,20 @@ components:
             falls below this amount, a top-up is initiated.
       required:
       - threshold
+    TriggerUpdate:
+      type: object
+      properties:
+        schedule:
+          type: object
+          description: Contains the details about the schedule that determines when
+            the top up is executed.
+          oneOf:
+          - $ref: '#/components/schemas/ScheduleUpdate'
+          - type: 'null'
+        threshold:
+          $ref: '#/components/schemas/AmountUpdate'
+          description: The balance threshold that triggers the top-up. If the balance
+            falls below this amount, a top-up is initiated.
     UKLocalMandateAccountIdentification:
       type: object
       allOf:

@@ -1,7 +1,5 @@
 openapi: 3.1.0
 info:
-  version: '1'
-  x-publicVersion: true
   title: Report webhooks
   description: 'Adyen sends webhooks to inform your system that reports were generated
     and are ready to be downloaded.
@@ -13,81 +11,49 @@ info:
   contact:
     name: Adyen Developer Experience team
     url: https://github.com/Adyen/adyen-openapi
+  version: '1'
+  x-publicVersion: true
 tags:
 - name: General
-webhooks:
-  balancePlatform.report.created:
-    post:
-      tags:
-      - General
-      summary: Report generated
-      description: 'Adyen sends this webhook after a report is generated and ready
-        to be downloaded. The webhook contains the URL at which the report can be
-        downloaded.
-
-
-        Before you download reports, ask your Adyen contact for your report credentials.
-        You must use your credentials to authenticate your GET request.'
-      operationId: post-balancePlatform.report.created
-      x-sortIndex: 0
-      x-methodName: reportGenerated
-      security:
-      - BasicAuth: []
-      requestBody:
-        content:
-          application/json:
-            examples:
-              balancePlatform.report.created:
-                $ref: '#/components/examples/post-balancePlatform.report.created-balancePlatform.report.created'
-            schema:
-              $ref: '#/components/schemas/ReportNotificationRequest'
-      responses:
-        '200':
-          content:
-            application/json:
-              examples:
-                balancePlatform.report.created:
-                  $ref: '#/components/examples/WebhookAck'
-              schema:
-                $ref: '#/components/schemas/BalancePlatformNotificationResponse'
-          description: OK - the request has succeeded.
 components:
   schemas:
     BalancePlatformNotificationResponse:
+      type: object
       additionalProperties: false
       properties:
         notificationResponse:
-          description: Respond with any **2xx** HTTP status code to [accept the webhook](https://docs.adyen.com/development-resources/webhooks/#accept-webhooks).
           type: string
-      type: object
+          description: Respond with any **2xx** HTTP status code to [accept the webhook](https://docs.adyen.com/development-resources/webhooks/#accept-webhooks).
     ReportNotificationData:
+      type: object
       additionalProperties: false
       properties:
         accountHolder:
+          $ref: '#/components/schemas/ResourceReference'
           description: The account holder related to the report.
-          $ref: '#/components/schemas/ResourceReference'
         balanceAccount:
-          description: The balance account related to the report.
           $ref: '#/components/schemas/ResourceReference'
+          description: The balance account related to the report.
         balancePlatform:
-          description: The unique identifier of the balance platform.
           type: string
+          description: The unique identifier of the balance platform.
         creationDate:
+          type: string
+          format: date-time
           description: The date and time when the event was triggered, in ISO 8601
             extended format. For example, **2025-03-19T10:15:30+01:00**.
-          format: date-time
-          type: string
         downloadUrl:
+          type: string
           description: The URL at which you can download the report. To download,
             you must authenticate your GET request with your [API credentials](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/overview).
-          type: string
         fileName:
+          type: string
           description: The filename of the report.
-          type: string
         id:
-          description: The ID of the resource.
           type: string
+          description: The ID of the resource.
         reportType:
+          type: string
           description: 'The type of report. Possible values:
 
 
@@ -107,70 +73,64 @@ components:
 
 
             '
-          type: string
       required:
+      - downloadUrl
       - fileName
       - reportType
-      - downloadUrl
-      type: object
     ReportNotificationRequest:
+      type: object
       additionalProperties: false
       properties:
         data:
-          description: Contains event details.
           $ref: '#/components/schemas/ReportNotificationData'
+          description: Contains event details.
         environment:
+          type: string
           description: 'The environment from which the webhook originated.
 
 
             Possible values: **test**, **live**.'
-          type: string
         timestamp:
-          description: When the event was queued.
-          format: date-time
           type: string
+          format: date-time
+          description: When the event was queued.
         type:
+          type: string
           description: Type of webhook.
           enum:
           - balancePlatform.report.created
-          type: string
       required:
+      - data
       - environment
       - type
-      - data
-      type: object
     Resource:
+      type: object
       additionalProperties: false
       properties:
         balancePlatform:
-          description: The unique identifier of the balance platform.
           type: string
+          description: The unique identifier of the balance platform.
         creationDate:
+          type: string
+          format: date-time
           description: The date and time when the event was triggered, in ISO 8601
             extended format. For example, **2025-03-19T10:15:30+01:00**.
-          format: date-time
-          type: string
         id:
-          description: The ID of the resource.
           type: string
-      type: object
+          description: The ID of the resource.
     ResourceReference:
+      type: object
       additionalProperties: false
       properties:
         description:
+          type: string
           description: The description of the resource.
-          type: string
         id:
+          type: string
           description: The unique identifier of the resource.
-          type: string
         reference:
-          description: The reference for the resource.
           type: string
-      type: object
-  securitySchemes:
-    BasicAuth:
-      scheme: basic
-      type: http
+          description: The reference for the resource.
   examples:
     WebhookAck:
       summary: Acknowledge Webhook
@@ -191,3 +151,43 @@ components:
         environment: test
         timestamp: '2024-07-02T02:01:05+02:00'
         type: balancePlatform.report.created
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+webhooks:
+  balancePlatform.report.created:
+    post:
+      tags:
+      - General
+      summary: Report generated
+      description: 'Adyen sends this webhook after a report is generated and ready
+        to be downloaded. The webhook contains the URL at which the report can be
+        downloaded.
+
+
+        Before you download reports, ask your Adyen contact for your report credentials.
+        You must use your credentials to authenticate your GET request.'
+      operationId: post-balancePlatform.report.created
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportNotificationRequest'
+            examples:
+              balancePlatform.report.created:
+                $ref: '#/components/examples/post-balancePlatform.report.created-balancePlatform.report.created'
+      responses:
+        '200':
+          description: OK - the request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BalancePlatformNotificationResponse'
+              examples:
+                balancePlatform.report.created:
+                  $ref: '#/components/examples/WebhookAck'
+      security:
+      - BasicAuth: []
+      x-sortIndex: 0
+      x-methodName: reportGenerated
