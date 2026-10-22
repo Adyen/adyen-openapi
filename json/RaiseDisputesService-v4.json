@@ -1,12 +1,5 @@
 {
   "openapi" : "3.1.0",
-  "servers" : [ {
-    "url" : "https://balanceplatform-api-test.adyen.com/btl/api/v4",
-    "description" : "Test Environment"
-  }, {
-    "url" : "https://balanceplatform-api-live.adyen.com/btl/api/v4",
-    "description" : "Live Environment"
-  } ],
   "info" : {
     "title" : "Raise disputes API",
     "description" : "Disputes API for Issuing that you can use to raise disputes on transactions made with an Adyen-issued card, or to report instances of fraud. You can also add attachments as supporting information for a raised dispute, update information about the dispute, submit the dispute for a chargeback, or close the dispute.\n\n## Authentication\nYour Adyen contact will provide your API credential and an API key. To connect to the API, add an `X-API-Key` header with the API key as the value, for example:\n\n ```\ncurl\n-H \"Content-Type: application/json\" \\\n-H \"X-API-Key: YOUR_API_KEY\" \\\n...\n```\n\nAlternatively, you can use the username and password to connect to the API using basic authentication. For example:\n\n```\ncurl\n-H \"Content-Type: application/json\" \\\n-U \"ws@BalancePlatform.YOUR_BALANCE_PLATFORM\":\"YOUR_WS_PASSWORD\" \\\n...\n```\n## Roles and permissions\nTo use the Disputes API, you need an additional role for your API credential. Your Adyen contact will set up the roles and permissions for you.\n## Versioning\nThe Disputes API supports [versioning](https://docs.adyen.com/development-resources/versioning) using a version suffix in the endpoint URL. This suffix has the following format: \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://balanceplatform-api-test.adyen.com/btl/api/v{version}/disputes\n```\n## Going live\nWhen going live, your Adyen contact will provide your API credential for the live environment. You can then use the username and password to send requests to `https://balanceplatform-api-live.adyen.com/btl/api/v{version}`.\n\n",
@@ -17,6 +10,13 @@
     },
     "version" : "4"
   },
+  "servers" : [ {
+    "url" : "https://balanceplatform-api-test.adyen.com/btl/api/v4",
+    "description" : "Test Environment"
+  }, {
+    "url" : "https://balanceplatform-api-live.adyen.com/btl/api/v4",
+    "description" : "Live Environment"
+  } ],
   "tags" : [ {
     "name" : "Dispute Attachments"
   }, {
@@ -33,6 +33,9 @@
           "name" : "status",
           "in" : "query",
           "description" : "The current status of the dispute.\n\nPossible values: **draft**, **submitted**, **closed**, **won**, **chargeback**, **secondPresentment**.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
           "schema" : {
             "type" : "string"
           }
@@ -40,6 +43,9 @@
           "name" : "paymentInstrument",
           "in" : "query",
           "description" : "The unique identifier of the payment instrument.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
           "schema" : {
             "type" : "string"
           }
@@ -47,6 +53,9 @@
           "name" : "createdSince",
           "in" : "query",
           "description" : "Only include disputes that have been created on or after this point in time. The value must be in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601\\)  format. For example, 2021-05-30T15:07:40Z.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
           "schema" : {
             "type" : "string"
           }
@@ -54,6 +63,9 @@
           "name" : "createdUntil",
           "in" : "query",
           "description" : "Only include disputes that have been created on or before this point in time. The value must be in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601\\) format. For example, **2021-05-30T15:07:40Z**.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
           "schema" : {
             "type" : "string"
           }
@@ -61,6 +73,9 @@
           "name" : "offset",
           "in" : "query",
           "description" : "The number of items that you want to skip.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
           "schema" : {
             "type" : "string"
           }
@@ -68,6 +83,9 @@
           "name" : "limit",
           "in" : "query",
           "description" : "The number of items returned per page, maximum of 500 items. By default, the response returns 100 items per page.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
           "schema" : {
             "type" : "string"
           }
@@ -196,6 +214,8 @@
           "in" : "path",
           "description" : "The unique identifier of the raised dispute.",
           "required" : true,
+          "style" : "simple",
+          "explode" : false,
           "schema" : {
             "type" : "string"
           }
@@ -258,6 +278,8 @@
           "in" : "path",
           "description" : "The unique identifier of the raised dispute.",
           "required" : true,
+          "style" : "simple",
+          "explode" : false,
           "schema" : {
             "type" : "string"
           }
@@ -319,66 +341,6 @@
       }
     },
     "/disputes/{disputeId}/attachments/{attachmentId}" : {
-      "delete" : {
-        "tags" : [ "Dispute Attachments" ],
-        "summary" : "Delete attachment from a dispute",
-        "description" : "Removes the attachment from the raised dispute. Adyen may keep this file for compliance purposes.",
-        "operationId" : "delete-disputes-disputeId-attachments-attachmentId",
-        "parameters" : [ {
-          "name" : "disputeId",
-          "in" : "path",
-          "description" : "The unique identifier of the raised dispute.",
-          "required" : true,
-          "schema" : {
-            "type" : "string"
-          }
-        }, {
-          "name" : "attachmentId",
-          "in" : "path",
-          "description" : "The unique identifier of the attachment.",
-          "required" : true,
-          "schema" : {
-            "type" : "string"
-          }
-        } ],
-        "responses" : {
-          "204" : {
-            "description" : "The attachment was successfully removed"
-          },
-          "401" : {
-            "description" : "Authentication required.",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
-                }
-              }
-            }
-          },
-          "403" : {
-            "description" : "Insufficient permissions to process the request.",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
-                }
-              }
-            }
-          },
-          "422" : {
-            "description" : "A request validation error.",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
-                }
-              }
-            }
-          }
-        },
-        "x-methodName" : "deleteAttachment",
-        "x-sortIndex" : 2
-      },
       "get" : {
         "tags" : [ "Dispute Attachments" ],
         "summary" : "Get an attachment",
@@ -389,6 +351,8 @@
           "in" : "path",
           "description" : "The unique identifier of the raised dispute.",
           "required" : true,
+          "style" : "simple",
+          "explode" : false,
           "schema" : {
             "type" : "string"
           }
@@ -397,6 +361,8 @@
           "in" : "path",
           "description" : "The unique identifier of the attachment.",
           "required" : true,
+          "style" : "simple",
+          "explode" : false,
           "schema" : {
             "type" : "string"
           }
@@ -445,6 +411,70 @@
         },
         "x-methodName" : "getAttachment",
         "x-sortIndex" : 2
+      },
+      "delete" : {
+        "tags" : [ "Dispute Attachments" ],
+        "summary" : "Delete attachment from a dispute",
+        "description" : "Removes the attachment from the raised dispute. Adyen may keep this file for compliance purposes.",
+        "operationId" : "delete-disputes-disputeId-attachments-attachmentId",
+        "parameters" : [ {
+          "name" : "disputeId",
+          "in" : "path",
+          "description" : "The unique identifier of the raised dispute.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "attachmentId",
+          "in" : "path",
+          "description" : "The unique identifier of the attachment.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "The attachment was successfully removed"
+          },
+          "401" : {
+            "description" : "Authentication required.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Insufficient permissions to process the request.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "A request validation error.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultErrorResponseEntity"
+                }
+              }
+            }
+          }
+        },
+        "x-methodName" : "deleteAttachment",
+        "x-sortIndex" : 2
       }
     },
     "/disputes/{id}" : {
@@ -458,6 +488,8 @@
           "in" : "path",
           "description" : "The unique identifier of the raised dispute.",
           "required" : true,
+          "style" : "simple",
+          "explode" : false,
           "schema" : {
             "type" : "string"
           }
@@ -517,6 +549,8 @@
           "in" : "path",
           "description" : "The unique identifier of the raised dispute.",
           "required" : true,
+          "style" : "simple",
+          "explode" : false,
           "schema" : {
             "type" : "string"
           }
@@ -580,7 +614,6 @@
   "components" : {
     "schemas" : {
       "Amount" : {
-        "required" : [ "currency", "value" ],
         "type" : "object",
         "properties" : {
           "currency" : {
@@ -589,10 +622,11 @@
           },
           "value" : {
             "type" : "integer",
-            "description" : "The numeric value of the amount, in [minor units](https://docs.adyen.com/development-resources/currency-codes#minor-units).",
-            "format" : "int64"
+            "format" : "int64",
+            "description" : "The numeric value of the amount, in [minor units](https://docs.adyen.com/development-resources/currency-codes#minor-units)."
           }
-        }
+        },
+        "required" : [ "currency", "value" ]
       },
       "AttachDocumentResponse" : {
         "type" : "object",
@@ -608,12 +642,238 @@
         "type" : "string",
         "enum" : [ "receipt", "correspondence", "other" ]
       },
+      "CancelledInfo" : {
+        "type" : "object",
+        "properties" : {
+          "attemptedToReturn" : {
+            "type" : "boolean",
+            "description" : "Indicates if the cardholder attempted to return the merchandise but was unable to.\n\nPossible values: **true**, **false**.\n\nRequired if the value of `didCardholderReturn` is **false**.\n\nIf the value of this parameter is **true**, provide information in `descriptionOfIssue` about how the cardholder attempted to return the goods, and what they did with the goods (for example, destroyed them)."
+          },
+          "certificationGuaranteedReservation" : {
+            "$ref" : "#/components/schemas/CertificationGuaranteedReservation",
+            "description" : "The certification code for the guaranteed reservation.\n\nRequired if the value of `serviceType` is **guaranteedReservation** (a guaranteed reservation).\n\nPossible values:\n\n * **GR**: The cardholder properly cancelled the guaranteed reservation.\n\n * **RC**: The cardholder attempted to cancel within 24 hours of delivery of the reservation confirmation.\n\n * **AR**: The merchant billed a \"no-show transaction\" for more than one day's accommodation or rental."
+          },
+          "dateOfAttemptedReturn" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "The date, in **YYYY-MM-DD** format, when the cardholder attempted to return the goods they purchased.\n\nRequired if the value of `attemptedToReturn` is **true**."
+          },
+          "dateOfCancellation" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "The date, in **YYYY-MM-DD** format, when the purchase was cancelled.\n\nRequired if the value of `certificationGuaranteedReservation` is **GR** or **RC**, or if the value of `didCardholderCancelBeforeShipment` is **true**."
+          },
+          "dateOfReturn" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "The date, in **YYYY-MM-DD** format, that the cardholder shipped or handed back the merchandise.\n\nRequired if the value of `didCardholderReturn` is **true**."
+          },
+          "dateOfService" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "The date, in **YYYY-MM-DD** format, that the service was scheduled to take place.\n\nRequired if the value of `serviceType` is **other** (any other type of service) or **guaranteedReservation** (a guaranteed reservation)."
+          },
+          "dateReturnReceived" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "The date, in **YYYY-MM-DD** format, that the merchant received the returned merchandise.\n\nRequired if the value of `didCardholderReturn` is **true**."
+          },
+          "descriptionOfIssue" : {
+            "type" : "string",
+            "description" : "Your description of the issue for raising a dispute of `type` **cancelled**. Make sure the cardholder provides information that covers the following:\n\n * A description of the goods or services purchased, and why they are cancelling the purchase.\n\n * If the goods or services were cancelled before shipment: A description of how the cardholder attempted to cancel the goods or services.\n\n * If the cardholder attempted to return the goods: A description of how the cardholder attempted to return the goods, and what they did with the goods (for example, destroyed them).\n\n * If the cardholder attempted to return the goods in a way other than through direct return shipment or face-to-face return at a merchant, how they attempted to return the goods.\n\nNot required if the value of `goodsOrServices` is **services**, the value of `serviceType` is **timeshare** or **guaranteedReservation**, and the value of `didCardholderCancelBeforeShipment` is **false**.",
+            "maxLength" : 2500,
+            "minLength" : 0
+          },
+          "didCardholderCancelBeforeShipment" : {
+            "type" : "boolean",
+            "description" : "Indicates if the cardholder cancelled the purchase before the goods were shipped.\n\nPossible values: **true**, **false**.\n\nIf the value of this parameter is **true**, provide information in `descriptionOfIssue` about how the cardholder attempted to cancel the goods or services."
+          },
+          "didCardholderReceiveGoods" : {
+            "type" : "boolean",
+            "description" : "Indicates if the cardholder received the merchandise.\n\nPossible values: **true**, **false**.\n\nRequired if the value of `goodsOrServices` is **goods**."
+          },
+          "didCardholderReturn" : {
+            "type" : "boolean",
+            "description" : "Indicates if the cardholder returned the merchandise to the merchant.\n\nPossible values: **true**, **false**.\n\nRequired if the value of `didCardholderReceiveGoods` is **true**."
+          },
+          "goodsOrServices" : {
+            "$ref" : "#/components/schemas/ProductType",
+            "description" : "The type of purchase being disputed.\n\nPossible values: **goods**, **services**."
+          },
+          "lastExpectedDate" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "The date, in **YYYY-MM-DD** format, that the merchant promised delivery.\n\nRequired if the value of `goodsOrServices` is **goods**."
+          },
+          "merchantRefuseAdvise" : {
+            "$ref" : "#/components/schemas/MerchantRefuseAdvise",
+            "description" : "The reason the merchant gave for refusing the return.\n\nRequired if the value of `attemptedToReturn` is **true**.\n\nPossible values:\n\n * **MRRA**: The merchant refused to provide return authorization.\n\n * **MRRM**: The merchant refused to accept returned merchandise.\n\n * **MICNRM**: The merchant informed cardholder not to return the merchandise."
+          },
+          "returnMethod" : {
+            "$ref" : "#/components/schemas/ReturnMethod",
+            "description" : "The method used to return the merchandise.\n\nRequired if the value of `didCardholderReturn` is **true**.\n\nPossible values: **faceToFace**, **fedEx**, **dhl**, **ups**, **postalService**, **other**.\n\nIf the value of this parameter is **other**, or if the cardholder attempted a return but did not complete it, provide information in `descriptionOfIssue` about how the cardholder attempted to return the goods or services."
+          },
+          "serviceType" : {
+            "$ref" : "#/components/schemas/ServiceType",
+            "description" : "The type of service purchased.\n\nRequired if the value of `goodsOrServices` is **services**.\n\nPossible values:\n\n * **timeshare**: A reservation for a timeshare.\n\n * **guaranteedReservation**: A guaranteed reservation (for example, a hotel or a car rental booking).\n\n * **other**: Any other type of service."
+          },
+          "shippingTrackingNumber" : {
+            "type" : "string",
+            "description" : "The tracking number for the shipment used to return the merchandise.",
+            "maxLength" : 50,
+            "minLength" : 0
+          },
+          "timeshareDate" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "The date, in **YYYY-MM-DD** format, associated with the timeshare purchase.\n\nRequired if the value of `serviceType` is **timeshare**."
+          },
+          "wasCancellationPolicyProvided" : {
+            "type" : "boolean",
+            "description" : "Indicates if the merchant provided the cardholder with a cancellation policy.\n\nPossible values: **true**, **false**.\n\nRequired if the value of `didCardholderReceiveGoods` is **false**, the value of `didCardholderCancelBeforeShipment` is **true**, or the value of `serviceType` is **guaranteedReservation**."
+          },
+          "whoCancelled" : {
+            "$ref" : "#/components/schemas/CancellingEntity",
+            "description" : "The party that initiated the cancellation of the purchase.\n\nRequired if the value of `serviceType` is **timeshare** (a timeshare) or **other** (any other type of service), or if the value of `didCardholderReceiveGoods` is **false**.\n\nPossible values: **merchant**, **cardholder**."
+          }
+        },
+        "required" : [ "goodsOrServices" ]
+      },
+      "CancelledInfoUpdate" : {
+        "type" : "object",
+        "properties" : {
+          "attemptedToReturn" : {
+            "type" : [ "boolean", "null" ],
+            "description" : "Indicates if the cardholder attempted to return the merchandise but was unable to.\n\nPossible values: **true**, **false**.\n\nRequired if the value of `didCardholderReturn` is **false**.\n\nIf the value of this parameter is **true**, provide information in `descriptionOfIssue` about how the cardholder attempted to return the goods, and what they did with the goods (for example, destroyed them)."
+          },
+          "certificationGuaranteedReservation" : {
+            "type" : "object",
+            "description" : "The certification code for the guaranteed reservation.\n\nRequired if the value of `serviceType` is **guaranteedReservation** (a guaranteed reservation).\n\nPossible values:\n\n * **GR**: The cardholder properly cancelled the guaranteed reservation.\n\n * **RC**: The cardholder attempted to cancel within 24 hours of delivery of the reservation confirmation.\n\n * **AR**: The merchant billed a \"no-show transaction\" for more than one day's accommodation or rental.",
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/CertificationGuaranteedReservation"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "dateOfAttemptedReturn" : {
+            "type" : [ "string", "null" ],
+            "format" : "date",
+            "description" : "The date, in **YYYY-MM-DD** format, when the cardholder attempted to return the goods they purchased.\n\nRequired if the value of `attemptedToReturn` is **true**."
+          },
+          "dateOfCancellation" : {
+            "type" : [ "string", "null" ],
+            "format" : "date",
+            "description" : "The date, in **YYYY-MM-DD** format, when the purchase was cancelled.\n\nRequired if the value of `certificationGuaranteedReservation` is **GR** or **RC**, or if the value of `didCardholderCancelBeforeShipment` is **true**."
+          },
+          "dateOfReturn" : {
+            "type" : [ "string", "null" ],
+            "format" : "date",
+            "description" : "The date, in **YYYY-MM-DD** format, that the cardholder shipped or handed back the merchandise.\n\nRequired if the value of `didCardholderReturn` is **true**."
+          },
+          "dateOfService" : {
+            "type" : [ "string", "null" ],
+            "format" : "date",
+            "description" : "The date, in **YYYY-MM-DD** format, that the service was scheduled to take place.\n\nRequired if the value of `serviceType` is **other** (any other type of service) or **guaranteedReservation** (a guaranteed reservation)."
+          },
+          "dateReturnReceived" : {
+            "type" : [ "string", "null" ],
+            "format" : "date",
+            "description" : "The date, in **YYYY-MM-DD** format, that the merchant received the returned merchandise.\n\nRequired if the value of `didCardholderReturn` is **true**."
+          },
+          "descriptionOfIssue" : {
+            "type" : [ "string", "null" ],
+            "description" : "Your description of the issue for raising a dispute of `type` **cancelled**. Make sure the cardholder provides information that covers the following:\n\n * A description of the goods or services purchased, and why they are cancelling the purchase.\n\n * If the goods or services were cancelled before shipment: A description of how the cardholder attempted to cancel the goods or services.\n\n * If the cardholder attempted to return the goods: A description of how the cardholder attempted to return the goods, and what they did with the goods (for example, destroyed them).\n\n * If the cardholder attempted to return the goods in a way other than through direct return shipment or face-to-face return at a merchant, how they attempted to return the goods.\n\nNot required if the value of `goodsOrServices` is **services**, the value of `serviceType` is **timeshare** or **guaranteedReservation**, and the value of `didCardholderCancelBeforeShipment` is **false**.",
+            "maxLength" : 2500,
+            "minLength" : 0
+          },
+          "didCardholderCancelBeforeShipment" : {
+            "type" : [ "boolean", "null" ],
+            "description" : "Indicates if the cardholder cancelled the purchase before the goods were shipped.\n\nPossible values: **true**, **false**.\n\nIf the value of this parameter is **true**, provide information in `descriptionOfIssue` about how the cardholder attempted to cancel the goods or services."
+          },
+          "didCardholderReceiveGoods" : {
+            "type" : [ "boolean", "null" ],
+            "description" : "Indicates if the cardholder received the merchandise.\n\nPossible values: **true**, **false**.\n\nRequired if the value of `goodsOrServices` is **goods**."
+          },
+          "didCardholderReturn" : {
+            "type" : [ "boolean", "null" ],
+            "description" : "Indicates if the cardholder returned the merchandise to the merchant.\n\nPossible values: **true**, **false**.\n\nRequired if the value of `didCardholderReceiveGoods` is **true**."
+          },
+          "goodsOrServices" : {
+            "$ref" : "#/components/schemas/ProductType",
+            "description" : "The type of purchase being disputed.\n\nPossible values: **goods**, **services**."
+          },
+          "lastExpectedDate" : {
+            "type" : [ "string", "null" ],
+            "format" : "date",
+            "description" : "The date, in **YYYY-MM-DD** format, that the merchant promised delivery.\n\nRequired if the value of `goodsOrServices` is **goods**."
+          },
+          "merchantRefuseAdvise" : {
+            "type" : "object",
+            "description" : "The reason the merchant gave for refusing the return.\n\nRequired if the value of `attemptedToReturn` is **true**.\n\nPossible values:\n\n * **MRRA**: The merchant refused to provide return authorization.\n\n * **MRRM**: The merchant refused to accept returned merchandise.\n\n * **MICNRM**: The merchant informed cardholder not to return the merchandise.",
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/MerchantRefuseAdvise"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "returnMethod" : {
+            "type" : "object",
+            "description" : "The method used to return the merchandise.\n\nRequired if the value of `didCardholderReturn` is **true**.\n\nPossible values: **faceToFace**, **fedEx**, **dhl**, **ups**, **postalService**, **other**.\n\nIf the value of this parameter is **other**, or if the cardholder attempted a return but did not complete it, provide information in `descriptionOfIssue` about how the cardholder attempted to return the goods or services.",
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/ReturnMethod"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "serviceType" : {
+            "type" : "object",
+            "description" : "The type of service purchased.\n\nRequired if the value of `goodsOrServices` is **services**.\n\nPossible values:\n\n * **timeshare**: A reservation for a timeshare.\n\n * **guaranteedReservation**: A guaranteed reservation (for example, a hotel or a car rental booking).\n\n * **other**: Any other type of service.",
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/ServiceType"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "shippingTrackingNumber" : {
+            "type" : [ "string", "null" ],
+            "description" : "The tracking number for the shipment used to return the merchandise.",
+            "maxLength" : 50,
+            "minLength" : 0
+          },
+          "timeshareDate" : {
+            "type" : [ "string", "null" ],
+            "format" : "date",
+            "description" : "The date, in **YYYY-MM-DD** format, associated with the timeshare purchase.\n\nRequired if the value of `serviceType` is **timeshare**."
+          },
+          "wasCancellationPolicyProvided" : {
+            "type" : [ "boolean", "null" ],
+            "description" : "Indicates if the merchant provided the cardholder with a cancellation policy.\n\nPossible values: **true**, **false**.\n\nRequired if the value of `didCardholderReceiveGoods` is **false**, the value of `didCardholderCancelBeforeShipment` is **true**, or the value of `serviceType` is **guaranteedReservation**."
+          },
+          "whoCancelled" : {
+            "type" : "object",
+            "description" : "The party that initiated the cancellation of the purchase.\n\nRequired if the value of `serviceType` is **timeshare** (a timeshare) or **other** (any other type of service), or if the value of `didCardholderReceiveGoods` is **false**.\n\nPossible values: **merchant**, **cardholder**.",
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/CancellingEntity"
+            }, {
+              "type" : "null"
+            } ]
+          }
+        }
+      },
       "CancellingEntity" : {
         "type" : "string",
         "enum" : [ "merchant", "cardholder" ]
       },
+      "CertificationGuaranteedReservation" : {
+        "type" : "string",
+        "enum" : [ "GR", "RC", "AR" ]
+      },
       "DefaultErrorResponseEntity" : {
         "type" : "object",
+        "description" : "Standardized error response following RFC-7807 format",
+        "externalDocs" : {
+          "url" : "https://www.rfc-editor.org/rfc/rfc7807"
+        },
         "properties" : {
           "detail" : {
             "type" : "string",
@@ -640,8 +900,8 @@
           },
           "status" : {
             "type" : "integer",
-            "description" : "The HTTP status code.",
-            "format" : "int32"
+            "format" : "int32",
+            "description" : "The HTTP status code."
           },
           "title" : {
             "type" : "string",
@@ -651,86 +911,93 @@
             "type" : "string",
             "description" : "A URI that identifies the validation error type. It points to human-readable documentation for the problem type."
           }
-        },
-        "description" : "Standardized error response following RFC-7807 format",
-        "externalDocs" : {
-          "url" : "https://www.rfc-editor.org/rfc/rfc7807"
         }
       },
       "DisputeAttachment" : {
-        "required" : [ "attachmentType", "content", "fileName" ],
         "type" : "object",
         "properties" : {
           "attachmentType" : {
-            "description" : "The type of information contained in the attachment: **receipt**, **correspondence**, **other**.",
-            "$ref" : "#/components/schemas/AttachmentType"
+            "$ref" : "#/components/schemas/AttachmentType",
+            "description" : "The type of information contained in the attachment: **receipt**, **correspondence**, **other**."
           },
           "content" : {
-            "minLength" : 1,
             "type" : "string",
-            "description" : "The content of the image. An attachment must be base64-encoded data. Make sure that all base64-encoded data strings are generated without line breaks or \"wrapping\". For example, do not use `Base64.NO_WRAP` in Java, or its equivalent in other languages. Newline characters at the end of the base64-encoded data string will also result in a malformed input error."
+            "description" : "The content of the image. An attachment must be base64-encoded data. Make sure that all base64-encoded data strings are generated without line breaks or \"wrapping\". For example, do not use `Base64.NO_WRAP` in Java, or its equivalent in other languages. Newline characters at the end of the base64-encoded data string will also result in a malformed input error.",
+            "minLength" : 1
           },
           "fileName" : {
+            "type" : "string",
+            "description" : "The name of the attachment, including its filename extension. Supported filename extensions: **jpeg**, **pdf**, **tiff**.",
             "maxLength" : 17,
             "minLength" : 4,
-            "pattern" : "([^\\s]+(\\.(?i)(jpeg|tiff|pdf))$)",
-            "type" : "string",
-            "description" : "The name of the attachment, including its filename extension. Supported filename extensions: **jpeg**, **pdf**, **tiff**."
+            "pattern" : "([^\\s]+(\\.(?i)(jpeg|tiff|pdf))$)"
           },
           "id" : {
             "type" : "string",
             "description" : "The unique identifier of the attachment.",
             "readOnly" : true
           }
-        }
+        },
+        "required" : [ "attachmentType", "content", "fileName" ]
+      },
+      "DisputeDueTo" : {
+        "type" : "string",
+        "enum" : [ "notAsDescribed", "defectiveMerchandise" ]
       },
       "DisputeRequest" : {
-        "required" : [ "transactionId", "type" ],
         "type" : "object",
         "properties" : {
+          "cancelledInfo" : {
+            "$ref" : "#/components/schemas/CancelledInfo",
+            "description" : "Additional information for raising a dispute of `type` **cancelled**. Required for disputes of `type` **cancelled**."
+          },
           "description" : {
-            "maxLength" : 50,
-            "minLength" : 0,
             "type" : "string",
-            "description" : "Your description for the dispute."
+            "description" : "Your description for the dispute.",
+            "maxLength" : 50,
+            "minLength" : 0
           },
           "disputedAmount" : {
-            "description" : "The amount for which you dispute the transaction. The disputed amount cannot be greater than the transaction amount. If you do not provide an amount, the entire transaction amount will be disputed.",
-            "$ref" : "#/components/schemas/Amount"
+            "$ref" : "#/components/schemas/Amount",
+            "description" : "The amount for which you dispute the transaction. The disputed amount cannot be greater than the transaction amount. If you do not provide an amount, the entire transaction amount will be disputed."
           },
           "duplicateInfo" : {
-            "description" : "Additional information for raising a dispute of `type` **duplicate**. Required for disputes of `type` **duplicate**.",
-            "$ref" : "#/components/schemas/DuplicateInfo"
+            "$ref" : "#/components/schemas/DuplicateInfo",
+            "description" : "Additional information for raising a dispute of `type` **duplicate**. Required for disputes of `type` **duplicate**."
           },
           "fraudInfo" : {
-            "description" : "Additional information for raising a dispute of `type` **fraud**. Required for disputes of `type` **fraud**.",
-            "$ref" : "#/components/schemas/FraudInfo"
+            "$ref" : "#/components/schemas/FraudInfo",
+            "description" : "Additional information for raising a dispute of `type` **fraud**. Required for disputes of `type` **fraud**."
+          },
+          "notAsDescribedInfo" : {
+            "$ref" : "#/components/schemas/NotAsDescribedInfo",
+            "description" : "Additional information for raising a dispute of `type` **notAsDescribed**. Required for disputes of `type` **notAsDescribed**."
           },
           "notDeliveredInfo" : {
-            "description" : "Additional information for raising a dispute of `type` **notDelivered**. Required for disputes of `type` **notDelivered**.",
-            "$ref" : "#/components/schemas/NotDeliveredInfo"
+            "$ref" : "#/components/schemas/NotDeliveredInfo",
+            "description" : "Additional information for raising a dispute of `type` **notDelivered**. Required for disputes of `type` **notDelivered**."
           },
           "otherInfo" : {
-            "description" : "Additional information for raising a dispute of `type` **other**. Required for disputes of `type` **other**.\n\n**Note:** The **other** dispute `type` is currently in beta testing. Do not create or submit any disputes for this dispute `type` at this time.",
-            "$ref" : "#/components/schemas/OtherInfo"
+            "$ref" : "#/components/schemas/OtherInfo",
+            "description" : "Additional information for raising a dispute of `type` **other**. Required for disputes of `type` **other**.\n\n**Note:** The **other** dispute `type` is deprecated. Do not create or submit any disputes for this dispute `type`."
           },
           "status" : {
-            "description" : "The current status of the dispute.\n\nWhen you create a dispute, you can only set the `status` to **draft**. When you update a dispute, you can set the `status` to **submitted** or **closed**.\n\nPossible values: **draft**, **submitted**, **closed**, **won**, **chargeback**, **secondPresentment**.",
-            "$ref" : "#/components/schemas/DisputeStatus"
+            "$ref" : "#/components/schemas/DisputeStatus",
+            "description" : "The current status of the dispute.\n\nWhen you create a dispute, you can only set the `status` to **draft**. When you update a dispute, you can set the `status` to **submitted** or **closed**.\n\nPossible values: **draft**, **submitted**, **closed**, **won**, **chargeback**, **secondPresentment**."
           },
           "transactionId" : {
-            "minLength" : 1,
             "type" : "string",
-            "description" : "The unique reference of the transaction for which you are raising the dispute."
+            "description" : "The unique reference of the transaction for which you are raising the dispute.",
+            "minLength" : 1
           },
           "type" : {
-            "description" : "The type of the dispute.\n\nPossible values: **duplicate**, **fraud**, **notDelivered**, **other**.\n\n**Note:** The **other** dispute `type` is currently in beta testing. Do not create or submit any disputes for this dispute `type` at this time.",
-            "$ref" : "#/components/schemas/DisputeType"
+            "$ref" : "#/components/schemas/DisputeType",
+            "description" : "The type of the dispute.\n\nPossible values: **cancelled**, **duplicate**, **fraud**, **notAsDescribed**, **notDelivered**, **other**.\n\n**Note:** The **other** dispute `type` is deprecated. Do not create or submit any disputes for this dispute `type`."
           }
-        }
+        },
+        "required" : [ "transactionId", "type" ]
       },
       "DisputeResponse" : {
-        "required" : [ "transactionId", "type" ],
         "type" : "object",
         "properties" : {
           "arn" : {
@@ -738,48 +1005,57 @@
             "description" : "The unique Acquirer Reference Number (arn) generated by the card scheme for each capture. You can use the `arn` to trace the transaction through its lifecycle.",
             "readOnly" : true
           },
+          "cancelledInfo" : {
+            "$ref" : "#/components/schemas/CancelledInfo",
+            "description" : "Additional information for raising a dispute of `type` **cancelled**. Required for disputes of `type` **cancelled**."
+          },
           "description" : {
             "type" : "string",
             "description" : "Your description for the dispute."
           },
           "disputedAmount" : {
-            "description" : "The amount for which you dispute the transaction. The disputed amount cannot be greater than the transaction amount. If you do not provide an amount, the entire transaction amount will be disputed.",
-            "$ref" : "#/components/schemas/Amount"
+            "$ref" : "#/components/schemas/Amount",
+            "description" : "The amount for which you dispute the transaction. The disputed amount cannot be greater than the transaction amount. If you do not provide an amount, the entire transaction amount will be disputed."
           },
           "duplicateInfo" : {
-            "description" : "Additional information for raising a dispute of `type` **duplicate**. Required for disputes of `type` **duplicate**.",
-            "$ref" : "#/components/schemas/DuplicateInfo"
+            "$ref" : "#/components/schemas/DuplicateInfo",
+            "description" : "Additional information for raising a dispute of `type` **duplicate**. Required for disputes of `type` **duplicate**."
           },
           "fraudInfo" : {
-            "description" : "Additional information for raising a dispute of `type` **fraud**. Required for disputes of `type` **fraud**.",
-            "$ref" : "#/components/schemas/FraudInfo"
+            "$ref" : "#/components/schemas/FraudInfo",
+            "description" : "Additional information for raising a dispute of `type` **fraud**. Required for disputes of `type` **fraud**."
           },
           "id" : {
             "type" : "string",
             "description" : "The unique identifier of the raised dispute.",
             "readOnly" : true
           },
+          "notAsDescribedInfo" : {
+            "$ref" : "#/components/schemas/NotAsDescribedInfo",
+            "description" : "Additional information for raising a dispute of `type` **notAsDescribed**. Required for disputes of `type` **notAsDescribed**."
+          },
           "notDeliveredInfo" : {
-            "description" : "Additional information for raising a dispute of `type` **notDelivered**. Required for disputes of `type` **notDelivered**.",
-            "$ref" : "#/components/schemas/NotDeliveredInfo"
+            "$ref" : "#/components/schemas/NotDeliveredInfo",
+            "description" : "Additional information for raising a dispute of `type` **notDelivered**. Required for disputes of `type` **notDelivered**."
           },
           "otherInfo" : {
-            "description" : "Additional information for raising a dispute of `type` **other**. Required for disputes of `type` **other**\n\n**Note:** The **other** dispute `type` is currently in beta testing. Do not create or submit any disputes for this dispute `type` at this time.",
-            "$ref" : "#/components/schemas/OtherInfo"
+            "$ref" : "#/components/schemas/OtherInfo",
+            "description" : "Additional information for raising a dispute of `type` **other**. Required for disputes of `type` **other**.\n\n**Note:** The **other** dispute `type` is deprecated. Do not create or submit any disputes for this dispute `type`."
           },
           "status" : {
-            "description" : "The current status of the dispute.\n\nWhen you create a dispute, you can only set the `status` to **draft**. When you update a dispute, you can set the `status` to **submitted** or **closed**.\n\nPossible values: **draft**, **submitted**, **closed**, **won**, **chargeback**, **secondPresentment**.",
-            "$ref" : "#/components/schemas/DisputeStatus"
+            "$ref" : "#/components/schemas/DisputeStatus",
+            "description" : "The current status of the dispute.\n\nWhen you create a dispute, you can only set the `status` to **draft**. When you update a dispute, you can set the `status` to **submitted** or **closed**.\n\nPossible values: **draft**, **submitted**, **closed**, **won**, **chargeback**, **secondPresentment**."
           },
           "transactionId" : {
             "type" : "string",
             "description" : "The unique reference of the transaction for which you are raising the dispute."
           },
           "type" : {
-            "description" : "The type of the dispute.\n\nPossible values: **duplicate**, **fraud**, **notDelivered**, **other**.\n\n**Note:** The **other** dispute `type` is currently in beta testing. Do not create or submit any disputes for this dispute `type` at this time.",
-            "$ref" : "#/components/schemas/DisputeType"
+            "$ref" : "#/components/schemas/DisputeType",
+            "description" : "The type of the dispute.\n\nPossible values: **cancelled**, **duplicate**, **fraud**, **notAsDescribed**, **notDelivered**, **other**.\n\n**Note:** The **other** dispute `type` is deprecated. Do not create or submit any disputes for this dispute `type`."
           }
-        }
+        },
+        "required" : [ "transactionId", "type" ]
       },
       "DisputeStatus" : {
         "type" : "string",
@@ -787,16 +1063,15 @@
       },
       "DisputeType" : {
         "type" : "string",
-        "x-extensible-enum" : [ "notDelivered", "fraud", "duplicate", "other" ]
+        "x-extensible-enum" : [ "notDelivered", "fraud", "duplicate", "notAsDescribed", "cancelled", "other" ]
       },
       "DuplicateInfo" : {
-        "required" : [ "duplicateTransactionId", "sameCard" ],
         "type" : "object",
         "properties" : {
           "duplicateTransactionId" : {
-            "minLength" : 1,
             "type" : "string",
-            "description" : "The transaction id associated with the duplicate charge for which you are disputing. The disputed transaction must be in the same amount as the duplicate transaction."
+            "description" : "The transaction id associated with the duplicate charge for which you are disputing. The disputed transaction must be in the same amount as the duplicate transaction.",
+            "minLength" : 1
           },
           "sameCard" : {
             "type" : "boolean",
@@ -806,10 +1081,10 @@
             "type" : "boolean",
             "description" : "The issuer associated with each charge is the same. Possible values: **true**, **false**."
           }
-        }
+        },
+        "required" : [ "duplicateTransactionId", "sameCard" ]
       },
       "FraudInfo" : {
-        "required" : [ "cardDoesNotBelongToCardholder", "cardWasCounterfeited", "descriptionOfIssue" ],
         "type" : "object",
         "properties" : {
           "cardDoesNotBelongToCardholder" : {
@@ -821,19 +1096,19 @@
             "description" : "The card was counterfeited."
           },
           "descriptionOfIssue" : {
-            "maxLength" : 2500,
-            "minLength" : 0,
             "type" : "string",
-            "description" : "Your description of the issue for raising a dispute of `type` **fraud**."
+            "description" : "Your description of the issue for raising a dispute of `type` **fraud**.",
+            "maxLength" : 2500,
+            "minLength" : 0
           },
           "reportOnly" : {
             "type" : "boolean",
             "description" : "Set to **true** to report fraud to Adyen with no further action, such as a request for a chargeback or fee reversal. The default value is **false**."
           }
-        }
+        },
+        "required" : [ "cardDoesNotBelongToCardholder", "cardWasCounterfeited", "descriptionOfIssue" ]
       },
       "InvalidField" : {
-        "required" : [ "message", "name", "value" ],
         "type" : "object",
         "properties" : {
           "message" : {
@@ -848,32 +1123,251 @@
             "type" : "string",
             "description" : "The invalid value."
           }
-        }
+        },
+        "required" : [ "message", "name", "value" ]
       },
-      "NotDeliveredInfo" : {
-        "required" : [ "descriptionOfIssue", "lastExpectedDate", "whatWasNotDelivered" ],
+      "MerchantRefuseAdvise" : {
+        "type" : "string",
+        "enum" : [ "MRRA", "MRRM", "MICNRM" ]
+      },
+      "NotAsDescribedInfo" : {
         "type" : "object",
         "properties" : {
-          "agreedDeliveryLocation" : {
-            "maxLength" : 500,
-            "minLength" : 0,
+          "attemptedToReturn" : {
+            "type" : "boolean",
+            "description" : "Indicates if the cardholder attempted to return the merchandise, but was unsuccessful. Required if the value of `didCardholderReturn` is **false**.\n\nPossible values: **true**, **false**.\n\nIf the value of this parameter is **true**, provide information in `descriptionOfIssue` about how the cardholder attempted to return the merchandise and what happened to the merchandise when the return was unsuccessful."
+          },
+          "dateAttemptedToReturn" : {
             "type" : "string",
-            "description" : "The delivery location specified by the cardholder. Required if **deliveredToWrongLocation** is **true**."
+            "format" : "date",
+            "description" : "The date, in **YYYY-MM-DD** format, when the cardholder attempted to return the merchandise. Required if the value of `attemptedToReturn` is **true**."
           },
           "dateOfCancellation" : {
             "type" : "string",
-            "description" : "The date the undelivered goods or services were cancelled in YYYY-MM-DD format.",
-            "format" : "date"
+            "format" : "date",
+            "description" : "The date, in **YYYY-MM-DD** format, when the goods or services were cancelled by the cardholder. Required if the value of `whoCancelled` is **cardholder**."
+          },
+          "dateOfFirstNegotiations" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "The date, in **YYYY-MM-DD** format, that negotiations with the merchant began. Required if the value of `evidenceOfNegotiationsWithMerchant` is **true**."
+          },
+          "dateOfReturn" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "The date, in **YYYY-MM-DD** format, when the cardholder shipped or handed back the merchandise to the merchant. Required if the value of `didCardholderReturn` is **true**."
+          },
+          "dateReturnReceived" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "The date, in **YYYY-MM-DD** format, when the merchant received the returned merchandise. Required if the value of `didCardholderReturn` is **true**."
+          },
+          "descriptionOfIssue" : {
+            "type" : "string",
+            "description" : "Your description of the issue for raising a dispute of `type` **notAsDescribed**. Make sure the cardholder provides information that covers the following:\n\n * A description of the goods or services purchased, and why they did not fit the description of what they thought they purchased.\n\n * If the cardholder cancelled services that they purchased: A description of how the services were cancelled.\n\n * If the cardholder attempted to negotiate a resolution: A description of the negotiations that took place with the merchant.\n\n * If the goods or services were cancelled before shipment: A description of how the cardholder attempted to cancel the goods or services.\n\n * If the cardholder attempted to return the goods: A description of how the cardholder attempted to return the goods and what they did with the goods (for example, destroyed them).",
+            "maxLength" : 2500,
+            "minLength" : 0
+          },
+          "didAttemptToResolve" : {
+            "type" : "boolean",
+            "description" : "Indicates if the cardholder attempted to resolve the issue directly with the merchant before raising the dispute.\n\nPossible values: **true**, **false**."
+          },
+          "didCardholderReturn" : {
+            "type" : "boolean",
+            "description" : "Indicates if the cardholder returned the merchandise to the merchant. Required if the value of `goodsOrServices` is **goods**, or if the value of `disputeDueTo` is **defectiveMerchandise**.\n\nPossible values: **true**, **false**."
+          },
+          "didMerchantAcceptCancellation" : {
+            "type" : "boolean",
+            "description" : "Indicates if the merchant accepted the cancellation. Required if the cardholder cancelled the service within 15 days of the current date.\n\nPossible values: **true**, **false**."
+          },
+          "disputeDueTo" : {
+            "$ref" : "#/components/schemas/DisputeDueTo",
+            "description" : "Indicates the kind of dispute being raised by the cardholder.\n\nPossible values: **notAsDescribed**, **defectiveMerchandise**."
+          },
+          "evidenceOfNegotiationsWithMerchant" : {
+            "type" : "boolean",
+            "description" : "Indicates if the cardholder attempted to negotiate a resolution with the merchant before raising the dispute. Required if more than 120 days have passed since both the `lastExpectedDate` and the transaction processing date.\n\nPossible values: **true**, **false**.\n\nIf the value of this parameter is **true**, provide information in `descriptionOfIssue` about the negotiations that took place with the merchant."
+          },
+          "goodsOrServices" : {
+            "$ref" : "#/components/schemas/ProductType",
+            "description" : "The type of purchase being disputed. Required if the value of `disputeDueTo` is **notAsDescribed**.\n\nPossible values: **goods**, **services**."
+          },
+          "isNonFiatOrNft" : {
+            "type" : "boolean",
+            "description" : "Indicates if the transaction is non-fiat or non-fungible token (NFT) related. Required if the value of `goodsOrServices` is **services**.\n\nPossible values: **true**, **false**."
+          },
+          "lastExpectedDate" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "The date, in **YYYY-MM-DD** format, that the merchant promised delivery of the goods or services."
+          },
+          "reasonMerchantRefused" : {
+            "$ref" : "#/components/schemas/NotAsDescribedMerchantRefuseAdvise",
+            "description" : "The reason the merchant gave for refusing the return. Required if the value of `attemptedToReturn` is **true**.\n\nPossible values:\n\n * **MRRA**: The merchant refused to provide return authorization.\n\n * **MRRM**: The merchant refused to accept the returned merchandise.\n\n * **MICNRM**: The merchant told the cardholder not to return the merchandise.\n\n * **MNLER**: The merchant no longer exists or is not responding.\n\n * **MNPCIR**: The merchant did not provide clear instructions on how to return the merchandise."
+          },
+          "resolutionProhibitedByLaw" : {
+            "type" : "boolean",
+            "description" : "Indicates if local law prohibits the cardholder from attempting to resolve the issue with the merchant. Required if the value of `didAttemptToResolve` is **false**. If this value is also **false**, the dispute cannot proceed.\n\nPossible values: **true**, **false**."
+          },
+          "returnMethod" : {
+            "$ref" : "#/components/schemas/ReturnMethod",
+            "description" : "The method used to return the merchandise. Required if the value of `didCardholderReturn` is **true**.\n\nPossible values: **faceToFace**, **fedEx**, **dhl**, **ups**, **postalService**, **other**.\n\nIf the value of this parameter is **other**, provide information in `descriptionOfIssue` about how the merchandise was returned."
+          },
+          "shippingTrackingNumber" : {
+            "type" : "string",
+            "description" : "The tracking number for the shipment used to return the merchandise.",
+            "maxLength" : 50,
+            "minLength" : 0
+          },
+          "whoCancelled" : {
+            "$ref" : "#/components/schemas/CancellingEntity",
+            "description" : "The party that initiated cancellation of the service. Required if the value of `goodsOrServices` is **services**.\n\nPossible values: **merchant**, **cardholder**.\n\nIf the value of this parameter is **cardholder**, provide information in `descriptionOfIssue` about how the service was cancelled."
+          }
+        },
+        "required" : [ "descriptionOfIssue", "didAttemptToResolve", "disputeDueTo" ]
+      },
+      "NotAsDescribedInfoUpdate" : {
+        "type" : "object",
+        "properties" : {
+          "attemptedToReturn" : {
+            "type" : [ "boolean", "null" ],
+            "description" : "Indicates if the cardholder attempted to return the merchandise, but was unsuccessful. Required if the value of `didCardholderReturn` is **false**.\n\nPossible values: **true**, **false**.\n\nIf the value of this parameter is **true**, provide information in `descriptionOfIssue` about how the cardholder attempted to return the merchandise and what happened to the merchandise when the return was unsuccessful."
+          },
+          "dateAttemptedToReturn" : {
+            "type" : [ "string", "null" ],
+            "format" : "date",
+            "description" : "The date, in **YYYY-MM-DD** format, when the cardholder attempted to return the merchandise. Required if the value of `attemptedToReturn` is **true**."
+          },
+          "dateOfCancellation" : {
+            "type" : [ "string", "null" ],
+            "format" : "date",
+            "description" : "The date, in **YYYY-MM-DD** format, when the goods or services were cancelled by the cardholder. Required if the value of `whoCancelled` is **cardholder**."
+          },
+          "dateOfFirstNegotiations" : {
+            "type" : [ "string", "null" ],
+            "format" : "date",
+            "description" : "The date, in **YYYY-MM-DD** format, that negotiations with the merchant began. Required if the value of `evidenceOfNegotiationsWithMerchant` is **true**."
+          },
+          "dateOfReturn" : {
+            "type" : [ "string", "null" ],
+            "format" : "date",
+            "description" : "The date, in **YYYY-MM-DD** format, when the cardholder shipped or handed back the merchandise to the merchant. Required if the value of `didCardholderReturn` is **true**."
+          },
+          "dateReturnReceived" : {
+            "type" : [ "string", "null" ],
+            "format" : "date",
+            "description" : "The date, in **YYYY-MM-DD** format, when the merchant received the returned merchandise. Required if the value of `didCardholderReturn` is **true**."
+          },
+          "descriptionOfIssue" : {
+            "type" : "string",
+            "description" : "Your description of the issue for raising a dispute of `type` **notAsDescribed**. Make sure the cardholder provides information that covers the following:\n\n * A description of the goods or services purchased, and why they did not fit the description of what they thought they purchased.\n\n * If the cardholder cancelled services that they purchased: A description of how the services were cancelled.\n\n * If the cardholder attempted to negotiate a resolution: A description of the negotiations that took place with the merchant.\n\n * If the goods or services were cancelled before shipment: A description of how the cardholder attempted to cancel the goods or services.\n\n * If the cardholder attempted to return the goods: A description of how the cardholder attempted to return the goods and what they did with the goods (for example, destroyed them).",
+            "maxLength" : 2500,
+            "minLength" : 0
+          },
+          "didAttemptToResolve" : {
+            "type" : "boolean",
+            "description" : "Indicates if the cardholder attempted to resolve the issue directly with the merchant before raising the dispute.\n\nPossible values: **true**, **false**."
+          },
+          "didCardholderReturn" : {
+            "type" : [ "boolean", "null" ],
+            "description" : "Indicates if the cardholder returned the merchandise to the merchant. Required if the value of `goodsOrServices` is **goods**, or if the value of `disputeDueTo` is **defectiveMerchandise**.\n\nPossible values: **true**, **false**."
+          },
+          "didMerchantAcceptCancellation" : {
+            "type" : [ "boolean", "null" ],
+            "description" : "Indicates if the merchant accepted the cancellation. Required if the cardholder cancelled the service within 15 days of the current date.\n\nPossible values: **true**, **false**."
+          },
+          "disputeDueTo" : {
+            "$ref" : "#/components/schemas/DisputeDueTo",
+            "description" : "Indicates the kind of dispute being raised by the cardholder.\n\nPossible values: **notAsDescribed**, **defectiveMerchandise**."
+          },
+          "evidenceOfNegotiationsWithMerchant" : {
+            "type" : [ "boolean", "null" ],
+            "description" : "Indicates if the cardholder attempted to negotiate a resolution with the merchant before raising the dispute. Required if more than 120 days have passed since both the `lastExpectedDate` and the transaction processing date.\n\nPossible values: **true**, **false**.\n\nIf the value of this parameter is **true**, provide information in `descriptionOfIssue` about the negotiations that took place with the merchant."
+          },
+          "goodsOrServices" : {
+            "type" : "object",
+            "description" : "The type of purchase being disputed. Required if the value of `disputeDueTo` is **notAsDescribed**.\n\nPossible values: **goods**, **services**.",
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/ProductType"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "isNonFiatOrNft" : {
+            "type" : [ "boolean", "null" ],
+            "description" : "Indicates if the transaction is non-fiat or non-fungible token (NFT) related. Required if the value of `goodsOrServices` is **services**.\n\nPossible values: **true**, **false**."
+          },
+          "lastExpectedDate" : {
+            "type" : [ "string", "null" ],
+            "format" : "date",
+            "description" : "The date, in **YYYY-MM-DD** format, that the merchant promised delivery of the goods or services."
+          },
+          "reasonMerchantRefused" : {
+            "type" : "object",
+            "description" : "The reason the merchant gave for refusing the return. Required if the value of `attemptedToReturn` is **true**.\n\nPossible values:\n\n * **MRRA**: The merchant refused to provide return authorization.\n\n * **MRRM**: The merchant refused to accept the returned merchandise.\n\n * **MICNRM**: The merchant told the cardholder not to return the merchandise.\n\n * **MNLER**: The merchant no longer exists or is not responding.\n\n * **MNPCIR**: The merchant did not provide clear instructions on how to return the merchandise.",
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/NotAsDescribedMerchantRefuseAdvise"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "resolutionProhibitedByLaw" : {
+            "type" : [ "boolean", "null" ],
+            "description" : "Indicates if local law prohibits the cardholder from attempting to resolve the issue with the merchant. Required if the value of `didAttemptToResolve` is **false**. If this value is also **false**, the dispute cannot proceed.\n\nPossible values: **true**, **false**."
+          },
+          "returnMethod" : {
+            "type" : "object",
+            "description" : "The method used to return the merchandise. Required if the value of `didCardholderReturn` is **true**.\n\nPossible values: **faceToFace**, **fedEx**, **dhl**, **ups**, **postalService**, **other**.\n\nIf the value of this parameter is **other**, provide information in `descriptionOfIssue` about how the merchandise was returned.",
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/ReturnMethod"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "shippingTrackingNumber" : {
+            "type" : [ "string", "null" ],
+            "description" : "The tracking number for the shipment used to return the merchandise.",
+            "maxLength" : 50,
+            "minLength" : 0
+          },
+          "whoCancelled" : {
+            "type" : "object",
+            "description" : "The party that initiated cancellation of the service. Required if the value of `goodsOrServices` is **services**.\n\nPossible values: **merchant**, **cardholder**.\n\nIf the value of this parameter is **cardholder**, provide information in `descriptionOfIssue` about how the service was cancelled.",
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/CancellingEntity"
+            }, {
+              "type" : "null"
+            } ]
+          }
+        }
+      },
+      "NotAsDescribedMerchantRefuseAdvise" : {
+        "type" : "string",
+        "enum" : [ "MRRA", "MRRM", "MICNRM", "MNLER", "MNPCIR" ]
+      },
+      "NotDeliveredInfo" : {
+        "type" : "object",
+        "properties" : {
+          "agreedDeliveryLocation" : {
+            "type" : "string",
+            "description" : "The delivery location specified by the cardholder. Required if **deliveredToWrongLocation** is **true**.",
+            "maxLength" : 500,
+            "minLength" : 0
+          },
+          "dateOfCancellation" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "The date the undelivered goods or services were cancelled in YYYY-MM-DD format."
           },
           "deliveredToWrongLocation" : {
             "type" : "boolean",
             "description" : "Indicates goods were delivered to the wrong location.\n\nPossible values: **true**, **false**."
           },
           "descriptionOfIssue" : {
-            "maxLength" : 2500,
-            "minLength" : 0,
             "type" : "string",
-            "description" : "Your description of the issue for raising a dispute of `type` **notDelivered**."
+            "description" : "Your description of the issue for raising a dispute of `type` **notDelivered**.",
+            "maxLength" : 2500,
+            "minLength" : 0
           },
           "didCardholderReturn" : {
             "type" : "boolean",
@@ -893,42 +1387,52 @@
           },
           "lastExpectedDate" : {
             "type" : "string",
-            "description" : "The date the undelivered goods or services were expected to be delivered in YYYY-MM-DD format.",
-            "format" : "date"
+            "format" : "date",
+            "description" : "The date the undelivered goods or services were expected to be delivered in YYYY-MM-DD format."
           },
           "whatWasNotDelivered" : {
-            "description" : "The type of product that you expected to receive.\n\nPossible values: **goods**, **services**.",
-            "$ref" : "#/components/schemas/ProductType"
+            "$ref" : "#/components/schemas/ProductType",
+            "description" : "The type of product that you expected to receive.\n\nPossible values: **goods**, **services**."
           },
           "whoCancelled" : {
-            "description" : "The party that initiated the cancellation of the transaction.\n\nPossible values: **merchant**, **cardholder**.",
-            "$ref" : "#/components/schemas/CancellingEntity"
+            "$ref" : "#/components/schemas/CancellingEntity",
+            "description" : "The party that initiated the cancellation of the transaction.\n\nPossible values: **merchant**, **cardholder**."
           }
-        }
+        },
+        "required" : [ "descriptionOfIssue", "lastExpectedDate", "whatWasNotDelivered" ]
       },
       "OtherInfo" : {
-        "required" : [ "descriptionOfIssue", "subType", "whatWasPurchased" ],
         "type" : "object",
         "properties" : {
           "descriptionOfIssue" : {
-            "maxLength" : 2500,
-            "minLength" : 0,
             "type" : "string",
-            "description" : "Your description of the issue for raising a dispute of `type` **other**."
+            "description" : "Your description of the issue for raising a dispute of `type` **other**.",
+            "maxLength" : 2500,
+            "minLength" : 0
           },
           "subType" : {
-            "description" : "The specific category of **other** dispute that you are raising.\n\nPossible values: **atmDispute**, **cancelledGoodsServices**, **cancelledRecurring**, **counterfeit**, **creditNotProcessed**, **notAsDescribed**.",
-            "$ref" : "#/components/schemas/SubType"
+            "$ref" : "#/components/schemas/SubType",
+            "description" : "The specific category of **other** dispute that you are raising.\n\nPossible values: **atmDispute**, **cancelledGoodsServices**, **cancelledRecurring**, **counterfeit**, **creditNotProcessed**, **notAsDescribed**."
           },
           "whatWasPurchased" : {
-            "description" : "The type of product that you purchased.\n\nPossible values: **goods**, **services**.",
-            "$ref" : "#/components/schemas/ProductType"
+            "$ref" : "#/components/schemas/ProductType",
+            "description" : "The type of product that you purchased.\n\nPossible values: **goods**, **services**."
           }
-        }
+        },
+        "required" : [ "descriptionOfIssue", "subType", "whatWasPurchased" ]
       },
       "PatchableDisputeRequest" : {
         "type" : "object",
         "properties" : {
+          "cancelledInfo" : {
+            "type" : "object",
+            "description" : "Additional information for raising a dispute of `type` **cancelled**. Required for disputes of `type` **cancelled**.",
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/CancelledInfoUpdate"
+            }, {
+              "type" : "null"
+            } ]
+          },
           "duplicateInfo" : {
             "type" : "object",
             "description" : "Additional information for raising a dispute of `type` **duplicate**. Required for disputes of `type` **duplicate**.",
@@ -947,6 +1451,15 @@
               "type" : "null"
             } ]
           },
+          "notAsDescribedInfo" : {
+            "type" : "object",
+            "description" : "Additional information for raising a dispute of `type` **notAsDescribed**. Required for disputes of `type` **notAsDescribed**.",
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/NotAsDescribedInfoUpdate"
+            }, {
+              "type" : "null"
+            } ]
+          },
           "notDeliveredInfo" : {
             "type" : "object",
             "description" : "Additional information for raising a dispute of `type` **notDelivered**. Required for disputes of `type` **notDelivered**.",
@@ -958,7 +1471,7 @@
           },
           "otherInfo" : {
             "type" : "object",
-            "description" : "Additional information for raising a dispute of `type` **other**. Required for disputes of `type` **other**.\n\n**Note:** The **other** dispute `type` is currently in beta testing. Do not create or submit any disputes for this dispute `type` at this time.",
+            "description" : "Additional information for raising a dispute of `type` **other**. Required for disputes of `type` **other**.\n\n**Note:** The **other** dispute `type` is deprecated. Do not create or submit any disputes for this dispute `type`.",
             "oneOf" : [ {
               "$ref" : "#/components/schemas/PatchableOtherInfo"
             }, {
@@ -980,9 +1493,9 @@
         "type" : "object",
         "properties" : {
           "duplicateTransactionId" : {
-            "minLength" : 1,
             "type" : "string",
-            "description" : "The transaction id associated with the duplicate charge for which you are disputing. The disputed transaction must be in the same amount as the duplicate transaction."
+            "description" : "The transaction id associated with the duplicate charge for which you are disputing. The disputed transaction must be in the same amount as the duplicate transaction.",
+            "minLength" : 1
           },
           "sameCard" : {
             "type" : "boolean",
@@ -1006,10 +1519,10 @@
             "description" : "The card was counterfeited."
           },
           "descriptionOfIssue" : {
-            "maxLength" : 2500,
-            "minLength" : 0,
             "type" : "string",
-            "description" : "Your description of the issue for raising a dispute of `type` **fraud**."
+            "description" : "Your description of the issue for raising a dispute of `type` **fraud**.",
+            "maxLength" : 2500,
+            "minLength" : 0
           },
           "reportOnly" : {
             "type" : [ "boolean", "null" ],
@@ -1021,25 +1534,25 @@
         "type" : "object",
         "properties" : {
           "agreedDeliveryLocation" : {
-            "maxLength" : 500,
-            "minLength" : 0,
             "type" : [ "string", "null" ],
-            "description" : "The delivery location specified by the cardholder. Required if **deliveredToWrongLocation** is **true**."
+            "description" : "The delivery location specified by the cardholder. Required if **deliveredToWrongLocation** is **true**.",
+            "maxLength" : 500,
+            "minLength" : 0
           },
           "dateOfCancellation" : {
             "type" : [ "string", "null" ],
-            "description" : "The date the undelivered goods or services were cancelled in YYYY-MM-DD format.",
-            "format" : "date"
+            "format" : "date",
+            "description" : "The date the undelivered goods or services were cancelled in YYYY-MM-DD format."
           },
           "deliveredToWrongLocation" : {
             "type" : [ "boolean", "null" ],
             "description" : "Indicates goods were delivered to the wrong location.\n\nPossible values: **true**, **false**."
           },
           "descriptionOfIssue" : {
-            "maxLength" : 2500,
-            "minLength" : 0,
             "type" : "string",
-            "description" : "Your description of the issue for raising a dispute of `type` **notDelivered**."
+            "description" : "Your description of the issue for raising a dispute of `type` **notDelivered**.",
+            "maxLength" : 2500,
+            "minLength" : 0
           },
           "didCardholderReturn" : {
             "type" : [ "boolean", "null" ],
@@ -1059,12 +1572,12 @@
           },
           "lastExpectedDate" : {
             "type" : "string",
-            "description" : "The date the undelivered goods or services were expected to be delivered in YYYY-MM-DD format.",
-            "format" : "date"
+            "format" : "date",
+            "description" : "The date the undelivered goods or services were expected to be delivered in YYYY-MM-DD format."
           },
           "whatWasNotDelivered" : {
-            "description" : "The type of product that you expected to receive.\n\nPossible values: **goods**, **services**.",
-            "$ref" : "#/components/schemas/ProductType"
+            "$ref" : "#/components/schemas/ProductType",
+            "description" : "The type of product that you expected to receive.\n\nPossible values: **goods**, **services**."
           },
           "whoCancelled" : {
             "type" : "object",
@@ -1081,24 +1594,32 @@
         "type" : "object",
         "properties" : {
           "descriptionOfIssue" : {
-            "maxLength" : 2500,
-            "minLength" : 0,
             "type" : "string",
-            "description" : "Your description of the issue for raising a dispute of `type` **other**."
+            "description" : "Your description of the issue for raising a dispute of `type` **other**.",
+            "maxLength" : 2500,
+            "minLength" : 0
           },
           "subType" : {
-            "description" : "The specific category of **other** dispute that you are raising.\n\nPossible values: **atmDispute**, **cancelledGoodsServices**, **cancelledRecurring**, **counterfeit**, **creditNotProcessed**, **notAsDescribed**.",
-            "$ref" : "#/components/schemas/SubType"
+            "$ref" : "#/components/schemas/SubType",
+            "description" : "The specific category of **other** dispute that you are raising.\n\nPossible values: **atmDispute**, **cancelledGoodsServices**, **cancelledRecurring**, **counterfeit**, **creditNotProcessed**, **notAsDescribed**."
           },
           "whatWasPurchased" : {
-            "description" : "The type of product that you purchased.\n\nPossible values: **goods**, **services**.",
-            "$ref" : "#/components/schemas/ProductType"
+            "$ref" : "#/components/schemas/ProductType",
+            "description" : "The type of product that you purchased.\n\nPossible values: **goods**, **services**."
           }
         }
       },
       "ProductType" : {
         "type" : "string",
         "enum" : [ "goods", "services" ]
+      },
+      "ReturnMethod" : {
+        "type" : "string",
+        "enum" : [ "faceToFace", "fedEx", "dhl", "ups", "postalService", "other" ]
+      },
+      "ServiceType" : {
+        "type" : "string",
+        "enum" : [ "timeshare", "guaranteedReservation", "other" ]
       },
       "SubType" : {
         "type" : "string",
