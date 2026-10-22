@@ -1,9 +1,4 @@
 openapi: 3.1.0
-servers:
-- url: https://document-collector-test.adyen.com/v1
-  description: Test Environment
-- url: https://document-collector-live.adyen.com/v1
-  description: Live Environment
 info:
   title: Document Collector API
   description: 'The Document Collector API enables merchants to upload supporting
@@ -76,6 +71,14 @@ info:
     name: Adyen Developer Experience team
     url: https://github.com/Adyen/adyen-openapi
   version: '1'
+servers:
+- url: https://document-collector-test.adyen.com/v1
+  description: Test Environment
+- url: https://document-collector-live.adyen.com/v1
+  description: Live Environment
+security:
+- ApiKeyAuth: []
+- BasicAuth: []
 tags:
 - name: Documents
 paths:
@@ -205,6 +208,9 @@ components:
   schemas:
     DefaultErrorResponseEntity:
       type: object
+      description: Standardized error response following RFC-7807 format
+      externalDocs:
+        url: https://www.rfc-editor.org/rfc/rfc7807
       properties:
         detail:
           type: string
@@ -227,8 +233,8 @@ components:
           description: The unique reference for the request.
         status:
           type: integer
-          description: The HTTP status code.
           format: int32
+          description: The HTTP status code.
         title:
           type: string
           description: A short, human-readable summary of the problem type.
@@ -236,9 +242,6 @@ components:
           type: string
           description: A URI that identifies the validation error type. It points
             to human-readable documentation for the problem type.
-      description: Standardized error response following RFC-7807 format
-      externalDocs:
-        url: https://www.rfc-editor.org/rfc/rfc7807
     DocumentContext:
       type: string
       description: "The document context indicating the type of document being uploaded.\n\
@@ -246,29 +249,30 @@ components:
       enum:
       - paCbInvoice
     DocumentUploadRequest:
+      type: object
+      properties:
+        context:
+          $ref: '#/components/schemas/DocumentContext'
+          description: "The document context indicating the type of document being\
+            \ uploaded.\n Possible values: **paCbInvoice**."
+        file:
+          type: string
+          format: binary
+          description: The PDF file to upload. Filename must be {pspReference}.pdf
+        merchantAccount:
+          type: string
+          description: The merchant account that the document belongs to.
+          example: YourMerchantAccount
+          maxLength: 255
+          minLength: 1
+          pattern: ^[a-zA-Z0-9_]*$
       required:
       - context
       - file
       - merchantAccount
-      type: object
-      properties:
-        context:
-          description: "The document context indicating the type of document being\
-            \ uploaded.\n Possible values: **paCbInvoice**."
-          $ref: '#/components/schemas/DocumentContext'
-        file:
-          type: string
-          description: The PDF file to upload. Filename must be {pspReference}.pdf
-          format: binary
-        merchantAccount:
-          maxLength: 255
-          minLength: 1
-          pattern: ^[a-zA-Z0-9_]*$
-          type: string
-          description: The merchant account that the document belongs to.
-          example: YourMerchantAccount
     DocumentUploadResponse:
       type: object
+      description: The uploaded document resource
       properties:
         context:
           type: string
@@ -286,12 +290,7 @@ components:
           type: string
           description: The PSP reference extracted from the filename.
           example: QRMJC25GDZRKDM92
-      description: The uploaded document resource
     InvalidField:
-      required:
-      - message
-      - name
-      - value
       type: object
       properties:
         message:
@@ -303,6 +302,10 @@ components:
         value:
           type: string
           description: The invalid value.
+      required:
+      - message
+      - name
+      - value
   securitySchemes:
     ApiKeyAuth:
       type: apiKey
@@ -312,6 +315,3 @@ components:
       type: http
       scheme: basic
 jsonSchemaDialect: https://spec.openapis.org/oas/3.1/dialect/base
-security:
-- ApiKeyAuth: []
-- BasicAuth: []

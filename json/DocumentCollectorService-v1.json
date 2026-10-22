@@ -1,12 +1,5 @@
 {
   "openapi" : "3.1.0",
-  "servers" : [ {
-    "url" : "https://document-collector-test.adyen.com/v1",
-    "description" : "Test Environment"
-  }, {
-    "url" : "https://document-collector-live.adyen.com/v1",
-    "description" : "Live Environment"
-  } ],
   "info" : {
     "title" : "Document Collector API",
     "description" : "The Document Collector API enables merchants to upload supporting documentation required for payment processing. Currently, it supports uploading cross-border invoices in PDF format for transactions processed in INR, as required under the Reserve Bank of India (RBI) guidelines for cross-border payments.\n\n## Authentication\nYour Adyen contact will provide your API credential and an API key. To connect to the API, add an `X-API-Key` header with the API key as the value, for example:\n\n```\ncurl\n-H \"Content-Type: multipart/form-data\" \\\n-H \"X-API-Key: YOUR_API_KEY\" \\\n...\n```\n\nAlternatively, you can use the username and password to connect to the API using basic authentication. For example:\n\n```\ncurl\n-H \"Content-Type: multipart/form-data\" \\\n-U \"ws@Company.YOUR_COMPANY\":\"YOUR_WS_PASSWORD\" \\\n...\n```\n\n## Versioning\nThe Document Collector API supports [versioning](https://docs.adyen.com/development-resources/versioning) using a version suffix in the endpoint URL. This suffix has the following format: \"vXX\", where XX is the version number.\n\nFor example:\n```\nhttps://document-collector-test.adyen.com/v1/crossBorderInvoices\n```\n\n## Going live\nWhen going live, your Adyen contact will provide your API credential for the live environment. You can then use the username and password to send requests to `https://document-collector-live.adyen.com/v1`.\n\n",
@@ -17,6 +10,18 @@
     },
     "version" : "1"
   },
+  "servers" : [ {
+    "url" : "https://document-collector-test.adyen.com/v1",
+    "description" : "Test Environment"
+  }, {
+    "url" : "https://document-collector-live.adyen.com/v1",
+    "description" : "Live Environment"
+  } ],
+  "security" : [ {
+    "ApiKeyAuth" : [ ]
+  }, {
+    "BasicAuth" : [ ]
+  } ],
   "tags" : [ {
     "name" : "Documents"
   } ],
@@ -201,6 +206,10 @@
     "schemas" : {
       "DefaultErrorResponseEntity" : {
         "type" : "object",
+        "description" : "Standardized error response following RFC-7807 format",
+        "externalDocs" : {
+          "url" : "https://www.rfc-editor.org/rfc/rfc7807"
+        },
         "properties" : {
           "detail" : {
             "type" : "string",
@@ -227,8 +236,8 @@
           },
           "status" : {
             "type" : "integer",
-            "description" : "The HTTP status code.",
-            "format" : "int32"
+            "format" : "int32",
+            "description" : "The HTTP status code."
           },
           "title" : {
             "type" : "string",
@@ -238,10 +247,6 @@
             "type" : "string",
             "description" : "A URI that identifies the validation error type. It points to human-readable documentation for the problem type."
           }
-        },
-        "description" : "Standardized error response following RFC-7807 format",
-        "externalDocs" : {
-          "url" : "https://www.rfc-editor.org/rfc/rfc7807"
         }
       },
       "DocumentContext" : {
@@ -250,30 +255,31 @@
         "enum" : [ "paCbInvoice" ]
       },
       "DocumentUploadRequest" : {
-        "required" : [ "context", "file", "merchantAccount" ],
         "type" : "object",
         "properties" : {
           "context" : {
-            "description" : "The document context indicating the type of document being uploaded.\n Possible values: **paCbInvoice**.",
-            "$ref" : "#/components/schemas/DocumentContext"
+            "$ref" : "#/components/schemas/DocumentContext",
+            "description" : "The document context indicating the type of document being uploaded.\n Possible values: **paCbInvoice**."
           },
           "file" : {
             "type" : "string",
-            "description" : "The PDF file to upload. Filename must be {pspReference}.pdf",
-            "format" : "binary"
+            "format" : "binary",
+            "description" : "The PDF file to upload. Filename must be {pspReference}.pdf"
           },
           "merchantAccount" : {
-            "maxLength" : 255,
-            "minLength" : 1,
-            "pattern" : "^[a-zA-Z0-9_]*$",
             "type" : "string",
             "description" : "The merchant account that the document belongs to.",
-            "example" : "YourMerchantAccount"
+            "example" : "YourMerchantAccount",
+            "maxLength" : 255,
+            "minLength" : 1,
+            "pattern" : "^[a-zA-Z0-9_]*$"
           }
-        }
+        },
+        "required" : [ "context", "file", "merchantAccount" ]
       },
       "DocumentUploadResponse" : {
         "type" : "object",
+        "description" : "The uploaded document resource",
         "properties" : {
           "context" : {
             "type" : "string",
@@ -295,11 +301,9 @@
             "description" : "The PSP reference extracted from the filename.",
             "example" : "QRMJC25GDZRKDM92"
           }
-        },
-        "description" : "The uploaded document resource"
+        }
       },
       "InvalidField" : {
-        "required" : [ "message", "name", "value" ],
         "type" : "object",
         "properties" : {
           "message" : {
@@ -314,7 +318,8 @@
             "type" : "string",
             "description" : "The invalid value."
           }
-        }
+        },
+        "required" : [ "message", "name", "value" ]
       }
     },
     "securitySchemes" : {
@@ -329,10 +334,5 @@
       }
     }
   },
-  "jsonSchemaDialect" : "https://spec.openapis.org/oas/3.1/dialect/base",
-  "security" : [ {
-    "ApiKeyAuth" : [ ]
-  }, {
-    "BasicAuth" : [ ]
-  } ]
+  "jsonSchemaDialect" : "https://spec.openapis.org/oas/3.1/dialect/base"
 }
