@@ -497,87 +497,8 @@ paths:
             request, except if response not required and absent.
 
             Content of the Print Response message.'
-  /cardreaderapdu:
-    post:
-      description: 'It contains the APDU request to send to the chip of the card,
-        and a possible invitation message to display on the CashierInterface or the
-        CustomerInterface.
-
-        Content of the Card Reader APDU Request message.'
-      summary: CardReaderAPDU Request
-      security:
-      - BasicAuth: []
-      - ApiKeyAuth: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CardReaderAPDURequest'
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CardReaderAPDUResponse'
-          description: 'Content of the Card Reader APDU Response message.
-
-            It contains the result of the requested service, APDU response sent by
-            the chip of the card in response to the APDU request.'
 components:
   schemas:
-    SaleCapabilities:
-      type: array
-      description: 'place holder!
-
-        Possible values:
-
-        * **CashierDisplay**
-
-        * **CashierError**
-
-        * **CashierInput**
-
-        * **CashierStatus**
-
-        * **CustomerAssistance**
-
-        * **CustomerDisplay**
-
-        * **CustomerError**
-
-        * **CustomerInput**
-
-        * **EMVContactless**
-
-        * **ICC**
-
-        * **MagStripe**
-
-        * **POIReplication**
-
-        * **PrinterDocument**
-
-        * **PrinterReceipt**
-
-        * **PrinterVoucher**'
-      items:
-        type: string
-        enum:
-        - CashierStatus
-        - CashierError
-        - CashierDisplay
-        - POIReplication
-        - CashierInput
-        - CustomerAssistance
-        - CustomerDisplay
-        - CustomerError
-        - CustomerInput
-        - PrinterReceipt
-        - PrinterDocument
-        - PrinterVoucher
-        - MagStripe
-        - ICC
-        - EMVContactless
     TokenRequestedType:
       type: string
       description: 'Type of token replacing the PAN of a payment card to identify
@@ -1603,58 +1524,6 @@ components:
         * **PrintEnd**
 
         * **SoundEnd**'
-    SoundFormat:
-      type: string
-      enum:
-      - SoundRef
-      - MessageRef
-      - Text
-      description: '
-
-        Possible values:
-
-        * **SoundRef**
-
-        * **MessageRef**
-
-        * **Text**'
-    SoundAction:
-      type: string
-      enum:
-      - StartSound
-      - StopSound
-      - SetDefaultVolume
-      description: '
-
-        Possible values:
-
-        * **StartSound**
-
-        * **StopSound**
-
-        * **SetDefaultVolume**'
-    PINFormat:
-      type: string
-      enum:
-      - ISO0
-      - ISO1
-      - ISO2
-      - ISO3
-    PINRequestType:
-      type: string
-      description: 'Type of PIN Service.
-
-        Possible values:
-
-        * **PINVerify**
-
-        * **PINVerifyOnly**
-
-        * **PINEnter**'
-      enum:
-      - PINVerify
-      - PINVerifyOnly
-      - PINEnter
     SaleToIssuerData:
       type: object
       description: 'Sale information intended for the Issuer.
@@ -1692,14 +1561,22 @@ components:
 
             * **AAMVA**
 
-            * **ISO**'
+            * **CMC-7**
+
+            * **E-13B**
+
+            * **ISO**
+
+            * **JIS-I**
+
+            * **JIS-II**'
           x-nexo-default: ISO
         TrackValue:
           type: string
           pattern: ^.{1,104}$
-          description: Card track content.
           x-nexo-min: 1
           x-nexo-max: 104
+          description: Card track content.
       required:
       - TrackValue
     SensitiveCardData:
@@ -1721,23 +1598,26 @@ components:
         by the Sale System.'
       properties:
         PAN:
-          type: integer
+          type: string
           minimum: 8
           maximum: 28
+          pattern: ^[0-9]*$
           description: Primary Account Number.
           x-nexo-kind: digitstring
         CardSeqNumb:
-          type: integer
+          type: string
           minimum: 2
           maximum: 3
+          pattern: ^[0-9]*$
           description: 'Card Sequence Number.
 
             If EntryMode is File, Keyed, or Manual.'
           x-nexo-kind: digitstring
         ExpiryDate:
-          type: integer
+          type: string
           minimum: 4
           maximum: 4
+          pattern: ^[0-9]*$
           description: 'Date after which the card cannot be used.
 
             If EntryMode is File.'
@@ -1746,11 +1626,11 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/TrackData'
+          x-nexo-list-min: 0
+          x-nexo-list-max: 3
           description: 'Magnetic track or magnetic ink characters line.
 
             If EntryMode is MagStripe or RFID .'
-          x-nexo-list-min: 0
-          x-nexo-list-max: 3
     PaymentToken:
       type: object
       description: "Surrogate of the PAN (Primary Account Number) of the payment card\
@@ -1843,9 +1723,10 @@ components:
 
             * **Tapped**'
         CardCountryCode:
-          type: integer
+          type: string
           minimum: 3
           maximum: 3
+          pattern: ^[0-9]*$
           description: 'Country Code attached to the card (3 numerics).
 
             If available in the card.'
@@ -1857,6 +1738,7 @@ components:
 
             SensitiveCardData protected by CMS EnvelopedData.'
           x-nexo-kind: contentinformation
+          format: byte
         SensitiveCardData:
           $ref: '#/components/schemas/SensitiveCardData'
           description: 'Sensitive information related to the payment card, entered
@@ -1904,13 +1786,13 @@ components:
         TotalsGroupID:
           type: string
           pattern: ^.{1,16}$
+          x-nexo-min: 1
+          x-nexo-max: 16
           description: 'Identification of a group of transactions on a POI Terminal,
             having the same Sale features.
 
             Could be used to group POI for reconciliation or other purpose defined
             by the Sale System. The default value is assigned by the Login Request.'
-          x-nexo-min: 1
-          x-nexo-max: 16
     SaleData:
       type: object
       description: Data associated with the Sale System, with a particular value during
@@ -1922,10 +1804,11 @@ components:
           description: Identification of the Cashier or Operator.
         OperatorLanguage:
           type: string
-          pattern: ^[a-z]{2,2}$
+          pattern: ^[A-Za-z]{2,2}$
           description: 'Language of the Cashier or Operator.
 
             If different from the Login.'
+          x-nexo-kind: isolanguage2a
         ShiftNumber:
           type: string
           pattern: ^.+$
@@ -2000,7 +1883,8 @@ components:
           $ref: '#/components/schemas/TransactionIDType'
           description: Unique identification of a POI transaction for a POI.
         POIReconciliationID:
-          type: integer
+          type: string
+          pattern: ^[0-9]*$
           description: 'Identification of the reconciliation period between Sale and
             POI.
 
@@ -2321,8 +2205,9 @@ components:
           description: Identification of a predefined message to display or print.
         Language:
           type: string
-          pattern: ^[a-z]{2,2}$
+          pattern: ^[A-Za-z]{2,2}$
           description: Identification of a language.
+          x-nexo-kind: isolanguage2a
       required:
       - ReferenceID
     OutputBarcode:
@@ -2371,11 +2256,11 @@ components:
           type: string
           format: byte
           pattern: ^.{0,262144}$
+          x-nexo-min: 0
+          x-nexo-max: 262144
           description: 'XHTML document body containing the message to display or print.
 
             Mandatory if `OutputFormat` is XHTML, not allowed otherwise.'
-          x-nexo-min: 0
-          x-nexo-max: 262144
         OutputBarcode:
           $ref: '#/components/schemas/OutputBarcode'
           description: 'Barcode content to display or print.
@@ -2681,19 +2566,22 @@ components:
       type: object
       properties:
         MSISDN:
-          type: integer
+          type: string
+          pattern: ^[0-9]*$
           description: Mobile Subscriber Integrated Service Digital Network (i.e.
             mobile phone number of the SIM card). Country, National Destination Code,
             and Subscriber Number.
           x-nexo-kind: digitstring
         IMSI:
-          type: integer
+          type: string
+          pattern: ^[0-9]*$
           description: International Mobile Subscriber Identity. Unique number associated
             with the mobile phone user, containing the Mobile Country Code (MCC),
             the Mobile Network Code (MNC), and the Mobile Identification Number (MSIN)
           x-nexo-kind: digitstring
         IMEI:
-          type: integer
+          type: string
+          pattern: ^[0-9]*$
           description: International Mobile Equipment Identity. Unique number associated
             with the mobile phone device.
           x-nexo-kind: digitstring
@@ -2751,23 +2639,26 @@ components:
         Information related to the mobile for the payment transaction.'
       properties:
         MobileCountryCode:
-          type: integer
+          type: string
           minimum: 3
           maximum: 3
+          pattern: ^[0-9]*$
           description: 'Identifies the country of a mobile phone operator.
 
             If data available.'
           x-nexo-kind: digitstring
         MobileNetworkCode:
-          type: integer
+          type: string
           minimum: 2
           maximum: 3
+          pattern: ^[0-9]*$
           description: 'Identifies the mobile phone operator inside a country.
 
             If data available.'
           x-nexo-kind: digitstring
         MaskedMSISDN:
-          type: integer
+          type: string
+          pattern: ^[0-9]*$
           description: 'Masked Mobile Subscriber Integrated Service Digital Network.
 
             If data available.'
@@ -2784,6 +2675,7 @@ components:
 
             SensitiveMobileData.'
           x-nexo-kind: contentinformation
+          format: byte
         SensitiveMobileData:
           $ref: '#/components/schemas/SensitiveMobileData'
           description: 'Sensitive information related to the mobile phone.
@@ -2843,6 +2735,7 @@ components:
           x-nexo-kind: integer
         CumulativeAmount:
           type: number
+          format: double
           maximum: 99999999.999999
           minimum: 0.0
           description: Sum of a collection of amounts. Total amount of the payment
@@ -2850,12 +2743,14 @@ components:
           x-nexo-kind: simpleamount
         FirstAmount:
           type: number
+          format: double
           maximum: 99999999.999999
           minimum: 0.0
           description: First amount of the payment instalments.
           x-nexo-kind: simpleamount
         Charges:
           type: number
+          format: double
           maximum: 99999999.999999
           minimum: 0.0
           description: Charges related to a transaction. Charge related to the payment
@@ -2890,9 +2785,10 @@ components:
           pattern: ^.+$
           description: Name of the owner of a stored value account.
         ExpiryDate:
-          type: integer
+          type: string
           minimum: 4
           maximum: 4
+          pattern: ^[0-9]*$
           description: Date after which the card cannot be used. If EMV expiry date
             is present, it overrides Track2 information. Format is MMYY.
           x-nexo-kind: digitstring
@@ -2985,6 +2881,7 @@ components:
 
             SensitiveCardData protected by CMS EnvelopedData.'
           x-nexo-kind: contentinformation
+          format: byte
         CardData:
           $ref: '#/components/schemas/CardData'
           description: 'Information related to the payment card used for the transaction.
@@ -3039,13 +2936,15 @@ components:
 
             If referral.'
         AcquirerID:
-          type: integer
+          type: string
+          pattern: ^[0-9]*$
           description: 'Identification of the Acquirer.
 
             Restrict to the Acquirer if present.'
           x-nexo-kind: digitstring
         AmountValue:
           type: number
+          format: double
           maximum: 99999999.999999
           minimum: 0.0
           description: Value of an amount.
@@ -3078,7 +2977,8 @@ components:
         AcquirerID:
           type: array
           items:
-            type: integer
+            type: string
+            pattern: ^[0-9]*$
             description: 'Identification of the Acquirer.
 
               Restrict to these Acquirer if present.'
@@ -3121,13 +3021,14 @@ components:
           x-nexo-default: Forbidden
         CustomerLanguage:
           type: string
-          pattern: ^[a-z]{2,2}$
+          pattern: ^[A-Za-z]{2,2}$
           description: 'The language used on the terminal screen or in text printed
             by the terminal.
 
             Typical use case is setting the language on unattended terminals. Format:
             two-character [ISO 639:2023](https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes)
             format.'
+          x-nexo-kind: isolanguage2a
         ForceOnlineFlag:
           type: boolean
           default: false
@@ -3167,12 +3068,12 @@ components:
         MerchantCategoryCode:
           type: string
           pattern: ^.{3,4}$
+          x-nexo-min: 3
+          x-nexo-max: 4
           description: 'The code which identifies the category of the transaction
             (MCC).
 
             The payment implies a specific MCC.'
-          x-nexo-min: 3
-          x-nexo-max: 4
     PaymentData:
       type: object
       properties:
@@ -3238,12 +3139,14 @@ components:
           x-nexo-kind: isocurrency3a
         RequestedAmount:
           type: number
+          format: double
           maximum: 99999999.999999
           minimum: 0.0
           description: Amount requested by the Sale for the payment.
           x-nexo-kind: simpleamount
         CashBackAmount:
           type: number
+          format: double
           maximum: 99999999.999999
           minimum: 0.0
           description: The cash-back part of the amount requested by the Sale for
@@ -3251,6 +3154,7 @@ components:
           x-nexo-kind: simpleamount
         TipAmount:
           type: number
+          format: double
           maximum: 99999999.999999
           minimum: 0.0
           description: Amount paid for a tip. Allow the printing of the tip on the
@@ -3258,6 +3162,7 @@ components:
           x-nexo-kind: simpleamount
         PaidAmount:
           type: number
+          format: double
           maximum: 99999999.999999
           minimum: 0.0
           description: "Amount already paid in case of split payment. Depending on\
@@ -3269,6 +3174,7 @@ components:
           x-nexo-kind: simpleamount
         MinimumAmountToDeliver:
           type: number
+          format: double
           maximum: 99999999.999999
           minimum: 0.0
           description: Minimum amount the Sale System is allowed to deliver for this
@@ -3277,6 +3183,7 @@ components:
           x-nexo-kind: simpleamount
         MaximumCashBackAmount:
           type: number
+          format: double
           maximum: 99999999.999999
           minimum: 0.0
           description: "Maximum amount which could be requested for cash-back to the\
@@ -3285,6 +3192,7 @@ components:
           x-nexo-kind: simpleamount
         MinimumSplitAmount:
           type: number
+          format: double
           maximum: 99999999.999999
           minimum: 0.0
           description: Minimum amount of a split, which could be requested by a Customer.Allows
@@ -3311,6 +3219,7 @@ components:
       properties:
         AmountValue:
           type: number
+          format: double
           maximum: 99999999.999999
           minimum: 0.0
           description: Value of an amount.
@@ -3340,14 +3249,17 @@ components:
           description: Amount after a currency conversion.
         Rate:
           type: number
+          format: double
           description: Rate of currency conversion.
           x-nexo-kind: decimal
         Markup:
           type: number
+          format: double
           description: Markup of a currency conversion amount as a percentage.
           x-nexo-kind: decimal
         Commission:
           type: number
+          format: double
           maximum: 99999999.999999
           minimum: 0.0
           description: Commission for a currency conversion.
@@ -3366,18 +3278,20 @@ components:
       properties:
         X:
           type: string
+          pattern: ^[0-9a-fA-F]*$
+          x-nexo-min: 1
+          x-nexo-max: 4
           description: The hexadecimal value of the coordinates of a point on the
             abscissa.
           x-nexo-kind: hexstring
-          x-nexo-min: 1
-          x-nexo-max: 4
         Y:
           type: string
+          pattern: ^[0-9a-fA-F]*$
+          x-nexo-min: 1
+          x-nexo-max: 4
           description: The hexadecimal value of the coordinates of a point on the
             ordinate.
           x-nexo-kind: hexstring
-          x-nexo-min: 1
-          x-nexo-max: 4
       required:
       - X
       - Y
@@ -3432,6 +3346,7 @@ components:
           description: Data related to a loyalty account processed in the transaction.
         CurrentBalance:
           type: number
+          format: double
           maximum: 99999999.999999
           minimum: 0.0
           description: 'Balance of an account.
@@ -3491,7 +3406,8 @@ components:
       description: Data related to the response from the payment Acquirer.
       properties:
         AcquirerID:
-          type: integer
+          type: string
+          pattern: ^[0-9]*$
           description: 'Identification of the Acquirer.
 
             Identification of the Acquirer when the POI System is multi-acquirer.'
@@ -3529,20 +3445,22 @@ components:
       properties:
         X:
           type: string
+          pattern: ^[0-9a-fA-F]*$
+          x-nexo-min: 1
+          x-nexo-max: 4
           description: Abscissa of a point coordinates. The hexadecimal value in text
             of the abscissa of the coordinates of a point. Leading zero can be removed
             (e.g. 3BC, 0, and 1287).
           x-nexo-kind: hexstring
-          x-nexo-min: 1
-          x-nexo-max: 4
         Y:
           type: string
+          pattern: ^[0-9a-fA-F]*$
+          x-nexo-min: 1
+          x-nexo-max: 4
           description: Ordinate of a point coordinates. The hexadecimal value in text
             of the ordinate of the coordinates of a point. Leading zero can be removed
             (e.g. 3BC, 0, and 1287).
           x-nexo-kind: hexstring
-          x-nexo-min: 1
-          x-nexo-max: 4
       required:
       - X
       - Y
@@ -3572,12 +3490,14 @@ components:
           x-nexo-kind: isocurrency3a
         AuthorizedAmount:
           type: number
+          format: double
           maximum: 99999999.999999
           minimum: 0.0
           description: Amount requested by the Sale for the payment.
           x-nexo-kind: simpleamount
         TotalRebatesAmount:
           type: number
+          format: double
           maximum: 99999999.999999
           minimum: 0.0
           description: Sum of rebates in amount (total amount or line item amount)
@@ -3585,12 +3505,14 @@ components:
           x-nexo-kind: simpleamount
         TotalFeesAmount:
           type: number
+          format: double
           maximum: 99999999.999999
           minimum: 0.0
           description: Total amount of financial fees.
           x-nexo-kind: simpleamount
         CashBackAmount:
           type: number
+          format: double
           maximum: 99999999.999999
           minimum: 0.0
           description: The cash-back part of the amount requested by the Sale for
@@ -3598,6 +3520,7 @@ components:
           x-nexo-kind: simpleamount
         TipAmount:
           type: number
+          format: double
           maximum: 99999999.999999
           minimum: 0.0
           description: Amount paid for a tip. Allow the printing of the tip on the
@@ -3685,13 +3608,15 @@ components:
             length bytes for an ASN.1 encoding, and the complete member ProtectedSignature
             for a JSON encoding.
           x-nexo-kind: contentinformation
+          format: byte
         CustomerLanguage:
           type: string
-          pattern: ^[a-z]{2,2}$
+          pattern: ^[A-Za-z]{2,2}$
           description: 'The language of the customer that was used on the terminal
             screen or in text printed by the terminal. Format: two-character [ISO
             639:2023](https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes)
             format.'
+          x-nexo-kind: isolanguage2a
         OnlineFlag:
           type: boolean
           default: true
@@ -3772,11 +3697,12 @@ components:
             * **Required**'
         CustomerLanguage:
           type: string
-          pattern: ^[a-z]{2,2}$
+          pattern: ^[A-Za-z]{2,2}$
           description: "The language used on the terminal screen or in text printed\
             \ by the terminal.\n  Typical use case is setting the language on unattended\
             \ terminals. Format: two-character [ISO 639:2023](https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes)\
             \ format."
+          x-nexo-kind: isolanguage2a
         ForceEntryMode:
           $ref: '#/components/schemas/ForceEntryMode'
           description: 'Payment instrument entry mode requested by the Sale System.
@@ -3812,6 +3738,7 @@ components:
             application.
         TotalAmount:
           type: number
+          format: double
           maximum: 99999999.999999
           minimum: 0.0
           description: Amount of a transaction. In the Card Acquisition Request message,
@@ -3899,17 +3826,20 @@ components:
 
             If StoredValueTransactionType is Reverse or Duplicate.'
         ProductCode:
-          type: integer
+          type: string
           minimum: 1
           maximum: 20
+          pattern: ^[0-9]*$
           description: Product code of item purchased with the transaction.
           x-nexo-kind: digitstring
         EanUpc:
-          type: integer
+          type: string
+          pattern: ^[0-9]*$
           description: Standard product code of item purchased with the transaction.
           x-nexo-kind: digitstring
         ItemAmount:
           type: number
+          format: double
           maximum: 99999999.999999
           minimum: 0.0
           description: Total amount of the item line.
@@ -3928,6 +3858,7 @@ components:
           $ref: '#/components/schemas/StoredValueAccountID'
         CurrentBalance:
           type: number
+          format: double
           maximum: 99999999.999999
           minimum: 0.0
           description: If relevant and known.
@@ -3962,21 +3893,24 @@ components:
 
             * **Unload**'
         ProductCode:
-          type: integer
+          type: string
           minimum: 1
           maximum: 20
+          pattern: ^[0-9]*$
           description: 'Product code of item purchased with the transaction.
 
             Copy.'
           x-nexo-kind: digitstring
         EanUpc:
-          type: integer
+          type: string
+          pattern: ^[0-9]*$
           description: 'Standard product code of item purchased with the transaction.
 
             Copy.'
           x-nexo-kind: digitstring
         ItemAmount:
           type: number
+          format: double
           maximum: 99999999.999999
           minimum: 0.0
           description: Total amount of the item line.
@@ -4147,28 +4081,6 @@ components:
           description: Content of the TransactionStatus Response message.
       required:
       - MessageHeader
-    PerformedTransaction:
-      type: object
-      properties:
-        Response:
-          $ref: '#/components/schemas/Response'
-        SaleData:
-          $ref: '#/components/schemas/SaleData'
-        POIData:
-          $ref: '#/components/schemas/POIData'
-        PaymentResult:
-          $ref: '#/components/schemas/PaymentResult'
-        LoyaltyResult:
-          type: array
-          items:
-            $ref: '#/components/schemas/LoyaltyResult'
-        ReversedAmount:
-          type: number
-          maximum: 99999999.999999
-          minimum: 0.0
-          x-nexo-kind: simpleamount
-      required:
-      - Response
     PaymentTotals:
       type: object
       description: Totals of the payment transaction during the reconciliation period.
@@ -4225,6 +4137,7 @@ components:
           x-nexo-kind: integer
         TransactionAmount:
           type: number
+          format: double
           maximum: 99999999.999999
           minimum: 0.0
           description: Sum of amount of processed transaction during the period.
@@ -4257,7 +4170,8 @@ components:
 
             * **StoredValue**'
         AcquirerID:
-          type: integer
+          type: string
+          pattern: ^[0-9]*$
           description: Identification of the Acquirer.
           x-nexo-kind: digitstring
         HostReconciliationID:
@@ -4301,12 +4215,12 @@ components:
         TotalsGroupID:
           type: string
           pattern: ^.{1,16}$
+          x-nexo-min: 1
+          x-nexo-max: 16
           description: 'Identification of a group of transaction on a POI Terminal,
             having the same Sale features.
 
             Sent if requested in the message request.'
-          x-nexo-min: 1
-          x-nexo-max: 16
         PaymentCurrency:
           type: string
           pattern: ^[A-Z]{3,3}$
@@ -4316,12 +4230,12 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/PaymentTotals'
+          x-nexo-list-min: 0
+          x-nexo-list-max: 10
           description: 'Totals of the payment transaction during the reconciliation
             period.
 
             If both `TransactionCount` and `TransactionAmount` are not equal to zero.'
-          x-nexo-list-min: 0
-          x-nexo-list-max: 10
       required:
       - PaymentInstrumentType
     TotalFilter:
@@ -4348,10 +4262,10 @@ components:
         TotalsGroupID:
           type: string
           pattern: ^.{1,16}$
-          description: Sent if totals in the response have to be computed only for
-            this particular value of TotalsGroupID.
           x-nexo-min: 1
           x-nexo-max: 16
+          description: Sent if totals in the response have to be computed only for
+            this particular value of TotalsGroupID.
     PaymentAccountReq:
       type: object
       properties:
@@ -4395,6 +4309,7 @@ components:
           $ref: '#/components/schemas/PaymentInstrumentData'
         CurrentBalance:
           type: number
+          format: double
           maximum: 99999999.999999
           minimum: 0.0
           description: Balance of an account after processing of the transaction.
@@ -4479,15 +4394,15 @@ components:
         ServiceID:
           type: string
           pattern: ^.{1,10}$
-          description: Identification of a message pair, which processes a transaction.
           x-nexo-min: 1
           x-nexo-max: 10
+          description: Identification of a message pair, which processes a transaction.
         DeviceID:
           type: string
           pattern: ^.{1,10}$
-          description: Identification of a device message pair.
           x-nexo-min: 1
           x-nexo-max: 10
+          description: Identification of a device message pair.
         SaleID:
           type: string
           pattern: ^.+$
@@ -4596,20 +4511,20 @@ components:
         ServiceID:
           type: string
           pattern: ^.{1,10}$
+          x-nexo-min: 1
+          x-nexo-max: 10
           description: 'Identification of a message pair, which processes a transaction.
 
             Required if Service or Event MessageClass message or if Device MessageClass
             and request from POI or response from Sale.'
-          x-nexo-min: 1
-          x-nexo-max: 10
         DeviceID:
           type: string
           pattern: ^.{1,10}$
+          x-nexo-min: 1
+          x-nexo-max: 10
           description: 'Identification of a device message pair.
 
             If Device MessageClass.'
-          x-nexo-min: 1
-          x-nexo-max: 10
         SaleID:
           type: string
           pattern: ^.+$
@@ -4660,7 +4575,8 @@ components:
         State of a Host.'
       properties:
         AcquirerID:
-          type: integer
+          type: string
+          pattern: ^[0-9]*$
           description: Identification of the Acquirer.
           x-nexo-kind: digitstring
         IsReachableFlag:
@@ -4930,7 +4846,8 @@ components:
           description: Indicates te response of the user from the `GetConfirmation`
             input command.
         FunctionKey:
-          type: integer
+          type: string
+          pattern: ^[0-9]*$
           description: The number of the function key which is typed by the Customer
             on the POI or the Cashier on the Sale Terminal.
           x-nexo-kind: digitstring
@@ -4940,7 +4857,8 @@ components:
             on the Sale Terminal.
           x-nexo-kind: unicode
         DigitInput:
-          type: integer
+          type: string
+          pattern: ^[0-9]*$
           description: The digits typed by the Customer on the POI or by the Cashier
             on the Sale Terminal.
           x-nexo-kind: digitstring
@@ -4949,6 +4867,7 @@ components:
           description: The text password typed by the Customer on the POI or by the
             Cashier on the Sale Terminal.
           x-nexo-kind: contentinformation
+          format: byte
         MenuEntryNumber:
           type: array
           items:
@@ -5073,67 +4992,6 @@ components:
       - DocumentQualifier
       - ResponseMode
       - OutputContent
-    SoundContent:
-      type: object
-      properties:
-        SoundFormat:
-          $ref: '#/components/schemas/SoundFormat'
-          description: 'Possible values:
-
-            * **MessageRef**
-
-            * **SoundRef**
-
-            * **Text**'
-        Language:
-          type: string
-          pattern: ^[a-z]{2,2}$
-        ReferenceID:
-          type: string
-          pattern: ^.+$
-        Text:
-          type: string
-          pattern: ^.+$
-      required:
-      - SoundFormat
-    CardHolderPIN:
-      type: object
-      properties:
-        EncrPINBlock:
-          type: string
-          x-nexo-kind: contentinformation
-        PINFormat:
-          $ref: '#/components/schemas/PINFormat'
-          description: 'Possible values:
-
-            * **ISO0**
-
-            * **ISO1**
-
-            * **ISO2**
-
-            * **ISO3**'
-        AdditionalInput:
-          type: string
-          pattern: ^.+$
-      required:
-      - EncrPINBlock
-      - PINFormat
-    ICCResetData:
-      type: object
-      properties:
-        ATRValue:
-          type: string
-          format: byte
-          pattern: ^.{1,100}$
-          x-nexo-min: 1
-          x-nexo-max: 100
-        CardStatusWords:
-          type: string
-          format: byte
-          pattern: ^.{2,2}$
-          x-nexo-min: 2
-          x-nexo-max: 2
     SecurityTrailer:
       type: object
       description: 'It contains information related to the security of the message.
@@ -5196,10 +5054,11 @@ components:
             to make real transaction, but is used for test of system or operator training.'
         OperatorLanguage:
           type: string
-          pattern: ^[a-z]{2,2}$
+          pattern: ^[A-Za-z]{2,2}$
           description: 'Language of the Cashier or Operator.
 
             Default value for Device type displays.'
+          x-nexo-kind: isolanguage2a
         OperatorID:
           type: string
           pattern: ^.+$
@@ -5371,9 +5230,9 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/StoredValueData'
-          description: Data related to the stored value card.
           x-nexo-list-min: 1
           x-nexo-list-max: 100
+          description: Data related to the stored value card.
       required:
       - SaleData
       - StoredValueData
@@ -5392,6 +5251,7 @@ components:
           description: Identification of a previous POI transaction.
         ReversedAmount:
           type: number
+          format: double
           maximum: 99999999.999999
           minimum: 0.0
           description: 'Amount of the payment or loyalty to reverse.
@@ -5438,7 +5298,8 @@ components:
         AcquirerID:
           type: array
           items:
-            type: integer
+            type: string
+            pattern: ^[0-9]*$
             description: 'Identification of the Acquirer.
 
               Could be present only if ReconciliationType is AcquirerReconciliation
@@ -5449,7 +5310,8 @@ components:
             Could be present only if ReconciliationType is AcquirerReconciliation
             or AcquirerSynchronisation.'
         POIReconciliationID:
-          type: integer
+          type: string
+          pattern: ^[0-9]*$
           description: 'Identification of the reconciliation period between Sale and
             POI.
 
@@ -5527,6 +5389,8 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/DocumentQualifier'
+          x-nexo-list-min: 0
+          x-nexo-list-max: 2
           description: 'Qualification of the document to print to the Cashier or the
             Customer. Allows the manager of the printer, Sale or POI Terminal, to
             send the information to a particular physical printer or to use the paper
@@ -5545,8 +5409,6 @@ components:
             * **SaleReceipt**
 
             * **Voucher**'
-          x-nexo-list-min: 0
-          x-nexo-list-max: 2
       x-nexo-kind: request
     AbortRequest:
       type: object
@@ -5675,7 +5537,8 @@ components:
         AcquirerID:
           type: array
           items:
-            type: integer
+            type: string
+            pattern: ^[0-9]*$
             description: 'Identification of the Acquirer.
 
               Present if requesting the diagnosis of these hosts only.'
@@ -5777,32 +5640,32 @@ components:
           type: string
           format: byte
           pattern: ^.{1,1}$
+          x-nexo-min: 1
+          x-nexo-max: 1
           description: Class field of the APDU command (CLA). APDU request for Card
             Reader device request. For specific card like synchronous card, a private
             value should be used in accordance to ISO 7816- 4 (private range D0-FE).
-          x-nexo-min: 1
-          x-nexo-max: 1
         APDUInstruction:
           type: string
           format: byte
           pattern: ^.{1,1}$
-          description: Instruction field of the APDU command (INS).
           x-nexo-min: 1
           x-nexo-max: 1
+          description: Instruction field of the APDU command (INS).
         APDUPar1:
           type: string
           format: byte
           pattern: ^.{1,1}$
-          description: Parameter 1 field of the APDU command (P1).
           x-nexo-min: 1
           x-nexo-max: 1
+          description: Parameter 1 field of the APDU command (P1).
         APDUPar2:
           type: string
           format: byte
           pattern: ^.{1,1}$
-          description: Parameter 2 field of the APDU command(P2).
           x-nexo-min: 1
           x-nexo-max: 1
+          description: Parameter 2 field of the APDU command(P2).
         APDUData:
           type: string
           format: byte
@@ -5812,10 +5675,10 @@ components:
           type: string
           format: byte
           pattern: ^.{1,1}$
-          description: Expected length of the data field of the APDU response to the
-            command (Le).
           x-nexo-min: 1
           x-nexo-max: 1
+          description: Expected length of the data field of the APDU response to the
+            command (Le).
       required:
       - APDUClass
       - APDUInstruction
@@ -6046,6 +5909,7 @@ components:
           $ref: '#/components/schemas/OriginalPOITransaction'
         ReversedAmount:
           type: number
+          format: double
           maximum: 99999999.999999
           minimum: 0.0
           description: 'Amount of the payment or loyalty to reverse.
@@ -6083,7 +5947,8 @@ components:
 
             * **SaleReconciliation**'
         POIReconciliationID:
-          type: integer
+          type: string
+          pattern: ^[0-9]*$
           description: 'Identification of the reconciliation period between Sale and
             POI.
 
@@ -6111,7 +5976,8 @@ components:
           $ref: '#/components/schemas/Response'
           description: Result of a message request processing.
         POIReconciliationID:
-          type: integer
+          type: string
+          pattern: ^[0-9]*$
           description: Identification of the reconciliation period between Sale and
             POI.
           x-nexo-kind: digitstring
@@ -6167,9 +6033,9 @@ components:
           type: string
           format: byte
           pattern: ^.{2,2}$
-          description: Status of a smartcard response to a command (SW1-SW2).
           x-nexo-min: 2
           x-nexo-max: 2
+          description: Status of a smartcard response to a command (SW1-SW2).
       required:
       - Response
       - CardStatusWords

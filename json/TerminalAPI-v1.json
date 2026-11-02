@@ -614,69 +614,10 @@
                     }
                 }
             }
-        },
-        "/cardreaderapdu": {
-            "post": {
-                "description": "It contains the APDU request to send to the chip of the card, and a possible invitation message to display on the CashierInterface or the CustomerInterface.\nContent of the Card Reader APDU Request message.",
-                "summary": "CardReaderAPDU Request",
-                "security": [
-                    {
-                        "BasicAuth": []
-                    },
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/CardReaderAPDURequest"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/CardReaderAPDUResponse"
-                                }
-                            }
-                        },
-                        "description": "Content of the Card Reader APDU Response message.\nIt contains the result of the requested service, APDU response sent by the chip of the card in response to the APDU request."
-                    }
-                }
-            }
         }
     },
     "components": {
         "schemas": {
-            "SaleCapabilities": {
-                "type": "array",
-                "description": "place holder!\nPossible values:\n* **CashierDisplay**\n* **CashierError**\n* **CashierInput**\n* **CashierStatus**\n* **CustomerAssistance**\n* **CustomerDisplay**\n* **CustomerError**\n* **CustomerInput**\n* **EMVContactless**\n* **ICC**\n* **MagStripe**\n* **POIReplication**\n* **PrinterDocument**\n* **PrinterReceipt**\n* **PrinterVoucher**",
-                "items": {
-                    "type": "string",
-                    "enum": [
-                        "CashierStatus",
-                        "CashierError",
-                        "CashierDisplay",
-                        "POIReplication",
-                        "CashierInput",
-                        "CustomerAssistance",
-                        "CustomerDisplay",
-                        "CustomerError",
-                        "CustomerInput",
-                        "PrinterReceipt",
-                        "PrinterDocument",
-                        "PrinterVoucher",
-                        "MagStripe",
-                        "ICC",
-                        "EMVContactless"
-                    ]
-                }
-            },
             "TokenRequestedType": {
                 "type": "string",
                 "description": "Type of token replacing the PAN of a payment card to identify the payment mean of the customer. It allows, for a merchant, to use a token for a transaction only or for a longer period.\nPossible values:\n* **Transaction**\n* **Customer**",
@@ -1211,42 +1152,6 @@
                 ],
                 "description": "\nPossible values:\n* **NotRequired**\n* **Immediate**\n* **PrintEnd**\n* **SoundEnd**"
             },
-            "SoundFormat": {
-                "type": "string",
-                "enum": [
-                    "SoundRef",
-                    "MessageRef",
-                    "Text"
-                ],
-                "description": "\nPossible values:\n* **SoundRef**\n* **MessageRef**\n* **Text**"
-            },
-            "SoundAction": {
-                "type": "string",
-                "enum": [
-                    "StartSound",
-                    "StopSound",
-                    "SetDefaultVolume"
-                ],
-                "description": "\nPossible values:\n* **StartSound**\n* **StopSound**\n* **SetDefaultVolume**"
-            },
-            "PINFormat": {
-                "type": "string",
-                "enum": [
-                    "ISO0",
-                    "ISO1",
-                    "ISO2",
-                    "ISO3"
-                ]
-            },
-            "PINRequestType": {
-                "type": "string",
-                "description": "Type of PIN Service.\nPossible values:\n* **PINVerify**\n* **PINVerifyOnly**\n* **PINEnter**",
-                "enum": [
-                    "PINVerify",
-                    "PINVerifyOnly",
-                    "PINEnter"
-                ]
-            },
             "SaleToIssuerData": {
                 "type": "object",
                 "description": "Sale information intended for the Issuer.\nThe POI System receives this information and sends it to the Acquirer for the Issuer without any change.",
@@ -1272,15 +1177,15 @@
                     },
                     "TrackFormat": {
                         "$ref": "#/components/schemas/TrackFormat",
-                        "description": "Card track format.\nPossible values:\n* **AAMVA**\n* **ISO**",
+                        "description": "Card track format.\nPossible values:\n* **AAMVA**\n* **CMC-7**\n* **E-13B**\n* **ISO**\n* **JIS-I**\n* **JIS-II**",
                         "x-nexo-default": "ISO"
                     },
                     "TrackValue": {
                         "type": "string",
                         "pattern": "^.{1,104}$",
-                        "description": "Card track content.",
                         "x-nexo-min": 1,
-                        "x-nexo-max": 104
+                        "x-nexo-max": 104,
+                        "description": "Card track content."
                     }
                 },
                 "required": [
@@ -1292,23 +1197,26 @@
                 "description": "This data structure could be CMS protected (EnvelopedData). In this case the data structure SensitiveCardData is replaced by the data structure ProtectedCardData of type ContentInformationType.\nWhen this data is protected, the exact content is unknown by the Sale System, and might include\nall the information which are required by an external backup POI Server to make a batch payment\ntransaction in case of problem with the POI System.\nSensitive information related to the payment card, entered or read\nby the Sale System.",
                 "properties": {
                     "PAN": {
-                        "type": "integer",
+                        "type": "string",
                         "minimum": 8,
                         "maximum": 28,
+                        "pattern": "^[0-9]*$",
                         "description": "Primary Account Number.",
                         "x-nexo-kind": "digitstring"
                     },
                     "CardSeqNumb": {
-                        "type": "integer",
+                        "type": "string",
                         "minimum": 2,
                         "maximum": 3,
+                        "pattern": "^[0-9]*$",
                         "description": "Card Sequence Number.\nIf EntryMode is File, Keyed, or Manual.",
                         "x-nexo-kind": "digitstring"
                     },
                     "ExpiryDate": {
-                        "type": "integer",
+                        "type": "string",
                         "minimum": 4,
                         "maximum": 4,
+                        "pattern": "^[0-9]*$",
                         "description": "Date after which the card cannot be used.\nIf EntryMode is File.",
                         "x-nexo-kind": "digitstring"
                     },
@@ -1317,9 +1225,9 @@
                         "items": {
                             "$ref": "#/components/schemas/TrackData"
                         },
-                        "description": "Magnetic track or magnetic ink characters line.\nIf EntryMode is MagStripe or RFID .",
                         "x-nexo-list-min": 0,
-                        "x-nexo-list-max": 3
+                        "x-nexo-list-max": 3,
+                        "description": "Magnetic track or magnetic ink characters line.\nIf EntryMode is MagStripe or RFID ."
                     }
                 }
             },
@@ -1371,16 +1279,18 @@
                         "description": "Entry mode of the payment instrument information. In the Payment, Loyalty or StoredValue Request messages, it informs the POI System the entry mode of the payment instrument information when read by the Sale Terminal. In the Payment, Loyalty or StoredValue Response messages, it informs the Sale System the entry mode of the payment instrument.\nPossible values:\n* **Contactless**\n* **File**\n* **ICC**\n* **Keyed**\n* **MagStripe**\n* **Manual**\n* **Mobile**\n* **RFID**\n* **Scanned**\n* **SynchronousICC**\n* **Tapped**"
                     },
                     "CardCountryCode": {
-                        "type": "integer",
+                        "type": "string",
                         "minimum": 3,
                         "maximum": 3,
+                        "pattern": "^[0-9]*$",
                         "description": "Country Code attached to the card (3 numerics).\nIf available in the card.",
                         "x-nexo-kind": "digitstring"
                     },
                     "ProtectedCardData": {
                         "type": "string",
                         "description": "Sensitive information related to the payment card, protected by CMS.\nSensitiveCardData protected by CMS EnvelopedData.",
-                        "x-nexo-kind": "contentinformation"
+                        "x-nexo-kind": "contentinformation",
+                        "format": "byte"
                     },
                     "SensitiveCardData": {
                         "$ref": "#/components/schemas/SensitiveCardData",
@@ -1419,9 +1329,9 @@
                     "TotalsGroupID": {
                         "type": "string",
                         "pattern": "^.{1,16}$",
-                        "description": "Identification of a group of transactions on a POI Terminal, having the same Sale features.\nCould be used to group POI for reconciliation or other purpose defined by the Sale System. The default value is assigned by the Login Request.",
                         "x-nexo-min": 1,
-                        "x-nexo-max": 16
+                        "x-nexo-max": 16,
+                        "description": "Identification of a group of transactions on a POI Terminal, having the same Sale features.\nCould be used to group POI for reconciliation or other purpose defined by the Sale System. The default value is assigned by the Login Request."
                     }
                 }
             },
@@ -1436,8 +1346,9 @@
                     },
                     "OperatorLanguage": {
                         "type": "string",
-                        "pattern": "^[a-z]{2,2}$",
-                        "description": "Language of the Cashier or Operator.\nIf different from the Login."
+                        "pattern": "^[A-Za-z]{2,2}$",
+                        "description": "Language of the Cashier or Operator.\nIf different from the Login.",
+                        "x-nexo-kind": "isolanguage2a"
                     },
                     "ShiftNumber": {
                         "type": "string",
@@ -1499,7 +1410,8 @@
                         "description": "Unique identification of a POI transaction for a POI."
                     },
                     "POIReconciliationID": {
-                        "type": "integer",
+                        "type": "string",
+                        "pattern": "^[0-9]*$",
                         "description": "Identification of the reconciliation period between Sale and POI.\nIf Result is Success.",
                         "x-nexo-kind": "digitstring"
                     }
@@ -1716,8 +1628,9 @@
                     },
                     "Language": {
                         "type": "string",
-                        "pattern": "^[a-z]{2,2}$",
-                        "description": "Identification of a language."
+                        "pattern": "^[A-Za-z]{2,2}$",
+                        "description": "Identification of a language.",
+                        "x-nexo-kind": "isolanguage2a"
                     }
                 },
                 "required": [
@@ -1760,9 +1673,9 @@
                         "type": "string",
                         "format": "byte",
                         "pattern": "^.{0,262144}$",
-                        "description": "XHTML document body containing the message to display or print.\nMandatory if `OutputFormat` is XHTML, not allowed otherwise.",
                         "x-nexo-min": 0,
-                        "x-nexo-max": 262144
+                        "x-nexo-max": 262144,
+                        "description": "XHTML document body containing the message to display or print.\nMandatory if `OutputFormat` is XHTML, not allowed otherwise."
                     },
                     "OutputBarcode": {
                         "$ref": "#/components/schemas/OutputBarcode",
@@ -1948,17 +1861,20 @@
                 "type": "object",
                 "properties": {
                     "MSISDN": {
-                        "type": "integer",
+                        "type": "string",
+                        "pattern": "^[0-9]*$",
                         "description": "Mobile Subscriber Integrated Service Digital Network (i.e. mobile phone number of the SIM card). Country, National Destination Code, and Subscriber Number.",
                         "x-nexo-kind": "digitstring"
                     },
                     "IMSI": {
-                        "type": "integer",
+                        "type": "string",
+                        "pattern": "^[0-9]*$",
                         "description": "International Mobile Subscriber Identity. Unique number associated with the mobile phone user, containing the Mobile Country Code (MCC), the Mobile Network Code (MNC), and the Mobile Identification Number (MSIN)",
                         "x-nexo-kind": "digitstring"
                     },
                     "IMEI": {
-                        "type": "integer",
+                        "type": "string",
+                        "pattern": "^[0-9]*$",
                         "description": "International Mobile Equipment Identity. Unique number associated with the mobile phone device.",
                         "x-nexo-kind": "digitstring"
                     }
@@ -2027,21 +1943,24 @@
                 "description": "Mobile phone is used as a payment instrument for the transaction.\nInformation related to the mobile for the payment transaction.",
                 "properties": {
                     "MobileCountryCode": {
-                        "type": "integer",
+                        "type": "string",
                         "minimum": 3,
                         "maximum": 3,
+                        "pattern": "^[0-9]*$",
                         "description": "Identifies the country of a mobile phone operator.\nIf data available.",
                         "x-nexo-kind": "digitstring"
                     },
                     "MobileNetworkCode": {
-                        "type": "integer",
+                        "type": "string",
                         "minimum": 2,
                         "maximum": 3,
+                        "pattern": "^[0-9]*$",
                         "description": "Identifies the mobile phone operator inside a country.\nIf data available.",
                         "x-nexo-kind": "digitstring"
                     },
                     "MaskedMSISDN": {
-                        "type": "integer",
+                        "type": "string",
+                        "pattern": "^[0-9]*$",
                         "description": "Masked Mobile Subscriber Integrated Service Digital Network.\nIf data available.",
                         "x-nexo-kind": "digitstring"
                     },
@@ -2052,7 +1971,8 @@
                     "ProtectedMobileData": {
                         "type": "string",
                         "description": "Sensitive information related to the mobile phone, protected by CMS.\nSensitiveMobileData.",
-                        "x-nexo-kind": "contentinformation"
+                        "x-nexo-kind": "contentinformation",
+                        "format": "byte"
                     },
                     "SensitiveMobileData": {
                         "$ref": "#/components/schemas/SensitiveMobileData",
@@ -2098,6 +2018,7 @@
                     },
                     "CumulativeAmount": {
                         "type": "number",
+                        "format": "double",
                         "maximum": 99999999.999999,
                         "minimum": 0.0,
                         "description": "Sum of a collection of amounts. Total amount of the payment instalments.",
@@ -2105,6 +2026,7 @@
                     },
                     "FirstAmount": {
                         "type": "number",
+                        "format": "double",
                         "maximum": 99999999.999999,
                         "minimum": 0.0,
                         "description": "First amount of the payment instalments.",
@@ -2112,6 +2034,7 @@
                     },
                     "Charges": {
                         "type": "number",
+                        "format": "double",
                         "maximum": 99999999.999999,
                         "minimum": 0.0,
                         "description": "Charges related to a transaction. Charge related to the payment instalments.",
@@ -2138,9 +2061,10 @@
                         "description": "Name of the owner of a stored value account."
                     },
                     "ExpiryDate": {
-                        "type": "integer",
+                        "type": "string",
                         "minimum": 4,
                         "maximum": 4,
+                        "pattern": "^[0-9]*$",
                         "description": "Date after which the card cannot be used. If EMV expiry date is present, it overrides Track2 information. Format is MMYY.",
                         "x-nexo-kind": "digitstring"
                     },
@@ -2176,7 +2100,8 @@
                     "ProtectedCardData": {
                         "type": "string",
                         "description": "Sensitive information related to the payment card, protected by CMS.\nSensitiveCardData protected by CMS EnvelopedData.",
-                        "x-nexo-kind": "contentinformation"
+                        "x-nexo-kind": "contentinformation",
+                        "format": "byte"
                     },
                     "CardData": {
                         "$ref": "#/components/schemas/CardData",
@@ -2227,12 +2152,14 @@
                         "description": "Code assigned to a transaction approval by the Acquirer.\nIf referral."
                     },
                     "AcquirerID": {
-                        "type": "integer",
+                        "type": "string",
+                        "pattern": "^[0-9]*$",
                         "description": "Identification of the Acquirer.\nRestrict to the Acquirer if present.",
                         "x-nexo-kind": "digitstring"
                     },
                     "AmountValue": {
                         "type": "number",
+                        "format": "double",
                         "maximum": 99999999.999999,
                         "minimum": 0.0,
                         "description": "Value of an amount.",
@@ -2260,7 +2187,8 @@
                     "AcquirerID": {
                         "type": "array",
                         "items": {
-                            "type": "integer",
+                            "type": "string",
+                            "pattern": "^[0-9]*$",
                             "description": "Identification of the Acquirer.\nRestrict to these Acquirer if present.",
                             "x-nexo-kind": "digitstring"
                         },
@@ -2286,8 +2214,9 @@
                     },
                     "CustomerLanguage": {
                         "type": "string",
-                        "pattern": "^[a-z]{2,2}$",
-                        "description": "The language used on the terminal screen or in text printed by the terminal.\nTypical use case is setting the language on unattended terminals. Format: two-character [ISO 639:2023](https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes) format."
+                        "pattern": "^[A-Za-z]{2,2}$",
+                        "description": "The language used on the terminal screen or in text printed by the terminal.\nTypical use case is setting the language on unattended terminals. Format: two-character [ISO 639:2023](https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes) format.",
+                        "x-nexo-kind": "isolanguage2a"
                     },
                     "ForceOnlineFlag": {
                         "type": "boolean",
@@ -2301,9 +2230,9 @@
                     "MerchantCategoryCode": {
                         "type": "string",
                         "pattern": "^.{3,4}$",
-                        "description": "The code which identifies the category of the transaction (MCC).\nThe payment implies a specific MCC.",
                         "x-nexo-min": 3,
-                        "x-nexo-max": 4
+                        "x-nexo-max": 4,
+                        "description": "The code which identifies the category of the transaction (MCC).\nThe payment implies a specific MCC."
                     }
                 }
             },
@@ -2349,6 +2278,7 @@
                     },
                     "RequestedAmount": {
                         "type": "number",
+                        "format": "double",
                         "maximum": 99999999.999999,
                         "minimum": 0.0,
                         "description": "Amount requested by the Sale for the payment.",
@@ -2356,6 +2286,7 @@
                     },
                     "CashBackAmount": {
                         "type": "number",
+                        "format": "double",
                         "maximum": 99999999.999999,
                         "minimum": 0.0,
                         "description": "The cash-back part of the amount requested by the Sale for the payment.",
@@ -2363,6 +2294,7 @@
                     },
                     "TipAmount": {
                         "type": "number",
+                        "format": "double",
                         "maximum": 99999999.999999,
                         "minimum": 0.0,
                         "description": "Amount paid for a tip. Allow the printing of the tip on the receipt, and to qualify the tip part of the amount.",
@@ -2370,6 +2302,7 @@
                     },
                     "PaidAmount": {
                         "type": "number",
+                        "format": "double",
                         "maximum": 99999999.999999,
                         "minimum": 0.0,
                         "description": "Amount already paid in case of split payment. Depending on the context, a split payment is either a split amount, or a split basket (required by some payment means as fleet cards). The PaidAmount is present when the split payment is a split\n     of the amount. Split of the basket involves two Sale Transactions, and does not have to be recognised by\n     the POI.",
@@ -2377,6 +2310,7 @@
                     },
                     "MinimumAmountToDeliver": {
                         "type": "number",
+                        "format": "double",
                         "maximum": 99999999.999999,
                         "minimum": 0.0,
                         "description": "Minimum amount the Sale System is allowed to deliver for this payment. For the OneTimeReservation, when the maximum amount is unknown, the Sale System indicates the minimum amount it allows.",
@@ -2384,6 +2318,7 @@
                     },
                     "MaximumCashBackAmount": {
                         "type": "number",
+                        "format": "double",
                         "maximum": 99999999.999999,
                         "minimum": 0.0,
                         "description": "Maximum amount which could be requested for cash-back to the Sale System. Allows the Cashier\n   to limit the amount value of cash-back to deliver to the Customer.",
@@ -2391,6 +2326,7 @@
                     },
                     "MinimumSplitAmount": {
                         "type": "number",
+                        "format": "double",
                         "maximum": 99999999.999999,
                         "minimum": 0.0,
                         "description": "Minimum amount of a split, which could be requested by a Customer.Allows the Merchant to limit the number of split requested by the Customer.",
@@ -2425,6 +2361,7 @@
                 "properties": {
                     "AmountValue": {
                         "type": "number",
+                        "format": "double",
                         "maximum": 99999999.999999,
                         "minimum": 0.0,
                         "description": "Value of an amount.",
@@ -2457,16 +2394,19 @@
                     },
                     "Rate": {
                         "type": "number",
+                        "format": "double",
                         "description": "Rate of currency conversion.",
                         "x-nexo-kind": "decimal"
                     },
                     "Markup": {
                         "type": "number",
+                        "format": "double",
                         "description": "Markup of a currency conversion amount as a percentage.",
                         "x-nexo-kind": "decimal"
                     },
                     "Commission": {
                         "type": "number",
+                        "format": "double",
                         "maximum": 99999999.999999,
                         "minimum": 0.0,
                         "description": "Commission for a currency conversion.",
@@ -2487,17 +2427,19 @@
                 "properties": {
                     "X": {
                         "type": "string",
-                        "description": "The hexadecimal value of the coordinates of a point on the abscissa.",
-                        "x-nexo-kind": "hexstring",
+                        "pattern": "^[0-9a-fA-F]*$",
                         "x-nexo-min": 1,
-                        "x-nexo-max": 4
+                        "x-nexo-max": 4,
+                        "description": "The hexadecimal value of the coordinates of a point on the abscissa.",
+                        "x-nexo-kind": "hexstring"
                     },
                     "Y": {
                         "type": "string",
-                        "description": "The hexadecimal value of the coordinates of a point on the ordinate.",
-                        "x-nexo-kind": "hexstring",
+                        "pattern": "^[0-9a-fA-F]*$",
                         "x-nexo-min": 1,
-                        "x-nexo-max": 4
+                        "x-nexo-max": 4,
+                        "description": "The hexadecimal value of the coordinates of a point on the ordinate.",
+                        "x-nexo-kind": "hexstring"
                     }
                 },
                 "required": [
@@ -2556,6 +2498,7 @@
                     },
                     "CurrentBalance": {
                         "type": "number",
+                        "format": "double",
                         "maximum": 99999999.999999,
                         "minimum": 0.0,
                         "description": "Balance of an account.\nIf known (provided by the card or an external host).",
@@ -2602,7 +2545,8 @@
                 "description": "Data related to the response from the payment Acquirer.",
                 "properties": {
                     "AcquirerID": {
-                        "type": "integer",
+                        "type": "string",
+                        "pattern": "^[0-9]*$",
                         "description": "Identification of the Acquirer.\nIdentification of the Acquirer when the POI System is multi-acquirer.",
                         "x-nexo-kind": "digitstring"
                     },
@@ -2641,17 +2585,19 @@
                 "properties": {
                     "X": {
                         "type": "string",
-                        "description": "Abscissa of a point coordinates. The hexadecimal value in text of the abscissa of the coordinates of a point. Leading zero can be removed (e.g. 3BC, 0, and 1287).",
-                        "x-nexo-kind": "hexstring",
+                        "pattern": "^[0-9a-fA-F]*$",
                         "x-nexo-min": 1,
-                        "x-nexo-max": 4
+                        "x-nexo-max": 4,
+                        "description": "Abscissa of a point coordinates. The hexadecimal value in text of the abscissa of the coordinates of a point. Leading zero can be removed (e.g. 3BC, 0, and 1287).",
+                        "x-nexo-kind": "hexstring"
                     },
                     "Y": {
                         "type": "string",
-                        "description": "Ordinate of a point coordinates. The hexadecimal value in text of the ordinate of the coordinates of a point. Leading zero can be removed (e.g. 3BC, 0, and 1287).",
-                        "x-nexo-kind": "hexstring",
+                        "pattern": "^[0-9a-fA-F]*$",
                         "x-nexo-min": 1,
-                        "x-nexo-max": 4
+                        "x-nexo-max": 4,
+                        "description": "Ordinate of a point coordinates. The hexadecimal value in text of the ordinate of the coordinates of a point. Leading zero can be removed (e.g. 3BC, 0, and 1287).",
+                        "x-nexo-kind": "hexstring"
                     }
                 },
                 "required": [
@@ -2686,6 +2632,7 @@
                     },
                     "AuthorizedAmount": {
                         "type": "number",
+                        "format": "double",
                         "maximum": 99999999.999999,
                         "minimum": 0.0,
                         "description": "Amount requested by the Sale for the payment.",
@@ -2693,6 +2640,7 @@
                     },
                     "TotalRebatesAmount": {
                         "type": "number",
+                        "format": "double",
                         "maximum": 99999999.999999,
                         "minimum": 0.0,
                         "description": "Sum of rebates in amount (total amount or line item amount) for all the loyalty programs.",
@@ -2700,6 +2648,7 @@
                     },
                     "TotalFeesAmount": {
                         "type": "number",
+                        "format": "double",
                         "maximum": 99999999.999999,
                         "minimum": 0.0,
                         "description": "Total amount of financial fees.",
@@ -2707,6 +2656,7 @@
                     },
                     "CashBackAmount": {
                         "type": "number",
+                        "format": "double",
                         "maximum": 99999999.999999,
                         "minimum": 0.0,
                         "description": "The cash-back part of the amount requested by the Sale for the payment.",
@@ -2714,6 +2664,7 @@
                     },
                     "TipAmount": {
                         "type": "number",
+                        "format": "double",
                         "maximum": 99999999.999999,
                         "minimum": 0.0,
                         "description": "Amount paid for a tip. Allow the printing of the tip on the receipt, and to qualify the tip part of the amount.",
@@ -2762,12 +2713,14 @@
                     "ProtectedSignature": {
                         "type": "string",
                         "description": "Numeric value of a handwritten signature. Contains the value of a handwritten signature, e.g. the signature of a cardholder on the merchant payment receipt. The format before encryption is the encoded data structure CapturedSignature. The data structure before encryption includes the start and end tags for an XML encoding, the identifier and length bytes for an ASN.1 encoding, and the complete member ProtectedSignature for a JSON encoding.",
-                        "x-nexo-kind": "contentinformation"
+                        "x-nexo-kind": "contentinformation",
+                        "format": "byte"
                     },
                     "CustomerLanguage": {
                         "type": "string",
-                        "pattern": "^[a-z]{2,2}$",
-                        "description": "The language of the customer that was used on the terminal screen or in text printed by the terminal. Format: two-character [ISO 639:2023](https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes) format."
+                        "pattern": "^[A-Za-z]{2,2}$",
+                        "description": "The language of the customer that was used on the terminal screen or in text printed by the terminal. Format: two-character [ISO 639:2023](https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes) format.",
+                        "x-nexo-kind": "isolanguage2a"
                     },
                     "OnlineFlag": {
                         "type": "boolean",
@@ -2815,8 +2768,9 @@
                     },
                     "CustomerLanguage": {
                         "type": "string",
-                        "pattern": "^[a-z]{2,2}$",
-                        "description": "The language used on the terminal screen or in text printed by the terminal.\n  Typical use case is setting the language on unattended terminals. Format: two-character [ISO 639:2023](https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes) format."
+                        "pattern": "^[A-Za-z]{2,2}$",
+                        "description": "The language used on the terminal screen or in text printed by the terminal.\n  Typical use case is setting the language on unattended terminals. Format: two-character [ISO 639:2023](https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes) format.",
+                        "x-nexo-kind": "isolanguage2a"
                     },
                     "ForceEntryMode": {
                         "$ref": "#/components/schemas/ForceEntryMode",
@@ -2828,6 +2782,7 @@
                     },
                     "TotalAmount": {
                         "type": "number",
+                        "format": "double",
                         "maximum": 99999999.999999,
                         "minimum": 0.0,
                         "description": "Amount of a transaction. In the Card Acquisition Request message, it allows the processing of a contactless card.",
@@ -2865,19 +2820,22 @@
                         "description": "Identification of a previous POI transaction.\nIf StoredValueTransactionType is Reverse or Duplicate."
                     },
                     "ProductCode": {
-                        "type": "integer",
+                        "type": "string",
                         "minimum": 1,
                         "maximum": 20,
+                        "pattern": "^[0-9]*$",
                         "description": "Product code of item purchased with the transaction.",
                         "x-nexo-kind": "digitstring"
                     },
                     "EanUpc": {
-                        "type": "integer",
+                        "type": "string",
+                        "pattern": "^[0-9]*$",
                         "description": "Standard product code of item purchased with the transaction.",
                         "x-nexo-kind": "digitstring"
                     },
                     "ItemAmount": {
                         "type": "number",
+                        "format": "double",
                         "maximum": 99999999.999999,
                         "minimum": 0.0,
                         "description": "Total amount of the item line.",
@@ -2902,6 +2860,7 @@
                     },
                     "CurrentBalance": {
                         "type": "number",
+                        "format": "double",
                         "maximum": 99999999.999999,
                         "minimum": 0.0,
                         "description": "If relevant and known.",
@@ -2921,19 +2880,22 @@
                         "description": "Identification of operation to proceed on the stored value account or the stored value card.\nCopy.\nPossible values:\n* **Activate**\n* **Duplicate**\n* **Load**\n* **Reserve**\n* **Reverse**\n* **Unload**"
                     },
                     "ProductCode": {
-                        "type": "integer",
+                        "type": "string",
                         "minimum": 1,
                         "maximum": 20,
+                        "pattern": "^[0-9]*$",
                         "description": "Product code of item purchased with the transaction.\nCopy.",
                         "x-nexo-kind": "digitstring"
                     },
                     "EanUpc": {
-                        "type": "integer",
+                        "type": "string",
+                        "pattern": "^[0-9]*$",
                         "description": "Standard product code of item purchased with the transaction.\nCopy.",
                         "x-nexo-kind": "digitstring"
                     },
                     "ItemAmount": {
                         "type": "number",
+                        "format": "double",
                         "maximum": 99999999.999999,
                         "minimum": 0.0,
                         "description": "Total amount of the item line.",
@@ -3158,38 +3120,6 @@
                     "MessageHeader"
                 ]
             },
-            "PerformedTransaction": {
-                "type": "object",
-                "properties": {
-                    "Response": {
-                        "$ref": "#/components/schemas/Response"
-                    },
-                    "SaleData": {
-                        "$ref": "#/components/schemas/SaleData"
-                    },
-                    "POIData": {
-                        "$ref": "#/components/schemas/POIData"
-                    },
-                    "PaymentResult": {
-                        "$ref": "#/components/schemas/PaymentResult"
-                    },
-                    "LoyaltyResult": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/LoyaltyResult"
-                        }
-                    },
-                    "ReversedAmount": {
-                        "type": "number",
-                        "maximum": 99999999.999999,
-                        "minimum": 0.0,
-                        "x-nexo-kind": "simpleamount"
-                    }
-                },
-                "required": [
-                    "Response"
-                ]
-            },
             "PaymentTotals": {
                 "type": "object",
                 "description": "Totals of the payment transaction during the reconciliation period.",
@@ -3205,6 +3135,7 @@
                     },
                     "TransactionAmount": {
                         "type": "number",
+                        "format": "double",
                         "maximum": 99999999.999999,
                         "minimum": 0.0,
                         "description": "Sum of amount of processed transaction during the period.",
@@ -3226,7 +3157,8 @@
                         "description": "Type of payment instrument.\nPossible values:\n* **Card**\n* **Cash**\n* **Check**\n* **Mobile**\n* **StoredValue**"
                     },
                     "AcquirerID": {
-                        "type": "integer",
+                        "type": "string",
+                        "pattern": "^[0-9]*$",
                         "description": "Identification of the Acquirer.",
                         "x-nexo-kind": "digitstring"
                     },
@@ -3263,9 +3195,9 @@
                     "TotalsGroupID": {
                         "type": "string",
                         "pattern": "^.{1,16}$",
-                        "description": "Identification of a group of transaction on a POI Terminal, having the same Sale features.\nSent if requested in the message request.",
                         "x-nexo-min": 1,
-                        "x-nexo-max": 16
+                        "x-nexo-max": 16,
+                        "description": "Identification of a group of transaction on a POI Terminal, having the same Sale features.\nSent if requested in the message request."
                     },
                     "PaymentCurrency": {
                         "type": "string",
@@ -3278,9 +3210,9 @@
                         "items": {
                             "$ref": "#/components/schemas/PaymentTotals"
                         },
-                        "description": "Totals of the payment transaction during the reconciliation period.\nIf both `TransactionCount` and `TransactionAmount` are not equal to zero.",
                         "x-nexo-list-min": 0,
-                        "x-nexo-list-max": 10
+                        "x-nexo-list-max": 10,
+                        "description": "Totals of the payment transaction during the reconciliation period.\nIf both `TransactionCount` and `TransactionAmount` are not equal to zero."
                     }
                 },
                 "required": [
@@ -3313,9 +3245,9 @@
                     "TotalsGroupID": {
                         "type": "string",
                         "pattern": "^.{1,16}$",
-                        "description": "Sent if totals in the response have to be computed only for this particular value of TotalsGroupID.",
                         "x-nexo-min": 1,
-                        "x-nexo-max": 16
+                        "x-nexo-max": 16,
+                        "description": "Sent if totals in the response have to be computed only for this particular value of TotalsGroupID."
                     }
                 }
             },
@@ -3353,6 +3285,7 @@
                     },
                     "CurrentBalance": {
                         "type": "number",
+                        "format": "double",
                         "maximum": 99999999.999999,
                         "minimum": 0.0,
                         "description": "Balance of an account after processing of the transaction.",
@@ -3380,16 +3313,16 @@
                     "ServiceID": {
                         "type": "string",
                         "pattern": "^.{1,10}$",
-                        "description": "Identification of a message pair, which processes a transaction.",
                         "x-nexo-min": 1,
-                        "x-nexo-max": 10
+                        "x-nexo-max": 10,
+                        "description": "Identification of a message pair, which processes a transaction."
                     },
                     "DeviceID": {
                         "type": "string",
                         "pattern": "^.{1,10}$",
-                        "description": "Identification of a device message pair.",
                         "x-nexo-min": 1,
-                        "x-nexo-max": 10
+                        "x-nexo-max": 10,
+                        "description": "Identification of a device message pair."
                     },
                     "SaleID": {
                         "type": "string",
@@ -3427,16 +3360,16 @@
                     "ServiceID": {
                         "type": "string",
                         "pattern": "^.{1,10}$",
-                        "description": "Identification of a message pair, which processes a transaction.\nRequired if Service or Event MessageClass message or if Device MessageClass and request from POI or response from Sale.",
                         "x-nexo-min": 1,
-                        "x-nexo-max": 10
+                        "x-nexo-max": 10,
+                        "description": "Identification of a message pair, which processes a transaction.\nRequired if Service or Event MessageClass message or if Device MessageClass and request from POI or response from Sale."
                     },
                     "DeviceID": {
                         "type": "string",
                         "pattern": "^.{1,10}$",
-                        "description": "Identification of a device message pair.\nIf Device MessageClass.",
                         "x-nexo-min": 1,
-                        "x-nexo-max": 10
+                        "x-nexo-max": 10,
+                        "description": "Identification of a device message pair.\nIf Device MessageClass."
                     },
                     "SaleID": {
                         "type": "string",
@@ -3502,7 +3435,8 @@
                 "description": "Indicate the reachability of the host by the POI Terminal.\nState of a Host.",
                 "properties": {
                     "AcquirerID": {
-                        "type": "integer",
+                        "type": "string",
+                        "pattern": "^[0-9]*$",
                         "description": "Identification of the Acquirer.",
                         "x-nexo-kind": "digitstring"
                     },
@@ -3662,7 +3596,8 @@
                         "description": "Indicates te response of the user from the `GetConfirmation` input command."
                     },
                     "FunctionKey": {
-                        "type": "integer",
+                        "type": "string",
+                        "pattern": "^[0-9]*$",
                         "description": "The number of the function key which is typed by the Customer on the POI or the Cashier on the Sale Terminal.",
                         "x-nexo-kind": "digitstring"
                     },
@@ -3672,14 +3607,16 @@
                         "x-nexo-kind": "unicode"
                     },
                     "DigitInput": {
-                        "type": "integer",
+                        "type": "string",
+                        "pattern": "^[0-9]*$",
                         "description": "The digits typed by the Customer on the POI or by the Cashier on the Sale Terminal.",
                         "x-nexo-kind": "digitstring"
                     },
                     "Password": {
                         "type": "string",
                         "description": "The text password typed by the Customer on the POI or by the Cashier on the Sale Terminal.",
-                        "x-nexo-kind": "contentinformation"
+                        "x-nexo-kind": "contentinformation",
+                        "format": "byte"
                     },
                     "MenuEntryNumber": {
                         "type": "array",
@@ -3752,70 +3689,6 @@
                     "OutputContent"
                 ]
             },
-            "SoundContent": {
-                "type": "object",
-                "properties": {
-                    "SoundFormat": {
-                        "$ref": "#/components/schemas/SoundFormat",
-                        "description": "Possible values:\n* **MessageRef**\n* **SoundRef**\n* **Text**"
-                    },
-                    "Language": {
-                        "type": "string",
-                        "pattern": "^[a-z]{2,2}$"
-                    },
-                    "ReferenceID": {
-                        "type": "string",
-                        "pattern": "^.+$"
-                    },
-                    "Text": {
-                        "type": "string",
-                        "pattern": "^.+$"
-                    }
-                },
-                "required": [
-                    "SoundFormat"
-                ]
-            },
-            "CardHolderPIN": {
-                "type": "object",
-                "properties": {
-                    "EncrPINBlock": {
-                        "type": "string",
-                        "x-nexo-kind": "contentinformation"
-                    },
-                    "PINFormat": {
-                        "$ref": "#/components/schemas/PINFormat",
-                        "description": "Possible values:\n* **ISO0**\n* **ISO1**\n* **ISO2**\n* **ISO3**"
-                    },
-                    "AdditionalInput": {
-                        "type": "string",
-                        "pattern": "^.+$"
-                    }
-                },
-                "required": [
-                    "EncrPINBlock",
-                    "PINFormat"
-                ]
-            },
-            "ICCResetData": {
-                "type": "object",
-                "properties": {
-                    "ATRValue": {
-                        "type": "string",
-                        "format": "byte",
-                        "pattern": "^.{1,100}$",
-                        "x-nexo-min": 1,
-                        "x-nexo-max": 100
-                    },
-                    "CardStatusWords": {
-                        "type": "string",
-                        "format": "byte",
-                        "pattern": "^.{2,2}$",
-                        "x-nexo-min": 2,
-                        "x-nexo-max": 2
-                    }
-                }
-            },
             "SecurityTrailer": {
                 "type": "object",
                 "description": "It contains information related to the security of the message.\nSecurityTrailer as used by Adyen.",
@@ -3876,8 +3749,9 @@
                     },
                     "OperatorLanguage": {
                         "type": "string",
-                        "pattern": "^[a-z]{2,2}$",
-                        "description": "Language of the Cashier or Operator.\nDefault value for Device type displays."
+                        "pattern": "^[A-Za-z]{2,2}$",
+                        "description": "Language of the Cashier or Operator.\nDefault value for Device type displays.",
+                        "x-nexo-kind": "isolanguage2a"
                     },
                     "OperatorID": {
                         "type": "string",
@@ -4018,9 +3892,9 @@
                         "items": {
                             "$ref": "#/components/schemas/StoredValueData"
                         },
-                        "description": "Data related to the stored value card.",
                         "x-nexo-list-min": 1,
-                        "x-nexo-list-max": 100
+                        "x-nexo-list-max": 100,
+                        "description": "Data related to the stored value card."
                     }
                 },
                 "required": [
@@ -4042,6 +3916,7 @@
                     },
                     "ReversedAmount": {
                         "type": "number",
+                        "format": "double",
                         "maximum": 99999999.999999,
                         "minimum": 0.0,
                         "description": "Amount of the payment or loyalty to reverse.\nReversedAmount is implicitly equal to the AuthorizedAmount if absent.",
@@ -4069,14 +3944,16 @@
                     "AcquirerID": {
                         "type": "array",
                         "items": {
-                            "type": "integer",
+                            "type": "string",
+                            "pattern": "^[0-9]*$",
                             "description": "Identification of the Acquirer.\nCould be present only if ReconciliationType is AcquirerReconciliation or AcquirerSynchronisation.",
                             "x-nexo-kind": "digitstring"
                         },
                         "description": "Identification of the Acquirer.\nCould be present only if ReconciliationType is AcquirerReconciliation or AcquirerSynchronisation."
                     },
                     "POIReconciliationID": {
-                        "type": "integer",
+                        "type": "string",
+                        "pattern": "^[0-9]*$",
                         "description": "Identification of the reconciliation period between Sale and POI.\nAbsent if ReconciliationType is not PreviousReconciliation.",
                         "x-nexo-kind": "digitstring"
                     }
@@ -4134,9 +4011,9 @@
                         "items": {
                             "$ref": "#/components/schemas/DocumentQualifier"
                         },
-                        "description": "Qualification of the document to print to the Cashier or the Customer. Allows the manager of the printer, Sale or POI Terminal, to send the information to a particular physical printer or to use the paper type accordingly.\nPossible values:\n* **CashierReceipt**\n* **CustomerReceipt**\n* **Document**\n* **Journal**\n* **SaleReceipt**\n* **Voucher**",
                         "x-nexo-list-min": 0,
-                        "x-nexo-list-max": 2
+                        "x-nexo-list-max": 2,
+                        "description": "Qualification of the document to print to the Cashier or the Customer. Allows the manager of the printer, Sale or POI Terminal, to send the information to a particular physical printer or to use the paper type accordingly.\nPossible values:\n* **CashierReceipt**\n* **CustomerReceipt**\n* **Document**\n* **Journal**\n* **SaleReceipt**\n* **Voucher**"
                     }
                 },
                 "x-nexo-kind": "request"
@@ -4225,7 +4102,8 @@
                     "AcquirerID": {
                         "type": "array",
                         "items": {
-                            "type": "integer",
+                            "type": "string",
+                            "pattern": "^[0-9]*$",
                             "description": "Identification of the Acquirer.\nPresent if requesting the diagnosis of these hosts only.",
                             "x-nexo-kind": "digitstring"
                         },
@@ -4330,33 +4208,33 @@
                         "type": "string",
                         "format": "byte",
                         "pattern": "^.{1,1}$",
-                        "description": "Class field of the APDU command (CLA). APDU request for Card Reader device request. For specific card like synchronous card, a private value should be used in accordance to ISO 7816- 4 (private range D0-FE).",
                         "x-nexo-min": 1,
-                        "x-nexo-max": 1
+                        "x-nexo-max": 1,
+                        "description": "Class field of the APDU command (CLA). APDU request for Card Reader device request. For specific card like synchronous card, a private value should be used in accordance to ISO 7816- 4 (private range D0-FE)."
                     },
                     "APDUInstruction": {
                         "type": "string",
                         "format": "byte",
                         "pattern": "^.{1,1}$",
-                        "description": "Instruction field of the APDU command (INS).",
                         "x-nexo-min": 1,
-                        "x-nexo-max": 1
+                        "x-nexo-max": 1,
+                        "description": "Instruction field of the APDU command (INS)."
                     },
                     "APDUPar1": {
                         "type": "string",
                         "format": "byte",
                         "pattern": "^.{1,1}$",
-                        "description": "Parameter 1 field of the APDU command (P1).",
                         "x-nexo-min": 1,
-                        "x-nexo-max": 1
+                        "x-nexo-max": 1,
+                        "description": "Parameter 1 field of the APDU command (P1)."
                     },
                     "APDUPar2": {
                         "type": "string",
                         "format": "byte",
                         "pattern": "^.{1,1}$",
-                        "description": "Parameter 2 field of the APDU command(P2).",
                         "x-nexo-min": 1,
-                        "x-nexo-max": 1
+                        "x-nexo-max": 1,
+                        "description": "Parameter 2 field of the APDU command(P2)."
                     },
                     "APDUData": {
                         "type": "string",
@@ -4368,9 +4246,9 @@
                         "type": "string",
                         "format": "byte",
                         "pattern": "^.{1,1}$",
-                        "description": "Expected length of the data field of the APDU response to the command (Le).",
                         "x-nexo-min": 1,
-                        "x-nexo-max": 1
+                        "x-nexo-max": 1,
+                        "description": "Expected length of the data field of the APDU response to the command (Le)."
                     }
                 },
                 "required": [
@@ -4621,6 +4499,7 @@
                     },
                     "ReversedAmount": {
                         "type": "number",
+                        "format": "double",
                         "maximum": 99999999.999999,
                         "minimum": 0.0,
                         "description": "Amount of the payment or loyalty to reverse.\nCopy.",
@@ -4651,7 +4530,8 @@
                         "description": "Type of Reconciliation requested by the Sale to the POI.\nPossible values:\n* **AcquirerReconciliation**\n* **AcquirerSynchronisation**\n* **PreviousReconciliation**\n* **SaleReconciliation**"
                     },
                     "POIReconciliationID": {
-                        "type": "integer",
+                        "type": "string",
+                        "pattern": "^[0-9]*$",
                         "description": "Identification of the reconciliation period between Sale and POI.\nAbsent if ReconciliationType is `AcquirerReconciliation`.",
                         "x-nexo-kind": "digitstring"
                     },
@@ -4678,7 +4558,8 @@
                         "description": "Result of a message request processing."
                     },
                     "POIReconciliationID": {
-                        "type": "integer",
+                        "type": "string",
+                        "pattern": "^[0-9]*$",
                         "description": "Identification of the reconciliation period between Sale and POI.",
                         "x-nexo-kind": "digitstring"
                     },
@@ -4738,9 +4619,9 @@
                         "type": "string",
                         "format": "byte",
                         "pattern": "^.{2,2}$",
-                        "description": "Status of a smartcard response to a command (SW1-SW2).",
                         "x-nexo-min": 2,
-                        "x-nexo-max": 2
+                        "x-nexo-max": 2,
+                        "description": "Status of a smartcard response to a command (SW1-SW2)."
                     }
                 },
                 "required": [
