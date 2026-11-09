@@ -4014,6 +4014,30 @@
               }
             }
           },
+          "409" : {
+            "description" : "Conflict - the user already has access to an account, account group, or role specified in the request, or the specified username is already in use.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RestServiceError"
+                },
+                "examples" : {
+                  "user-already-has-account" : {
+                    "$ref" : "#/components/examples/patch-companies-companyId-users-userId-user-already-has-account-409"
+                  },
+                  "user-already-has-account-group" : {
+                    "$ref" : "#/components/examples/patch-companies-companyId-users-userId-user-already-has-account-group-409"
+                  },
+                  "user-already-has-role" : {
+                    "$ref" : "#/components/examples/patch-companies-companyId-users-userId-user-already-has-role-409"
+                  },
+                  "username-already-in-use" : {
+                    "$ref" : "#/components/examples/patch-companies-companyId-users-userId-username-already-in-use-409"
+                  }
+                }
+              }
+            }
+          },
           "422" : {
             "description" : "Unprocessable Entity - a request validation error.",
             "content" : {
@@ -11947,6 +11971,30 @@
               }
             }
           },
+          "409" : {
+            "description" : "Conflict - the user already has access to an account, account group, or role specified in the request, or the specified username is already in use.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RestServiceError"
+                },
+                "examples" : {
+                  "user-already-has-account" : {
+                    "$ref" : "#/components/examples/patch-merchants-merchantId-users-userId-user-already-has-account-409"
+                  },
+                  "user-already-has-account-group" : {
+                    "$ref" : "#/components/examples/patch-merchants-merchantId-users-userId-user-already-has-account-group-409"
+                  },
+                  "user-already-has-role" : {
+                    "$ref" : "#/components/examples/patch-merchants-merchantId-users-userId-user-already-has-role-409"
+                  },
+                  "username-already-in-use" : {
+                    "$ref" : "#/components/examples/patch-merchants-merchantId-users-userId-username-already-in-use-409"
+                  }
+                }
+              }
+            }
+          },
           "422" : {
             "description" : "Unprocessable Entity - a request validation error.",
             "content" : {
@@ -14954,13 +15002,6 @@
         }, {
           "ApiKeyAuth" : [ ]
         } ],
-        "servers" : [ {
-          "url" : "https://management-live.adyen.com",
-          "description" : "Live Environment"
-        }, {
-          "url" : "https://management-test.adyen.com",
-          "description" : "Test Environment"
-        } ],
         "x-methodName" : "listClientCertificates",
         "x-sortIndex" : 0
       },
@@ -15091,13 +15132,6 @@
           "BasicAuth" : [ ]
         }, {
           "ApiKeyAuth" : [ ]
-        } ],
-        "servers" : [ {
-          "url" : "https://management-live.adyen.com",
-          "description" : "Live Environment"
-        }, {
-          "url" : "https://management-test.adyen.com",
-          "description" : "Test Environment"
         } ],
         "x-methodName" : "generateClientCertificate",
         "x-sortIndex" : 0
@@ -19468,20 +19502,24 @@
         "properties" : {
           "processingType" : {
             "type" : "string",
-            "description" : "The type of transactions processed over this payment method.\n Allowed values:\n- **pos** for in-person payments. \n- **billpay** for subscription payments, both the initial payment and the later recurring payments. These transactions have `recurringProcessingModel` **Subscription**. \n- **ecom** for all other card not present transactions. This includes non-recurring transactions and transactions with `recurringProcessingModel` **CardOnFile** or **UnscheduledCardOnFile**.\n",
+            "description" : "The type of transactions processed over this payment method. The recommended usage is to not specify a processing type. We then set up the payment method to process all transaction types. \n Allowed values:\n- **pos** for in-person payments. \n- **billpay** for subscription payments, both the initial payment and the later recurring payments. These transactions have `recurringProcessingModel` **Subscription**. \n- **ecom** for all other card not present transactions. This includes non-recurring transactions and transactions with `recurringProcessingModel` **CardOnFile** or **UnscheduledCardOnFile**.\n",
             "enum" : [ "billpay", "ecom", "pos" ]
           },
           "transactionDescription" : {
             "$ref" : "#/components/schemas/TransactionDescriptionInfo",
             "description" : "Information regarding the transaction description.\n> You cannot configure the transaction description in the test environment."
           }
-        },
-        "required" : [ "processingType" ]
+        }
       },
       "AccelResponseInfo" : {
         "type" : "object",
         "additionalProperties" : false,
         "properties" : {
+          "networkProcessingMode" : {
+            "type" : "string",
+            "description" : "Indicates the processing flow for the payment method. Possible values:\n- **auth**: If you have not [configured automatic capture](https://docs.adyen.com/online-payments/capture#types-of-capture) for the transaction, you must manually capture the funds. \n- **sale**: You do not need to separately capture the funds, because capture happens automatically as part of the transaction, together with authorization.\n",
+            "enum" : [ "auth", "sale" ]
+          },
           "processingType" : {
             "type" : "string",
             "description" : "The type of transactions processed over this payment method.\n Allowed values:\n- **pos** for in-person payments. \n- **billpay** for subscription payments, both the initial payment and the later recurring payments. These transactions have `recurringProcessingModel` **Subscription**. \n- **ecom** for all other card not present transactions. This includes non-recurring transactions and transactions with `recurringProcessingModel` **CardOnFile** or **UnscheduledCardOnFile**.\n",
@@ -20091,6 +20129,43 @@
           "transactionDescription" : {
             "$ref" : "#/components/schemas/TransactionDescriptionInfo",
             "description" : "Information regarding the transaction description.\n> You cannot configure the transaction description in the test environment."
+          }
+        }
+      },
+      "BoncardInfo" : {
+        "type" : "object",
+        "additionalProperties" : false,
+        "properties" : {
+          "terminalId" : {
+            "type" : "string",
+            "description" : "The TerminalID that Boncard assigns to the merchant. Format: 6 to 10 alphanumeric characters.\nExample: 5Z6G8PV9.",
+            "maxLength" : 10,
+            "minLength" : 6,
+            "pattern" : "^[A-Za-z0-9]{6,10}$"
+          }
+        },
+        "required" : [ "terminalId" ]
+      },
+      "BoncardResponseInfo" : {
+        "type" : "object",
+        "additionalProperties" : false,
+        "properties" : {
+          "terminalId" : {
+            "type" : "string",
+            "description" : "The TerminalID that Boncard assigns to the merchant. Format: 6 to 10 alphanumeric characters.\nExample: 5Z6G8PV9."
+          }
+        }
+      },
+      "BoncardUpdateInfo" : {
+        "type" : "object",
+        "additionalProperties" : false,
+        "properties" : {
+          "terminalId" : {
+            "type" : "string",
+            "description" : "The TerminalID that Boncard assigns to the merchant. Format: 6 to 10 alphanumeric characters.\nExample: 5Z6G8PV9.",
+            "maxLength" : 10,
+            "minLength" : 6,
+            "pattern" : "^[A-Za-z0-9]{6,10}$"
           }
         }
       },
@@ -21819,6 +21894,54 @@
       "JSONObject" : {
         "type" : "object"
       },
+      "JapaneseLocalizedAddress" : {
+        "type" : "object",
+        "additionalProperties" : false,
+        "properties" : {
+          "fields" : {
+            "$ref" : "#/components/schemas/JapaneseLocalizedAddressFields",
+            "description" : "The address fields in the specified character set."
+          },
+          "script" : {
+            "type" : "string",
+            "default" : "ja-Kana",
+            "description" : "The character set of the localized address.\n\nPossible values: **ja-Hani**, **ja-Kana**.",
+            "enum" : [ "ja-Kana", "ja-Hani" ]
+          }
+        },
+        "required" : [ "fields", "script" ]
+      },
+      "JapaneseLocalizedAddressFields" : {
+        "type" : "object",
+        "additionalProperties" : false,
+        "properties" : {
+          "building" : {
+            "type" : "string",
+            "description" : "The building name, floor, and room number (建物名・階・部屋番号)."
+          },
+          "city" : {
+            "type" : "string",
+            "description" : "The city (市区町村).\n\nRequired for both `ja-Hani` and `ja-Kana` addresses."
+          },
+          "district" : {
+            "type" : "string",
+            "description" : "The town or locality  (町域 / 町名)."
+          },
+          "line1" : {
+            "type" : "string",
+            "description" : "The street address including chōme, block/lot, and house number (丁目・番地・号等).\n\nRequired for both `ja-Hani` and `ja-Kana` addresses."
+          },
+          "postalCode" : {
+            "type" : "string",
+            "description" : "The postal code (郵便番号).\n\nRequired for both `ja-Hani` and `ja-Kana` addresses only when `address.postalCode` is omitted. \nOtherwise, the value in `address.postalCode` is used."
+          },
+          "prefecture" : {
+            "type" : "string",
+            "description" : "The prefecture, state, or province (都道府県).\n\nRequired for both `ja-Hani` and `ja-Kana` addresses."
+          }
+        },
+        "required" : [ "city", "line1", "prefecture" ]
+      },
       "Key" : {
         "type" : "object",
         "additionalProperties" : false,
@@ -22202,7 +22325,22 @@
           },
           "value" : {
             "type" : "string",
-            "description" : "The text of the local shopper statement in the specified character set."
+            "description" : "The localized shopper statement in the specified character set.\n\n* For `ja-Hani` the allowed characters are: Full-width kanji including letters, numbers, and symbols.\n\n* For `ja-Kana` the allowed characters are:\n    * `Half-width katakana`\n    * Letters: `a-z`, `A-Z`\n    * Numbers: `0-9`\n    * Symbols: `!`, `\"`, `#`, `$`, `%`, `&`, `'`, `(`, `)`, `*`, `+`, `,`, `-`, `.`, `/`, `:`, `;`, `<`, `=`, `>`, `?`, `@`, `[`, `\\`, `]`, `^`, `_`, `` ` ``, `{`, `|`, `}`, `~`, `｡`, `｢`, `｣`, `､`, `･`, `ｰ`\n"
+          }
+        },
+        "required" : [ "script", "value" ]
+      },
+      "LocalStoreName" : {
+        "type" : "object",
+        "additionalProperties" : false,
+        "properties" : {
+          "script" : {
+            "type" : "string",
+            "description" : "The character set of the localized store name.\n\nPossible values: **ja-Hani**, **ja-Kana**."
+          },
+          "value" : {
+            "type" : "string",
+            "description" : "The text of the localized store name in the specified character set.\n* For `ja-Hani` the allowed characters are: Full-width kanji including letters, numbers and symbols.\n\n* For `ja-Kana` the allowed characters are:\n    * Half-width katakana\n    * Letters: `a-z`, `A-Z`\n    * Numbers: `0-9`\n    * Symbols: `-`,`ｰ`,`･`,`.`\n"
           }
         },
         "required" : [ "script", "value" ]
@@ -22234,6 +22372,29 @@
             "description" : "An array of local shopper statements. Card schemes use this in the bank statement.\n\nFor Japan local shopper statements in both ja-Hani and ja-Kana are required.",
             "items" : {
               "$ref" : "#/components/schemas/LocalShopperStatement"
+            }
+          },
+          "localStoreName" : {
+            "type" : "array",
+            "description" : "An array of localized store names. Used for payment method onboarding in Japan.\n\nPossible scripts: **ja-Hani**, **ja-Kana**.",
+            "items" : {
+              "$ref" : "#/components/schemas/LocalStoreName"
+            }
+          },
+          "localizedAddress" : {
+            "type" : "array",
+            "description" : "An array of localized addresses. Used for payment method onboarding in Japan.\n\nThe `script` of each address selects which fields it carries, so each locale sends the fields its addresses have.\n\nFor Japanese stores, both **ja-Hani** and **ja-Kana** addresses are required.",
+            "items" : {
+              "discriminator" : {
+                "propertyName" : "script",
+                "mapping" : {
+                  "ja-Kana" : "#/components/schemas/JapaneseLocalizedAddress",
+                  "ja-Hani" : "#/components/schemas/JapaneseLocalizedAddress"
+                }
+              },
+              "oneOf" : [ {
+                "$ref" : "#/components/schemas/JapaneseLocalizedAddress"
+              } ]
             }
           }
         },
@@ -22619,20 +22780,24 @@
         "properties" : {
           "processingType" : {
             "type" : "string",
-            "description" : "The type of transactions processed over this payment method.\n Allowed values:\n- **pos** for in-person payments. \n- **billpay** for subscription payments, both the initial payment and the later recurring payments. These transactions have `recurringProcessingModel` **Subscription**. \n- **ecom** for all other card not present transactions. This includes non-recurring transactions and transactions with `recurringProcessingModel` **CardOnFile** or **UnscheduledCardOnFile**.\n",
+            "description" : "The type of transactions processed over this payment method. The recommended usage is to not specify a processing type. We then set up the payment method to process all transaction types. \n Allowed values:\n- **pos** for in-person payments. \n- **billpay** for subscription payments, both the initial payment and the later recurring payments. These transactions have `recurringProcessingModel` **Subscription**. \n- **ecom** for all other card not present transactions. This includes non-recurring transactions and transactions with `recurringProcessingModel` **CardOnFile** or **UnscheduledCardOnFile**.\n",
             "enum" : [ "billpay", "ecom", "pos" ]
           },
           "transactionDescription" : {
             "$ref" : "#/components/schemas/TransactionDescriptionInfo",
             "description" : "Information regarding the transaction description.\n> You cannot configure the transaction description in the test environment."
           }
-        },
-        "required" : [ "processingType" ]
+        }
       },
       "NyceResponseInfo" : {
         "type" : "object",
         "additionalProperties" : false,
         "properties" : {
+          "networkProcessingMode" : {
+            "type" : "string",
+            "description" : "Indicates the processing flow for the payment method. Possible values:\n- **auth**: If you have not [configured automatic capture](https://docs.adyen.com/online-payments/capture#types-of-capture) for the transaction, you must manually capture the funds. \n- **sale**: You do not need to separately capture the funds, because capture happens automatically as part of the transaction, together with authorization.\n",
+            "enum" : [ "auth", "sale" ]
+          },
           "processingType" : {
             "type" : "string",
             "description" : "The type of transactions processed over this payment method.\n Allowed values:\n- **pos** for in-person payments. \n- **billpay** for subscription payments, both the initial payment and the later recurring payments. These transactions have `recurringProcessingModel` **Subscription**. \n- **ecom** for all other card not present transactions. This includes non-recurring transactions and transactions with `recurringProcessingModel` **CardOnFile** or **UnscheduledCardOnFile**.\n",
@@ -22994,6 +23159,10 @@
             "$ref" : "#/components/schemas/BcmcResponseInfo",
             "description" : "**bcmc** (Bancontact) details"
           },
+          "boncard" : {
+            "$ref" : "#/components/schemas/BoncardResponseInfo",
+            "description" : "**boncard** details"
+          },
           "businessLineId" : {
             "type" : "string",
             "description" : "The unique identifier of the business line. Required if you are a [platform model](https://docs.adyen.com/platforms)."
@@ -23123,6 +23292,10 @@
             "$ref" : "#/components/schemas/PayByBankPlaidResponseInfo",
             "description" : "**paybybank_plaid** details"
           },
+          "paybybank_plaid_ca" : {
+            "$ref" : "#/components/schemas/PayByBankPlaidResponseInfo",
+            "description" : "**paybybank_plaid_ca** details"
+          },
           "payme" : {
             "$ref" : "#/components/schemas/PayMeResponseInfo",
             "description" : "**payme** details"
@@ -23134,6 +23307,10 @@
           "payto" : {
             "$ref" : "#/components/schemas/PayToResponseInfo",
             "description" : "**payto** details"
+          },
+          "pix" : {
+            "$ref" : "#/components/schemas/PixResponseInfo",
+            "description" : "**pix** details"
           },
           "pulse" : {
             "$ref" : "#/components/schemas/PulseResponseInfo",
@@ -23248,7 +23425,7 @@
             "description" : "The payment method types that were not successfully requested and their corresponding errors.",
             "items" : {
               "type" : "string",
-              "enum" : [ "abrapetite", "abrapetite_credit", "abrapetite_debit", "abrapetite_prepaid", "accel", "ach", "affirm", "afterpaytouch", "alelo", "alipay", "alipay_hk", "alipay_plus", "alipay_plus_alipay_cn", "alipay_plus_alipay_hk", "alipay_plus_dana", "alipay_plus_gcash", "alipay_plus_kakaopay", "alipay_plus_kplus", "alipay_plus_naverpay", "alipay_plus_rabbitlinepay", "alipay_plus_tosspay", "alipay_plus_touchngo", "alipay_plus_truemoney", "alipay_wap", "amex", "ancv", "applepay", "avancard", "avancard_credit", "avancard_debit", "banese_card", "banese_card_credit", "banese_card_debit", "banese_card_prepaid", "bcmc", "blik", "blik_pos", "br_schemes", "carnet", "cartebancaire", "cashapp", "clearpay", "clicktopay", "cooper", "cooper_credit", "cooper_debit", "cooper_food_debit", "cooper_meal_debit", "cooper_prepaid", "cooper_private_credit", "cooper_retail_credit", "credtodos", "credtodos_private_credit", "credtodos_private_debit", "cup", "diners", "directdebit_GB", "discover", "ebanking_FI", "ebt", "eft_directdebit_CA", "eftpos_australia", "elo", "elocredit", "elodebit", "girocard", "givex", "googlepay", "green_card", "green_card_credit", "green_card_debit", "green_card_food_prepaid", "green_card_meal_prepaid", "green_card_prepaid", "hiper", "hipercard", "ideal", "interac_card", "jcb", "klarna", "klarna_account", "klarna_b2b", "klarna_paynow", "le_card", "le_card_credit", "le_card_debit", "maestro", "maestro_usa", "maxifrota", "maxifrota_prepaid", "mbway", "mc", "mcdebit", "mealVoucher_FR", "megaleve", "megaleve_credit", "megaleve_debit", "mobilepay", "multibanco", "nutricash", "nutricash_prepaid", "nyce", "onlineBanking_PL", "paybybank", "paybybank_plaid", "payme", "payme_pos", "paynow", "paynow_pos", "paypal", "payto", "personal_card", "personal_card_credit", "personal_card_debit", "pulse", "romcard", "romcard_credit", "romcard_debit", "senff", "senff_credit", "sepadirectdebit", "sodexo", "star", "svs", "swish", "ticket", "todo_giftcard", "trustly", "twint", "twint_pos", "up_brazil", "up_brazil_credit", "up_brazil_debit", "up_brazil_prepaid", "vale_refeicao", "vale_refeicao_prepaid", "valuelink", "vegas_card", "vegas_card_credit", "vegas_card_debit", "vero_card", "vero_card_credit", "vero_card_debit", "vero_card_prepaid", "vipps", "visa", "visadebit", "vpay", "wechatpay", "wechatpay_pos", "wero" ]
+              "enum" : [ "abrapetite", "abrapetite_credit", "abrapetite_debit", "abrapetite_prepaid", "accel", "ach", "affirm", "afterpaytouch", "alelo", "alipay", "alipay_hk", "alipay_plus", "alipay_plus_alipay_cn", "alipay_plus_alipay_hk", "alipay_plus_dana", "alipay_plus_gcash", "alipay_plus_kakaopay", "alipay_plus_kplus", "alipay_plus_naverpay", "alipay_plus_rabbitlinepay", "alipay_plus_tosspay", "alipay_plus_touchngo", "alipay_plus_truemoney", "alipay_wap", "amex", "ancv", "applepay", "avancard", "avancard_credit", "avancard_debit", "banese_card", "banese_card_credit", "banese_card_debit", "banese_card_prepaid", "bcmc", "blik", "blik_pos", "boncard", "br_schemes", "carnet", "cartebancaire", "cashapp", "clearpay", "clicktopay", "cooper", "cooper_credit", "cooper_debit", "cooper_food_debit", "cooper_meal_debit", "cooper_prepaid", "cooper_private_credit", "cooper_retail_credit", "credtodos", "credtodos_private_credit", "credtodos_private_debit", "cup", "diners", "directdebit_GB", "discover", "ebanking_FI", "ebt", "eft_directdebit_CA", "eftpos_australia", "elo", "elocredit", "elodebit", "girocard", "givex", "googlepay", "green_card", "green_card_credit", "green_card_debit", "green_card_food_prepaid", "green_card_meal_prepaid", "green_card_prepaid", "hiper", "hipercard", "ideal", "interac_card", "jcb", "klarna", "klarna_account", "klarna_b2b", "klarna_paynow", "le_card", "le_card_credit", "le_card_debit", "maestro", "maestro_usa", "maxifrota", "maxifrota_prepaid", "mbway", "mc", "mcdebit", "mealVoucher_FR", "megaleve", "megaleve_credit", "megaleve_debit", "mobilepay", "multibanco", "nutricash", "nutricash_prepaid", "nyce", "onlineBanking_PL", "paybybank", "paybybank_plaid", "paybybank_plaid_ca", "payme", "payme_pos", "paynow", "paynow_pos", "paypal", "payto", "personal_card", "personal_card_credit", "personal_card_debit", "pix", "pulse", "romcard", "romcard_credit", "romcard_debit", "senff", "senff_credit", "sepadirectdebit", "sodexo", "star", "svs", "swish", "ticket", "todo_giftcard", "trustly", "twint", "twint_pos", "up_brazil", "up_brazil_credit", "up_brazil_debit", "up_brazil_prepaid", "vale_refeicao", "vale_refeicao_prepaid", "valuelink", "vegas_card", "vegas_card_credit", "vegas_card_debit", "vero_card", "vero_card_credit", "vero_card_debit", "vero_card_prepaid", "vipps", "visa", "visadebit", "vpay", "wechatpay", "wechatpay_pos", "wero" ]
             }
           }
         },
@@ -23289,6 +23466,10 @@
           "bcmc" : {
             "$ref" : "#/components/schemas/BcmcInfo",
             "description" : "Details to provide if `type` is **bcmc** (Bancontact)."
+          },
+          "boncard" : {
+            "$ref" : "#/components/schemas/BoncardInfo",
+            "description" : "Details to provide if `type` is **boncard**."
           },
           "businessLineId" : {
             "type" : "string",
@@ -23403,6 +23584,10 @@
             "$ref" : "#/components/schemas/PayByBankPlaidInfo",
             "description" : "Details to provide if `type` is **paybybank_plaid**."
           },
+          "paybybank_plaid_ca" : {
+            "$ref" : "#/components/schemas/PayByBankPlaidInfo",
+            "description" : "Details to provide if `type` is **paybybank_plaid_ca**."
+          },
           "payme" : {
             "$ref" : "#/components/schemas/PayMeInfo",
             "description" : "Details to provide if `type` is **payme**."
@@ -23414,6 +23599,10 @@
           "payto" : {
             "$ref" : "#/components/schemas/PayToInfo",
             "description" : "Details to provide if `type` is **payto**."
+          },
+          "pix" : {
+            "$ref" : "#/components/schemas/PixInfo",
+            "description" : "Details to provide if `type` is **pix**."
           },
           "pulse" : {
             "$ref" : "#/components/schemas/PulseInfo",
@@ -23470,7 +23659,7 @@
           "type" : {
             "type" : "string",
             "description" : "Payment method [variant](https://docs.adyen.com/development-resources/paymentmethodvariant#management-api).\n\nFor payment method variant **cartebancaire**, method-specific details are returned in the [`cartesBancaires`](https://docs.adyen.com/api-explorer/Management/latest/post/merchants/(merchantId)/paymentMethodSettings#responses-200-cartesBancaires) object of the response.",
-            "enum" : [ "abrapetite", "abrapetite_credit", "abrapetite_debit", "abrapetite_prepaid", "accel", "ach", "affirm", "afterpaytouch", "alelo", "alipay", "alipay_hk", "alipay_plus", "alipay_plus_alipay_cn", "alipay_plus_alipay_hk", "alipay_plus_dana", "alipay_plus_gcash", "alipay_plus_kakaopay", "alipay_plus_kplus", "alipay_plus_naverpay", "alipay_plus_rabbitlinepay", "alipay_plus_tosspay", "alipay_plus_touchngo", "alipay_plus_truemoney", "alipay_wap", "amex", "ancv", "applepay", "avancard", "avancard_credit", "avancard_debit", "banese_card", "banese_card_credit", "banese_card_debit", "banese_card_prepaid", "bcmc", "blik", "blik_pos", "br_schemes", "carnet", "cartebancaire", "cashapp", "clearpay", "clicktopay", "cooper", "cooper_credit", "cooper_debit", "cooper_food_debit", "cooper_meal_debit", "cooper_prepaid", "cooper_private_credit", "cooper_retail_credit", "credtodos", "credtodos_private_credit", "credtodos_private_debit", "cup", "diners", "directdebit_GB", "discover", "ebanking_FI", "ebt", "eft_directdebit_CA", "eftpos_australia", "elo", "elocredit", "elodebit", "girocard", "givex", "googlepay", "green_card", "green_card_credit", "green_card_debit", "green_card_food_prepaid", "green_card_meal_prepaid", "green_card_prepaid", "hiper", "hipercard", "ideal", "interac_card", "jcb", "klarna", "klarna_account", "klarna_b2b", "klarna_paynow", "le_card", "le_card_credit", "le_card_debit", "maestro", "maestro_usa", "maxifrota", "maxifrota_prepaid", "mbway", "mc", "mcdebit", "mealVoucher_FR", "megaleve", "megaleve_credit", "megaleve_debit", "mobilepay", "multibanco", "nutricash", "nutricash_prepaid", "nyce", "onlineBanking_PL", "paybybank", "paybybank_plaid", "payme", "payme_pos", "paynow", "paynow_pos", "paypal", "payto", "personal_card", "personal_card_credit", "personal_card_debit", "pulse", "romcard", "romcard_credit", "romcard_debit", "senff", "senff_credit", "sepadirectdebit", "sodexo", "star", "svs", "swish", "ticket", "todo_giftcard", "trustly", "twint", "twint_pos", "up_brazil", "up_brazil_credit", "up_brazil_debit", "up_brazil_prepaid", "vale_refeicao", "vale_refeicao_prepaid", "valuelink", "vegas_card", "vegas_card_credit", "vegas_card_debit", "vero_card", "vero_card_credit", "vero_card_debit", "vero_card_prepaid", "vipps", "visa", "visadebit", "vpay", "wechatpay", "wechatpay_pos", "wero" ]
+            "enum" : [ "abrapetite", "abrapetite_credit", "abrapetite_debit", "abrapetite_prepaid", "accel", "ach", "affirm", "afterpaytouch", "alelo", "alipay", "alipay_hk", "alipay_plus", "alipay_plus_alipay_cn", "alipay_plus_alipay_hk", "alipay_plus_dana", "alipay_plus_gcash", "alipay_plus_kakaopay", "alipay_plus_kplus", "alipay_plus_naverpay", "alipay_plus_rabbitlinepay", "alipay_plus_tosspay", "alipay_plus_touchngo", "alipay_plus_truemoney", "alipay_wap", "amex", "ancv", "applepay", "avancard", "avancard_credit", "avancard_debit", "banese_card", "banese_card_credit", "banese_card_debit", "banese_card_prepaid", "bcmc", "blik", "blik_pos", "boncard", "br_schemes", "carnet", "cartebancaire", "cashapp", "clearpay", "clicktopay", "cooper", "cooper_credit", "cooper_debit", "cooper_food_debit", "cooper_meal_debit", "cooper_prepaid", "cooper_private_credit", "cooper_retail_credit", "credtodos", "credtodos_private_credit", "credtodos_private_debit", "cup", "diners", "directdebit_GB", "discover", "ebanking_FI", "ebt", "eft_directdebit_CA", "eftpos_australia", "elo", "elocredit", "elodebit", "girocard", "givex", "googlepay", "green_card", "green_card_credit", "green_card_debit", "green_card_food_prepaid", "green_card_meal_prepaid", "green_card_prepaid", "hiper", "hipercard", "ideal", "interac_card", "jcb", "klarna", "klarna_account", "klarna_b2b", "klarna_paynow", "le_card", "le_card_credit", "le_card_debit", "maestro", "maestro_usa", "maxifrota", "maxifrota_prepaid", "mbway", "mc", "mcdebit", "mealVoucher_FR", "megaleve", "megaleve_credit", "megaleve_debit", "mobilepay", "multibanco", "nutricash", "nutricash_prepaid", "nyce", "onlineBanking_PL", "paybybank", "paybybank_plaid", "paybybank_plaid_ca", "payme", "payme_pos", "paynow", "paynow_pos", "paypal", "payto", "personal_card", "personal_card_credit", "personal_card_debit", "pix", "pulse", "romcard", "romcard_credit", "romcard_debit", "senff", "senff_credit", "sepadirectdebit", "sodexo", "star", "svs", "swish", "ticket", "todo_giftcard", "trustly", "twint", "twint_pos", "up_brazil", "up_brazil_credit", "up_brazil_debit", "up_brazil_prepaid", "vale_refeicao", "vale_refeicao_prepaid", "valuelink", "vegas_card", "vegas_card_credit", "vegas_card_debit", "vero_card", "vero_card_credit", "vero_card_debit", "vero_card_prepaid", "vipps", "visa", "visadebit", "vpay", "wechatpay", "wechatpay_pos", "wero" ]
           },
           "valuelink" : {
             "$ref" : "#/components/schemas/ValuelinkInfo",
@@ -23571,6 +23760,36 @@
           }
         }
       },
+      "PixInfo" : {
+        "type" : "object",
+        "additionalProperties" : false,
+        "properties" : {
+          "allowRecurring" : {
+            "type" : "boolean",
+            "default" : false,
+            "description" : "Indicates whether to set up Pix Recurring (Pix Automático) instead of standard Pix. The default value is **false**."
+          },
+          "allowPayByBank" : {
+            "type" : "boolean",
+            "default" : false,
+            "description" : "Indicates whether to set up Pix Pay by Bank instead of standard Pix. The default value is **false**."
+          }
+        }
+      },
+      "PixResponseInfo" : {
+        "type" : "object",
+        "additionalProperties" : false,
+        "properties" : {
+          "allowRecurring" : {
+            "type" : "boolean",
+            "description" : "Indicates whether the Pix payment method is set up as Pix Recurring (Pix Automático) instead of standard Pix."
+          },
+          "allowPayByBank" : {
+            "type" : "boolean",
+            "description" : "Indicates whether the Pix payment method is set up as Pix Pay by Bank instead of standard Pix."
+          }
+        }
+      },
       "Profile" : {
         "type" : "object",
         "additionalProperties" : false,
@@ -23661,20 +23880,24 @@
         "properties" : {
           "processingType" : {
             "type" : "string",
-            "description" : "The type of transactions processed over this payment method.\n Allowed values:\n- **pos** for in-person payments. \n- **billpay** for subscription payments, both the initial payment and the later recurring payments. These transactions have `recurringProcessingModel` **Subscription**. \n- **ecom** for all other card not present transactions. This includes non-recurring transactions and transactions with `recurringProcessingModel` **CardOnFile** or **UnscheduledCardOnFile**.\n",
+            "description" : "The type of transactions processed over this payment method. The recommended usage is to not specify a processing type. We then set up the payment method to process all transaction types. \n Allowed values:\n- **pos** for in-person payments. \n- **billpay** for subscription payments, both the initial payment and the later recurring payments. These transactions have `recurringProcessingModel` **Subscription**. \n- **ecom** for all other card not present transactions. This includes non-recurring transactions and transactions with `recurringProcessingModel` **CardOnFile** or **UnscheduledCardOnFile**.\n",
             "enum" : [ "billpay", "ecom", "pos" ]
           },
           "transactionDescription" : {
             "$ref" : "#/components/schemas/TransactionDescriptionInfo",
             "description" : "Information regarding the transaction description.\n> You cannot configure the transaction description in the test environment."
           }
-        },
-        "required" : [ "processingType" ]
+        }
       },
       "PulseResponseInfo" : {
         "type" : "object",
         "additionalProperties" : false,
         "properties" : {
+          "networkProcessingMode" : {
+            "type" : "string",
+            "description" : "Indicates the processing flow for the payment method. Possible values:\n- **auth**: If you have not [configured automatic capture](https://docs.adyen.com/online-payments/capture#types-of-capture) for the transaction, you must manually capture the funds. \n- **sale**: You do not need to separately capture the funds, because capture happens automatically as part of the transaction, together with authorization.\n",
+            "enum" : [ "auth", "sale" ]
+          },
           "processingType" : {
             "type" : "string",
             "description" : "The type of transactions processed over this payment method.\n Allowed values:\n- **pos** for in-person payments. \n- **billpay** for subscription payments, both the initial payment and the later recurring payments. These transactions have `recurringProcessingModel` **Subscription**. \n- **ecom** for all other card not present transactions. This includes non-recurring transactions and transactions with `recurringProcessingModel` **CardOnFile** or **UnscheduledCardOnFile**.\n",
@@ -24390,6 +24613,10 @@
           "enableStandalone" : {
             "type" : "boolean",
             "description" : "Enable standalone mode."
+          },
+          "merchantReference" : {
+            "type" : "string",
+            "description" : "The merchant reference to be sent with every transaction when the terminal is in standalone mode. Used for reconciliation.\n\nThis property also accepts one or more variables as input, together with plain text. When this property reaches the terminal, the terminal replaces the variables with the values that apply to it. For the list of allowed variables, see [Configure the merchant reference](https://docs.adyen.com/point-of-sale/standalone/standalone-build/set-up-standalone#configure-merchant-reference).\n"
           }
         }
       },
@@ -24399,20 +24626,24 @@
         "properties" : {
           "processingType" : {
             "type" : "string",
-            "description" : "The type of transactions processed over this payment method.\n Allowed values:\n- **pos** for in-person payments. \n- **billpay** for subscription payments, both the initial payment and the later recurring payments. These transactions have `recurringProcessingModel` **Subscription**. \n- **ecom** for all other card not present transactions. This includes non-recurring transactions and transactions with `recurringProcessingModel` **CardOnFile** or **UnscheduledCardOnFile**.\n",
+            "description" : "The type of transactions processed over this payment method. The recommended usage is to not specify a processing type. We then set up the payment method to process all transaction types. \n Allowed values:\n- **pos** for in-person payments. \n- **billpay** for subscription payments, both the initial payment and the later recurring payments. These transactions have `recurringProcessingModel` **Subscription**. \n- **ecom** for all other card not present transactions. This includes non-recurring transactions and transactions with `recurringProcessingModel` **CardOnFile** or **UnscheduledCardOnFile**.\n",
             "enum" : [ "billpay", "ecom", "pos" ]
           },
           "transactionDescription" : {
             "$ref" : "#/components/schemas/TransactionDescriptionInfo",
             "description" : "Information regarding the transaction description.\n> You cannot configure the transaction description in the test environment."
           }
-        },
-        "required" : [ "processingType" ]
+        }
       },
       "StarResponseInfo" : {
         "type" : "object",
         "additionalProperties" : false,
         "properties" : {
+          "networkProcessingMode" : {
+            "type" : "string",
+            "description" : "Indicates the processing flow for the payment method. Possible values:\n- **auth**: If you have not [configured automatic capture](https://docs.adyen.com/online-payments/capture#types-of-capture) for the transaction, you must manually capture the funds. \n- **sale**: You do not need to separately capture the funds, because capture happens automatically as part of the transaction, together with authorization.\n",
+            "enum" : [ "auth", "sale" ]
+          },
           "processingType" : {
             "type" : "string",
             "description" : "The type of transactions processed over this payment method.\n Allowed values:\n- **pos** for in-person payments. \n- **billpay** for subscription payments, both the initial payment and the later recurring payments. These transactions have `recurringProcessingModel` **Subscription**. \n- **ecom** for all other card not present transactions. This includes non-recurring transactions and transactions with `recurringProcessingModel` **CardOnFile** or **UnscheduledCardOnFile**.\n",
@@ -25179,6 +25410,11 @@
             "description" : "Settings to skip signature, sign on display, or sign on receipt.",
             "nullable" : true
           },
+          "skipTipConfirmationOnTerminal" : {
+            "type" : "boolean",
+            "description" : "Skip the tip confirmation step of the Adyen payment app on the terminal. Set to **true** only if your own app that handles tipping is installed on the same terminal. If your app is not installed on the terminal, set to **false**.",
+            "nullable" : true
+          },
           "standalone" : {
             "$ref" : "#/components/schemas/Standalone",
             "description" : "Settings for [standalone](https://docs.adyen.com/point-of-sale/standalone/standalone-build/set-up-standalone#set-up-standalone-using-an-api-call) features.",
@@ -25780,6 +26016,10 @@
             "$ref" : "#/components/schemas/BcmcUpdateInfo",
             "description" : "Details to provide if `type` is **bcmc** (Bancontact)."
           },
+          "boncard" : {
+            "$ref" : "#/components/schemas/BoncardUpdateInfo",
+            "description" : "Details to provide if `type` is **boncard**."
+          },
           "carnet" : {
             "$ref" : "#/components/schemas/GenericPmWithTdiUpdateInfo",
             "description" : "Details to provide if `type` is **carnet**."
@@ -25876,6 +26116,10 @@
           "paybybank_plaid" : {
             "$ref" : "#/components/schemas/PayByBankPlaidUpdateInfo",
             "description" : "Details to provide if `type` is **paybybank_plaid**."
+          },
+          "paybybank_plaid_ca" : {
+            "$ref" : "#/components/schemas/PayByBankPlaidUpdateInfo",
+            "description" : "Details to provide if `type` is **paybybank_plaid_ca**."
           },
           "pulse" : {
             "$ref" : "#/components/schemas/PulseUpdateInfo",
@@ -31249,6 +31493,50 @@
           }
         }
       },
+      "patch-companies-companyId-users-userId-user-already-has-account-409" : {
+        "summary" : "Response code - 409 Conflict. The user already has access to an account specified in the request.",
+        "value" : {
+          "type" : "https://docs.adyen.com/development-resources/error-codes",
+          "errorCode" : "00_409",
+          "title" : "Conflict",
+          "status" : 409,
+          "detail" : "The user already has access to an account specified in the request.",
+          "requestId" : "MKUDJSF3JGHB3B7L"
+        }
+      },
+      "patch-companies-companyId-users-userId-user-already-has-account-group-409" : {
+        "summary" : "Response code - 409 Conflict. The user already has access to an account group specified in the request.",
+        "value" : {
+          "type" : "https://docs.adyen.com/development-resources/error-codes",
+          "errorCode" : "00_409",
+          "title" : "Conflict",
+          "status" : 409,
+          "detail" : "The user already has access to an account group specified in the request.",
+          "requestId" : "MKUDJSF3JGHB3B6K"
+        }
+      },
+      "patch-companies-companyId-users-userId-user-already-has-role-409" : {
+        "summary" : "Response code - 409 Conflict. The user already has access to a role specified in the request.",
+        "value" : {
+          "type" : "https://docs.adyen.com/development-resources/error-codes",
+          "errorCode" : "00_409",
+          "title" : "Conflict",
+          "status" : 409,
+          "detail" : "The user already has access to a role specified in the request.",
+          "requestId" : "MKUDJSF3JGHB3B8M"
+        }
+      },
+      "patch-companies-companyId-users-userId-username-already-in-use-409" : {
+        "summary" : "Response code - 409 Conflict. The specified username is already in use.",
+        "value" : {
+          "type" : "https://docs.adyen.com/development-resources/error-codes",
+          "errorCode" : "00_409",
+          "title" : "Conflict",
+          "status" : 409,
+          "detail" : "The specified 'username' is already in use.",
+          "requestId" : "MKUDJSF3JGHB3B9N"
+        }
+      },
       "patch-companies-companyId-webhooks-webhookId-patch-company-webhook" : {
         "summary" : "Activate the webhook",
         "description" : "Example request for activating a webhook configuration.",
@@ -32367,6 +32655,50 @@
           "hardware" : {
             "displayMaximumBackLight" : 75
           }
+        }
+      },
+      "patch-merchants-merchantId-users-userId-user-already-has-account-409" : {
+        "summary" : "Response code - 409 Conflict. The user already has access to an account specified in the request.",
+        "value" : {
+          "type" : "https://docs.adyen.com/development-resources/error-codes",
+          "errorCode" : "00_409",
+          "title" : "Conflict",
+          "status" : 409,
+          "detail" : "The user already has access to an account specified in the request.",
+          "requestId" : "MKUDJSF3JGHB3C7Q"
+        }
+      },
+      "patch-merchants-merchantId-users-userId-user-already-has-account-group-409" : {
+        "summary" : "Response code - 409 Conflict. The user already has access to an account group specified in the request.",
+        "value" : {
+          "type" : "https://docs.adyen.com/development-resources/error-codes",
+          "errorCode" : "00_409",
+          "title" : "Conflict",
+          "status" : 409,
+          "detail" : "The user already has access to an account group specified in the request.",
+          "requestId" : "MKUDJSF3JGHB3C6P"
+        }
+      },
+      "patch-merchants-merchantId-users-userId-user-already-has-role-409" : {
+        "summary" : "Response code - 409 Conflict. The user already has access to a role specified in the request.",
+        "value" : {
+          "type" : "https://docs.adyen.com/development-resources/error-codes",
+          "errorCode" : "00_409",
+          "title" : "Conflict",
+          "status" : 409,
+          "detail" : "The user already has access to a role specified in the request.",
+          "requestId" : "MKUDJSF3JGHB3C8R"
+        }
+      },
+      "patch-merchants-merchantId-users-userId-username-already-in-use-409" : {
+        "summary" : "Response code - 409 Conflict. The specified username is already in use.",
+        "value" : {
+          "type" : "https://docs.adyen.com/development-resources/error-codes",
+          "errorCode" : "00_409",
+          "title" : "Conflict",
+          "status" : 409,
+          "detail" : "The specified 'username' is already in use.",
+          "requestId" : "MKUDJSF3JGHB3C9S"
         }
       },
       "patch-merchants-merchantId-webhooks-webhookId-patch-merchant-webhook" : {

@@ -2973,6 +2973,23 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RestServiceError'
+        '409':
+          description: Conflict - the user already has access to an account, account
+            group, or role specified in the request, or the specified username is
+            already in use.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+              examples:
+                user-already-has-account:
+                  $ref: '#/components/examples/patch-companies-companyId-users-userId-user-already-has-account-409'
+                user-already-has-account-group:
+                  $ref: '#/components/examples/patch-companies-companyId-users-userId-user-already-has-account-group-409'
+                user-already-has-role:
+                  $ref: '#/components/examples/patch-companies-companyId-users-userId-user-already-has-role-409'
+                username-already-in-use:
+                  $ref: '#/components/examples/patch-companies-companyId-users-userId-username-already-in-use-409'
         '422':
           description: Unprocessable Entity - a request validation error.
           content:
@@ -8755,6 +8772,23 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RestServiceError'
+        '409':
+          description: Conflict - the user already has access to an account, account
+            group, or role specified in the request, or the specified username is
+            already in use.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestServiceError'
+              examples:
+                user-already-has-account:
+                  $ref: '#/components/examples/patch-merchants-merchantId-users-userId-user-already-has-account-409'
+                user-already-has-account-group:
+                  $ref: '#/components/examples/patch-merchants-merchantId-users-userId-user-already-has-account-group-409'
+                user-already-has-role:
+                  $ref: '#/components/examples/patch-merchants-merchantId-users-userId-user-already-has-role-409'
+                username-already-in-use:
+                  $ref: '#/components/examples/patch-merchants-merchantId-users-userId-username-already-in-use-409'
         '422':
           description: Unprocessable Entity - a request validation error.
           content:
@@ -10964,11 +10998,6 @@ paths:
       security:
       - BasicAuth: []
       - ApiKeyAuth: []
-      servers:
-      - url: https://management-live.adyen.com
-        description: Live Environment
-      - url: https://management-test.adyen.com
-        description: Test Environment
       x-methodName: listClientCertificates
       x-sortIndex: 0
     post:
@@ -11093,11 +11122,6 @@ paths:
       security:
       - BasicAuth: []
       - ApiKeyAuth: []
-      servers:
-      - url: https://management-live.adyen.com
-        description: Live Environment
-      - url: https://management-test.adyen.com
-        description: Test Environment
       x-methodName: generateClientCertificate
       x-sortIndex: 0
   /companies/{companyId}/nonprofits:
@@ -14718,13 +14742,14 @@ components:
       properties:
         processingType:
           type: string
-          description: "The type of transactions processed over this payment method.\n\
-            \ Allowed values:\n- **pos** for in-person payments. \n- **billpay** for\
-            \ subscription payments, both the initial payment and the later recurring\
-            \ payments. These transactions have `recurringProcessingModel` **Subscription**.\
-            \ \n- **ecom** for all other card not present transactions. This includes\
-            \ non-recurring transactions and transactions with `recurringProcessingModel`\
-            \ **CardOnFile** or **UnscheduledCardOnFile**.\n"
+          description: "The type of transactions processed over this payment method.\
+            \ The recommended usage is to not specify a processing type. We then set\
+            \ up the payment method to process all transaction types. \n Allowed values:\n\
+            - **pos** for in-person payments. \n- **billpay** for subscription payments,\
+            \ both the initial payment and the later recurring payments. These transactions\
+            \ have `recurringProcessingModel` **Subscription**. \n- **ecom** for all\
+            \ other card not present transactions. This includes non-recurring transactions\
+            \ and transactions with `recurringProcessingModel` **CardOnFile** or **UnscheduledCardOnFile**.\n"
           enum:
           - billpay
           - ecom
@@ -14734,12 +14759,20 @@ components:
           description: 'Information regarding the transaction description.
 
             > You cannot configure the transaction description in the test environment.'
-      required:
-      - processingType
     AccelResponseInfo:
       type: object
       additionalProperties: false
       properties:
+        networkProcessingMode:
+          type: string
+          description: "Indicates the processing flow for the payment method. Possible\
+            \ values:\n- **auth**: If you have not [configured automatic capture](https://docs.adyen.com/online-payments/capture#types-of-capture)\
+            \ for the transaction, you must manually capture the funds. \n- **sale**:\
+            \ You do not need to separately capture the funds, because capture happens\
+            \ automatically as part of the transaction, together with authorization.\n"
+          enum:
+          - auth
+          - sale
         processingType:
           type: string
           description: "The type of transactions processed over this payment method.\n\
@@ -15321,6 +15354,44 @@ components:
           description: 'Information regarding the transaction description.
 
             > You cannot configure the transaction description in the test environment.'
+    BoncardInfo:
+      type: object
+      additionalProperties: false
+      properties:
+        terminalId:
+          type: string
+          description: 'The TerminalID that Boncard assigns to the merchant. Format:
+            6 to 10 alphanumeric characters.
+
+            Example: 5Z6G8PV9.'
+          maxLength: 10
+          minLength: 6
+          pattern: ^[A-Za-z0-9]{6,10}$
+      required:
+      - terminalId
+    BoncardResponseInfo:
+      type: object
+      additionalProperties: false
+      properties:
+        terminalId:
+          type: string
+          description: 'The TerminalID that Boncard assigns to the merchant. Format:
+            6 to 10 alphanumeric characters.
+
+            Example: 5Z6G8PV9.'
+    BoncardUpdateInfo:
+      type: object
+      additionalProperties: false
+      properties:
+        terminalId:
+          type: string
+          description: 'The TerminalID that Boncard assigns to the merchant. Format:
+            6 to 10 alphanumeric characters.
+
+            Example: 5Z6G8PV9.'
+          maxLength: 10
+          minLength: 6
+          pattern: ^[A-Za-z0-9]{6,10}$
     BillingEntitiesResponse:
       type: object
       additionalProperties: false
@@ -17116,6 +17187,59 @@ components:
           description: Information regarding the transaction description.
     JSONObject:
       type: object
+    JapaneseLocalizedAddress:
+      type: object
+      additionalProperties: false
+      properties:
+        fields:
+          $ref: '#/components/schemas/JapaneseLocalizedAddressFields'
+          description: The address fields in the specified character set.
+        script:
+          type: string
+          default: ja-Kana
+          description: 'The character set of the localized address.
+
+
+            Possible values: **ja-Hani**, **ja-Kana**.'
+          enum:
+          - ja-Kana
+          - ja-Hani
+      required:
+      - fields
+      - script
+    JapaneseLocalizedAddressFields:
+      type: object
+      additionalProperties: false
+      properties:
+        building:
+          type: string
+          description: "The building name, floor, and room number (\u5EFA\u7269\u540D\
+            \u30FB\u968E\u30FB\u90E8\u5C4B\u756A\u53F7)."
+        city:
+          type: string
+          description: "The city (\u5E02\u533A\u753A\u6751).\n\nRequired for both\
+            \ `ja-Hani` and `ja-Kana` addresses."
+        district:
+          type: string
+          description: "The town or locality  (\u753A\u57DF / \u753A\u540D)."
+        line1:
+          type: string
+          description: "The street address including ch\u014Dme, block/lot, and house\
+            \ number (\u4E01\u76EE\u30FB\u756A\u5730\u30FB\u53F7\u7B49).\n\nRequired\
+            \ for both `ja-Hani` and `ja-Kana` addresses."
+        postalCode:
+          type: string
+          description: "The postal code (\u90F5\u4FBF\u756A\u53F7).\n\nRequired for\
+            \ both `ja-Hani` and `ja-Kana` addresses only when `address.postalCode`\
+            \ is omitted. \nOtherwise, the value in `address.postalCode` is used."
+        prefecture:
+          type: string
+          description: "The prefecture, state, or province (\u90FD\u9053\u5E9C\u770C\
+            ).\n\nRequired for both `ja-Hani` and `ja-Kana` addresses."
+      required:
+      - city
+      - line1
+      - prefecture
     Key:
       type: object
       additionalProperties: false
@@ -17444,8 +17568,34 @@ components:
             Possible values: **ja-Hani**, **ja-Kana**.'
         value:
           type: string
-          description: The text of the local shopper statement in the specified character
-            set.
+          description: "The localized shopper statement in the specified character\
+            \ set.\n\n* For `ja-Hani` the allowed characters are: Full-width kanji\
+            \ including letters, numbers, and symbols.\n\n* For `ja-Kana` the allowed\
+            \ characters are:\n    * `Half-width katakana`\n    * Letters: `a-z`,\
+            \ `A-Z`\n    * Numbers: `0-9`\n    * Symbols: `!`, `\"`, `#`, `$`, `%`,\
+            \ `&`, `'`, `(`, `)`, `*`, `+`, `,`, `-`, `.`, `/`, `:`, `;`, `<`, `=`,\
+            \ `>`, `?`, `@`, `[`, `\\`, `]`, `^`, `_`, `` ` ``, `{`, `|`, `}`, `~`,\
+            \ `\uFF61`, `\uFF62`, `\uFF63`, `\uFF64`, `\uFF65`, `\uFF70`\n"
+      required:
+      - script
+      - value
+    LocalStoreName:
+      type: object
+      additionalProperties: false
+      properties:
+        script:
+          type: string
+          description: 'The character set of the localized store name.
+
+
+            Possible values: **ja-Hani**, **ja-Kana**.'
+        value:
+          type: string
+          description: "The text of the localized store name in the specified character\
+            \ set.\n* For `ja-Hani` the allowed characters are: Full-width kanji including\
+            \ letters, numbers and symbols.\n\n* For `ja-Kana` the allowed characters\
+            \ are:\n    * Half-width katakana\n    * Letters: `a-z`, `A-Z`\n    *\
+            \ Numbers: `0-9`\n    * Symbols: `-`,`\uFF70`,`\uFF65`,`.`\n"
       required:
       - script
       - value
@@ -17475,6 +17625,34 @@ components:
             For Japan local shopper statements in both ja-Hani and ja-Kana are required.'
           items:
             $ref: '#/components/schemas/LocalShopperStatement'
+        localStoreName:
+          type: array
+          description: 'An array of localized store names. Used for payment method
+            onboarding in Japan.
+
+
+            Possible scripts: **ja-Hani**, **ja-Kana**.'
+          items:
+            $ref: '#/components/schemas/LocalStoreName'
+        localizedAddress:
+          type: array
+          description: 'An array of localized addresses. Used for payment method onboarding
+            in Japan.
+
+
+            The `script` of each address selects which fields it carries, so each
+            locale sends the fields its addresses have.
+
+
+            For Japanese stores, both **ja-Hani** and **ja-Kana** addresses are required.'
+          items:
+            discriminator:
+              propertyName: script
+              mapping:
+                ja-Kana: '#/components/schemas/JapaneseLocalizedAddress'
+                ja-Hani: '#/components/schemas/JapaneseLocalizedAddress'
+            oneOf:
+            - $ref: '#/components/schemas/JapaneseLocalizedAddress'
       required:
       - localShopperStatement
     Logo:
@@ -17845,13 +18023,14 @@ components:
       properties:
         processingType:
           type: string
-          description: "The type of transactions processed over this payment method.\n\
-            \ Allowed values:\n- **pos** for in-person payments. \n- **billpay** for\
-            \ subscription payments, both the initial payment and the later recurring\
-            \ payments. These transactions have `recurringProcessingModel` **Subscription**.\
-            \ \n- **ecom** for all other card not present transactions. This includes\
-            \ non-recurring transactions and transactions with `recurringProcessingModel`\
-            \ **CardOnFile** or **UnscheduledCardOnFile**.\n"
+          description: "The type of transactions processed over this payment method.\
+            \ The recommended usage is to not specify a processing type. We then set\
+            \ up the payment method to process all transaction types. \n Allowed values:\n\
+            - **pos** for in-person payments. \n- **billpay** for subscription payments,\
+            \ both the initial payment and the later recurring payments. These transactions\
+            \ have `recurringProcessingModel` **Subscription**. \n- **ecom** for all\
+            \ other card not present transactions. This includes non-recurring transactions\
+            \ and transactions with `recurringProcessingModel` **CardOnFile** or **UnscheduledCardOnFile**.\n"
           enum:
           - billpay
           - ecom
@@ -17861,12 +18040,20 @@ components:
           description: 'Information regarding the transaction description.
 
             > You cannot configure the transaction description in the test environment.'
-      required:
-      - processingType
     NyceResponseInfo:
       type: object
       additionalProperties: false
       properties:
+        networkProcessingMode:
+          type: string
+          description: "Indicates the processing flow for the payment method. Possible\
+            \ values:\n- **auth**: If you have not [configured automatic capture](https://docs.adyen.com/online-payments/capture#types-of-capture)\
+            \ for the transaction, you must manually capture the funds. \n- **sale**:\
+            \ You do not need to separately capture the funds, because capture happens\
+            \ automatically as part of the transaction, together with authorization.\n"
+          enum:
+          - auth
+          - sale
         processingType:
           type: string
           description: "The type of transactions processed over this payment method.\n\
@@ -18190,6 +18377,9 @@ components:
         bcmc:
           $ref: '#/components/schemas/BcmcResponseInfo'
           description: '**bcmc** (Bancontact) details'
+        boncard:
+          $ref: '#/components/schemas/BoncardResponseInfo'
+          description: '**boncard** details'
         businessLineId:
           type: string
           description: The unique identifier of the business line. Required if you
@@ -18292,6 +18482,9 @@ components:
         paybybank_plaid:
           $ref: '#/components/schemas/PayByBankPlaidResponseInfo'
           description: '**paybybank_plaid** details'
+        paybybank_plaid_ca:
+          $ref: '#/components/schemas/PayByBankPlaidResponseInfo'
+          description: '**paybybank_plaid_ca** details'
         payme:
           $ref: '#/components/schemas/PayMeResponseInfo'
           description: '**payme** details'
@@ -18301,6 +18494,9 @@ components:
         payto:
           $ref: '#/components/schemas/PayToResponseInfo'
           description: '**payto** details'
+        pix:
+          $ref: '#/components/schemas/PixResponseInfo'
+          description: '**pix** details'
         pulse:
           $ref: '#/components/schemas/PulseResponseInfo'
           description: '**pulse** details'
@@ -18447,6 +18643,7 @@ components:
             - bcmc
             - blik
             - blik_pos
+            - boncard
             - br_schemes
             - carnet
             - cartebancaire
@@ -18515,6 +18712,7 @@ components:
             - onlineBanking_PL
             - paybybank
             - paybybank_plaid
+            - paybybank_plaid_ca
             - payme
             - payme_pos
             - paynow
@@ -18524,6 +18722,7 @@ components:
             - personal_card
             - personal_card_credit
             - personal_card_debit
+            - pix
             - pulse
             - romcard
             - romcard_credit
@@ -18595,6 +18794,9 @@ components:
         bcmc:
           $ref: '#/components/schemas/BcmcInfo'
           description: Details to provide if `type` is **bcmc** (Bancontact).
+        boncard:
+          $ref: '#/components/schemas/BoncardInfo'
+          description: Details to provide if `type` is **boncard**.
         businessLineId:
           type: string
           description: The unique identifier of the business line. Required if you
@@ -18717,6 +18919,9 @@ components:
         paybybank_plaid:
           $ref: '#/components/schemas/PayByBankPlaidInfo'
           description: Details to provide if `type` is **paybybank_plaid**.
+        paybybank_plaid_ca:
+          $ref: '#/components/schemas/PayByBankPlaidInfo'
+          description: Details to provide if `type` is **paybybank_plaid_ca**.
         payme:
           $ref: '#/components/schemas/PayMeInfo'
           description: Details to provide if `type` is **payme**.
@@ -18726,6 +18931,9 @@ components:
         payto:
           $ref: '#/components/schemas/PayToInfo'
           description: Details to provide if `type` is **payto**.
+        pix:
+          $ref: '#/components/schemas/PixInfo'
+          description: Details to provide if `type` is **pix**.
         pulse:
           $ref: '#/components/schemas/PulseInfo'
           description: Details to provide if `type` is **pulse**.
@@ -18833,6 +19041,7 @@ components:
           - bcmc
           - blik
           - blik_pos
+          - boncard
           - br_schemes
           - carnet
           - cartebancaire
@@ -18901,6 +19110,7 @@ components:
           - onlineBanking_PL
           - paybybank
           - paybybank_plaid
+          - paybybank_plaid_ca
           - payme
           - payme_pos
           - paynow
@@ -18910,6 +19120,7 @@ components:
           - personal_card
           - personal_card_credit
           - personal_card_debit
+          - pix
           - pulse
           - romcard
           - romcard_credit
@@ -19100,6 +19311,32 @@ components:
           description: The list of payout accounts.
           items:
             $ref: '#/components/schemas/PayoutSettings'
+    PixInfo:
+      type: object
+      additionalProperties: false
+      properties:
+        allowRecurring:
+          type: boolean
+          default: false
+          description: "Indicates whether to set up Pix Recurring (Pix Autom\xE1tico)\
+            \ instead of standard Pix. The default value is **false**."
+        allowPayByBank:
+          type: boolean
+          default: false
+          description: Indicates whether to set up Pix Pay by Bank instead of standard
+            Pix. The default value is **false**.
+    PixResponseInfo:
+      type: object
+      additionalProperties: false
+      properties:
+        allowRecurring:
+          type: boolean
+          description: "Indicates whether the Pix payment method is set up as Pix\
+            \ Recurring (Pix Autom\xE1tico) instead of standard Pix."
+        allowPayByBank:
+          type: boolean
+          description: Indicates whether the Pix payment method is set up as Pix Pay
+            by Bank instead of standard Pix.
     Profile:
       type: object
       additionalProperties: false
@@ -19193,13 +19430,14 @@ components:
       properties:
         processingType:
           type: string
-          description: "The type of transactions processed over this payment method.\n\
-            \ Allowed values:\n- **pos** for in-person payments. \n- **billpay** for\
-            \ subscription payments, both the initial payment and the later recurring\
-            \ payments. These transactions have `recurringProcessingModel` **Subscription**.\
-            \ \n- **ecom** for all other card not present transactions. This includes\
-            \ non-recurring transactions and transactions with `recurringProcessingModel`\
-            \ **CardOnFile** or **UnscheduledCardOnFile**.\n"
+          description: "The type of transactions processed over this payment method.\
+            \ The recommended usage is to not specify a processing type. We then set\
+            \ up the payment method to process all transaction types. \n Allowed values:\n\
+            - **pos** for in-person payments. \n- **billpay** for subscription payments,\
+            \ both the initial payment and the later recurring payments. These transactions\
+            \ have `recurringProcessingModel` **Subscription**. \n- **ecom** for all\
+            \ other card not present transactions. This includes non-recurring transactions\
+            \ and transactions with `recurringProcessingModel` **CardOnFile** or **UnscheduledCardOnFile**.\n"
           enum:
           - billpay
           - ecom
@@ -19209,12 +19447,20 @@ components:
           description: 'Information regarding the transaction description.
 
             > You cannot configure the transaction description in the test environment.'
-      required:
-      - processingType
     PulseResponseInfo:
       type: object
       additionalProperties: false
       properties:
+        networkProcessingMode:
+          type: string
+          description: "Indicates the processing flow for the payment method. Possible\
+            \ values:\n- **auth**: If you have not [configured automatic capture](https://docs.adyen.com/online-payments/capture#types-of-capture)\
+            \ for the transaction, you must manually capture the funds. \n- **sale**:\
+            \ You do not need to separately capture the funds, because capture happens\
+            \ automatically as part of the transaction, together with authorization.\n"
+          enum:
+          - auth
+          - sale
         processingType:
           type: string
           description: "The type of transactions processed over this payment method.\n\
@@ -20041,19 +20287,32 @@ components:
         enableStandalone:
           type: boolean
           description: Enable standalone mode.
+        merchantReference:
+          type: string
+          description: 'The merchant reference to be sent with every transaction when
+            the terminal is in standalone mode. Used for reconciliation.
+
+
+            This property also accepts one or more variables as input, together with
+            plain text. When this property reaches the terminal, the terminal replaces
+            the variables with the values that apply to it. For the list of allowed
+            variables, see [Configure the merchant reference](https://docs.adyen.com/point-of-sale/standalone/standalone-build/set-up-standalone#configure-merchant-reference).
+
+            '
     StarInfo:
       type: object
       additionalProperties: false
       properties:
         processingType:
           type: string
-          description: "The type of transactions processed over this payment method.\n\
-            \ Allowed values:\n- **pos** for in-person payments. \n- **billpay** for\
-            \ subscription payments, both the initial payment and the later recurring\
-            \ payments. These transactions have `recurringProcessingModel` **Subscription**.\
-            \ \n- **ecom** for all other card not present transactions. This includes\
-            \ non-recurring transactions and transactions with `recurringProcessingModel`\
-            \ **CardOnFile** or **UnscheduledCardOnFile**.\n"
+          description: "The type of transactions processed over this payment method.\
+            \ The recommended usage is to not specify a processing type. We then set\
+            \ up the payment method to process all transaction types. \n Allowed values:\n\
+            - **pos** for in-person payments. \n- **billpay** for subscription payments,\
+            \ both the initial payment and the later recurring payments. These transactions\
+            \ have `recurringProcessingModel` **Subscription**. \n- **ecom** for all\
+            \ other card not present transactions. This includes non-recurring transactions\
+            \ and transactions with `recurringProcessingModel` **CardOnFile** or **UnscheduledCardOnFile**.\n"
           enum:
           - billpay
           - ecom
@@ -20063,12 +20322,20 @@ components:
           description: 'Information regarding the transaction description.
 
             > You cannot configure the transaction description in the test environment.'
-      required:
-      - processingType
     StarResponseInfo:
       type: object
       additionalProperties: false
       properties:
+        networkProcessingMode:
+          type: string
+          description: "Indicates the processing flow for the payment method. Possible\
+            \ values:\n- **auth**: If you have not [configured automatic capture](https://docs.adyen.com/online-payments/capture#types-of-capture)\
+            \ for the transaction, you must manually capture the funds. \n- **sale**:\
+            \ You do not need to separately capture the funds, because capture happens\
+            \ automatically as part of the transaction, together with authorization.\n"
+          enum:
+          - auth
+          - sale
         processingType:
           type: string
           description: "The type of transactions processed over this payment method.\n\
@@ -20752,6 +21019,13 @@ components:
         signature:
           $ref: '#/components/schemas/Signature'
           description: Settings to skip signature, sign on display, or sign on receipt.
+          nullable: true
+        skipTipConfirmationOnTerminal:
+          type: boolean
+          description: Skip the tip confirmation step of the Adyen payment app on
+            the terminal. Set to **true** only if your own app that handles tipping
+            is installed on the same terminal. If your app is not installed on the
+            terminal, set to **false**.
           nullable: true
         standalone:
           $ref: '#/components/schemas/Standalone'
@@ -21446,6 +21720,9 @@ components:
         bcmc:
           $ref: '#/components/schemas/BcmcUpdateInfo'
           description: Details to provide if `type` is **bcmc** (Bancontact).
+        boncard:
+          $ref: '#/components/schemas/BoncardUpdateInfo'
+          description: Details to provide if `type` is **boncard**.
         carnet:
           $ref: '#/components/schemas/GenericPmWithTdiUpdateInfo'
           description: Details to provide if `type` is **carnet**.
@@ -21539,6 +21816,9 @@ components:
         paybybank_plaid:
           $ref: '#/components/schemas/PayByBankPlaidUpdateInfo'
           description: Details to provide if `type` is **paybybank_plaid**.
+        paybybank_plaid_ca:
+          $ref: '#/components/schemas/PayByBankPlaidUpdateInfo'
+          description: Details to provide if `type` is **paybybank_plaid_ca**.
         pulse:
           $ref: '#/components/schemas/PulseUpdateInfo'
           description: Details to provide if `type` is **pulse**.
@@ -26291,6 +26571,46 @@ components:
           fromActiveToSleep: 30
         hardware:
           displayMaximumBackLight: 75
+    patch-companies-companyId-users-userId-user-already-has-account-409:
+      summary: Response code - 409 Conflict. The user already has access to an account
+        specified in the request.
+      value:
+        type: https://docs.adyen.com/development-resources/error-codes
+        errorCode: 00_409
+        title: Conflict
+        status: 409
+        detail: The user already has access to an account specified in the request.
+        requestId: MKUDJSF3JGHB3B7L
+    patch-companies-companyId-users-userId-user-already-has-account-group-409:
+      summary: Response code - 409 Conflict. The user already has access to an account
+        group specified in the request.
+      value:
+        type: https://docs.adyen.com/development-resources/error-codes
+        errorCode: 00_409
+        title: Conflict
+        status: 409
+        detail: The user already has access to an account group specified in the request.
+        requestId: MKUDJSF3JGHB3B6K
+    patch-companies-companyId-users-userId-user-already-has-role-409:
+      summary: Response code - 409 Conflict. The user already has access to a role
+        specified in the request.
+      value:
+        type: https://docs.adyen.com/development-resources/error-codes
+        errorCode: 00_409
+        title: Conflict
+        status: 409
+        detail: The user already has access to a role specified in the request.
+        requestId: MKUDJSF3JGHB3B8M
+    patch-companies-companyId-users-userId-username-already-in-use-409:
+      summary: Response code - 409 Conflict. The specified username is already in
+        use.
+      value:
+        type: https://docs.adyen.com/development-resources/error-codes
+        errorCode: 00_409
+        title: Conflict
+        status: 409
+        detail: The specified 'username' is already in use.
+        requestId: MKUDJSF3JGHB3B9N
     patch-companies-companyId-webhooks-webhookId-patch-company-webhook:
       summary: Activate the webhook
       description: Example request for activating a webhook configuration.
@@ -27211,6 +27531,46 @@ components:
           fromActiveToSleep: 30
         hardware:
           displayMaximumBackLight: 75
+    patch-merchants-merchantId-users-userId-user-already-has-account-409:
+      summary: Response code - 409 Conflict. The user already has access to an account
+        specified in the request.
+      value:
+        type: https://docs.adyen.com/development-resources/error-codes
+        errorCode: 00_409
+        title: Conflict
+        status: 409
+        detail: The user already has access to an account specified in the request.
+        requestId: MKUDJSF3JGHB3C7Q
+    patch-merchants-merchantId-users-userId-user-already-has-account-group-409:
+      summary: Response code - 409 Conflict. The user already has access to an account
+        group specified in the request.
+      value:
+        type: https://docs.adyen.com/development-resources/error-codes
+        errorCode: 00_409
+        title: Conflict
+        status: 409
+        detail: The user already has access to an account group specified in the request.
+        requestId: MKUDJSF3JGHB3C6P
+    patch-merchants-merchantId-users-userId-user-already-has-role-409:
+      summary: Response code - 409 Conflict. The user already has access to a role
+        specified in the request.
+      value:
+        type: https://docs.adyen.com/development-resources/error-codes
+        errorCode: 00_409
+        title: Conflict
+        status: 409
+        detail: The user already has access to a role specified in the request.
+        requestId: MKUDJSF3JGHB3C8R
+    patch-merchants-merchantId-users-userId-username-already-in-use-409:
+      summary: Response code - 409 Conflict. The specified username is already in
+        use.
+      value:
+        type: https://docs.adyen.com/development-resources/error-codes
+        errorCode: 00_409
+        title: Conflict
+        status: 409
+        detail: The specified 'username' is already in use.
+        requestId: MKUDJSF3JGHB3C9S
     patch-merchants-merchantId-webhooks-webhookId-patch-merchant-webhook:
       summary: Activate the webhook
       description: Example request for activating a webhook configuration.
