@@ -2999,7 +2999,7 @@
           },
           "executeThreeD" : {
             "type" : "string",
-            "description" : "Indicates if you want to perform 3D Secure authentication on a transaction.\n\n > Alternatively, you can use [Dynamic 3D Secure](/risk-management/dynamic-3d-secure) to configure rules for applying 3D Secure.\n\nPossible values:\n* **true** – Perform 3D Secure authentication.\n* **false** – Don't perform 3D Secure authentication. Note that this setting results in refusals if the issuer mandates 3D Secure because of the PSD2 directive  or other, national regulations. \n"
+            "description" : "Indicates if you want to perform 3D Secure authentication on a transaction.\n\n > Alternatively, you can use [Dynamic 3D Secure](/risk-management/dynamic-3d-secure) to configure rules for applying 3D Secure.\n\nPossible values:\n* **true** – Perform 3D Secure authentication. For browser-based payments, make sure the payment request also contains complete `browserInfo` and, for the Checkout API, `origin`. Without them, 3D Secure 2 cannot be initiated and the transaction can be authorized without liability shift.\n* **false** – Don't perform 3D Secure authentication. Note that this setting results in refusals if the issuer mandates 3D Secure because of the PSD2 directive  or other, national regulations. \n"
           },
           "mpiImplementationType" : {
             "type" : "string",
@@ -4391,7 +4391,7 @@
           },
           "browserInfo" : {
             "$ref" : "#/components/schemas/BrowserInfo",
-            "description" : "The shopper's browser information.\n> For 3D Secure, the full object is required for web integrations. For mobile app integrations, include the `userAgent` and `acceptHeader` fields to indicate  that your integration can support a redirect in case a payment is routed to 3D Secure 2 redirect."
+            "description" : "The shopper's browser information.\n> The 3D Secure 2 guidance for `browserInfo` applies to the later `/payments` request, not to this balance check. For browser-based 3D Secure 2 payments, include complete `browserInfo`. For mobile app integrations that can be routed to a 3D Secure 2 redirect, include the `userAgent` and `acceptHeader` fields. Native app 3D Secure 2 authentication does not require `browserInfo`.\n>\n> This field is usually collected on the client, so validate its presence and completeness on your server before you submit the payment."
           },
           "captureDelayHours" : {
             "type" : "integer",
@@ -4563,7 +4563,7 @@
           "threeDSAuthenticationOnly" : {
             "type" : "boolean",
             "default" : false,
-            "description" : "Required to trigger the [authentication-only flow](https://docs.adyen.com/online-payments/3d-secure/authentication-only/). If set to **true**, you will only perform the 3D Secure 2 authentication, and will not proceed to the payment authorization.Default: **false**.",
+            "description" : "Required to trigger the [authentication-only flow](https://docs.adyen.com/online-payments/3d-secure/authentication-only/). If set to **true**, you will only perform the 3D Secure 2 authentication, and will not proceed to the payment authorization.\n\nDefault: **false**.",
             "x-addedInVersion" : "50"
           },
           "totalsGroup" : {
@@ -5490,14 +5490,14 @@
           },
           "shopperReference" : {
             "type" : "string",
-            "description" : "Your reference to uniquely identify this shopper, for example user ID or account ID. The value is case-sensitive and must be at least three characters.\n> Your reference must not include personally identifiable information (PII) such as name or email address."
+            "description" : "Your reference to uniquely identify this shopper, for example user ID or account ID. The value is case-sensitive and must be at least three characters.\nThis parameter is required unless the request is for PAN forwarding and `options.tokenize` is false (the default).\n> Your reference must not include personally identifiable information (PII) such as name or email address."
           },
           "storedPaymentMethodId" : {
             "type" : "string",
             "description" : "The unique identifier of the token that you want to forward to the third party. This is the `storedPaymentMethodId` you received in the webhook after you created the token."
           }
         },
-        "required" : [ "baseUrl", "merchantAccount", "request", "shopperReference" ]
+        "required" : [ "baseUrl", "merchantAccount", "request" ]
       },
       "CheckoutForwardRequestCard" : {
         "type" : "object",
@@ -6427,7 +6427,7 @@
           },
           "browserInfo" : {
             "$ref" : "#/components/schemas/BrowserInfo",
-            "description" : "The shopper's browser information.\n> For 3D Secure, the full object is required for web integrations. For mobile app integrations, include the `userAgent` and `acceptHeader` fields to indicate  that your integration can support a redirect in case a payment is routed to 3D Secure 2 redirect."
+            "description" : "The shopper's browser information.\n> For 3D Secure, the full object is required for web integrations. For mobile app integrations, include the `userAgent` and `acceptHeader` fields to indicate  that your integration can support a redirect in case a payment is routed to 3D Secure 2 redirect.\n>\n> For browser-based payments, missing or incomplete `browserInfo` means 3D Secure 2 cannot be initiated. The transaction is then treated as ineligible for 3D Secure 2 and can be authorized without liability shift. Native app 3D Secure 2 authentication does not require `browserInfo`. This field is usually collected on the client, so validate its presence and completeness on your server before you submit the payment. For more information, see [3D Secure 2 authentication](https://docs.adyen.com/online-payments/3d-secure/)."
           },
           "captureDelayHours" : {
             "type" : "integer",
@@ -6581,7 +6581,7 @@
           },
           "origin" : {
             "type" : "string",
-            "description" : "> Required for browser-based (`channel` **Web**) 3D Secure 2 transactions.Set this to the origin URL of the page where you are rendering the Drop-in/Component. Do not include subdirectories and a trailing slash.",
+            "description" : "> Required for browser-based (`channel` **Web**) 3D Secure 2 transactions.\n\nSet this to the origin URL of the page where you are rendering the Drop-in/Component. Do not include subdirectories and a trailing slash.\n\n> If `origin` is missing or incorrect, 3D Secure 2 cannot be initiated and the transaction can be authorized without liability shift. Set this value on your server. If you receive it from the client, validate it first. For more information, see [3D Secure 2 authentication](https://docs.adyen.com/online-payments/3d-secure/).",
             "maxLength" : 80,
             "x-addedInVersion" : "40"
           },
@@ -6727,7 +6727,7 @@
           "threeDSAuthenticationOnly" : {
             "type" : "boolean",
             "default" : false,
-            "description" : "Required to trigger the [authentication-only flow](https://docs.adyen.com/online-payments/3d-secure/authentication-only/). If set to **true**, you will only perform the 3D Secure 2 authentication, and will not proceed to the payment authorization.Default: **false**.",
+            "description" : "Required to trigger the [authentication-only flow](https://docs.adyen.com/online-payments/3d-secure/authentication-only/). If set to **true**, you will only perform the 3D Secure 2 authentication, and will not proceed to the payment authorization.\n\nDefault: **false**.",
             "x-addedInVersion" : "50"
           },
           "trustedShopper" : {
@@ -9284,7 +9284,7 @@
           },
           "browserInfo" : {
             "$ref" : "#/components/schemas/BrowserInfo",
-            "description" : "The shopper's browser information.\n> For 3D Secure, the full object is required for web integrations. For mobile app integrations, include the `userAgent` and `acceptHeader` fields to indicate  that your integration can support a redirect in case a payment is routed to 3D Secure 2 redirect."
+            "description" : "The shopper's browser information.\n> For 3D Secure, the full object is required for web integrations. For mobile app integrations, include the `userAgent` and `acceptHeader` fields to indicate  that your integration can support a redirect in case a payment is routed to 3D Secure 2 redirect.\n>\n> If you proceed with a 3D Secure 2 payment, the following requirements apply to `browserInfo` in the `/payments` request. For browser-based 3D Secure 2 payments, include complete `browserInfo`. For mobile app integrations that can be routed to a 3D Secure 2 redirect, include the `userAgent` and `acceptHeader` fields. Native app 3D Secure 2 authentication does not require `browserInfo`. If the `/payments` request of a browser-based payment has missing or incomplete `browserInfo`, the transaction is treated as ineligible for 3D Secure 2 and can be authorized without liability shift. This field is usually collected on the client, so validate its presence and completeness on your server before you submit the payment. For more information, see [3D Secure 2 authentication](https://docs.adyen.com/online-payments/3d-secure/)."
           },
           "channel" : {
             "type" : "string",
@@ -9557,7 +9557,7 @@
           },
           "browserInfo" : {
             "$ref" : "#/components/schemas/BrowserInfo",
-            "description" : "The shopper's browser information.\n> For 3D Secure, the full object is required for web integrations. For mobile app integrations, include the `userAgent` and `acceptHeader` fields to indicate  that your integration can support a redirect in case a payment is routed to 3D Secure 2 redirect."
+            "description" : "The shopper's browser information.\n> For 3D Secure, the full object is required for web integrations. For mobile app integrations, include the `userAgent` and `acceptHeader` fields to indicate  that your integration can support a redirect in case a payment is routed to 3D Secure 2 redirect.\n>\n> For browser-based payments, missing or incomplete `browserInfo` means 3D Secure 2 cannot be initiated. The transaction is then treated as ineligible for 3D Secure 2 and can be authorized without liability shift. Native app 3D Secure 2 authentication does not require `browserInfo`. This field is usually collected on the client, so validate its presence and completeness on your server before you submit the payment. For more information, see [3D Secure 2 authentication](https://docs.adyen.com/online-payments/3d-secure/)."
           },
           "captureDelayHours" : {
             "type" : "integer",
@@ -9700,7 +9700,7 @@
           },
           "origin" : {
             "type" : "string",
-            "description" : "> Required for browser-based (`channel` **Web**) 3D Secure 2 transactions.Set this to the origin URL of the page where you are rendering the Drop-in/Component. Do not include subdirectories and a trailing slash.",
+            "description" : "> Required for browser-based (`channel` **Web**) 3D Secure 2 transactions.\n\nSet this to the origin URL of the page where you are rendering the Drop-in/Component. Do not include subdirectories and a trailing slash.\n\n> If `origin` is missing or incorrect, 3D Secure 2 cannot be initiated and the transaction can be authorized without liability shift. Set this value on your server. If you receive it from the client, validate it first. For more information, see [3D Secure 2 authentication](https://docs.adyen.com/online-payments/3d-secure/).",
             "maxLength" : 80,
             "x-addedInVersion" : "40"
           },
@@ -10209,7 +10209,7 @@
           "threeDSAuthenticationOnly" : {
             "type" : "boolean",
             "default" : false,
-            "description" : "Required to trigger the [authentication-only flow](https://docs.adyen.com/online-payments/3d-secure/authentication-only/). If set to **true**, you will only perform the 3D Secure 2 authentication, and will not proceed to the payment authorisation.Default: **false**.",
+            "description" : "Required to trigger the [authentication-only flow](https://docs.adyen.com/online-payments/3d-secure/authentication-only/). If set to **true**, you will only perform the 3D Secure 2 authentication, and will not proceed to the payment authorization.\n\nDefault: **false**.",
             "x-addedInVersion" : "50"
           },
           "trustedShopper" : {

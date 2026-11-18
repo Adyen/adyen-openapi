@@ -2902,10 +2902,13 @@ components:
           description: "Indicates if you want to perform 3D Secure authentication\
             \ on a transaction.\n\n > Alternatively, you can use [Dynamic 3D Secure](/risk-management/dynamic-3d-secure)\
             \ to configure rules for applying 3D Secure.\n\nPossible values:\n* **true**\
-            \ \u2013 Perform 3D Secure authentication.\n* **false** \u2013 Don't perform\
-            \ 3D Secure authentication. Note that this setting results in refusals\
-            \ if the issuer mandates 3D Secure because of the PSD2 directive  or other,\
-            \ national regulations. \n"
+            \ \u2013 Perform 3D Secure authentication. For browser-based payments,\
+            \ make sure the payment request also contains complete `browserInfo` and,\
+            \ for the Checkout API, `origin`. Without them, 3D Secure 2 cannot be\
+            \ initiated and the transaction can be authorized without liability shift.\n\
+            * **false** \u2013 Don't perform 3D Secure authentication. Note that this\
+            \ setting results in refusals if the issuer mandates 3D Secure because\
+            \ of the PSD2 directive  or other, national regulations. \n"
           x-deprecatedInVersion: '69'
           x-deprecatedMessage: Use [`authenticationData.attemptAuthentication`](https://docs.adyen.com/api-explorer/Checkout/latest/post/payments?target=_blank#request-authenticationData-attemptAuthentication)
             instead
@@ -5169,7 +5172,10 @@ components:
             Possible values:
 
 
-            * **always**: Perform 3D Secure authentication.
+            * **always**: Perform 3D Secure authentication. For browser-based payments,
+            make sure the payment request also contains complete `browserInfo` and
+            `origin`. Without them, 3D Secure 2 cannot be initiated and the transaction
+            can be authorized without liability shift.
 
             * **never**: Don''t perform 3D Secure authentication. If PSD2 SCA or other
             national regulations require authentication, the transaction gets declined.'
@@ -5309,10 +5315,16 @@ components:
           $ref: '#/components/schemas/BrowserInfo'
           description: 'The shopper''s browser information.
 
-            > For 3D Secure, the full object is required for web integrations. For
-            mobile app integrations, include the `userAgent` and `acceptHeader` fields
-            to indicate  that your integration can support a redirect in case a payment
-            is routed to 3D Secure 2 redirect.'
+            > The 3D Secure 2 guidance for `browserInfo` applies to the later `/payments`
+            request, not to this balance check. For browser-based 3D Secure 2 payments,
+            include complete `browserInfo`. For mobile app integrations that can be
+            routed to a 3D Secure 2 redirect, include the `userAgent` and `acceptHeader`
+            fields. Native app 3D Secure 2 authentication does not require `browserInfo`.
+
+            >
+
+            > This field is usually collected on the client, so validate its presence
+            and completeness on your server before you submit the payment.'
         captureDelayHours:
           type: integer
           format: int32
@@ -5607,7 +5619,10 @@ components:
           deprecated: true
           description: 'Required to trigger the [authentication-only flow](https://docs.adyen.com/online-payments/3d-secure/authentication-only/).
             If set to **true**, you will only perform the 3D Secure 2 authentication,
-            and will not proceed to the payment authorization.Default: **false**.'
+            and will not proceed to the payment authorization.
+
+
+            Default: **false**.'
           x-addedInVersion: '50'
           x-deprecatedInVersion: '69'
           x-deprecatedMessage: Use `authenticationData.authenticationOnly` instead.
@@ -6116,6 +6131,13 @@ components:
         srcTokenReference:
           type: string
           description: The reference for the Click to Pay token.
+        storeClickToPayProfile:
+          type: boolean
+          description: When enrolling a new user, this field determines whether to
+            store the shopper's card in their Click to Pay profile. When this is set
+            to **True**, the request must include `shopperEmail`, `shopperName`, and
+            `telephoneNumber`.
+          x-addedInVersion: '72'
         storedPaymentMethodId:
           type: string
           description: This is the `recurringDetailReference` returned in the response
@@ -6307,6 +6329,13 @@ components:
         srcTokenReference:
           type: string
           description: The reference for the Click to Pay token.
+        storeClickToPayProfile:
+          type: boolean
+          description: When enrolling a new user, this field determines whether to
+            store the shopper's card in their Click to Pay profile. When this is set
+            to **True**, the request must include `shopperEmail`, `shopperName`, and
+            `telephoneNumber`.
+          x-addedInVersion: '72'
         storedPaymentMethodId:
           type: string
           description: This is the `recurringDetailReference` returned in the response
@@ -6638,6 +6667,9 @@ components:
             user ID or account ID. The value is case-sensitive and must be at least
             three characters.
 
+            This parameter is required unless the request is for PAN forwarding and
+            `options.tokenize` is false (the default).
+
             > Your reference must not include personally identifiable information
             (PII) such as name or email address.'
         storedPaymentMethodId:
@@ -6649,7 +6681,6 @@ components:
       - baseUrl
       - merchantAccount
       - request
-      - shopperReference
     CheckoutForwardRequestCard:
       type: object
       additionalProperties: false
@@ -7694,7 +7725,10 @@ components:
           deprecated: true
           description: 'Required to trigger the [authentication-only flow](https://docs.adyen.com/online-payments/3d-secure/authentication-only/).
             If set to **true**, you will only perform the 3D Secure 2 authentication,
-            and will not proceed to the payment authorization.Default: **false**.'
+            and will not proceed to the payment authorization.
+
+
+            Default: **false**.'
           x-deprecatedInVersion: '69'
           x-deprecatedMessage: Use `authenticationData.authenticationOnly` instead.
         trustedShopper:
@@ -8179,7 +8213,10 @@ components:
           deprecated: true
           description: 'Required to trigger the [authentication-only flow](https://docs.adyen.com/online-payments/3d-secure/authentication-only/).
             If set to **true**, you will only perform the 3D Secure 2 authentication,
-            and will not proceed to the payment authorization.Default: **false**.'
+            and will not proceed to the payment authorization.
+
+
+            Default: **false**.'
           x-deprecatedInVersion: '69'
           x-deprecatedMessage: Use `authenticationData.authenticationOnly` instead.
         trustedShopper:
@@ -8448,7 +8485,10 @@ components:
           default: false
           description: 'Required to trigger the [authentication-only flow](https://docs.adyen.com/online-payments/3d-secure/authentication-only/).
             If set to **true**, you will only perform the 3D Secure 2 authentication,
-            and will not proceed to the payment authorization.Default: **false**.'
+            and will not proceed to the payment authorization.
+
+
+            Default: **false**.'
           x-addedInVersion: '69'
     DeviceRenderOptions:
       type: object
@@ -8747,7 +8787,17 @@ components:
             > For 3D Secure, the full object is required for web integrations. For
             mobile app integrations, include the `userAgent` and `acceptHeader` fields
             to indicate  that your integration can support a redirect in case a payment
-            is routed to 3D Secure 2 redirect.'
+            is routed to 3D Secure 2 redirect.
+
+            >
+
+            > For browser-based payments, missing or incomplete `browserInfo` means
+            3D Secure 2 cannot be initiated. The transaction is then treated as ineligible
+            for 3D Secure 2 and can be authorized without liability shift. Native
+            app 3D Secure 2 authentication does not require `browserInfo`. This field
+            is usually collected on the client, so validate its presence and completeness
+            on your server before you submit the payment. For more information, see
+            [3D Secure 2 authentication](https://docs.adyen.com/online-payments/3d-secure/).'
         channel:
           type: string
           description: 'The platform where a payment transaction takes place. This
@@ -8853,8 +8903,17 @@ components:
         origin:
           type: string
           description: '> Required for browser-based (`channel` **Web**) 3D Secure
-            2 transactions.Set this to the origin URL of the page where you are rendering
-            the Drop-in/Component. Do not include subdirectories and a trailing slash.'
+            2 transactions.
+
+
+            Set this to the origin URL of the page where you are rendering the Drop-in/Component.
+            Do not include subdirectories and a trailing slash.
+
+
+            > If `origin` is missing or incorrect, 3D Secure 2 cannot be initiated
+            and the transaction can be authorized without liability shift. Set this
+            value on your server. If you receive it from the client, validate it first.
+            For more information, see [3D Secure 2 authentication](https://docs.adyen.com/online-payments/3d-secure/).'
           maxLength: 80
           x-addedInVersion: '40'
         paymentMethod:
@@ -9332,6 +9391,13 @@ components:
           type: string
           description: The card number. Only collect raw card data if you are [fully
             PCI compliant](https://docs.adyen.com/development-resources/pci-dss-compliance-guide).
+        storeClickToPayProfile:
+          type: boolean
+          description: When enrolling a new user, this field determines whether to
+            store the shopper's card in their Click to Pay profile. When this is set
+            to **True**, the request must include `shopperEmail`, `shopperName`, and
+            `telephoneNumber`.
+          x-addedInVersion: '72'
         storedPaymentMethodId:
           type: string
           description: Identifier used to fetch the token from the external service
@@ -13118,7 +13184,21 @@ components:
             > For 3D Secure, the full object is required for web integrations. For
             mobile app integrations, include the `userAgent` and `acceptHeader` fields
             to indicate  that your integration can support a redirect in case a payment
-            is routed to 3D Secure 2 redirect.'
+            is routed to 3D Secure 2 redirect.
+
+            >
+
+            > If you proceed with a 3D Secure 2 payment, the following requirements
+            apply to `browserInfo` in the `/payments` request. For browser-based 3D
+            Secure 2 payments, include complete `browserInfo`. For mobile app integrations
+            that can be routed to a 3D Secure 2 redirect, include the `userAgent`
+            and `acceptHeader` fields. Native app 3D Secure 2 authentication does
+            not require `browserInfo`. If the `/payments` request of a browser-based
+            payment has missing or incomplete `browserInfo`, the transaction is treated
+            as ineligible for 3D Secure 2 and can be authorized without liability
+            shift. This field is usually collected on the client, so validate its
+            presence and completeness on your server before you submit the payment.
+            For more information, see [3D Secure 2 authentication](https://docs.adyen.com/online-payments/3d-secure/).'
         channel:
           type: string
           description: 'The platform where a payment transaction takes place. This
@@ -13481,7 +13561,17 @@ components:
             > For 3D Secure, the full object is required for web integrations. For
             mobile app integrations, include the `userAgent` and `acceptHeader` fields
             to indicate  that your integration can support a redirect in case a payment
-            is routed to 3D Secure 2 redirect.'
+            is routed to 3D Secure 2 redirect.
+
+            >
+
+            > For browser-based payments, missing or incomplete `browserInfo` means
+            3D Secure 2 cannot be initiated. The transaction is then treated as ineligible
+            for 3D Secure 2 and can be authorized without liability shift. Native
+            app 3D Secure 2 authentication does not require `browserInfo`. This field
+            is usually collected on the client, so validate its presence and completeness
+            on your server before you submit the payment. For more information, see
+            [3D Secure 2 authentication](https://docs.adyen.com/online-payments/3d-secure/).'
         captureDelayHours:
           type: integer
           format: int32
@@ -13717,8 +13807,17 @@ components:
         origin:
           type: string
           description: '> Required for browser-based (`channel` **Web**) 3D Secure
-            2 transactions.Set this to the origin URL of the page where you are rendering
-            the Drop-in/Component. Do not include subdirectories and a trailing slash.'
+            2 transactions.
+
+
+            Set this to the origin URL of the page where you are rendering the Drop-in/Component.
+            Do not include subdirectories and a trailing slash.
+
+
+            > If `origin` is missing or incorrect, 3D Secure 2 cannot be initiated
+            and the transaction can be authorized without liability shift. Set this
+            value on your server. If you receive it from the client, validate it first.
+            For more information, see [3D Secure 2 authentication](https://docs.adyen.com/online-payments/3d-secure/).'
           maxLength: 80
           x-addedInVersion: '40'
         paymentMethod:
@@ -14198,6 +14297,11 @@ components:
             \ truncate the string.\n Allowed characters: **a-z**, **A-Z**, **0-9**,\
             \ spaces, and special characters **. , ' _ - ? + * /**."
           maxLength: 10000
+        shopperTaxIdentification:
+          $ref: '#/components/schemas/TokenizedShopperTaxIdentification'
+          description: The shopper's tax identification, verified by Adyen. Contains
+            the token returned by `/verifyShopperTaxIdentification`.
+          x-addedInVersion: '72'
         shopperTaxInfo:
           $ref: '#/components/schemas/ShopperTaxInfo'
           deprecated: true
@@ -14251,6 +14355,11 @@ components:
             Review our [Surcharge compliance guide](https://docs.adyen.com/development-resources/surcharge-compliance/)
             to learn about how to comply with regulatory requirements when applying
             surcharge.'
+        taxCalculation:
+          $ref: '#/components/schemas/TokenizedTaxCalculation'
+          description: The tax calculated by Adyen for this payment. Contains the
+            token returned by `/calculateTax`.
+          x-addedInVersion: '72'
         telephoneNumber:
           type: string
           description: "The shopper's telephone number.\n The phone number must include\
@@ -14278,7 +14387,10 @@ components:
           deprecated: true
           description: 'Required to trigger the [authentication-only flow](https://docs.adyen.com/online-payments/3d-secure/authentication-only/).
             If set to **true**, you will only perform the 3D Secure 2 authentication,
-            and will not proceed to the payment authorisation.Default: **false**.'
+            and will not proceed to the payment authorization.
+
+
+            Default: **false**.'
           x-addedInVersion: '50'
           x-deprecatedInVersion: '69'
           x-deprecatedMessage: Use `authenticationData.authenticationOnly` instead.
@@ -18227,6 +18339,28 @@ components:
       - providerId
       - status
       - txVariant
+    TokenizedShopperTaxIdentification:
+      type: object
+      additionalProperties: false
+      properties:
+        verifiedShopperTaxIdentificationToken:
+          type: string
+          description: 'The `verifiedShopperTaxIdentificationToken` returned by `/verifyShopperTaxIdentification`.
+            Treat the token as opaque: do not parse or modify it.'
+          maxLength: 5000
+      required:
+      - verifiedShopperTaxIdentificationToken
+    TokenizedTaxCalculation:
+      type: object
+      additionalProperties: false
+      properties:
+        taxCalculationToken:
+          type: string
+          description: 'The `taxCalculationToken` returned by `/calculateTax`. Treat
+            the token as opaque: do not parse or modify it.'
+          maxLength: 5000
+      required:
+      - taxCalculationToken
     TravelAgency:
       type: object
       additionalProperties: false
@@ -18647,15 +18781,15 @@ components:
       properties:
         merchantAccount:
           type: string
-          description: The merchant account identifier requesting the tax calculation.
-          maxLength: 1000
-          minLength: 0
+          description: The merchant account identifier, with which you want to process
+            the transaction.
         taxCalculationContext:
           $ref: '#/components/schemas/TaxCalculationContext'
           description: The context used to calculate the tax.
         taxableAmount:
           $ref: '#/components/schemas/TaxableAmount'
-          description: The amount on which Adyen calculates the tax.
+          description: The amount on which Adyen calculates the tax. The value must
+            be greater than zero.
       required:
       - merchantAccount
       - taxCalculationContext
@@ -18665,15 +18799,16 @@ components:
       properties:
         taxCalculation:
           $ref: '#/components/schemas/TaxCalculation'
-          description: The canonical calculation accepted and produced by Adyen. Informational
-            in the initial release.
+          description: The tax calculation results.
         taxCalculationReference:
           type: string
-          description: The unique reference for this calculation attempt.
+          description: The unique reference for the tax calculation.
+          maxLength: 64
+          minLength: 8
         taxCalculationToken:
           type: string
-          description: The opaque, encrypted, and signed token that represents the
-            complete canonical calculation. Required in /payments.
+          description: The encrypted and signed token representing the tax calculation.
+            Submit this value as `taxCalculation.taxCalculationToken` in `/payments`.
     CalculationType:
       type: string
       enum:
@@ -18734,10 +18869,30 @@ components:
       properties:
         remittancePurpose:
           $ref: '#/components/schemas/RemittancePurpose'
-          description: The remittance category, for example TOUR_PROGRAMME or EDUCATION.
+          description: 'The purpose of the remittance under the Liberalised Remittance
+            Scheme. Possible values:
+
+
+            * **TOUR_PROGRAMME**: a tour program.
+
+            * **TRAVEL_NON_TOUR**: travel that is not a tour program.
+
+            * **EDUCATION**: education.
+
+            * **DIGITAL**: digital services.
+
+            '
         sublimitStatus:
           $ref: '#/components/schemas/SublimitStatus'
-          description: The status of the INR 1 million LRS sublimit, for example EXCEEDED.
+          description: 'The status of the INR 1 million Liberalised Remittance Scheme
+            sublimit. Possible values:
+
+
+            * **EXCEEDED**: the sublimit is exceeded.
+
+            * **NOT_EXCEEDED**: the sublimit is not exceeded.
+
+            '
       required:
       - remittancePurpose
       - sublimitStatus
@@ -18800,8 +18955,9 @@ components:
       properties:
         taxCountryCode:
           type: string
-          description: The country governing the shopper's tax processing. Initially
-            only IN is supported.
+          description: 'The two-letter country code governing the shopper''s tax processing,
+            in [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)
+            format. Supported value: **IN**.'
           minLength: 1
         taxIdentificationNumber:
           type: string
@@ -18809,7 +18965,8 @@ components:
           minLength: 1
         taxIdentificationType:
           $ref: '#/components/schemas/TaxIdentificationType'
-          description: The type of the tax identification. Initially only PAN is supported.
+          description: 'The type of tax identification. Supported value: **PAN**,
+            an Indian Permanent Account Number.'
       required:
       - taxCountryCode
       - taxIdentificationNumber
@@ -18824,13 +18981,16 @@ components:
       properties:
         currency:
           type: string
-          description: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).
-          minLength: 1
+          description: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes#currency-codes)
+            of the amount.
+          maxLength: 3
+          minLength: 3
           pattern: ^[A-Z]{3}$
         value:
           type: integer
           format: int64
-          description: The amount in [minor units](https://docs.adyen.com/development-resources/currency-codes).
+          description: The numeric value of the amount, in [minor units](https://docs.adyen.com/development-resources/currency-codes#minor-units).
+          maximum: 10000000000
           minimum: 0
       required:
       - currency
@@ -18840,11 +19000,12 @@ components:
       properties:
         merchantAccount:
           type: string
-          description: The merchant account for which the calculation was made.
+          description: The merchant account identifier, with which you want to process
+            the transaction.
         taxCalculationContext:
           $ref: '#/components/schemas/TaxCalculationContext'
-          description: The tax country, calculation type, and LRS declarations accepted
-            by Adyen.
+          description: The tax country, calculation type, and LRS declarations from
+            the request.
         taxCalculations:
           type: array
           description: The individual tax components calculated by Adyen.
@@ -18852,14 +19013,14 @@ components:
             $ref: '#/components/schemas/TaxCalculationComponent'
         taxableAmount:
           $ref: '#/components/schemas/TaxAmount'
-          description: The taxable amount accepted by Adyen.
+          description: The taxable amount from the request, before tax.
         totalAmount:
           $ref: '#/components/schemas/TaxAmount'
-          description: The taxable amount plus the calculated tax. Use this amount
-            in /payments.amount.
+          description: The sum of `taxableAmount` and `totalTaxAmount`. Use this amount
+            as `amount` in `/payments`.
         totalTaxAmount:
           $ref: '#/components/schemas/TaxAmount'
-          description: The total tax amount calculated by Adyen.
+          description: The sum of the individual tax amounts in `taxCalculations`.
     TaxCalculationComponent:
       type: object
       properties:
@@ -18868,22 +19029,27 @@ components:
           description: The calculated tax amount of this component.
         type:
           $ref: '#/components/schemas/CalculationType'
-          description: The type of the calculated tax component, for example LRS_TCS.
+          description: 'The type of tax calculated. Supported value: **LRS_TCS**,
+            the Indian Liberalised Remittance Scheme Tax Collected at Source.'
     TaxCalculationContext:
       type: object
       properties:
         calculationType:
           $ref: '#/components/schemas/CalculationType'
-          description: The type of calculation requested. Initially only LRS_TCS is
-            supported.
+          description: 'The type of tax calculation. Supported value: **LRS_TCS**,
+            the Indian Liberalised Remittance Scheme Tax Collected at Source.'
         lrs:
           $ref: '#/components/schemas/LrsContext'
-          description: India-specific LRS declarations.
+          description: The shopper's declarations for the Indian Liberalised Remittance
+            Scheme (LRS).
         taxCountryCode:
           type: string
-          description: The country governing tax processing. Initially only IN is
-            supported.
-          minLength: 1
+          description: 'The two-letter country code governing tax processing, in [ISO
+            3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) format.
+            Supported value: **IN**.'
+          maxLength: 2
+          minLength: 2
+          pattern: ^[a-zA-Z]{2}$
       required:
       - calculationType
       - lrs
@@ -18897,15 +19063,17 @@ components:
       properties:
         currency:
           type: string
-          description: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).
-          minLength: 1
+          description: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes#currency-codes)
+            of the amount.
+          maxLength: 3
+          minLength: 3
           pattern: ^[A-Z]{3}$
         value:
           type: integer
           format: int64
-          description: The amount in [minor units](https://docs.adyen.com/development-resources/currency-codes).
+          description: The numeric value of the amount, in [minor units](https://docs.adyen.com/development-resources/currency-codes#minor-units)
           maximum: 10000000000
-          minimum: 0
+          minimum: 1
       required:
       - currency
       - value
@@ -18962,25 +19130,32 @@ components:
       properties:
         maskedName:
           type: string
-          description: The masked name of the tax identification holder.
+          description: The masked name of the tax identification holder. The full
+            name is not returned.
         taxCountryCode:
           type: string
-          description: The country governing the shopper's tax processing.
+          description: 'The two-letter country code governing the shopper''s tax processing,
+            in [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)
+            format. Supported value: **IN**.'
+          maxLength: 2
+          minLength: 2
+          pattern: ^[a-zA-Z]{2}$
         taxIdentificationType:
           $ref: '#/components/schemas/TaxIdentificationType'
-          description: The type of the verified tax identification.
+          description: 'The type of verified tax identification. Supported value:
+            **PAN**, an Indian Permanent Account Number.'
     VerifyShopperTaxIdentificationRequest:
       type: object
       properties:
         merchantAccount:
           type: string
-          description: The merchant account identifier requesting the tax verification.
-          maxLength: 1000
-          minLength: 0
+          description: The merchant account identifier, with which you want to process
+            the transaction.
         shopperReference:
           type: string
           description: 'Your reference to uniquely identify this shopper, for example
-            user ID or account ID. Used to bind the verification to the shopper context.
+            user ID or account ID. The value is case-sensitive and must be at least
+            three characters. Use the same `shopperReference` in `/payments`.
 
 
             > Your reference must not include personally identifiable information
@@ -18989,7 +19164,7 @@ components:
           minLength: 3
         shopperTaxIdentification:
           $ref: '#/components/schemas/ShopperTaxIdentification'
-          description: The shopper tax identification to verify.
+          description: The shopper's tax identification to verify.
       required:
       - merchantAccount
       - shopperReference
@@ -18999,23 +19174,42 @@ components:
       properties:
         reason:
           type: string
-          description: The human-readable reason for the unsuccessful result.
+          description: The human-readable reason for an **INVALID** or **UNKNOWN**
+            verification result.
         reasonCode:
           type: string
-          description: The reason code for the unsuccessful result, when available.
+          description: The code for an unsuccessful verification, if available.
         result:
           $ref: '#/components/schemas/Result'
-          description: The verification result, for example valid or invalid.
+          description: 'The result of verifying the shopper''s tax identification.
+            Possible results for this endpoint:
+
+
+            * **VALID**: verification succeeded. The response includes a token and
+            masked tax identification.
+
+            * **INVALID**: the tax identification is invalid or unsupported. The response
+            includes a `reason` and no token.
+
+            * **UNKNOWN**: verification did not return the required details. The response
+            includes a `reason` and no token.
+
+            '
         taxVerificationReference:
           type: string
-          description: The unique reference for the verification attempt.
+          description: The unique reference for the verification. Returned only when
+            `result` is **VALID**.
+          maxLength: 64
+          minLength: 8
         verifiedShopperTaxIdentification:
           $ref: '#/components/schemas/VerifiedShopperTaxIdentification'
           description: The masked representation of the verified tax identification.
+            Returned only when `result` is **VALID**.
         verifiedShopperTaxIdentificationToken:
           type: string
-          description: The opaque, encrypted, and signed token representing the successful
-            verification. Required in /payments.
+          description: The encrypted and signed token representing a successful verification.
+            Returned only when `result` is **VALID**. Submit this value as `shopperTaxIdentification.verifiedShopperTaxIdentificationToken`
+            in `/payments` with the same `shopperReference` used for verification.
   parameters:
     Idempotency-Key:
       name: Idempotency-Key
