@@ -1354,10 +1354,13 @@ components:
           description: "Indicates if you want to perform 3D Secure authentication\
             \ on a transaction.\n\n > Alternatively, you can use [Dynamic 3D Secure](/risk-management/dynamic-3d-secure)\
             \ to configure rules for applying 3D Secure.\n\nPossible values:\n* **true**\
-            \ \u2013 Perform 3D Secure authentication.\n* **false** \u2013 Don't perform\
-            \ 3D Secure authentication. Note that this setting results in refusals\
-            \ if the issuer mandates 3D Secure because of the PSD2 directive  or other,\
-            \ national regulations. \n"
+            \ \u2013 Perform 3D Secure authentication. For browser-based payments,\
+            \ make sure the payment request also contains complete `browserInfo` and,\
+            \ for the Checkout API, `origin`. Without them, 3D Secure 2 cannot be\
+            \ initiated and the transaction can be authorized without liability shift.\n\
+            * **false** \u2013 Don't perform 3D Secure authentication. Note that this\
+            \ setting results in refusals if the issuer mandates 3D Secure because\
+            \ of the PSD2 directive  or other, national regulations. \n"
         mpiImplementationType:
           type: string
           description: In case of Secure+, this field must be set to **CUPSecurePlus**.
@@ -4086,7 +4089,17 @@ components:
             > For 3D Secure, the full object is required for web integrations. For
             mobile app integrations, include the `userAgent` and `acceptHeader` fields
             to indicate  that your integration can support a redirect in case a payment
-            is routed to 3D Secure 2 redirect.'
+            is routed to 3D Secure 2 redirect.
+
+            >
+
+            > For browser-based payments, missing or incomplete `browserInfo` means
+            3D Secure 2 cannot be initiated. The transaction is then treated as ineligible
+            for 3D Secure 2 and can be authorized without liability shift. Native
+            app 3D Secure 2 authentication does not require `browserInfo`. This field
+            is usually collected on the client, so validate its presence and completeness
+            on your server before you submit the payment. For more information, see
+            [3D Secure 2 authentication](https://docs.adyen.com/online-payments/3d-secure/).'
         captureDelayHours:
           type: integer
           format: int32
@@ -4388,7 +4401,10 @@ components:
           default: false
           description: 'Required to trigger the [authentication-only flow](https://docs.adyen.com/online-payments/3d-secure/authentication-only/).
             If set to **true**, you will only perform the 3D Secure 2 authentication,
-            and will not proceed to the payment authorization.Default: **false**.'
+            and will not proceed to the payment authorization.
+
+
+            Default: **false**.'
           x-addedInVersion: '50'
         totalsGroup:
           type: string
@@ -4474,10 +4490,15 @@ components:
           $ref: '#/components/schemas/BrowserInfo'
           description: 'The shopper''s browser information.
 
-            > For 3D Secure, the full object is required for web integrations. For
-            mobile app integrations, include the `userAgent` and `acceptHeader` fields
-            to indicate  that your integration can support a redirect in case a payment
-            is routed to 3D Secure 2 redirect.'
+            > You do not need to include `browserInfo` in `/authorise3d`.
+
+            > This endpoint continues a 3D Secure 1 payment and does not initiate
+            3D Secure 2.
+
+            >
+
+            > To initiate a browser-based 3D Secure 2 payment, include complete `browserInfo`
+            in the initial `/authorise` request.'
         captureDelayHours:
           type: integer
           format: int32
@@ -4762,7 +4783,10 @@ components:
           default: false
           description: 'Required to trigger the [authentication-only flow](https://docs.adyen.com/online-payments/3d-secure/authentication-only/).
             If set to **true**, you will only perform the 3D Secure 2 authentication,
-            and will not proceed to the payment authorization.Default: **false**.'
+            and will not proceed to the payment authorization.
+
+
+            Default: **false**.'
           x-addedInVersion: '50'
         totalsGroup:
           type: string
@@ -4848,10 +4872,19 @@ components:
           $ref: '#/components/schemas/BrowserInfo'
           description: 'The shopper''s browser information.
 
-            > For 3D Secure, the full object is required for web integrations. For
-            mobile app integrations, include the `userAgent` and `acceptHeader` fields
-            to indicate  that your integration can support a redirect in case a payment
-            is routed to 3D Secure 2 redirect.'
+            > Complete `browserInfo` is required in the `/authorise` request that
+            initiates a browser-based 3D Secure 2 payment.
+
+            >
+
+            > You do not need to include `browserInfo` when you continue the payment
+            through `/authorise3ds2`:
+
+            >* After the device fingerprint, send the `threeDS2Token` and the `threeDS2RequestData.threeDSCompInd`
+            fingerprint completion indicator.
+
+            >* After the shopper completes the challenge, send the `threeDS2Token`
+            and the `threeDS2Result`.'
         captureDelayHours:
           type: integer
           format: int32
@@ -5135,7 +5168,10 @@ components:
           default: false
           description: 'Required to trigger the [authentication-only flow](https://docs.adyen.com/online-payments/3d-secure/authentication-only/).
             If set to **true**, you will only perform the 3D Secure 2 authentication,
-            and will not proceed to the payment authorization.Default: **false**.'
+            and will not proceed to the payment authorization.
+
+
+            Default: **false**.'
           x-addedInVersion: '50'
         totalsGroup:
           type: string
